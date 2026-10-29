@@ -5,7 +5,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { envValidationSchema } from './config/env.validation';
+import { AuthModule } from './modules/auth/auth.module';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -23,11 +26,14 @@ import { HealthModule } from './modules/health/health.module';
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 120 }],
     }),
+    AuthModule,
     HealthModule,
+    UsersModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
     {
       provide: APP_PIPE,
       useFactory: () =>

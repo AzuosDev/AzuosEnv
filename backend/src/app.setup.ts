@@ -17,6 +17,7 @@ export function configureApp(app: NestExpressApplication, options: ConfigureAppO
   const config = app.get(ConfigService);
   const isProduction = config.get<string>('NODE_ENV') === 'production';
 
+  app.set('trust proxy', 1);
   app.setGlobalPrefix(API_PREFIX);
   app.use(helmet());
   app.use(cookieParser());
