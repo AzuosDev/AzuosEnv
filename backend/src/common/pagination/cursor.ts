@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { Types } from 'mongoose';
 
 export interface CursorPayload {
   [key: string]: string | number;
@@ -40,4 +41,15 @@ export function buildCursorPage<T>(
     items,
     nextCursor: hasMore && last !== undefined ? encodeCursor(toCursorPayload(last)) : null,
   };
+}
+
+/** Reads an ObjectId cursor produced by `encodeCursor({ id })`. */
+export function decodeObjectIdCursor(cursor: string): Types.ObjectId {
+  const { id } = decodeCursor(cursor);
+
+  if (typeof id !== 'string' || !Types.ObjectId.isValid(id)) {
+    throw new BadRequestException({ code: 'INVALID_CURSOR', message: 'Cursor inválido.' });
+  }
+
+  return new Types.ObjectId(id);
 }

@@ -56,6 +56,10 @@ export class UsersService {
     }
   }
 
+  findByEmail(email: string): Promise<UserDocument | null> {
+    return this.model.findOne({ email: email.trim().toLowerCase() }).exec();
+  }
+
   findByEmailWithPassword(email: string): Promise<UserDocument | null> {
     return this.model.findOne({ email }).select('+passwordHash').exec();
   }

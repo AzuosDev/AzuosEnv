@@ -7,6 +7,7 @@ export const envValidationSchema = Joi.object({
     .pattern(/^mongodb(\+srv)?:\/\//)
     .required(),
   CORS_ORIGINS: Joi.string().default('http://localhost:5173'),
+  APP_URL: Joi.string().uri().default('http://localhost:5173'),
   JWT_ACCESS_SECRET: Joi.string().min(16).required(),
   JWT_REFRESH_SECRET: Joi.string().min(16).required(),
   JWT_ACCESS_TTL: Joi.string().default('15m'),
