@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { randomBytes } from 'node:crypto';
 import { Model, Types } from 'mongoose';
@@ -21,6 +22,7 @@ import { INVITE_TTL_MS, Invite, InviteDocument } from './schemas/invite.schema';
 import { WorkspaceMember, WorkspaceMemberDocument } from './schemas/workspace-member.schema';
 import { Workspace, WorkspaceDocument } from './schemas/workspace.schema';
 import { RequestMembership } from './workspace-context';
+import { MEMBER_INVITED, MemberInvitedEvent } from './workspace-events';
 
 export interface CreatedInvite {
   invite: InviteDocument;
@@ -43,6 +45,7 @@ export class InvitesService {
     private readonly usersService: UsersService,
     private readonly mail: MailService,
     private readonly config: ConfigService,
+    private readonly events: EventEmitter2,
   ) {}
 
   /** Issues a token, stores only its hash and mails the invite link. */
@@ -102,6 +105,18 @@ export class InvitesService {
       subject: `Convite para o workspace ${workspace.name}`,
       text: `Você foi convidado para o workspace ${workspace.name}. Acesse ${acceptUrl} para aceitar.`,
     });
+
+    if (user) {
+      this.events.emit(MEMBER_INVITED, {
+        workspaceId: workspace._id,
+        workspaceName: workspace.name,
+        userId: user._id,
+        email: dto.email,
+        role: dto.role,
+        actorId: invitedBy,
+        acceptUrl,
+      } satisfies MemberInvitedEvent);
+    }
 
     return { invite, token, acceptUrl };
   }

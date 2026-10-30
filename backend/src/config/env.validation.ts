@@ -15,6 +15,13 @@ export const envValidationSchema = Joi.object({
   COOKIE_SECURE: Joi.boolean().default(false),
   COOKIE_DOMAIN: Joi.string().allow('').default(''),
   UPLOAD_DIR: Joi.string().default('./storage/uploads'),
+  // Without SMTP_HOST the MailService only logs the message.
+  SMTP_HOST: Joi.string().allow('').default(''),
+  SMTP_PORT: Joi.number().port().default(587),
+  SMTP_SECURE: Joi.boolean().default(false),
+  SMTP_USER: Joi.string().allow('').default(''),
+  SMTP_PASSWORD: Joi.string().allow('').default(''),
+  SMTP_FROM: Joi.string().allow('').default('Azuos Env <no-reply@azuos.dev>'),
 })
   .unknown(true)
   .options({ abortEarly: false });

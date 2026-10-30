@@ -1,8 +1,9 @@
 # CONTEXTO-SESSAO — Azuos Env
-Etapa concluída: 7 · Próxima: 8
+Etapa concluída: 8 · Próxima: 9
 ## Stack
 Node.js LTS, NestJS 12 (ESM-only), MongoDB Atlas, Mongoose 9, JWT access+refresh (rotação), IA Grok (xAI). Front: React + TanStack. Exportação xlsx com exceljs.
 Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @nestjs/event-emitter (EventEmitterModule.forRoot() global em AppModule).
+Tempo real: @nestjs/websockets + @nestjs/platform-socket.io + socket.io (dev: socket.io-client). Cron: @nestjs/schedule (ScheduleModule.forRoot()). E-mail: nodemailer.
 ## Decisões
 - Multi-tenant por workspaceId; rotas /api/v1/workspaces/:wsId/...
 - Refresh token em cookie httpOnly, rotacionado, com detecção de reuso.
@@ -58,12 +59,23 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @
 - GET /views com locationType vem na ordem manual (cursor de position); sem locationType, as mais novas primeiro (cursor de id) e filtradas por location visível.
 - Criar Space/Folder/List emite space|folder|list.created com emitAsync e o ViewsListener cria as views List (isDefault) e Board. @OnEvent com array não registra (o eventemitter2 trata a lista como namespace): um decorator por evento.
 - Exportação usa o mesmo query da view (TaskQueryService.queryAll, sem paginação): csv com BOM UTF-8 e xlsx pelo exceljs. Colunas vêm de config.columns (`field:<id>` para campo personalizado) ou, sem elas, do padrão mais todos os campos do local.
+- Notificação sai só do NotificationsListener (eventos de tarefa, comentário e convite) e do NotificationsScheduler; o autor do evento nunca se notifica e falha ao gerar é logada sem derrubar a requisição.
+- bucket por destinatário: responsável, mencionado, atribuído do comentário, convidado, lembrete e datas do responsável vão para `primary`; o que chega por seguidor vai para `other`.
+- Abas do inbox: primary/other (não limpas, sem snooze ativo), later (snoozedUntil no futuro), cleared (clearedAt preenchido). Limpar também marca como lida. Notificação de outro usuário responde 404 NOTIFICATION_NOT_FOUND.
+- notification_settings guarda só o que o usuário mudou; a leitura mescla com o padrão (inbox ligado, e-mail desligado). Canal desligado não gera a linha nem o e-mail.
+- Cron a cada 5 min (NotificationsScheduler.run): dueSoon (24 h) e overdue das tarefas abertas, depois os lembretes vencidos. A dedupe é por (usuário, tipo, tarefa, data) via `data.dueAt`, então remarcar a data gera um aviso novo.
+- Lembrete recorrente é reagendado por nextOccurrence (reminder-recurrence.ts) até passar do agora; sem recorrência, doneAt fecha o lembrete. Lembrete é pessoal: só o dono lê e edita (404 REMINDER_NOT_FOUND).
+- MailService escolhe o provider no MailModule: com SMTP_HOST vira SmtpMailService (nodemailer), sem ele continua LogMailService. E-mail de notificação nunca derruba a requisição (erro só vai para o log).
+- Gateway Socket.IO em /ws: o token do access vem em `auth.token` e é validado em middleware do afterInit (sem token → connect_error UNAUTHORIZED). Salas user:{id} (automática), ws:{wsId}, list:{listId} e task:{taskId} por join/leave com a mesma permissão do HTTP; sala negada devolve ack { code: 'FORBIDDEN_ROOM' } porque o filtro global só trata HTTP.
+- RealtimeListener relaia os eventos de domínio (task.created/updated/moved/deleted, comment.created/updated, notification.new) e o gateway emite presence:update na sala da tarefa a cada join/leave/disconnect.
+- AuthModule passou a exportar JwtModule para o gateway validar o token sem duplicar a configuração.
+- Guards globais só valem para HTTP: JwtAuthGuard retorna true quando `context.getType() !== 'http'` (o passport procuraria um header Authorization que a mensagem de socket não tem) e o throttler virou HttpThrottlerGuard (src/common/guards) com shouldSkip fora de HTTP, senão todos os sockets dividiriam o mesmo contador.
 - activities é escrita só pelo ActivitiesListener, a partir dos eventos de tarefa e de comentário; falha ao gravar é logada e nunca derruba a requisição. Cada linha guarda taskId e listId, então o histórico da tarefa é um filtro direto e a view Activity usa as Lists visíveis.
 ## Módulos
 - health (src/modules/health) — público
 - auth (src/modules/auth): auth.service/controller, refresh-tokens.service/module, strategies/jwt.strategy, guards/jwt-auth.guard, schemas/refresh-token
 - users (src/modules/users): users.service/controller, schemas/user
-- mail (src/modules/mail): mail.service (abstract MailService), log-mail.service, mail.module
+- mail (src/modules/mail): mail.service (abstract MailService), log-mail.service, smtp-mail.service, mail.module (provider escolhido por SMTP_HOST)
 - workspaces (src/modules/workspaces): workspaces/members/invites/teams .service+.controller, guards/workspace.guard, decorators/{roles,workspace-context}, workspace-roles.ts, workspace-context.ts, schemas/{workspace,workspace-member,invite,team}
 - hierarchy (src/modules/hierarchy): spaces/folders/lists/status-sets/sharing/tree .service+.controller, permission.service (+ permission-levels.ts), hierarchy-access.service (cadeia de herança e require*), ordering.ts, status-templates.ts, schemas/{space,folder,list,status-set,permission}
 - tasks (src/modules/tasks): tasks.service/controller (ListTasksController, TasksController, MyTasksController), task-query.service, task-access.service, tags.service/controller, counters.service, task-counts.service, tasks-data.module, task-fields.ts, task-grouping.ts, task-diff.ts, task-events.ts, schemas/{task,tag,counter}
@@ -72,7 +84,9 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @
 - fields (src/modules/fields): custom-fields.service/controller, custom-field-types.ts, field-values.ts (validação por tipo, filtros e chave de ordenação), formula.ts (parser), schemas/custom-field
 - views (src/modules/views): views.service/controller, views.listener (views padrão), view-export.service (csv/xlsx), view-types.ts, schemas/view
 - collaboration (src/modules/collaboration): checklists/comments/attachments/dependencies/activities .service+.controller, activities.listener, task-collaboration.service, collaboration-data.module, collaboration-fields.ts, collaboration-events.ts, mentions.ts, dependency-graph.ts, schemas/{checklist,comment,attachment,task-dependency,activity}
-- common: filters/all-exceptions.filter, pagination/{cursor,pagination-query.dto}, pipes/parse-object-id.pipe, schemas/base-schema-options, decorators/{public,current-user}, utils/{duration,hash (sha256Hex),slug (slugify)}
+- notifications (src/modules/notifications): notifications.service/controller (InboxController, NotificationSettingsController), notification-settings.service, notifications.listener, notifications.scheduler (cron), reminders.service/controller, notification-fields.ts, notification-events.ts, reminder-recurrence.ts, schemas/{notification,notification-setting,reminder}
+- realtime (src/modules/realtime): events.gateway (Socket.IO /ws), room-access.service, realtime.listener, realtime-rooms.ts
+- common: filters/all-exceptions.filter, guards/http-throttler.guard, pagination/{cursor,pagination-query.dto}, pipes/parse-object-id.pipe, schemas/base-schema-options, decorators/{public,current-user}, utils/{duration,hash (sha256Hex),slug (slugify)}
 ## Coleções
 - users: name, email (único, minúsculo), passwordHash (argon2id, select:false e fora do toJSON), avatarUrl, timezone (America/Fortaleza), locale (pt-BR), theme (dark|light|system, padrão dark), lastLoginAt
 - refresh_tokens: userId, familyId, tokenHash (único), expiresAt (índice TTL), revokedAt, replacedById, userAgent, ip
@@ -94,6 +108,9 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @
 - comments: workspaceId, entityType (task|page|message), entityId, parentCommentId, body (JSON do editor), bodyText, mentions, assigneeId, resolvedAt, resolvedBy, reactions[{ emoji, userIds }], editedAt, createdBy, deletedAt
 - attachments: workspaceId, entityType (task|comment), entityId, taskId, name, mimeType, size, storageKey (select:false e fora do toJSON), uploadedBy
 - task_dependencies: workspaceId, taskId, dependsOnId, type (waiting_on|blocking|linked), createdBy; índice único (workspaceId, taskId, dependsOnId, type)
+- notifications: workspaceId, userId, type (assigned|mentioned|commented|statusChanged|dueSoon|overdue|reminder|invited|commentAssigned), entityType (task|comment|workspace|reminder), entityId, actorId (null no cron), data (Mixed), bucket (primary|other), readAt, snoozedUntil, clearedAt; índices (workspaceId, userId, bucket, _id desc) e (workspaceId, userId, type, entityId)
+- notification_settings: userId (único), types { <tipo>: { inbox, email } } (só o que foi alterado)
+- reminders: userId, workspaceId, text, remindAt, recurrence (none|daily|weekly|monthly), taskId, doneAt; índices (workspaceId, userId, doneAt, _id desc) e (doneAt, remindAt)
 - activities: workspaceId, entityType (task|comment), entityId, action (created|updated|moved|deleted|restored|resolved|unresolved), actorId, changes[{ field, from, to }], taskId, listId
 ## Endpoints
 - GET /api/v1/health (público) → { status: "ok", db: "up" | "down" }
@@ -149,16 +166,24 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @
 - /tasks/query ganhou fieldFilters (JSON: [{ fieldId, op: eq|contains|gt|lt|isEmpty, value? }]) e sortBy=field com sortFieldId
 - POST /api/v1/workspaces/:wsId/views { locationType, locationId?, type, name, config?, private?, protected?, isDefault?, pinned? } · GET ?locationType&locationId&limit&cursor · GET/PATCH/DELETE .../views/:viewId · POST .../views/:viewId/{duplicate,reorder}
 - GET /api/v1/workspaces/:wsId/views/:viewId/export?format=csv|xlsx → arquivo com as tarefas da view
+- GET /api/v1/workspaces/:wsId/inbox?tab=primary|other|later|cleared&limit&cursor → { items, nextCursor } · GET .../inbox/counts → { primary, other, later, cleared, unread }
+- POST /api/v1/workspaces/:wsId/inbox/read-all · POST .../inbox/:notificationId/{read,unread,snooze { until },clear}
+- GET/PATCH /api/v1/users/me/notification-settings { types: { <tipo>: { inbox?, email? } } } → canais por tipo
+- POST/GET /api/v1/workspaces/:wsId/reminders { text, remindAt, recurrence?, taskId? } · GET ?status=pending|done · GET/PATCH ({ text?, remindAt?, recurrence?, taskId?, done? })/DELETE .../reminders/:reminderId
+- WebSocket /ws (Socket.IO, auth.token = access token): join/leave { room: ws|list|task, id, wsId? }; eventos task.created/updated/moved/deleted, comment.created/updated, notification.new, presence:update
 - Swagger em /api/docs (fora de produção)
 ## Variáveis de ambiente
-NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, UPLOAD_DIR=./storage/uploads (LocalDiskStorage), SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
+NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, UPLOAD_DIR=./storage/uploads (LocalDiskStorage), SMTP_HOST (vazio = só log), SMTP_PORT=587, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
 ## Padrões aplicados
 - Prefixo global api/v1, helmet, cookie-parser, CORS com credentials, body limit 1 MB, shutdown hooks, trust proxy.
-- Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION. De tarefas: TASK_NOT_FOUND, TAG_NOT_FOUND, INVALID_STATUS, INVALID_ASSIGNEES, INVALID_WATCHERS, INVALID_TAGS, INVALID_TASK_PARENT, TASK_DEPTH_EXCEEDED, PRIMARY_LIST_IMMUTABLE. De campos e views: CUSTOM_FIELD_NOT_FOUND, INVALID_CUSTOM_FIELD, INVALID_CUSTOM_FIELD_VALUE, CUSTOM_FIELD_REQUIRED, INVALID_FORMULA, INVALID_FIELD_FILTER, VIEW_NOT_FOUND, FORBIDDEN_VIEW, INVALID_VIEW_LOCATION.
-- Testes: `npm test` (unit) e `npm run test:e2e` (supertest + mongodb-memory-server). O mongod sobe uma vez em test/utils/global-setup.ts (env de teste em test-env.ts); `createTestApp()` em test/utils/e2e-app.ts dá app + clearDatabase(); helpers de auth (registro, login, cookie, IP por teste) em test/utils/auth-client.ts.
+- Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION. De tarefas: TASK_NOT_FOUND, TAG_NOT_FOUND, INVALID_STATUS, INVALID_ASSIGNEES, INVALID_WATCHERS, INVALID_TAGS, INVALID_TASK_PARENT, TASK_DEPTH_EXCEEDED, PRIMARY_LIST_IMMUTABLE. De inbox e lembretes: NOTIFICATION_NOT_FOUND, REMINDER_NOT_FOUND; sala de socket negada responde ack { code: 'FORBIDDEN_ROOM' }. De campos e views: CUSTOM_FIELD_NOT_FOUND, INVALID_CUSTOM_FIELD, INVALID_CUSTOM_FIELD_VALUE, CUSTOM_FIELD_REQUIRED, INVALID_FORMULA, INVALID_FIELD_FILTER, VIEW_NOT_FOUND, FORBIDDEN_VIEW, INVALID_VIEW_LOCATION.
+- Testes: `npm test` (unit) e `npm run test:e2e` (supertest + mongodb-memory-server). O mongod sobe uma vez em test/utils/global-setup.ts (env de teste em test-env.ts); `createTestApp()` em test/utils/e2e-app.ts dá app + clearDatabase() (e `{ listen: true }` abre porta real + baseUrl para o suite de socket); helpers de auth (registro, login, cookie, IP por teste) em test/utils/auth-client.ts.
 ## Pendências
 - /tasks/query ordena e agrupa em memória com teto de 5000 documentos; migrar para aggregation quando o volume exigir.
-- Os eventos de domínio alimentam o histórico (activities); notificações vêm depois.
+- O cron de datas varre até 2000 tarefas e os lembretes até 500 por ciclo, sem recorte por workspace; com volume, filtrar por índice e paginar.
+- O Socket.IO roda em memória (sem adapter Redis): escalar para mais de uma instância exige o adapter.
+- Notificação não tem expurgo nem TTL; a lixeira de 30 dias precisará limpar notifications junto.
+- O fuso do usuário não é usado no dueSoon/overdue (a janela é de 24 h em UTC).
 - archivedAt da tarefa existe no schema, mas ainda não há endpoint de arquivar/desarquivar.
 - JWT_REFRESH_SECRET continua sem uso (refresh token é opaco, não JWT).
 - Expurgo da lixeira após 30 dias ainda não tem job; o expurgo da tarefa precisará limpar checklists, comentários, anexos, dependências e atividades.

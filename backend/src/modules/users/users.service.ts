@@ -74,6 +74,20 @@ export class UsersService {
     return new Map(docs.map((doc) => [String(doc._id), doc.name]));
   }
 
+  /** E-mail of each user, used by the notifications that go out by mail. */
+  async emailsByIds(ids: Types.ObjectId[]): Promise<Map<string, string>> {
+    if (ids.length === 0) {
+      return new Map();
+    }
+
+    const docs = await this.model
+      .find({ _id: { $in: ids } })
+      .select('email')
+      .exec();
+
+    return new Map(docs.map((doc) => [String(doc._id), doc.email]));
+  }
+
   findByEmailWithPassword(email: string): Promise<UserDocument | null> {
     return this.model.findOne({ email }).select('+passwordHash').exec();
   }
