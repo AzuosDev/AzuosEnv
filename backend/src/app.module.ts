@@ -10,12 +10,15 @@ import { HttpThrottlerGuard } from './common/guards/http-throttler.guard';
 import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { CollaborationModule } from './modules/collaboration/collaboration.module';
+import { FavoritesModule } from './modules/favorites/favorites.module';
 import { FieldsModule } from './modules/fields/fields.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
 import { HierarchyModule } from './modules/hierarchy/hierarchy.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
+import { SearchModule } from './modules/search/search.module';
+import { TrashModule } from './modules/trash/trash.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { UsersModule } from './modules/users/users.module';
 import { ViewsModule } from './modules/views/views.module';
@@ -50,6 +53,9 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     ViewsModule,
     NotificationsModule,
     RealtimeModule,
+    SearchModule,
+    FavoritesModule,
+    TrashModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

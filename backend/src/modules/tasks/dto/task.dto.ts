@@ -17,6 +17,7 @@ import { Type } from 'class-transformer';
 import { ArrayMaxSize, ValidateNested } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/pagination/pagination-query.dto';
 import { TaskCustomFieldDto } from '../../fields/dto/custom-field.dto';
+import { MAX_RRULE_LENGTH, RECURRENCE_MODES, RecurrenceMode } from '../recurrence';
 import {
   MAX_TASK_FIELD_VALUES,
   TASK_PRIORITIES,
@@ -24,6 +25,22 @@ import {
   TaskPriority,
   TaskType,
 } from '../task-fields';
+
+export class TaskRecurrenceDto {
+  @ApiProperty({ example: 'FREQ=WEEKLY;INTERVAL=1' })
+  @IsString()
+  @Length(1, MAX_RRULE_LENGTH)
+  rrule: string;
+
+  @ApiProperty({ enum: RECURRENCE_MODES })
+  @IsEnum(RECURRENCE_MODES)
+  mode: RecurrenceMode;
+
+  @ApiPropertyOptional({ default: true, description: 'false reabre a própria tarefa.' })
+  @IsOptional()
+  @IsBoolean()
+  createNew?: boolean;
+}
 
 export class CreateTaskDto {
   @ApiProperty({ example: 'Corrigir fechamento de caixa' })
@@ -111,6 +128,12 @@ export class CreateTaskDto {
   @ValidateNested({ each: true })
   @Type(() => TaskCustomFieldDto)
   customFields?: TaskCustomFieldDto[];
+
+  @ApiPropertyOptional({ type: TaskRecurrenceDto, description: 'null remove a recorrência.' })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TaskRecurrenceDto)
+  recurrence?: TaskRecurrenceDto | null;
 
   @ApiPropertyOptional({ description: 'Tarefa pai; a subtarefa fica na List do pai.' })
   @IsOptional()

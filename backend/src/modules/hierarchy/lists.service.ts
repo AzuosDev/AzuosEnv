@@ -3,6 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
+import { RecentsService } from '../favorites/recents.service';
 import { CreateListDto, ListQueryDto, MoveListDto, UpdateListDto } from './dto/list.dto';
 import { ReorderDto } from './dto/reorder.dto';
 import { LIST_CREATED, HierarchyCreatedEvent } from './hierarchy-events';
@@ -26,6 +27,7 @@ export class ListsService {
     private readonly access: HierarchyAccessService,
     private readonly statusSets: StatusSetsService,
     private readonly permissions: PermissionService,
+    private readonly recents: RecentsService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -78,8 +80,12 @@ export class ListsService {
     return paginateByPosition(visible, query);
   }
 
-  get(ctx: PermissionContext, listId: Types.ObjectId): Promise<ListDocument> {
-    return this.access.requireList(ctx, listId, 'view');
+  async get(ctx: PermissionContext, listId: Types.ObjectId): Promise<ListDocument> {
+    const list = await this.access.requireList(ctx, listId, 'view');
+
+    await this.recents.record(ctx, 'list', list._id);
+
+    return list;
   }
 
   /** Effective statuses of the List (list -> folder -> space). */

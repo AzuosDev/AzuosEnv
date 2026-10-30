@@ -40,6 +40,6 @@ import { Reminder, ReminderSchema } from './schemas/reminder.schema';
     NotificationsListener,
     NotificationsScheduler,
   ],
-  exports: [NotificationsService, NotificationsScheduler, RemindersService],
+  exports: [MongooseModule, NotificationsService, NotificationsScheduler, RemindersService],
 })
 export class NotificationsModule {}

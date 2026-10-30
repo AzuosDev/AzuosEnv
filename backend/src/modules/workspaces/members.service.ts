@@ -102,6 +102,16 @@ export class MembersService {
     return members.map((member) => member.userId);
   }
 
+  /** Every active member of the workspace; used by the global search. */
+  async activeUserIdsOf(workspaceId: Types.ObjectId): Promise<Types.ObjectId[]> {
+    const members = await this.model
+      .find({ workspaceId, status: 'active' })
+      .select('userId')
+      .exec();
+
+    return members.map((member) => member.userId);
+  }
+
   private async require(
     workspaceId: Types.ObjectId,
     memberId: Types.ObjectId,

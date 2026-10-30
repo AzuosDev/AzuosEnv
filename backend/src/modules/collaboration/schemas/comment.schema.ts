@@ -72,3 +72,6 @@ export const CommentSchema = SchemaFactory.createForClass(Comment);
 CommentSchema.index({ workspaceId: 1, entityType: 1, entityId: 1, _id: 1 });
 CommentSchema.index({ workspaceId: 1, assigneeId: 1, resolvedAt: 1, _id: 1 });
 CommentSchema.index({ workspaceId: 1, parentCommentId: 1, _id: 1 });
+
+// A collection accepts a single text index; this one serves the global search.
+CommentSchema.index({ bodyText: 'text' }, { name: 'comment_text', default_language: 'portuguese' });

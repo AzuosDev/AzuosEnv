@@ -24,6 +24,6 @@ import { ViewsService } from './views.service';
   ],
   controllers: [ViewsController],
   providers: [ViewsService, ViewExportService, ViewsListener],
-  exports: [ViewsService],
+  exports: [MongooseModule, ViewsService],
 })
 export class ViewsModule {}

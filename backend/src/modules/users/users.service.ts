@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as argon2 from 'argon2';
 import { Model, Types } from 'mongoose';
 import { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
+import { escapeRegex } from '../../common/utils/regex';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { User, UserDocument } from './schemas/user.schema';
 
@@ -86,6 +87,21 @@ export class UsersService {
       .exec();
 
     return new Map(docs.map((doc) => [String(doc._id), doc.email]));
+  }
+
+  /** Users among `ids` whose name or e-mail matches the term; used by the search. */
+  async search(ids: Types.ObjectId[], term: string, limit: number): Promise<UserDocument[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const match = new RegExp(escapeRegex(term), 'i');
+
+    return this.model
+      .find({ _id: { $in: ids }, $or: [{ name: match }, { email: match }] })
+      .sort({ name: 1 })
+      .limit(limit)
+      .exec();
   }
 
   findByEmailWithPassword(email: string): Promise<UserDocument | null> {

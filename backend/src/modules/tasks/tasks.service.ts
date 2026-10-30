@@ -20,10 +20,12 @@ import { ListDocument } from '../hierarchy/schemas/list.schema';
 import { Status } from '../hierarchy/schemas/status-set.schema';
 import { StatusSetsService } from '../hierarchy/status-sets.service';
 import { MembersService } from '../workspaces/members.service';
+import { RecentsService } from '../favorites/recents.service';
 import { CountersService } from './counters.service';
 import { BulkChangesDto, BulkTasksDto } from './dto/task-query.dto';
-import { CreateTaskDto, MoveTaskDto, UpdateTaskDto } from './dto/task.dto';
-import { Task, TaskDocument } from './schemas/task.schema';
+import { CreateTaskDto, MoveTaskDto, TaskRecurrenceDto, UpdateTaskDto } from './dto/task.dto';
+import { NextOccurrence, assertRecurrence, nextOccurrence } from './recurrence';
+import { Task, TaskDocument, TaskRecurrence } from './schemas/task.schema';
 import { TagsService } from './tags.service';
 import { TaskAccessService } from './task-access.service';
 import { isClosedGroup, recordChange, toDate } from './task-diff';
@@ -65,6 +67,7 @@ export class TasksService {
     private readonly tags: TagsService,
     private readonly collaboration: TaskCollaborationService,
     private readonly fields: CustomFieldsService,
+    private readonly recents: RecentsService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -101,6 +104,7 @@ export class TasksService {
       points: dto.points ?? null,
       type: dto.type ?? 'task',
       customFields: await this.fields.resolveValues(ctx, list, dto.customFields ?? []),
+      recurrence: toRecurrence(dto.recurrence),
       position: await appendPosition(positionedModel(this.model), this.siblings(ctx, list._id)),
       closedAt: isClosedGroup(status.statusGroup) ? new Date() : null,
       createdBy: ctx.userId,
@@ -125,6 +129,8 @@ export class TasksService {
     const { task, list } = await this.taskAccess.requireTask(ctx, idOrCustomId, 'view');
     const summary = await this.collaboration.summaryFor(ctx.workspaceId, task._id);
     const fields = await this.fields.forList(list);
+
+    await this.recents.record(ctx, 'task', task._id);
 
     return {
       ...task.toJSON(),
@@ -209,8 +215,12 @@ export class TasksService {
       this.apply(task, changes, 'type', dto.type);
     }
 
+    if (dto.recurrence !== undefined) {
+      this.apply(task, changes, 'recurrence', toRecurrence(dto.recurrence));
+    }
+
     if (dto.statusId !== undefined) {
-      await this.applyStatus(task, changes, list, dto.statusId);
+      await this.applyStatus(ctx, task, changes, list, dto.statusId);
     }
 
     if (dto.customFields !== undefined) {
@@ -409,7 +419,7 @@ export class TasksService {
     }
 
     if (changes.statusId !== undefined) {
-      await this.applyStatus(task, diff, list, changes.statusId);
+      await this.applyStatus(ctx, task, diff, list, changes.statusId);
     }
 
     if (changes.priority !== undefined) {
@@ -489,6 +499,7 @@ export class TasksService {
   }
 
   private async applyStatus(
+    ctx: PermissionContext,
     task: TaskDocument,
     changes: TaskChanges,
     list: ListDocument,
@@ -496,6 +507,16 @@ export class TasksService {
   ): Promise<void> {
     const status = await this.resolveStatus(list, statusId);
 
+    if (isClosedGroup(status.statusGroup) && task.recurrence?.mode === 'onComplete') {
+      await this.completeRecurring(ctx, task, changes, list, status);
+
+      return;
+    }
+
+    this.setStatus(task, changes, status);
+  }
+
+  private setStatus(task: TaskDocument, changes: TaskChanges, status: ResolvedStatus): void {
     if (!this.apply(task, changes, 'statusId', status.statusId)) {
       return;
     }
@@ -507,6 +528,96 @@ export class TasksService {
     } else {
       task.closedAt = null;
     }
+  }
+
+  /**
+   * Completing a task that recurs `onComplete`: with `createNew` the occurrence is
+   * closed and the series moves to a new task, otherwise the task itself reopens
+   * on the next dates. A finished series just closes.
+   */
+  private async completeRecurring(
+    ctx: PermissionContext,
+    task: TaskDocument,
+    changes: TaskChanges,
+    list: ListDocument,
+    status: ResolvedStatus,
+  ): Promise<void> {
+    const recurrence = task.recurrence;
+    const next = recurrence ? this.nextDates(task, recurrence) : null;
+
+    if (!recurrence || !next) {
+      this.setStatus(task, changes, status);
+      this.apply(task, changes, 'recurrence', null);
+
+      return;
+    }
+
+    if (recurrence.createNew) {
+      this.setStatus(task, changes, status);
+      this.apply(task, changes, 'recurrence', null);
+      await this.spawnOccurrence(ctx, task, list, recurrence, next);
+
+      return;
+    }
+
+    this.apply(task, changes, 'startAt', next.startAt);
+    this.apply(task, changes, 'dueAt', next.dueAt);
+    this.setStatus(task, changes, await this.resolveStatus(list));
+    task.closedAt = null;
+  }
+
+  /** Dates of the next occurrence, or null when the rule is exhausted. */
+  nextDates(
+    task: TaskDocument,
+    recurrence: TaskRecurrence,
+    now = new Date(),
+  ): NextOccurrence | null {
+    return nextOccurrence(recurrence.rrule, { startAt: task.startAt, dueAt: task.dueAt }, now);
+  }
+
+  /** Copy of the task on the next dates; the recurrence rule moves to the copy. */
+  async spawnOccurrence(
+    ctx: PermissionContext,
+    task: TaskDocument,
+    list: ListDocument,
+    recurrence: TaskRecurrence,
+    next: NextOccurrence,
+  ): Promise<TaskDocument> {
+    const status = await this.resolveStatus(list);
+    const created = await this.model.create({
+      workspaceId: task.workspaceId,
+      listId: task.listId,
+      listIds: [...task.listIds],
+      parentTaskId: task.parentTaskId,
+      customId: await this.counters.nextCustomId(task.workspaceId, prefixOf(task.customId)),
+      name: task.name,
+      description: task.description,
+      descriptionText: task.descriptionText,
+      statusId: status.statusId,
+      statusGroup: status.statusGroup,
+      priority: task.priority,
+      assigneeIds: [...task.assigneeIds],
+      watcherIds: [...task.watcherIds],
+      tagIds: [...task.tagIds],
+      startAt: next.startAt,
+      dueAt: next.dueAt,
+      dueHasTime: task.dueHasTime,
+      estimateMinutes: task.estimateMinutes,
+      points: task.points,
+      type: task.type,
+      customFields: task.customFields.map((value) => ({
+        fieldId: value.fieldId,
+        value: value.value,
+      })),
+      recurrence: { ...recurrence },
+      position: await appendPosition(positionedModel(this.model), this.siblings(ctx, task.listId)),
+      closedAt: null,
+      createdBy: task.createdBy,
+    });
+
+    this.events.emit(TASK_CREATED, this.baseEvent(ctx, created) satisfies TaskCreatedEvent);
+
+    return created;
   }
 
   /**
@@ -650,6 +761,24 @@ export class TasksService {
   private siblings(ctx: PermissionContext, listId: Types.ObjectId): Record<string, unknown> {
     return { workspaceId: ctx.workspaceId, listIds: listId, deletedAt: null };
   }
+}
+
+/** Validates the rule before it is stored; `null` removes the recurrence. */
+function toRecurrence(dto: TaskRecurrenceDto | null | undefined): TaskRecurrence | null {
+  if (!dto) {
+    return null;
+  }
+
+  assertRecurrence(dto.rrule);
+
+  return { rrule: dto.rrule.trim(), mode: dto.mode, createNew: dto.createNew ?? true };
+}
+
+/** AZD from AZD-142, so a new occurrence keeps the prefix of the workspace. */
+function prefixOf(customId: string): string {
+  const separator = customId.lastIndexOf('-');
+
+  return separator > 0 ? customId.slice(0, separator) : customId;
 }
 
 function unique(ids: Types.ObjectId[]): Types.ObjectId[] {

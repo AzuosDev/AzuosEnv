@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { FavoritesDataModule } from '../favorites/favorites-data.module';
 import { TasksDataModule } from '../tasks/tasks-data.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { FoldersController } from './folders.controller';
@@ -33,6 +34,7 @@ import { TreeService } from './tree.service';
     ]),
     WorkspacesModule,
     TasksDataModule,
+    FavoritesDataModule,
   ],
   controllers: [
     SpacesController,
@@ -53,6 +55,7 @@ import { TreeService } from './tree.service';
     TreeService,
   ],
   exports: [
+    MongooseModule,
     PermissionService,
     HierarchyAccessService,
     SpacesService,

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import { STATUS_GROUPS, StatusGroup } from '../../hierarchy/status-templates';
+import { RECURRENCE_MODES, RecurrenceMode } from '../recurrence';
 import {
   DEFAULT_TASK_TYPE,
   TASK_PRIORITIES,
@@ -24,6 +25,22 @@ export class TaskCustomFieldValue {
 }
 
 export const TaskCustomFieldValueSchema = SchemaFactory.createForClass(TaskCustomFieldValue);
+
+/** Recurrence of the task: an iCalendar rule plus how the next occurrence is made. */
+@Schema({ _id: false })
+export class TaskRecurrence {
+  @Prop({ required: true, trim: true })
+  rrule: string;
+
+  @Prop({ type: String, enum: RECURRENCE_MODES, required: true })
+  mode: RecurrenceMode;
+
+  /** True spawns the next occurrence as a new task; false reopens this one. */
+  @Prop({ type: Boolean, default: true })
+  createNew: boolean;
+}
+
+export const TaskRecurrenceSchema = SchemaFactory.createForClass(TaskRecurrence);
 
 @Schema({ collection: 'tasks', ...baseSchemaOptions })
 export class Task {
@@ -92,6 +109,9 @@ export class Task {
   @Prop({ type: [TaskCustomFieldValueSchema], default: [] })
   customFields: TaskCustomFieldValue[];
 
+  @Prop({ type: TaskRecurrenceSchema, default: null })
+  recurrence: TaskRecurrence | null;
+
   @Prop({ required: true })
   position: string;
 
@@ -116,3 +136,11 @@ TaskSchema.index({ workspaceId: 1, customId: 1 }, { unique: true });
 TaskSchema.index({ workspaceId: 1, listIds: 1, statusId: 1, position: 1 });
 TaskSchema.index({ workspaceId: 1, assigneeIds: 1, dueAt: 1 });
 TaskSchema.index({ workspaceId: 1, 'customFields.fieldId': 1 });
+TaskSchema.index({ workspaceId: 1, deletedAt: 1 });
+TaskSchema.index({ 'recurrence.mode': 1, dueAt: 1 });
+
+// A collection accepts a single text index; this one serves the global search.
+TaskSchema.index(
+  { name: 'text', descriptionText: 'text' },
+  { name: 'task_text', default_language: 'portuguese', weights: { name: 10, descriptionText: 1 } },
+);
