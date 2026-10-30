@@ -14,6 +14,7 @@ export const envValidationSchema = Joi.object({
   JWT_REFRESH_TTL: Joi.string().default('30d'),
   COOKIE_SECURE: Joi.boolean().default(false),
   COOKIE_DOMAIN: Joi.string().allow('').default(''),
+  UPLOAD_DIR: Joi.string().default('./storage/uploads'),
 })
   .unknown(true)
   .options({ abortEarly: false });

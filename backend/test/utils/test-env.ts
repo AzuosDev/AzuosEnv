@@ -1,3 +1,9 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+/** Uploads of the e2e suite; the global teardown removes the folder. */
+export const TEST_UPLOAD_DIR = join(tmpdir(), 'azuos-env-test-uploads');
+
 /** Environment used by the e2e suite. MONGODB_URI is set by the global setup. */
 export const TEST_ENV: Record<string, string> = {
   NODE_ENV: 'test',
@@ -9,6 +15,7 @@ export const TEST_ENV: Record<string, string> = {
   JWT_REFRESH_TTL: '30d',
   COOKIE_SECURE: 'false',
   COOKIE_DOMAIN: '',
+  UPLOAD_DIR: TEST_UPLOAD_DIR,
 };
 
 export const TEST_DB_NAME = 'azuos-env-test';

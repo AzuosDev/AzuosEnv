@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
+import { TaskCollaborationService } from '../collaboration/task-collaboration.service';
 import { STATUS_SET_UPDATED, StatusSetUpdatedEvent } from '../hierarchy/hierarchy-events';
 import { HierarchyAccessService } from '../hierarchy/hierarchy-access.service';
 import {
@@ -37,6 +38,9 @@ import {
 } from './task-events';
 import { MAX_SUBTASK_DEPTH } from './task-fields';
 
+/** A task with the collaboration summary of GET /tasks/:id. */
+export type TaskDetail = Record<string, unknown>;
+
 export interface BulkResult {
   updated: number;
   skipped: { id: string; code: string }[];
@@ -57,6 +61,7 @@ export class TasksService {
     private readonly members: MembersService,
     private readonly counters: CountersService,
     private readonly tags: TagsService,
+    private readonly collaboration: TaskCollaborationService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -106,6 +111,14 @@ export class TasksService {
     const { task } = await this.taskAccess.requireTask(ctx, idOrCustomId, 'view');
 
     return task;
+  }
+
+  /** The task plus the collaboration summary shown by the task panel. */
+  async getDetail(ctx: PermissionContext, idOrCustomId: string): Promise<TaskDetail> {
+    const task = await this.get(ctx, idOrCustomId);
+    const summary = await this.collaboration.summaryFor(ctx.workspaceId, task._id);
+
+    return { ...task.toJSON(), ...summary };
   }
 
   async update(

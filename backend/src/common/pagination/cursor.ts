@@ -53,3 +53,18 @@ export function decodeObjectIdCursor(cursor: string): Types.ObjectId {
 
   return new Types.ObjectId(id);
 }
+
+/**
+ * Pages items already filtered by permission, newest first; the cursor is the id
+ * of the last item of the page.
+ */
+export function paginateByIdDesc<T extends { _id: Types.ObjectId }>(
+  docs: T[],
+  limit: number,
+  cursor?: string,
+): CursorPage<T> {
+  const after = cursor ? String(decodeObjectIdCursor(cursor)) : null;
+  const pending = after === null ? docs : docs.filter((doc) => String(doc._id) < after);
+
+  return buildCursorPage(pending.slice(0, limit + 1), limit, (doc) => ({ id: String(doc._id) }));
+}

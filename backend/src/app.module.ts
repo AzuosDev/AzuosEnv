@@ -7,6 +7,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
+import { CollaborationModule } from './modules/collaboration/collaboration.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
 import { HierarchyModule } from './modules/hierarchy/hierarchy.module';
@@ -37,6 +38,7 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     WorkspacesModule,
     HierarchyModule,
     TasksModule,
+    CollaborationModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

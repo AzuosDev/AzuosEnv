@@ -1,5 +1,5 @@
 # CONTEXTO-SESSAO — Azuos Env
-Etapa concluída: 5 · Próxima: 6
+Etapa concluída: 6 · Próxima: 7
 ## Stack
 Node.js LTS, NestJS 12 (ESM-only), MongoDB Atlas, Mongoose 9, JWT access+refresh (rotação), IA Grok (xAI). Front: React + TanStack.
 Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @nestjs/event-emitter (EventEmitterModule.forRoot() global em AppModule).
@@ -28,7 +28,7 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @
 - Soft delete e arquivo em cascata: o pai estampa a mesma data nos descendentes que estavam sem data; restaurar/desarquivar limpa só os que têm exatamente aquela data (preserva o que já estava na lixeira antes).
 - GET /tree inclui Spaces e Folders só como caminho até um item compartilhado (o guest vê o Space do item, sem os irmãos); GET /spaces lista apenas o que é visível diretamente.
 - customId da tarefa vem da coleção counters ($inc atômico com upsert e retry em E11000); PREFIXO-n com o taskPrefix do workspace. O seed sobe o contador para 141 antes de criar AZD-142..149.
-- Tarefa guarda listId (principal) e listIds (principal + secundárias); toda consulta filtra por listIds. Trocar a List principal é move/bulk; remover a principal de listIds responde 400 PRIMARY_LIST_IMMUTABLE.
+- Tarefa guarda listId (principal) e listIds (principal + secundárias); toda consulta filtra por listIds. Trocar a List principal é move/bulk; remover a principal de listIds responde 400 PRIMARY_LIST_IMMUTABLE. De colaboração: CHECKLIST_NOT_FOUND, CHECKLIST_ITEM_NOT_FOUND, INVALID_CHECKLIST_PARENT, INVALID_CHECKLIST_ASSIGNEE, COMMENT_NOT_FOUND, FORBIDDEN_COMMENT, INVALID_COMMENT_PARENT, INVALID_COMMENT_ASSIGNEE, ATTACHMENT_NOT_FOUND, FILE_REQUIRED, FILE_TOO_LARGE, INVALID_FILE_TYPE, DEPENDENCY_NOT_FOUND, DEPENDENCY_EXISTS, DEPENDENCY_CYCLE, INVALID_DEPENDENCY.
 - statusGroup é denormalizado na tarefa. Mudar para done/closed preenche closedAt; sair limpa. StatusSetsService emite status-set.updated e TasksService ressincroniza statusGroup/closedAt via @OnEvent.
 - Status do status set agora serializa com id (baseSchemaOptions no subschema Status), igual ao resto da API.
 - Permissão da tarefa = cadeia da List + nó { task, taskId }; recurso invisível responde 404 TASK_NOT_FOUND. Criar/editar/mover = edit; excluir/restaurar = full.
@@ -40,6 +40,15 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @
 - TasksDataModule isola os modelos de tasks/tags/counters para o /tree contar tarefas abertas sem dependência circular com HierarchyModule.
 - UsersService.updateProfile ignora campos undefined do DTO (PATCH parcial gravava name: undefined).
 - Convite para conta existente usa $setOnInsert do _id para o id vir do driver e a ordem do cursor de membros ficar estável.
+- Colaboração da tarefa (checklists, comentários, anexos, dependências, histórico) mora em src/modules/collaboration; CollaborationDataModule expõe só os modelos e o TaskCollaborationService para o módulo tasks montar GET /tasks/:id sem dependência circular.
+- Permissão de todo recurso de colaboração é a da tarefa: ver = view; comentar, reagir, atribuir e resolver = comment; checklist, anexo da tarefa e dependência = edit; excluir anexo de outra pessoa = full. Recurso invisível responde 404 TASK_NOT_FOUND.
+- Itens de checklist são subdocumentos com _id, ordenados por fractional indexing entre os irmãos do mesmo parentItemId (profundidade 2: item e subitem); excluir o item leva os subitens.
+- Comentário já tem entityType (task|page|message), mas só task existe. Resposta sempre aponta para a raiz da thread (parentCommentId achatado); só o autor edita (403 FORBIDDEN_COMMENT), autor ou full excluem (soft delete) e reagir de novo com o mesmo emoji remove a reação.
+- Menções saem do body do editor (nós { type: 'mention', attrs: { id } }) e são filtradas por membro ativo; quem não é membro é descartado em silêncio.
+- assigned-comments e /replies carregam até 1000 documentos, filtram por visibilidade da tarefa em memória e paginam por cursor de _id decrescente.
+- Anexos: StorageService (abstract) + LocalDiskStorage em src/modules/storage (UPLOAD_DIR), chave `<workspaceId>/<uuid><ext>`; trocar por S3/R2 é só outro provider. Upload multipart no campo `file` (memória, 25 MB, MIME em lista) e storageKey nunca sai no JSON. Excluir anexo é definitivo (linha + arquivo), não vai para a lixeira.
+- Dependência: waiting_on aponta do bloqueador para o bloqueado, blocking é o inverso e linked não tem direção. Auto-referência responde 400 INVALID_DEPENDENCY e ciclo 400 DEPENDENCY_CYCLE (busca no grafo em collaboration/dependency-graph.ts).
+- activities é escrita só pelo ActivitiesListener, a partir dos eventos de tarefa e de comentário; falha ao gravar é logada e nunca derruba a requisição. Cada linha guarda taskId e listId, então o histórico da tarefa é um filtro direto e a view Activity usa as Lists visíveis.
 ## Módulos
 - health (src/modules/health) — público
 - auth (src/modules/auth): auth.service/controller, refresh-tokens.service/module, strategies/jwt.strategy, guards/jwt-auth.guard, schemas/refresh-token
@@ -49,6 +58,8 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @
 - hierarchy (src/modules/hierarchy): spaces/folders/lists/status-sets/sharing/tree .service+.controller, permission.service (+ permission-levels.ts), hierarchy-access.service (cadeia de herança e require*), ordering.ts, status-templates.ts, schemas/{space,folder,list,status-set,permission}
 - tasks (src/modules/tasks): tasks.service/controller (ListTasksController, TasksController, MyTasksController), task-query.service, task-access.service, tags.service/controller, counters.service, task-counts.service, tasks-data.module, task-fields.ts, task-grouping.ts, task-diff.ts, task-events.ts, schemas/{task,tag,counter}
 - seed (src/seed/seed.ts): `npm run seed` cria usuário SEED_EMAIL, workspace Azuos Dev (AZD), as tarefas AZD-142..AZD-149 na List uSolutionsPDV — Sprint 3 e os Spaces Clientes (Folders Cênio Construções › uSolutionsPDV — Sprint 3 e Central Motos › Plano empresarial), Produtos, Comercial (Leads, Orçamentos) e Interno. Idempotente.
+- storage (src/modules/storage): storage.service (abstract StorageService), local-disk.storage, storage.module
+- collaboration (src/modules/collaboration): checklists/comments/attachments/dependencies/activities .service+.controller, activities.listener, task-collaboration.service, collaboration-data.module, collaboration-fields.ts, collaboration-events.ts, mentions.ts, dependency-graph.ts, schemas/{checklist,comment,attachment,task-dependency,activity}
 - common: filters/all-exceptions.filter, pagination/{cursor,pagination-query.dto}, pipes/parse-object-id.pipe, schemas/base-schema-options, decorators/{public,current-user}, utils/{duration,hash (sha256Hex),slug (slugify)}
 ## Coleções
 - users: name, email (único, minúsculo), passwordHash (argon2id, select:false e fora do toJSON), avatarUrl, timezone (America/Fortaleza), locale (pt-BR), theme (dark|light|system, padrão dark), lastLoginAt
@@ -65,6 +76,11 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @
 - tasks: workspaceId, listId, listIds[], parentTaskId, customId, name, description (JSON do editor), descriptionText, statusId, statusGroup, priority (urgent|high|normal|low|null), assigneeIds, watcherIds, tagIds, startAt, dueAt, dueHasTime, estimateMinutes, points, type (task|bug|milestone|meeting), position, closedAt, createdBy, archivedAt, deletedAt. Índices: (workspaceId, customId) único; (workspaceId, listIds, statusId, position); (workspaceId, assigneeIds, dueAt)
 - tags: workspaceId, spaceId, name, color (#2563EB)
 - counters: workspaceId, key (task), seq; índice único (workspaceId, key)
+- checklists: workspaceId, taskId, name, position, items[{ _id, text, done, assigneeId, position, parentItemId }]
+- comments: workspaceId, entityType (task|page|message), entityId, parentCommentId, body (JSON do editor), bodyText, mentions, assigneeId, resolvedAt, resolvedBy, reactions[{ emoji, userIds }], editedAt, createdBy, deletedAt
+- attachments: workspaceId, entityType (task|comment), entityId, taskId, name, mimeType, size, storageKey (select:false e fora do toJSON), uploadedBy
+- task_dependencies: workspaceId, taskId, dependsOnId, type (waiting_on|blocking|linked), createdBy; índice único (workspaceId, taskId, dependsOnId, type)
+- activities: workspaceId, entityType (task|comment), entityId, action (created|updated|moved|deleted|restored|resolved|unresolved), actorId, changes[{ field, from, to }], taskId, listId
 ## Endpoints
 - GET /api/v1/health (público) → { status: "ok", db: "up" | "down" }
 - POST /api/v1/auth/register (público, 5/min/IP) → 201 { user }; senha ≥ 8 com letra e número; e-mail duplicado → 409 EMAIL_IN_USE
@@ -103,16 +119,29 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @
 - GET /api/v1/workspaces/:wsId/tasks/query?location&locationId&statusIds&statusGroups&assigneeIds&me&priority&tagIds&dueFrom&dueTo&startFrom&startTo&includeSubtasks&includeClosed&q&groupBy&sortBy&cursor&limit → { items, nextCursor } ou { groups }
 - GET /api/v1/workspaces/:wsId/my-tasks → { timezone, sections: { overdue, today, next7, later, noDate } }
 - POST (member+) /GET/PATCH/DELETE /api/v1/workspaces/:wsId/tags[/:tagId] { spaceId, name, color? }
+- GET /api/v1/workspaces/:wsId/tasks/:idOrCustomId passa a incluir subtasks { total, done }, checklists (com itens), checklistItems { total, done }, dependencies, attachmentCount e commentCount
+- POST/GET /api/v1/workspaces/:wsId/tasks/:idOrCustomId/checklists { name } · PATCH/DELETE /api/v1/workspaces/:wsId/checklists/:checklistId · POST .../checklists/:checklistId/reorder { previousId?, nextId? }
+- POST /api/v1/workspaces/:wsId/checklists/:checklistId/items { text, assigneeId?, parentItemId? } · PATCH .../items/:itemId { text?, done?, assigneeId? } · POST .../items/:itemId/reorder · DELETE .../items/:itemId
+- POST /api/v1/workspaces/:wsId/tasks/:idOrCustomId/comments { bodyText, body?, parentCommentId?, assigneeId? } · GET ?limit&cursor → { items: [{ comment, replies }], nextCursor }
+- PATCH/DELETE /api/v1/workspaces/:wsId/comments/:commentId · POST .../comments/:commentId/reactions { emoji } (alterna) · POST .../assign { userId? } · POST .../resolve · POST .../unresolve
+- GET /api/v1/workspaces/:wsId/assigned-comments?status=open|resolved&limit&cursor · GET /api/v1/workspaces/:wsId/replies?limit&cursor
+- POST /api/v1/workspaces/:wsId/tasks/:idOrCustomId/attachments (multipart, campo file, 25 MB) · GET (anexos da tarefa e dos seus comentários)
+- POST /api/v1/workspaces/:wsId/comments/:commentId/attachments (multipart, só o autor do comentário)
+- GET /api/v1/workspaces/:wsId/attachments/:attachmentId/download (única forma de ler os bytes) · DELETE /api/v1/workspaces/:wsId/attachments/:attachmentId
+- POST/GET /api/v1/workspaces/:wsId/tasks/:idOrCustomId/dependencies { dependsOnId, type } · DELETE /api/v1/workspaces/:wsId/dependencies/:dependencyId
+- GET /api/v1/workspaces/:wsId/tasks/:idOrCustomId/activity?limit&cursor · GET /api/v1/workspaces/:wsId/activity?location&locationId&limit&cursor
 - Swagger em /api/docs (fora de produção)
 ## Variáveis de ambiente
-NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
+NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, UPLOAD_DIR=./storage/uploads (LocalDiskStorage), SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
 ## Padrões aplicados
 - Prefixo global api/v1, helmet, cookie-parser, CORS com credentials, body limit 1 MB, shutdown hooks, trust proxy.
 - Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION. De tarefas: TASK_NOT_FOUND, TAG_NOT_FOUND, INVALID_STATUS, INVALID_ASSIGNEES, INVALID_WATCHERS, INVALID_TAGS, INVALID_TASK_PARENT, TASK_DEPTH_EXCEEDED, PRIMARY_LIST_IMMUTABLE.
 - Testes: `npm test` (unit) e `npm run test:e2e` (supertest + mongodb-memory-server). O mongod sobe uma vez em test/utils/global-setup.ts (env de teste em test-env.ts); `createTestApp()` em test/utils/e2e-app.ts dá app + clearDatabase(); helpers de auth (registro, login, cookie, IP por teste) em test/utils/auth-client.ts.
 ## Pendências
 - /tasks/query ordena e agrupa em memória com teto de 5000 documentos; migrar para aggregation quando o volume exigir.
-- Ninguém consome os eventos de domínio ainda (notificações e atividade vêm depois).
+- Os eventos de domínio alimentam o histórico (activities); notificações vêm depois.
 - archivedAt da tarefa existe no schema, mas ainda não há endpoint de arquivar/desarquivar.
 - JWT_REFRESH_SECRET continua sem uso (refresh token é opaco, não JWT).
-- Expurgo da lixeira após 30 dias ainda não tem job.
+- Expurgo da lixeira após 30 dias ainda não tem job; o expurgo da tarefa precisará limpar checklists, comentários, anexos, dependências e atividades.
+- O upload passa pela memória antes de ir para o disco (25 MB por arquivo); stream direto só quando trocar por S3/R2.
+- assigned-comments, /replies e a view Activity ainda não cobrem comentários de page/message, que não existem.

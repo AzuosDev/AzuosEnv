@@ -34,7 +34,7 @@ import {
 } from './dto/task.dto';
 import { TaskDocument } from './schemas/task.schema';
 import { MyTasksResult, TaskQueryResult, TaskQueryService } from './task-query.service';
-import { BulkResult, TasksService } from './tasks.service';
+import { BulkResult, TaskDetail, TasksService } from './tasks.service';
 
 @ApiTags('tasks')
 @ApiBearerAuth()
@@ -85,12 +85,15 @@ export class TasksController {
   }
 
   @Get(':idOrCustomId')
-  @ApiOkResponse({ description: 'Tarefa por id ou customId.' })
+  @ApiOkResponse({
+    description:
+      'Tarefa por id ou customId, com resumo de subtarefas, checklists, dependências e contagens.',
+  })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
-  ): Promise<TaskDocument> {
-    return this.tasks.get(permissionContextFrom(membership), idOrCustomId);
+  ): Promise<TaskDetail> {
+    return this.tasks.getDetail(permissionContextFrom(membership), idOrCustomId);
   }
 
   @Get(':idOrCustomId/subtasks')
