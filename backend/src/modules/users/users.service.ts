@@ -60,6 +60,20 @@ export class UsersService {
     return this.model.findOne({ email: email.trim().toLowerCase() }).exec();
   }
 
+  /** Name of each user, used for the labels of grouped task lists. */
+  async namesByIds(ids: Types.ObjectId[]): Promise<Map<string, string>> {
+    if (ids.length === 0) {
+      return new Map();
+    }
+
+    const docs = await this.model
+      .find({ _id: { $in: ids } })
+      .select('name')
+      .exec();
+
+    return new Map(docs.map((doc) => [String(doc._id), doc.name]));
+  }
+
   findByEmailWithPassword(email: string): Promise<UserDocument | null> {
     return this.model.findOne({ email }).select('+passwordHash').exec();
   }
@@ -84,7 +98,11 @@ export class UsersService {
   async updateProfile(id: string, dto: UpdateProfileDto): Promise<UserDocument> {
     const user = await this.getById(id);
 
-    Object.assign(user, dto);
+    // The DTO instance carries every optional field, so the unset ones must not overwrite.
+    Object.assign(
+      user,
+      Object.fromEntries(Object.entries(dto).filter(([, value]) => value !== undefined)),
+    );
 
     return user.save();
   }

@@ -3,7 +3,8 @@ import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import { STATUS_GROUPS, StatusGroup } from '../status-templates';
 
-@Schema({ _id: true })
+/** Statuses are referenced by id by the tasks, so they follow the same `id` shape. */
+@Schema({ _id: true, ...baseSchemaOptions, timestamps: false })
 export class Status {
   _id: Types.ObjectId;
 

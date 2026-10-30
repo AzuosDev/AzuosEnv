@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { TasksDataModule } from '../tasks/tasks-data.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { FoldersController } from './folders.controller';
 import { FoldersService } from './folders.service';
@@ -31,6 +32,7 @@ import { TreeService } from './tree.service';
       { name: Permission.name, schema: PermissionSchema },
     ]),
     WorkspacesModule,
+    TasksDataModule,
   ],
   controllers: [
     SpacesController,

@@ -208,6 +208,47 @@ export class HierarchyAccessService {
     return this.folderChain(folder);
   }
 
+  /** Lists of the workspace matching the filter that the requester can at least see. */
+  async visibleLists(
+    ctx: PermissionContext,
+    filter: Record<string, unknown> = {},
+    options: { includeArchived?: boolean } = {},
+  ): Promise<ListDocument[]> {
+    const base = options.includeArchived
+      ? { workspaceId: ctx.workspaceId, deletedAt: null }
+      : { workspaceId: ctx.workspaceId, deletedAt: null, archivedAt: null };
+
+    const docs = await this.lists
+      .find({ ...base, ...filter })
+      .sort({ position: 1 })
+      .exec();
+    const explicit = await this.permissions.explicitLevels(ctx);
+    const visible: ListDocument[] = [];
+
+    for (const doc of docs) {
+      const chain = await this.listChain(doc);
+
+      if (this.permissions.canView(this.permissions.levelFromChain(ctx, chain, explicit))) {
+        visible.push(doc);
+      }
+    }
+
+    return visible;
+  }
+
+  /** The folder plus every folder nested in it (depth is capped at 2 levels). */
+  async folderAndDescendantIds(
+    workspaceId: Types.ObjectId,
+    folderId: Types.ObjectId,
+  ): Promise<Types.ObjectId[]> {
+    const children = await this.folders
+      .find({ workspaceId, parentFolderId: folderId })
+      .select('_id')
+      .exec();
+
+    return [folderId, ...children.map((child) => child._id)];
+  }
+
   /** Visible descendants of the chains already loaded, used by the sidebar tree. */
   visibleBy<T>(
     ctx: PermissionContext,

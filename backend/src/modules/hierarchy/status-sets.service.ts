@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CursorPage, buildCursorPage, decodeObjectIdCursor } from '../../common/pagination/cursor';
@@ -12,6 +13,7 @@ import {
   PaginationQueryDto,
 } from '../../common/pagination/pagination-query.dto';
 import { CreateStatusSetDto, StatusDto, UpdateStatusSetDto } from './dto/status-set.dto';
+import { STATUS_SET_UPDATED, StatusSetUpdatedEvent } from './hierarchy-events';
 import { Folder } from './schemas/folder.schema';
 import { List, ListDocument } from './schemas/list.schema';
 import { Space } from './schemas/space.schema';
@@ -35,6 +37,7 @@ export class StatusSetsService {
     @InjectModel(Space.name) private readonly spaces: Model<Space>,
     @InjectModel(Folder.name) private readonly folders: Model<Folder>,
     @InjectModel(List.name) private readonly lists: Model<List>,
+    private readonly events: EventEmitter2,
   ) {}
 
   async create(workspaceId: Types.ObjectId, dto: CreateStatusSetDto): Promise<StatusSetDocument> {
@@ -106,7 +109,40 @@ export class StatusSetsService {
       statusSet.statuses = toStatuses(dto.statuses);
     }
 
-    return statusSet.save();
+    await statusSet.save();
+
+    if (dto.statuses !== undefined) {
+      this.events.emit(STATUS_SET_UPDATED, {
+        workspaceId,
+        statusSetId: statusSet._id,
+        statuses: statusSet.statuses.map((status) => ({
+          statusId: status._id,
+          group: status.group,
+        })),
+      } satisfies StatusSetUpdatedEvent);
+    }
+
+    return statusSet;
+  }
+
+  /** Every status of the workspace by id, used for labels and denormalization. */
+  async statusIndex(
+    workspaceId: Types.ObjectId,
+  ): Promise<Map<string, { name: string; position: number; group: Status['group'] }>> {
+    const sets = await this.model.find({ workspaceId }).select('statuses').exec();
+    const index = new Map<string, { name: string; position: number; group: Status['group'] }>();
+
+    for (const set of sets) {
+      for (const status of set.statuses) {
+        index.set(String(status._id), {
+          name: status.name,
+          position: status.position,
+          group: status.group,
+        });
+      }
+    }
+
+    return index;
   }
 
   /** A status set still in use by a Space, Folder or List cannot be removed. */

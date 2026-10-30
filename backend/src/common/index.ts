@@ -8,4 +8,7 @@ export * from './schemas/base-schema-options';
 export * from './utils/duration';
 export * from './utils/hash';
 export * from './utils/position';
+export * from './utils/regex';
 export * from './utils/slug';
+export * from './utils/timezone';
+export * from './utils/query-array';

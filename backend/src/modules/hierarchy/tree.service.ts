@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { TaskCountsService } from '../tasks/task-counts.service';
 import { HierarchyAccessService } from './hierarchy-access.service';
 import { PermissionContext, PermissionService, ResourceRef } from './permission.service';
 import { Folder, FolderDocument } from './schemas/folder.schema';
@@ -51,6 +52,7 @@ export class TreeService {
     @InjectModel(List.name) private readonly lists: Model<List>,
     private readonly access: HierarchyAccessService,
     private readonly permissions: PermissionService,
+    private readonly taskCounts: TaskCountsService,
   ) {}
 
   async build(ctx: PermissionContext): Promise<WorkspaceTree> {
@@ -77,7 +79,7 @@ export class TreeService {
 
     const includedFolders = folders.filter((folder) => includedFolderIds.has(String(folder._id)));
 
-    return {
+    const tree: WorkspaceTree = {
       spaces: spaces
         .filter(
           (space) =>
@@ -87,6 +89,21 @@ export class TreeService {
         )
         .map((space) => this.toTreeSpace(space, includedFolders, visibleLists, visibleListIds)),
     };
+
+    this.fillOpenTaskCounts(tree.spaces, await this.taskCounts.openByList(ctx.workspaceId));
+
+    return tree;
+  }
+
+  /** Fills openTaskCount after the tree is assembled. */
+  private fillOpenTaskCounts(nodes: (TreeSpace | TreeFolder)[], counts: Map<string, number>): void {
+    for (const node of nodes) {
+      for (const list of node.lists) {
+        list.openTaskCount = counts.get(list.id) ?? 0;
+      }
+
+      this.fillOpenTaskCounts(node.folders, counts);
+    }
   }
 
   /** A Folder enters the tree when it is visible or holds something visible. */
@@ -166,7 +183,6 @@ export class TreeService {
     };
   }
 
-  /** openTaskCount stays at zero until tasks exist (Etapa 5). */
   private toTreeList(list: ListDocument): TreeList {
     return {
       id: String(list._id),
