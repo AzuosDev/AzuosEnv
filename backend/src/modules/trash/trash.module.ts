@@ -8,6 +8,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { StorageModule } from '../storage/storage.module';
 import { TasksDataModule } from '../tasks/tasks-data.module';
 import { TasksModule } from '../tasks/tasks.module';
+import { TimeDataModule } from '../time/time-data.module';
 import { ViewsModule } from '../views/views.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { PurgeService } from './purge.service';
@@ -27,6 +28,7 @@ import { TrashService } from './trash.service';
     FavoritesModule,
     FavoritesDataModule,
     StorageModule,
+    TimeDataModule,
     WorkspacesModule,
   ],
   controllers: [TrashController, ArchivedController],

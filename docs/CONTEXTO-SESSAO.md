@@ -1,6 +1,7 @@
 # CONTEXTO-SESSAO — Azuos Env
-Etapa concluída: 9 · Próxima: 10 (Fase 2)
+Etapa concluída: 10 · Próxima: 11 (Fase 2)
 Fase 1 concluída: auth, workspaces, hierarquia, tarefas, colaboração, campos, views, inbox, tempo real e busca.
+Fase 2 em andamento: tempo, timesheets, workload e dashboards (Etapa 10).
 ## Stack
 Node.js LTS, NestJS 12 (ESM-only), MongoDB Atlas, Mongoose 9, JWT access+refresh (rotação), IA Grok (xAI). Front: React + TanStack. Exportação xlsx com exceljs.
 Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @nestjs/event-emitter (EventEmitterModule.forRoot() global em AppModule).
@@ -76,6 +77,18 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - Lixeira mostra só o topo de cada ramo excluído (o descendente que recebeu a data em cascata fica escondido) e pagina por cursor { at, id } decrescente; /archived usa o mesmo formato com archivedAt. Restaurar delega para o restore de cada recurso (permissão full).
 - Apagar de vez é admin e cascateia: tarefa leva subtarefas, checklists, comentários, anexos (com o arquivo no storage), dependências, atividades, notificações, permissões, favoritos e recentes; List leva as tarefas, views e campos do local (e tira a List das secundárias); Folder leva os subfolders e as Lists; Space leva folders, Lists e tags. Cron diário às 3h (TrashScheduler) apaga o que passou de 30 dias, 200 por coleção por ciclo.
 - Recorrência: recurrence { rrule, mode, createNew } validada com o pacote rrule na escrita (400 INVALID_RECURRENCE). A âncora é dueAt (ou startAt, ou agora) e o startAt anda junto, preservando a duração. onComplete: com createNew a ocorrência fecha e a regra vai para a cópia nova; sem createNew a própria tarefa reabre no primeiro status com as novas datas; série encerrada só conclui e limpa a recorrência. onSchedule rola no cron de hora em hora (RecurrenceScheduler), que também move a regra para a cópia.
+- Tempo: um cronômetro ativo por usuário (entry com end null); iniciar outro para o anterior na mesma chamada e devolve { entry, stopped }. Lançamento manual aceita end ou durationMinutes (um completa o outro, teto de 24 h) e o trackedMinutes da tarefa é recalculado por aggregation a cada escrita. Registrar tempo exige só view na tarefa.
+- Lançamento é pessoal: só o dono (ou admin) lê, edita e exclui; o de outra pessoa responde 404 TIME_ENTRY_NOT_FOUND e ?userId de outro membro exige admin (403 FORBIDDEN_ROLE). Depois do submit o lançamento trava para o dono (400 TIME_ENTRY_LOCKED); admin ainda ajusta.
+- Timesheet e workload leem os dias no fuso do workspace (não no do usuário), semana de segunda a domingo; weekStart aceita qualquer dia e cai na segunda. O status da semana é derivado dos lançamentos (qualquer draft → draft; senão rejected > submitted > approved).
+- Aprovação é por (usuário, semana): submit marca os lançamentos draft/rejected como submitted (o cronômetro em andamento fica de fora) e approve/reject só muda os submitted; sem nenhum, 404 TIMESHEET_NOT_FOUND. approvals/approve/reject são @Roles('admin').
+- O cliente da linha do timesheet e do card timeByClient é o Folder da List; sem Folder, o Space (ClientsService).
+- Workload: tasks/points saem das tarefas por dueAt e hours dos lançamentos ($lookup em tasks para filtrar pelas Lists visíveis); agrupamento por dia com $dateToString + timezone. Capacidade vem do capacityPerDay do membro ativo.
+- Dashboard é por dono: private some para os outros (404 DASHBOARD_NOT_FOUND) e só dono ou admin alteram (403 FORBIDDEN_DASHBOARD). Criar exige member+. PATCH cards substitui a grade inteira e o id do card é gerado quando não vem.
+- config do card é gravado como JSON puro (mesmo motivo da view) e validado por CardConfigDto na escrita; o POST .../data aceita um config que sobrepõe o salvo campo a campo.
+- Cards rodam aggregation sobre as Lists visíveis do requisitante: tasksByStatus, tasksByAssignee, workload, burndown/burnup (por closedAt e createdAt no intervalo, com o que já estava fechado antes do recorte), timeByClient, timeByUser, billable, overdueList, taskTable e calculator (sum/avg de campo da tarefa ou de campo personalizado via $convert, ignorando o que não é número). burndown/burnup/workload exigem from e to (400 INVALID_CARD_CONFIG); o recorte é limitado a 120 dias.
+- Séries de burndown/burnup são funções puras em dashboards/burn.ts; a linha ideal cai do restante do primeiro dia até zero.
+- Exportação em CSV (common/utils/csv.ts, BOM + CRLF) do timesheet e de cada card; cardTable define as colunas por tipo de card.
+- O expurgo definitivo da tarefa também apaga os lançamentos de tempo (TimeDataModule entra no TrashModule).
 - activities é escrita só pelo ActivitiesListener, a partir dos eventos de tarefa e de comentário; falha ao gravar é logada e nunca derruba a requisição. Cada linha guarda taskId e listId, então o histórico da tarefa é um filtro direto e a view Activity usa as Lists visíveis.
 ## Módulos
 - health (src/modules/health) — público
@@ -95,6 +108,8 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - favorites (src/modules/favorites): favorites.service, favorites.controller (FavoritesController, RecentsController), recents.service, favorites-data.module, favorite-fields.ts, schemas/{favorite,recent-item}
 - trash (src/modules/trash): trash.service, trash.controller (TrashController, ArchivedController), purge.service, trash.scheduler, trash-fields.ts
 - realtime (src/modules/realtime): events.gateway (Socket.IO /ws), room-access.service, realtime.listener, realtime-rooms.ts
+- time (src/modules/time): time-entries.service, timesheets.service, workload.service, clients.service, time.controller (TimerController, TimeEntriesController), timesheets.controller, workload.controller, time-data.module, time-fields.ts, time-events.ts, week.ts, schemas/time-entry
+- dashboards (src/modules/dashboards): dashboards.service/controller, card-data.service (aggregations), card-csv.ts, burn.ts, dashboard-cards.ts, schemas/dashboard
 - common: filters/all-exceptions.filter, guards/http-throttler.guard, pagination/{cursor,pagination-query.dto}, pipes/parse-object-id.pipe, schemas/base-schema-options, decorators/{public,current-user}, utils/{duration,hash (sha256Hex),slug (slugify)}
 ## Coleções
 - users: name, email (único, minúsculo), passwordHash (argon2id, select:false e fora do toJSON), avatarUrl, timezone (America/Fortaleza), locale (pt-BR), theme (dark|light|system, padrão dark), lastLoginAt
@@ -123,6 +138,9 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - favorites: userId, workspaceId, entityType (space|folder|list|task), entityId, position; índice único (userId, workspaceId, entityType, entityId)
 - recent_items: userId, workspaceId, entityType (task|list), entityId, openedAt; índice único por entidade e (userId, workspaceId, openedAt desc)
 - activities: workspaceId, entityType (task|comment), entityId, action (created|updated|moved|deleted|restored|resolved|unresolved), actorId, changes[{ field, from, to }], taskId, listId
+- time_entries: workspaceId, userId, taskId, start, end (null = cronômetro rodando), durationMinutes, billable, note, source (timer|manual), approvalStatus (draft|submitted|approved|rejected), approvedBy; índices (workspaceId, userId, start desc), (workspaceId, taskId), (workspaceId, userId, end) e (workspaceId, approvalStatus, start)
+- dashboards: workspaceId, name, ownerId, private, cards[{ id, type (tasksByStatus|tasksByAssignee|workload|burndown|burnup|timeByClient|timeByUser|billable|overdueList|taskTable|calculator), config (Mixed), x, y, w, h }]; índice (workspaceId, _id desc)
+- tasks ganhou trackedMinutes (soma denormalizada dos lançamentos de tempo)
 ## Endpoints
 - GET /api/v1/health (público) → { status: "ok", db: "up" | "down" }
 - POST /api/v1/auth/register (público, 5/min/IP) → 201 { user }; senha ≥ 8 com letra e número; e-mail duplicado → 409 EMAIL_IN_USE
@@ -189,6 +207,13 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - POST /api/v1/workspaces/:wsId/trash/:entityType/:entityId/restore (space|folder|list|task; full) · DELETE .../trash/:entityType/:entityId (admin, apaga de vez em cascata)
 - GET /api/v1/workspaces/:wsId/archived?limit&cursor → { items, nextCursor }
 - POST/PATCH de tarefa aceitam recurrence { rrule, mode, createNew? } (null remove); concluir uma tarefa onComplete gera a próxima ocorrência
+- POST /api/v1/workspaces/:wsId/time/timer/start { taskId } → { entry, stopped } · POST .../time/timer/stop → lançamento parado · GET .../time/timer/current → { entry | null }
+- POST /api/v1/workspaces/:wsId/time/entries { taskId, start, end? | durationMinutes?, billable?, note? } · GET ?userId&taskId&from&to&limit&cursor · PATCH/DELETE .../time/entries/:entryId
+- GET /api/v1/workspaces/:wsId/timesheets?userId&weekStart → { weekStart, days, rows (tarefa × dia, com cliente), totals, approvalStatus } · GET .../timesheets/export?userId&weekStart (CSV)
+- POST /api/v1/workspaces/:wsId/timesheets/submit { weekStart } · GET .../timesheets/approvals?weekStart&userId (admin) · POST .../timesheets/{approve,reject} { userId, weekStart } (admin)
+- GET /api/v1/workspaces/:wsId/workload?from&to&metric=tasks|hours|points&location&locationId → { days, members: [{ userId, capacityPerDay, total, byDay }] }
+- POST/GET /api/v1/workspaces/:wsId/dashboards { name, private?, cards? } (criar: member+) · GET/PATCH/DELETE .../dashboards/:dashboardId
+- POST /api/v1/workspaces/:wsId/dashboards/:dashboardId/cards/:cardId/data { config? } → { cardId, type, data } · GET .../cards/:cardId/export (CSV)
 - Swagger em /api/docs (fora de produção)
 ## Variáveis de ambiente
 NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, UPLOAD_DIR=./storage/uploads (LocalDiskStorage), SMTP_HOST (vazio = só log), SMTP_PORT=587, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
@@ -215,3 +240,10 @@ NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCES
 - A lixeira e /archived varrem até 500 documentos por coleção e filtram permissão em memória.
 - O expurgo não roda em transação: uma falha no meio deixa a cascata parcial (o próximo ciclo do cron termina).
 - A recorrência é avaliada em UTC; o fuso do usuário não entra na regra.
+- Timesheet e workload leem no fuso do workspace: quem trabalha em outro fuso vê o dia do workspace.
+- O timesheet carrega até 5000 lançamentos por semana e monta a grade em memória; sem agregação por página.
+- Os cards não têm cache nem recorte por página: cada POST .../data roda a aggregation inteira.
+- timeByClient/timeByUser/billable e o workload em horas usam $lookup em tasks por lançamento; com volume, denormalizar listId no time_entries.
+- Lançamento aprovado não tem trilha de auditoria (só approvedBy, sem data nem histórico) e nada notifica o usuário sobre aprovação ou rejeição.
+- Nada impede dois lançamentos manuais sobrepostos no mesmo horário.
+- A escrita de tempo não entra na coleção activities nem gera notificação; os eventos time-entry.* e timesheet.* ainda não têm listener.

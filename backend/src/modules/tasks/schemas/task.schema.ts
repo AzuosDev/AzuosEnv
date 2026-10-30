@@ -103,6 +103,10 @@ export class Task {
   @Prop({ type: Number, default: null })
   points: number | null;
 
+  /** Denormalized sum of the time entries of the task, in minutes. */
+  @Prop({ type: Number, default: 0 })
+  trackedMinutes: number;
+
   @Prop({ type: String, enum: TASK_TYPES, default: DEFAULT_TASK_TYPE })
   type: TaskType;
 

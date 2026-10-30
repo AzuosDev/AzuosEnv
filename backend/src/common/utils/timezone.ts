@@ -85,3 +85,12 @@ export function safeTimeZone(timeZone: string | undefined): string {
     return 'UTC';
   }
 }
+
+/** UTC instant of midnight of `YYYY-MM-DD` as read in `timeZone`. */
+export function startOfZonedDayKey(dateKey: string, timeZone: string): Date {
+  const [year, month, day] = dateKey.split('-').map((part) => Number.parseInt(part, 10));
+  const localMidnight = Date.UTC(year, month - 1, day);
+  const guess = new Date(localMidnight - zoneOffsetMs(new Date(localMidnight), timeZone));
+
+  return new Date(localMidnight - zoneOffsetMs(guess, timeZone));
+}

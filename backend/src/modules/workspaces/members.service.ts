@@ -112,6 +112,11 @@ export class MembersService {
     return members.map((member) => member.userId);
   }
 
+  /** Active members with their capacity; used by the workload. */
+  activeMembersOf(workspaceId: Types.ObjectId): Promise<WorkspaceMemberDocument[]> {
+    return this.model.find({ workspaceId, status: 'active' }).sort({ _id: 1 }).exec();
+  }
+
   private async require(
     workspaceId: Types.ObjectId,
     memberId: Types.ObjectId,

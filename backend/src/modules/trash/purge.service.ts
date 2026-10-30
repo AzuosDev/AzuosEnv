@@ -15,6 +15,7 @@ import { List } from '../hierarchy/schemas/list.schema';
 import { Space } from '../hierarchy/schemas/space.schema';
 import { Notification } from '../notifications/schemas/notification.schema';
 import { StorageService } from '../storage/storage.service';
+import { TimeEntry } from '../time/schemas/time-entry.schema';
 import { Tag } from '../tasks/schemas/tag.schema';
 import { Task } from '../tasks/schemas/task.schema';
 import { View } from '../views/schemas/view.schema';
@@ -49,6 +50,7 @@ export class PurgeService {
     @InjectModel(CustomField.name) private readonly customFields: Model<CustomField>,
     @InjectModel(View.name) private readonly views: Model<View>,
     @InjectModel(Notification.name) private readonly notifications: Model<Notification>,
+    @InjectModel(TimeEntry.name) private readonly timeEntries: Model<TimeEntry>,
     private readonly permissions: PermissionService,
     private readonly favorites: FavoritesService,
     private readonly recents: RecentsService,
@@ -85,6 +87,7 @@ export class PurgeService {
           $or: [{ taskId: { $in: ids } }, { entityId: { $in: [...ids, ...commentIds] } }],
         })
         .exec(),
+      this.timeEntries.deleteMany({ workspaceId, taskId: { $in: ids } }).exec(),
       this.notifications
         .deleteMany({ workspaceId, entityId: { $in: [...ids, ...commentIds] } })
         .exec(),
