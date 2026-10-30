@@ -8,6 +8,7 @@ import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
+import { HierarchyModule } from './modules/hierarchy/hierarchy.module';
 import { UsersModule } from './modules/users/users.module';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
 
@@ -31,6 +32,7 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     HealthModule,
     UsersModule,
     WorkspacesModule,
+    HierarchyModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

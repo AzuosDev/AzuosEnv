@@ -67,6 +67,20 @@ export class TeamsService {
     await team.deleteOne();
   }
 
+  /** Teams of the workspace the user belongs to; used to resolve permissions. */
+  async teamIdsForUser(
+    workspaceId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ): Promise<Types.ObjectId[]> {
+    const teams = await this.model.find({ workspaceId, memberIds: userId }).select('_id').exec();
+
+    return teams.map((team) => team._id);
+  }
+
+  async existsInWorkspace(workspaceId: Types.ObjectId, teamId: Types.ObjectId): Promise<boolean> {
+    return (await this.model.countDocuments({ _id: teamId, workspaceId }).exec()) > 0;
+  }
+
   /** Every member of a team must be an active member of the workspace. */
   private async resolveMemberIds(
     workspaceId: Types.ObjectId,

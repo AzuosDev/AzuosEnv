@@ -85,7 +85,11 @@ export class InvitesService {
       await this.members
         .updateOne(
           { workspaceId: workspace._id, userId: user._id },
-          { $set: { role: dto.role, status: 'invited', invitedBy } },
+          {
+            $set: { role: dto.role, status: 'invited', invitedBy },
+            // Keeps _id generation (and therefore the cursor order) on the driver side.
+            $setOnInsert: { _id: new Types.ObjectId() },
+          },
           { upsert: true },
         )
         .exec();

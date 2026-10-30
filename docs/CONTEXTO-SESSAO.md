@@ -1,5 +1,5 @@
 # CONTEXTO-SESSAO — Azuos Env
-Etapa concluída: 3 · Próxima: 4
+Etapa concluída: 4 · Próxima: 5
 ## Stack
 Node.js LTS, NestJS 12 (ESM-only), MongoDB Atlas, Mongoose 9, JWT access+refresh (rotação), IA Grok (xAI). Front: React + TanStack.
 Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id).
@@ -20,12 +20,22 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id).
 - MailService (abstract em src/modules/mail) com LogMailService (só log). SMTP na Etapa 8.
 - Filtros Mongoose são montados como literais (ternário) porque Mongoose 9 não exporta FilterQuery.
 - Equipes usam exclusão definitiva (schema sem deletedAt); workspace usa soft delete.
+- Ordem manual com fractional indexing (pacote `fractional-indexing`, ESM-only; require(esm) do Node 24). Helpers em src/common/utils/position.ts e src/modules/hierarchy/ordering.ts. Reordenar envia { previousId?, nextId? } e só reescreve a posição do item movido; lado ausente usa o vizinho do irmão informado. Irmão de outro pai → 400 INVALID_POSITION.
+- Listas de spaces/folders/lists são filtradas por permissão em memória e paginadas por cursor de `position` (não por _id).
+- PermissionService: owner/admin sempre `full`; member recebe `full` se nenhum nó da cadeia for private; guest e limited só com permissão explícita. Permissão explícita em qualquer ancestral é herdada e o maior nível vence. Sem nível → 404 (recurso invisível); com view mas sem o nível pedido → 403 FORBIDDEN_RESOURCE.
+- Níveis por operação: ver = view; criar/editar/mover/reordenar/arquivar = edit; excluir/restaurar, trocar private ou statusSetId e compartilhar = full.
+- Space/folder private criado por quem não é admin ganha permissão explícita full para o criador.
+- Soft delete e arquivo em cascata: o pai estampa a mesma data nos descendentes que estavam sem data; restaurar/desarquivar limpa só os que têm exatamente aquela data (preserva o que já estava na lixeira antes).
+- GET /tree inclui Spaces e Folders só como caminho até um item compartilhado (o guest vê o Space do item, sem os irmãos); GET /spaces lista apenas o que é visível diretamente.
+- Convite para conta existente usa $setOnInsert do _id para o id vir do driver e a ordem do cursor de membros ficar estável.
 ## Módulos
 - health (src/modules/health) — público
 - auth (src/modules/auth): auth.service/controller, refresh-tokens.service/module, strategies/jwt.strategy, guards/jwt-auth.guard, schemas/refresh-token
 - users (src/modules/users): users.service/controller, schemas/user
 - mail (src/modules/mail): mail.service (abstract MailService), log-mail.service, mail.module
 - workspaces (src/modules/workspaces): workspaces/members/invites/teams .service+.controller, guards/workspace.guard, decorators/{roles,workspace-context}, workspace-roles.ts, workspace-context.ts, schemas/{workspace,workspace-member,invite,team}
+- hierarchy (src/modules/hierarchy): spaces/folders/lists/status-sets/sharing/tree .service+.controller, permission.service (+ permission-levels.ts), hierarchy-access.service (cadeia de herança e require*), ordering.ts, status-templates.ts, schemas/{space,folder,list,status-set,permission}
+- seed (src/seed/seed.ts): `npm run seed` cria usuário SEED_EMAIL, workspace Azuos Dev (AZD) e os Spaces Clientes (Folders Cênio Construções › uSolutionsPDV — Sprint 3 e Central Motos › Plano empresarial), Produtos, Comercial (Leads, Orçamentos) e Interno. Idempotente.
 - common: filters/all-exceptions.filter, pagination/{cursor,pagination-query.dto}, pipes/parse-object-id.pipe, schemas/base-schema-options, decorators/{public,current-user}, utils/{duration,hash (sha256Hex),slug (slugify)}
 ## Coleções
 - users: name, email (único, minúsculo), passwordHash (argon2id, select:false e fora do toJSON), avatarUrl, timezone (America/Fortaleza), locale (pt-BR), theme (dark|light|system, padrão dark), lastLoginAt
@@ -34,6 +44,11 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id).
 - workspace_members: workspaceId, userId, role (owner|admin|member|limited|guest), status (active|invited|deactivated), capacityPerDay (8), invitedBy, joinedAt; índice único (workspaceId, userId)
 - invites: workspaceId, email, role (sem owner), tokenHash (único, fora do toJSON), expiresAt (7 dias), acceptedAt, invitedBy
 - teams: workspaceId, name, memberIds (só membros ativos)
+- spaces: workspaceId, name, color (#2563EB), icon, private, statusSetId (obrigatório), clickApps (override parcial do workspace), position, archivedAt, deletedAt
+- folders: workspaceId, spaceId, parentFolderId (null na raiz; profundidade máxima 2), name, private, statusSetId, position, archivedAt, deletedAt
+- lists: workspaceId, spaceId, folderId, name, color, description, statusSetId, position, archivedAt, deletedAt
+- status_sets: workspaceId, name, statuses[{ _id, name, color, group: notStarted|active|done|closed, position }]. Templates em status-templates.ts: dev (Dev Azuos), comercial, simples
+- permissions: workspaceId, resourceType (space|folder|list|task|doc), resourceId, principalType (user|team), principalId, level (view|comment|edit|full), createdBy; único por (workspace, recurso, principal)
 ## Endpoints
 - GET /api/v1/health (público) → { status: "ok", db: "up" | "down" }
 - POST /api/v1/auth/register (público, 5/min/IP) → 201 { user }; senha ≥ 8 com letra e número; e-mail duplicado → 409 EMAIL_IN_USE
@@ -55,12 +70,23 @@ Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id).
 - POST /api/v1/workspaces/:wsId/invites (admin+) { email, role } → 201 { invite, token, acceptUrl } · GET .../invites (pendentes) · DELETE .../invites/:inviteId
 - POST /api/v1/invites/accept (público, 10/min/IP) { token, name?, password? } → { workspace, member, accountCreated }
 - POST/GET/PATCH/DELETE /api/v1/workspaces/:wsId/teams[/:teamId] (criar/editar/remover: admin+; listar: membro)
+- POST /api/v1/workspaces/:wsId/spaces (member+) { name, color?, icon?, private?, statusSetId? | statusTemplate? (dev padrão), clickApps? } · GET ?limit&cursor&includeArchived → { items, nextCursor }
+- GET/PATCH/DELETE /api/v1/workspaces/:wsId/spaces/:spaceId · POST .../spaces/:spaceId/{reorder,archive,unarchive,restore}
+- POST /api/v1/workspaces/:wsId/folders { spaceId, parentFolderId?, name, private?, statusSetId? } · GET ?spaceId&parentFolderId&includeArchived · GET/PATCH/DELETE .../folders/:folderId · POST .../folders/:folderId/{move,reorder,archive,unarchive,restore}
+- POST /api/v1/workspaces/:wsId/lists { spaceId, folderId?, name, color?, description?, statusSetId? } · GET ?spaceId&folderId&includeArchived · GET/PATCH/DELETE .../lists/:listId · POST .../lists/:listId/{move,reorder,archive,unarchive,restore}
+- GET /api/v1/workspaces/:wsId/lists/:listId/statuses → { statusSetId, name, source: list|folder|space, statuses }
+- POST/GET/PATCH /api/v1/workspaces/:wsId/status-sets[/:statusSetId] (member+) · DELETE (admin+; em uso → 409 STATUS_SET_IN_USE)
+- POST /api/v1/workspaces/:wsId/permissions { resourceType: space|folder|list, resourceId, principalType, principalId, level } (upsert) · GET ?resourceType&resourceId · DELETE .../permissions/:permissionId
+- GET /api/v1/workspaces/:wsId/tree → { spaces: [{ ..., folders: [{ ..., folders, lists }], lists: [{ ..., openTaskCount: 0 }] }] }
 - Swagger em /api/docs (fora de produção)
 ## Variáveis de ambiente
-NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN (ver backend/.env.example)
+NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
 ## Padrões aplicados
 - Prefixo global api/v1, helmet, cookie-parser, CORS com credentials, body limit 1 MB, shutdown hooks, trust proxy.
-- Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID.
+- Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION.
 - Testes: `npm test` (unit) e `npm run test:e2e` (supertest + mongodb-memory-server). O mongod sobe uma vez em test/utils/global-setup.ts (env de teste em test-env.ts); `createTestApp()` em test/utils/e2e-app.ts dá app + clearDatabase(); helpers de auth (registro, login, cookie, IP por teste) em test/utils/auth-client.ts.
 ## Pendências
 - JWT_REFRESH_SECRET continua sem uso (refresh token é opaco, não JWT).
+- openTaskCount do /tree fica 0 até as tarefas existirem (Etapa 5).
+- Eventos de domínio (@nestjs/event-emitter) começam na Etapa 5; a hierarquia ainda não emite.
+- Expurgo da lixeira após 30 dias ainda não tem job.

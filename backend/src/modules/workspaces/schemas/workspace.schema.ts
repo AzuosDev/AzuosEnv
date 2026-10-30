@@ -35,6 +35,19 @@ export class WorkspaceClickApps {
   ai: boolean;
 }
 
+export const CLICK_APP_KEYS = [
+  'priority',
+  'tags',
+  'timeTracking',
+  'estimates',
+  'sprints',
+  'customFields',
+  'multipleLists',
+  'customIds',
+  'ai',
+] as const;
+export type ClickAppKey = (typeof CLICK_APP_KEYS)[number];
+
 export const WorkspaceClickAppsSchema = SchemaFactory.createForClass(WorkspaceClickApps);
 
 @Schema({ _id: false })

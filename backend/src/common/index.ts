@@ -7,4 +7,5 @@ export * from './pipes/parse-object-id.pipe';
 export * from './schemas/base-schema-options';
 export * from './utils/duration';
 export * from './utils/hash';
+export * from './utils/position';
 export * from './utils/slug';
