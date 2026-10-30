@@ -1,5 +1,7 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { BadRequestException } from '@nestjs/common';
+import { ApiProperty, ApiPropertyOptional, IntersectionType } from '@nestjs/swagger';
 import {
+  Allow,
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
@@ -14,9 +16,10 @@ import {
   Length,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type, plainToInstance } from 'class-transformer';
 import { PaginationQueryDto } from '../../../common/pagination/pagination-query.dto';
 import { ToStringArray } from '../../../common/utils/query-array';
+import { FIELD_FILTER_OPS, FieldFilterOp } from '../../fields/custom-field-types';
 import { STATUS_GROUPS, StatusGroup } from '../../hierarchy/status-templates';
 import { MAX_BULK_IDS, TASK_PRIORITIES, TaskPriority } from '../task-fields';
 
@@ -26,20 +29,64 @@ export type TaskLocation = (typeof TASK_LOCATIONS)[number];
 export const TASK_GROUP_BY = ['status', 'assignee', 'priority', 'dueDate', 'none'] as const;
 export type TaskGroupBy = (typeof TASK_GROUP_BY)[number];
 
-export const TASK_SORT_BY = ['position', 'dueAt', 'priority', 'createdAt', 'name'] as const;
+export const TASK_SORT_BY = [
+  'position',
+  'dueAt',
+  'priority',
+  'createdAt',
+  'name',
+  'field',
+] as const;
 export type TaskSortBy = (typeof TASK_SORT_BY)[number];
 
-export class TaskQueryDto extends PaginationQueryDto {
-  @ApiPropertyOptional({ enum: TASK_LOCATIONS, default: 'everything' })
-  @IsOptional()
-  @IsEnum(TASK_LOCATIONS)
-  location?: TaskLocation;
+export const MAX_FIELD_FILTERS = 20;
 
-  @ApiPropertyOptional({ description: 'Id do Space, Folder ou List de `location`.' })
-  @IsOptional()
+/** Filter over the value of a custom field. */
+export class FieldFilterDto {
+  @ApiProperty()
   @IsMongoId()
-  locationId?: string;
+  fieldId: string;
 
+  @ApiProperty({ enum: FIELD_FILTER_OPS })
+  @IsEnum(FIELD_FILTER_OPS)
+  op: FieldFilterOp;
+
+  @ApiPropertyOptional({ description: 'Valor comparado; dispensável em isEmpty.' })
+  @Allow()
+  value?: unknown;
+}
+
+/** Accepts the JSON array of the query string and the array of a view config. */
+function toFieldFilters(value: unknown): FieldFilterDto[] | undefined {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+
+  const raw: unknown = typeof value === 'string' ? parseJson(value) : value;
+
+  if (!Array.isArray(raw)) {
+    throw new BadRequestException({
+      code: 'INVALID_FIELD_FILTER',
+      message: 'Filtro de campo inválido.',
+    });
+  }
+
+  return raw.map((item) => plainToInstance(FieldFilterDto, item));
+}
+
+function parseJson(value: string): unknown {
+  try {
+    return JSON.parse(value);
+  } catch {
+    throw new BadRequestException({
+      code: 'INVALID_FIELD_FILTER',
+      message: 'Filtro de campo inválido.',
+    });
+  }
+}
+
+/** Filters shared by the query endpoint and by the config of a saved view. */
+export class TaskFiltersDto {
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @ToStringArray()
@@ -116,6 +163,31 @@ export class TaskQueryDto extends PaginationQueryDto {
   @Length(1, 200)
   q?: string;
 
+  @ApiPropertyOptional({
+    type: [FieldFilterDto],
+    maxItems: MAX_FIELD_FILTERS,
+    description: 'JSON na query: [{"fieldId":"...","op":"eq","value":"..."}].',
+  })
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => toFieldFilters(value))
+  @Type(() => FieldFilterDto)
+  @IsArray()
+  @ArrayMaxSize(MAX_FIELD_FILTERS)
+  @ValidateNested({ each: true })
+  fieldFilters?: FieldFilterDto[];
+}
+
+export class TaskQueryDto extends IntersectionType(TaskFiltersDto, PaginationQueryDto) {
+  @ApiPropertyOptional({ enum: TASK_LOCATIONS, default: 'everything' })
+  @IsOptional()
+  @IsEnum(TASK_LOCATIONS)
+  location?: TaskLocation;
+
+  @ApiPropertyOptional({ description: 'Id do Space, Folder ou List de `location`.' })
+  @IsOptional()
+  @IsMongoId()
+  locationId?: string;
+
   @ApiPropertyOptional({ enum: TASK_GROUP_BY, default: 'none' })
   @IsOptional()
   @IsEnum(TASK_GROUP_BY)
@@ -125,6 +197,11 @@ export class TaskQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsEnum(TASK_SORT_BY)
   sortBy?: TaskSortBy;
+
+  @ApiPropertyOptional({ description: 'Campo personalizado usado quando sortBy = field.' })
+  @IsOptional()
+  @IsMongoId()
+  sortFieldId?: string;
 }
 
 export class BulkChangesDto {

@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { CreateSpaceDto, SpaceQueryDto, UpdateSpaceDto } from './dto/space.dto';
 import { ReorderDto } from './dto/reorder.dto';
+import { SPACE_CREATED, HierarchyCreatedEvent } from './hierarchy-events';
 import { HierarchyAccessService } from './hierarchy-access.service';
 import {
   appendPosition,
@@ -27,6 +29,7 @@ export class SpacesService {
     private readonly access: HierarchyAccessService,
     private readonly statusSets: StatusSetsService,
     private readonly permissions: PermissionService,
+    private readonly events: EventEmitter2,
   ) {}
 
   /** Creates the Space and, when none is given, its status set from a template. */
@@ -62,6 +65,13 @@ export class SpacesService {
         createdBy: ctx.userId,
       });
     }
+
+    await this.events.emitAsync(SPACE_CREATED, {
+      workspaceId: ctx.workspaceId,
+      resourceType: 'space',
+      resourceId: space._id,
+      actorId: ctx.userId,
+    } satisfies HierarchyCreatedEvent);
 
     return space;
   }

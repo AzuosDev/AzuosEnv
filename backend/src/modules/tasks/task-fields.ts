@@ -11,6 +11,9 @@ export const MAX_SUBTASK_DEPTH = 5;
 
 export const MAX_BULK_IDS = 200;
 
+/** Custom field values a single write may carry. */
+export const MAX_TASK_FIELD_VALUES = 50;
+
 const PRIORITY_RANK: Record<TaskPriority, number> = {
   urgent: 1,
   high: 2,

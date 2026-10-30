@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import { STATUS_GROUPS, StatusGroup } from '../../hierarchy/status-templates';
 import {
@@ -12,6 +12,18 @@ import {
 
 /** Rich text of the description, as produced by the editor. */
 export type TaskDescription = Record<string, unknown> | null;
+
+/** Value of a custom field, validated by the type of the field. */
+@Schema({ _id: false })
+export class TaskCustomFieldValue {
+  @Prop({ type: Types.ObjectId, ref: 'CustomField', required: true })
+  fieldId: Types.ObjectId;
+
+  @Prop({ type: MongooseSchema.Types.Mixed, default: null })
+  value: unknown;
+}
+
+export const TaskCustomFieldValueSchema = SchemaFactory.createForClass(TaskCustomFieldValue);
 
 @Schema({ collection: 'tasks', ...baseSchemaOptions })
 export class Task {
@@ -77,6 +89,9 @@ export class Task {
   @Prop({ type: String, enum: TASK_TYPES, default: DEFAULT_TASK_TYPE })
   type: TaskType;
 
+  @Prop({ type: [TaskCustomFieldValueSchema], default: [] })
+  customFields: TaskCustomFieldValue[];
+
   @Prop({ required: true })
   position: string;
 
@@ -100,3 +115,4 @@ export const TaskSchema = SchemaFactory.createForClass(Task);
 TaskSchema.index({ workspaceId: 1, customId: 1 }, { unique: true });
 TaskSchema.index({ workspaceId: 1, listIds: 1, statusId: 1, position: 1 });
 TaskSchema.index({ workspaceId: 1, assigneeIds: 1, dueAt: 1 });
+TaskSchema.index({ workspaceId: 1, 'customFields.fieldId': 1 });

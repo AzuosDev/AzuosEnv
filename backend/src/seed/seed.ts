@@ -3,6 +3,9 @@ import { NestFactory } from '@nestjs/core';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AppModule } from '../app.module';
+import { CustomFieldsService } from '../modules/fields/custom-fields.service';
+import { CreateCustomFieldDto } from '../modules/fields/dto/custom-field.dto';
+import { CustomField } from '../modules/fields/schemas/custom-field.schema';
 import { FoldersService } from '../modules/hierarchy/folders.service';
 import { ListsService } from '../modules/hierarchy/lists.service';
 import { PermissionContext } from '../modules/hierarchy/permission.service';
@@ -111,6 +114,40 @@ const SPRINT_TASKS: SeedTask[] = [
   },
 ];
 
+type SeedField = Omit<CreateCustomFieldDto, 'scope' | 'scopeId'>;
+
+/** Campos padrão da Azuos, no Space Clientes. */
+const CLIENT_FIELDS: SeedField[] = [
+  {
+    name: 'Tipo',
+    type: 'dropdown',
+    config: {
+      options: [
+        { id: 'feature', name: 'Feature', color: '#2563EB' },
+        { id: 'bug', name: 'Bug', color: '#DC2626' },
+        { id: 'melhoria', name: 'Melhoria', color: '#7C3AED' },
+        { id: 'suporte', name: 'Suporte', color: '#0891B2' },
+      ],
+    },
+  },
+  { name: 'Repositório', type: 'url' },
+  { name: 'PR/Branch', type: 'text' },
+  {
+    name: 'Ambiente',
+    type: 'dropdown',
+    config: {
+      options: [
+        { id: 'dev', name: 'Dev', color: '#64748B' },
+        { id: 'staging', name: 'Staging', color: '#D97706' },
+        { id: 'producao', name: 'Produção', color: '#16A34A' },
+      ],
+    },
+  },
+  { name: 'Versão', type: 'text' },
+  { name: 'Faturável', type: 'checkbox' },
+  { name: 'Valor', type: 'currency', config: { currency: 'BRL', precision: 2 } },
+];
+
 function inDays(days: number): string {
   const date = new Date();
 
@@ -140,6 +177,8 @@ async function run(): Promise<void> {
     const statusSets = app.get(StatusSetsService);
     const counters = app.get(CountersService);
     const tasks = app.get(TasksService);
+    const fields = app.get(CustomFieldsService);
+    const fieldModel = app.get<Model<CustomField>>(getModelToken(CustomField.name));
 
     const user =
       (await users.findByEmail(SEED_EMAIL)) ??
@@ -194,6 +233,25 @@ async function run(): Promise<void> {
     await ensureList(comercial, null, 'Orçamentos');
 
     await ensureSpace('Interno', 'simples');
+
+    for (const seedField of CLIENT_FIELDS) {
+      const exists = await fieldModel
+        .findOne({
+          workspaceId: workspace._id,
+          scope: 'space',
+          scopeId: clientes._id,
+          name: seedField.name,
+        })
+        .exec();
+
+      if (!exists) {
+        await fields.create(ctx, {
+          ...seedField,
+          scope: 'space',
+          scopeId: String(clientes._id),
+        });
+      }
+    }
 
     await counters.ensureAtLeast(workspace._id, FIRST_TASK_SEQ);
 

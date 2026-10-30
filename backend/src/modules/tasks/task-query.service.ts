@@ -5,6 +5,13 @@ import { CursorPage, decodeCursor, encodeCursor } from '../../common/pagination/
 import { DEFAULT_PAGE_SIZE } from '../../common/pagination/pagination-query.dto';
 import { escapeRegex } from '../../common/utils/regex';
 import { safeTimeZone } from '../../common/utils/timezone';
+import { CustomFieldsService } from '../fields/custom-fields.service';
+import {
+  CustomFieldIndex,
+  fieldSortKey,
+  fieldValueMap,
+  matchesFieldFilters,
+} from '../fields/field-values';
 import { PermissionContext } from '../hierarchy/permission.service';
 import { StatusSetsService } from '../hierarchy/status-sets.service';
 import { UsersService } from '../users/users.service';
@@ -66,6 +73,7 @@ export class TaskQueryService {
     private readonly taskAccess: TaskAccessService,
     private readonly statusSets: StatusSetsService,
     private readonly users: UsersService,
+    private readonly fields: CustomFieldsService,
   ) {}
 
   /** Serves List, Board, Calendar, Table and Gantt; always filtered by permission. */
@@ -74,19 +82,41 @@ export class TaskQueryService {
     query: TaskQueryDto,
     timeZone: string,
   ): Promise<TaskQueryResult> {
-    const sortBy = query.sortBy ?? 'position';
     const groupBy = query.groupBy ?? 'none';
     const limit = query.limit ?? DEFAULT_PAGE_SIZE;
     const cursor = query.cursor ? this.decode(query.cursor) : null;
-    const listIds = await this.taskAccess.visibleListIds(ctx, query.location, query.locationId);
-
-    const sorted = this.sort(await this.load(ctx, query, listIds), sortBy);
+    const sorted = await this.sorted(ctx, query);
 
     if (groupBy === 'none') {
       return this.page(sorted, limit, cursor);
     }
 
     return this.group(ctx, sorted, { groupBy, limit, cursor, timeZone });
+  }
+
+  /** Every task of the query, in order and without paging; used by the export. */
+  async queryAll(ctx: PermissionContext, query: TaskQueryDto): Promise<TaskDocument[]> {
+    return (await this.sorted(ctx, query)).map((item) => item.task);
+  }
+
+  /** Loads, filters by custom field and sorts the tasks of the query. */
+  private async sorted(ctx: PermissionContext, query: TaskQueryDto): Promise<SortedTask[]> {
+    const listIds = await this.taskAccess.visibleListIds(ctx, query.location, query.locationId);
+    const fieldFilters = query.fieldFilters ?? [];
+    const index =
+      fieldFilters.length > 0 || query.sortBy === 'field'
+        ? await this.fields.indexFor(ctx.workspaceId)
+        : null;
+
+    let tasks = await this.load(ctx, query, listIds);
+
+    if (index && fieldFilters.length > 0) {
+      tasks = tasks.filter((task) =>
+        matchesFieldFilters(fieldValueMap(task.customFields, index), fieldFilters),
+      );
+    }
+
+    return this.sort(tasks, query.sortBy ?? 'position', index, query.sortFieldId);
   }
 
   /** My Tasks: sections of the authenticated user in the timezone of the profile. */
@@ -201,9 +231,20 @@ export class TaskQueryService {
     return filter;
   }
 
-  private sort(tasks: TaskDocument[], sortBy: TaskSortBy): SortedTask[] {
+  private sort(
+    tasks: TaskDocument[],
+    sortBy: TaskSortBy,
+    index: CustomFieldIndex | null,
+    sortFieldId?: string,
+  ): SortedTask[] {
+    const keyOf =
+      sortBy === 'field' && index && sortFieldId
+        ? (task: TaskDocument) =>
+            fieldSortKey(fieldValueMap(task.customFields, index).get(sortFieldId))
+        : (task: TaskDocument) => sortKeyOf(task, sortBy);
+
     return tasks
-      .map((task) => ({ key: sortKeyOf(task, sortBy), id: String(task._id), task }))
+      .map((task) => ({ key: keyOf(task), id: String(task._id), task }))
       .sort(compareByKey);
   }
 

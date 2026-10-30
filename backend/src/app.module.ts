@@ -8,11 +8,13 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { CollaborationModule } from './modules/collaboration/collaboration.module';
+import { FieldsModule } from './modules/fields/fields.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
 import { HierarchyModule } from './modules/hierarchy/hierarchy.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { UsersModule } from './modules/users/users.module';
+import { ViewsModule } from './modules/views/views.module';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
 
 @Module({
@@ -39,6 +41,8 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     HierarchyModule,
     TasksModule,
     CollaborationModule,
+    FieldsModule,
+    ViewsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

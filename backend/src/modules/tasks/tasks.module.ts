@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CollaborationDataModule } from '../collaboration/collaboration-data.module';
+import { FieldsModule } from '../fields/fields.module';
 import { HierarchyModule } from '../hierarchy/hierarchy.module';
 import { UsersModule } from '../users/users.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
@@ -15,6 +16,7 @@ import { TasksService } from './tasks.service';
   imports: [
     TasksDataModule,
     CollaborationDataModule,
+    FieldsModule,
     HierarchyModule,
     WorkspacesModule,
     UsersModule,

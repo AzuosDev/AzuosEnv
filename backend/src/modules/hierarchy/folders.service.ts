@@ -1,9 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { CreateFolderDto, FolderQueryDto, MoveFolderDto, UpdateFolderDto } from './dto/folder.dto';
 import { ReorderDto } from './dto/reorder.dto';
+import { FOLDER_CREATED, HierarchyCreatedEvent } from './hierarchy-events';
 import { HierarchyAccessService } from './hierarchy-access.service';
 import {
   appendPosition,
@@ -25,6 +27,7 @@ export class FoldersService {
     private readonly access: HierarchyAccessService,
     private readonly statusSets: StatusSetsService,
     private readonly permissions: PermissionService,
+    private readonly events: EventEmitter2,
   ) {}
 
   async create(ctx: PermissionContext, dto: CreateFolderDto): Promise<FolderDocument> {
@@ -58,6 +61,13 @@ export class FoldersService {
         createdBy: ctx.userId,
       });
     }
+
+    await this.events.emitAsync(FOLDER_CREATED, {
+      workspaceId: ctx.workspaceId,
+      resourceType: 'folder',
+      resourceId: folder._id,
+      actorId: ctx.userId,
+    } satisfies HierarchyCreatedEvent);
 
     return folder;
   }

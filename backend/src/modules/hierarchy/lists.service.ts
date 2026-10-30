@@ -1,9 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { CreateListDto, ListQueryDto, MoveListDto, UpdateListDto } from './dto/list.dto';
 import { ReorderDto } from './dto/reorder.dto';
+import { LIST_CREATED, HierarchyCreatedEvent } from './hierarchy-events';
 import { HierarchyAccessService } from './hierarchy-access.service';
 import {
   appendPosition,
@@ -24,6 +26,7 @@ export class ListsService {
     private readonly access: HierarchyAccessService,
     private readonly statusSets: StatusSetsService,
     private readonly permissions: PermissionService,
+    private readonly events: EventEmitter2,
   ) {}
 
   async create(ctx: PermissionContext, dto: CreateListDto): Promise<ListDocument> {
@@ -32,7 +35,7 @@ export class ListsService {
       ? await this.requireFolderOfSpace(ctx, new Types.ObjectId(dto.folderId), space)
       : null;
 
-    return this.model.create({
+    const list = await this.model.create({
       workspaceId: ctx.workspaceId,
       spaceId: space._id,
       folderId: folder?._id ?? null,
@@ -47,6 +50,15 @@ export class ListsService {
         this.siblings(ctx, space._id, folder?._id ?? null),
       ),
     });
+
+    await this.events.emitAsync(LIST_CREATED, {
+      workspaceId: ctx.workspaceId,
+      resourceType: 'list',
+      resourceId: list._id,
+      actorId: ctx.userId,
+    } satisfies HierarchyCreatedEvent);
+
+    return list;
   }
 
   async list(ctx: PermissionContext, query: ListQueryDto): Promise<CursorPage<ListDocument>> {

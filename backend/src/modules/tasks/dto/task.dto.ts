@@ -13,8 +13,17 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ArrayMaxSize, ValidateNested } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/pagination/pagination-query.dto';
-import { TASK_PRIORITIES, TASK_TYPES, TaskPriority, TaskType } from '../task-fields';
+import { TaskCustomFieldDto } from '../../fields/dto/custom-field.dto';
+import {
+  MAX_TASK_FIELD_VALUES,
+  TASK_PRIORITIES,
+  TASK_TYPES,
+  TaskPriority,
+  TaskType,
+} from '../task-fields';
 
 export class CreateTaskDto {
   @ApiProperty({ example: 'Corrigir fechamento de caixa' })
@@ -94,6 +103,14 @@ export class CreateTaskDto {
   @IsOptional()
   @IsEnum(TASK_TYPES)
   type?: TaskType;
+
+  @ApiPropertyOptional({ type: [TaskCustomFieldDto], maxItems: MAX_TASK_FIELD_VALUES })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_TASK_FIELD_VALUES)
+  @ValidateNested({ each: true })
+  @Type(() => TaskCustomFieldDto)
+  customFields?: TaskCustomFieldDto[];
 
   @ApiPropertyOptional({ description: 'Tarefa pai; a subtarefa fica na List do pai.' })
   @IsOptional()

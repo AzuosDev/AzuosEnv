@@ -5,6 +5,8 @@ import { Model, Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
 import { TaskCollaborationService } from '../collaboration/task-collaboration.service';
+import { CustomFieldsService } from '../fields/custom-fields.service';
+import { fieldValueList } from '../fields/field-values';
 import { STATUS_SET_UPDATED, StatusSetUpdatedEvent } from '../hierarchy/hierarchy-events';
 import { HierarchyAccessService } from '../hierarchy/hierarchy-access.service';
 import {
@@ -62,6 +64,7 @@ export class TasksService {
     private readonly counters: CountersService,
     private readonly tags: TagsService,
     private readonly collaboration: TaskCollaborationService,
+    private readonly fields: CustomFieldsService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -97,6 +100,7 @@ export class TasksService {
       estimateMinutes: dto.estimateMinutes ?? null,
       points: dto.points ?? null,
       type: dto.type ?? 'task',
+      customFields: await this.fields.resolveValues(ctx, list, dto.customFields ?? []),
       position: await appendPosition(positionedModel(this.model), this.siblings(ctx, list._id)),
       closedAt: isClosedGroup(status.statusGroup) ? new Date() : null,
       createdBy: ctx.userId,
@@ -113,12 +117,21 @@ export class TasksService {
     return task;
   }
 
-  /** The task plus the collaboration summary shown by the task panel. */
+  /**
+   * The task plus the collaboration summary shown by the task panel, the fields
+   * available in the List and the formulas computed on the read.
+   */
   async getDetail(ctx: PermissionContext, idOrCustomId: string): Promise<TaskDetail> {
-    const task = await this.get(ctx, idOrCustomId);
+    const { task, list } = await this.taskAccess.requireTask(ctx, idOrCustomId, 'view');
     const summary = await this.collaboration.summaryFor(ctx.workspaceId, task._id);
+    const fields = await this.fields.forList(list);
 
-    return { ...task.toJSON(), ...summary };
+    return {
+      ...task.toJSON(),
+      customFields: fieldValueList(task.customFields, this.fields.indexOf(fields)),
+      fields,
+      ...summary,
+    };
   }
 
   async update(
@@ -198,6 +211,15 @@ export class TasksService {
 
     if (dto.statusId !== undefined) {
       await this.applyStatus(task, changes, list, dto.statusId);
+    }
+
+    if (dto.customFields !== undefined) {
+      this.apply(
+        task,
+        changes,
+        'customFields',
+        await this.fields.resolveValues(ctx, list, dto.customFields, task.customFields),
+      );
     }
 
     return this.saveWithChanges(ctx, task, changes);
