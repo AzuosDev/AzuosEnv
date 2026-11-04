@@ -45,6 +45,13 @@ export class CardConfigDto {
   @IsMongoId()
   locationId?: string;
 
+  @ApiPropertyOptional({
+    description: 'Sprint do burndown/burnup: recorta na List da sprint e no ciclo dela.',
+  })
+  @IsOptional()
+  @IsMongoId()
+  sprintId?: string;
+
   @ApiPropertyOptional({ description: 'Primeiro dia do recorte (YYYY-MM-DD).' })
   @IsOptional()
   @Matches(DATE_KEY_PATTERN, { message: DATE_KEY_MESSAGE })

@@ -2,10 +2,12 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
+import { RequestHandler } from 'express';
 import helmet from 'helmet';
 
 export const API_PREFIX = 'api/v1';
 export const SWAGGER_PATH = 'api/docs';
+export const PUBLIC_FORMS_PATH = `/${API_PREFIX}/public/forms`;
 const BODY_LIMIT = '1mb';
 
 export interface ConfigureAppOptions {
@@ -23,6 +25,12 @@ export function configureApp(app: NestExpressApplication, options: ConfigureAppO
   app.use(cookieParser());
   app.useBodyParser('json', { limit: BODY_LIMIT });
   app.useBodyParser('urlencoded', { limit: BODY_LIMIT, extended: true });
+
+  // Runs before the global CORS so the site of Azuos Dev can post a public form.
+  app.use(
+    PUBLIC_FORMS_PATH,
+    publicFormCors(parseCorsOrigins(config.get<string>('PUBLIC_FORM_ORIGINS'))),
+  );
 
   app.enableCors({
     origin: parseCorsOrigins(config.get<string>('CORS_ORIGINS')),
@@ -43,6 +51,32 @@ export function configureApp(app: NestExpressApplication, options: ConfigureAppO
     );
     SwaggerModule.setup(SWAGGER_PATH, app, document);
   }
+}
+
+/**
+ * CORS of the public form routes only: the listed origins may read the form and
+ * post a submission. An origin out of the list simply gets no header back.
+ */
+export function publicFormCors(origins: string[]): RequestHandler {
+  return (request, response, next) => {
+    const origin = request.headers.origin;
+
+    if (origin && origins.includes(origin)) {
+      response.setHeader('Access-Control-Allow-Origin', origin);
+      response.setHeader('Vary', 'Origin');
+      response.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+      response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      response.setHeader('Access-Control-Max-Age', '600');
+    }
+
+    if (request.method === 'OPTIONS') {
+      response.status(204).end();
+
+      return;
+    }
+
+    next();
+  };
 }
 
 export function parseCorsOrigins(value?: string): string[] {

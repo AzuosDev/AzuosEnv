@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage, Types } from 'mongoose';
-import { startOfZonedDayKey } from '../../common/utils/timezone';
+import { startOfZonedDayKey, zonedDateKey } from '../../common/utils/timezone';
 import { PermissionContext } from '../hierarchy/permission.service';
 import { StatusSetsService } from '../hierarchy/status-sets.service';
+import { List } from '../hierarchy/schemas/list.schema';
 import { Task } from '../tasks/schemas/task.schema';
 import { TaskAccessService } from '../tasks/task-access.service';
 import { ClientsService } from '../time/clients.service';
@@ -57,6 +58,7 @@ export class CardDataService {
   constructor(
     @InjectModel(Task.name) private readonly tasks: Model<Task>,
     @InjectModel(TimeEntry.name) private readonly entries: Model<TimeEntry>,
+    @InjectModel(List.name) private readonly lists: Model<List>,
     private readonly taskAccess: TaskAccessService,
     private readonly statusSets: StatusSetsService,
     private readonly users: UsersService,
@@ -68,9 +70,12 @@ export class CardDataService {
     ctx: PermissionContext,
     timezone: string,
     type: CardType,
-    config: CardConfigDto,
+    rawConfig: CardConfigDto,
   ): Promise<CardData> {
-    const listIds = await this.taskAccess.visibleListIds(ctx, config.location, config.locationId);
+    const config = await this.withSprint(ctx, timezone, rawConfig);
+    const listIds = config.sprintId
+      ? await this.taskAccess.visibleListIds(ctx, 'list', config.sprintId)
+      : await this.taskAccess.visibleListIds(ctx, config.location, config.locationId);
 
     switch (type) {
       case 'tasksByStatus':
@@ -171,6 +176,42 @@ export class CardDataService {
         location: config.location,
         locationId: config.locationId,
       })),
+    };
+  }
+
+  /**
+   * A card pointed at a sprint reads the List of the sprint and, when the card has
+   * no window of its own, the dates of the sprint itself.
+   */
+  private async withSprint(
+    ctx: PermissionContext,
+    timezone: string,
+    config: CardConfigDto,
+  ): Promise<CardConfigDto> {
+    if (!config.sprintId) {
+      return config;
+    }
+
+    const sprint = await this.lists
+      .findOne({
+        _id: new Types.ObjectId(config.sprintId),
+        workspaceId: ctx.workspaceId,
+        deletedAt: null,
+      })
+      .exec();
+
+    if (!sprint?.sprintFolderId) {
+      throw new BadRequestException({
+        code: 'SPRINT_NOT_FOUND',
+        message: 'Sprint não encontrada.',
+      });
+    }
+
+    return {
+      ...config,
+      from:
+        config.from ?? (sprint.startDate ? zonedDateKey(sprint.startDate, timezone) : undefined),
+      to: config.to ?? (sprint.endDate ? zonedDateKey(sprint.endDate, timezone) : undefined),
     };
   }
 

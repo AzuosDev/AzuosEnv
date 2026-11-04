@@ -52,6 +52,6 @@ import { TemplatesService } from './templates.service';
     AutomationsScheduler,
     TemplatesService,
   ],
-  exports: [AutomationsService, AutomationsScheduler, TemplatesService],
+  exports: [AutomationsService, AutomationsScheduler, AutomationEngineService, TemplatesService],
 })
 export class AutomationsModule {}

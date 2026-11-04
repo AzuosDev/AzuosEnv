@@ -1,8 +1,8 @@
 # CONTEXTO-SESSAO — Azuos Env
-Etapa concluída: 13 · Próxima: 14 (Fase 3)
+Etapa concluída: 14 · Próxima: 15 (Fase 4)
 Fase 1 concluída: auth, workspaces, hierarquia, tarefas, colaboração, campos, views, inbox, tempo real e busca.
 Fase 2 concluída: tempo, timesheets, workload, dashboards (Etapa 10), automações e templates (Etapa 11).
-Fase 3 em andamento: Docs com páginas aninhadas (Etapa 12) e Chat com canais, DMs e threads (Etapa 13).
+Fase 3 concluída: Docs com páginas aninhadas (Etapa 12), Chat com canais, DMs e threads (Etapa 13), planner/calendário, metas, formulários públicos e sprints (Etapa 14).
 ## Stack
 Node.js LTS, NestJS 12 (ESM-only), MongoDB Atlas, Mongoose 9, JWT access+refresh (rotação), IA Grok (xAI). Front: React + TanStack. Exportação xlsx com exceljs.
 Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @nestjs/event-emitter (EventEmitterModule.forRoot() global em AppModule).
@@ -126,6 +126,22 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - Notificação de chat sai do NotificationsListener a partir de message.created, sem recarregar o canal (o evento leva channelType, channelName, memberIds, mentions e o preview): menção gera chatMention e DM gera chatMessage, sempre no bucket primary.
 - Nova sala de socket channel:{id} com a mesma permissão do HTTP; message.new/updated/deleted saem do RealtimeListener e typing é efêmero (handler do gateway relaia só para os outros clientes da sala, nada é gravado).
 - Busca global passa a ter o tipo message (índice de texto em bodyText, português) restrito aos canais visíveis.
+- Evento do calendário é pessoal: pertence ao userId que criou e só ele edita ou exclui; os attendeeIds apenas veem. Exclusão é definitiva (não entra na lixeira).
+- O planner lê as Lists visíveis e devolve três recortes: eventos do período, minhas tarefas com prazo no período e minhas tarefas abertas sem bloco (até 200 cada). Bloco de tempo é um calendar_event com taskId.
+- CalendarProvider (interface + token CALENDAR_PROVIDER) está ligado ao StubCalendarProvider: isConnected false e pull/push/remove sem efeito. O Google entra na Etapa 16 trocando só o provider.
+- Progresso em goal-progress.ts: alvo booleano é tudo ou nada, os outros medem o caminho de start até target (travado em 0..100); a meta é a média dos alvos.
+- Alvo do tipo tasks nunca é escrito à mão: target = tarefas do escopo e current = fechadas. O GoalsListener recalcula a cada task.created/updated/moved/deleted (falha é só logada). taskIds tem preferência sobre listId.
+- Meta privada é visível só para quem criou e para os ownerIds; quem escreve é o autor ou um dono. Pasta de metas excluída solta as metas na raiz.
+- Token público do formulário é opaco (32 bytes base64url), guardado só como sha256 (select:false e fora do toJSON) e devolvido uma única vez na criação; token errado ou formulário inativo responde 404.
+- O envio público roda como o criador do formulário (ctx role owner), igual ao motor de automações, e cria a tarefa pelo TasksService (customId, campos e eventos de domínio de graça).
+- Anti-spam do envio: Throttle de 5/min/IP na rota, campo honeypot website (preenchido = 400 FORM_SUBMISSION_REJECTED) e teto de 5.000 caracteres por resposta e 20.000 no envio.
+- CORS das rotas públicas de formulário é um middleware próprio (publicFormCors em app.setup.ts) montado em /api/v1/public/forms antes do CORS global, com as origens de PUBLIC_FORM_ORIGINS.
+- Campo condicional só é obrigatório quando está visível: visibleFieldIds deixa escondido todo campo citado em showFieldIds até uma condição bater. Resposta sem mapTo vira linha "label: valor" na descrição da tarefa.
+- O envio dispara formSubmitted pelo AutomationEngineService.dispatch (a rota pública de hook continua valendo); falha de automação não derruba o envio.
+- Sprint é uma List com sprintFolderId, startDate, endDate e sprintClosedAt; sprint_folders guarda o Folder da hierarquia, a duração e o início. A próxima sprint começa no dia seguinte ao fim da última.
+- Fechar a sprint move (TasksService.move) até 500 tarefas fora de done/closed para a próxima sprint, criando-a quando a fechada é a última.
+- Card de burndown/burnup aceita sprintId: recorta na List da sprint e, sem from/to, usa as datas do ciclo no fuso do workspace.
+
 ## Módulos
 - health (src/modules/health) — público
 - auth (src/modules/auth): auth.service/controller, refresh-tokens.service/module, strategies/jwt.strategy, guards/jwt-auth.guard, schemas/refresh-token
@@ -149,6 +165,10 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - dashboards (src/modules/dashboards): dashboards.service/controller, card-data.service (aggregations), card-csv.ts, burn.ts, dashboard-cards.ts, schemas/dashboard
 - chat (src/modules/chat): channels.service, messages.service, chat.controller (ChannelsController, MessagesController, ChatActivityController), chat-access.service, chat-data.module, chat-fields.ts, chat-events.ts, chat-rules.ts, schemas/{channel,message,channel-read}
 - docs (src/modules/docs): docs.service/controller (DocsController, DocPagesController), doc-pages.service, page-comments.service, public-docs.controller (rota pública), docs-access.service, docs-data.module, docs-fields.ts, docs-events.ts, schemas/{doc,doc-page,doc-page-version}
+- calendar (src/modules/calendar): calendar.service, planner.service, calendar.controller (CalendarEventsController, PlannerController), calendar-provider.ts (CalendarProvider + StubCalendarProvider), calendar-fields.ts, schemas/calendar-event
+- goals (src/modules/goals): goals.service, goal-folders.service, targets.service, goals.listener, goals.controller (GoalFoldersController, GoalsController), goal-progress.ts, goals-fields.ts, schemas/{goal-folder,goal,target}
+- forms (src/modules/forms): forms.service, form-submissions.service, forms.controller, public-forms.controller (rotas públicas), form-conditions.ts, form-fields.ts, schemas/form
+- sprints (src/modules/sprints): sprints.service, sprints.controller (SprintFoldersController, SprintsController), sprint-fields.ts, schemas/sprint-folder
 - common: filters/all-exceptions.filter, guards/http-throttler.guard, pagination/{cursor,pagination-query.dto}, pipes/parse-object-id.pipe, schemas/base-schema-options, decorators/{public,current-user}, utils/{duration,hash (sha256Hex),slug (slugify)}
 ## Coleções
 - users: name, email (único, minúsculo), passwordHash (argon2id, select:false e fora do toJSON), avatarUrl, timezone (America/Fortaleza), locale (pt-BR), theme (dark|light|system, padrão dark), lastLoginAt
@@ -193,6 +213,14 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - messages: workspaceId, channelId, authorId, body (JSON do editor), bodyText, parentMessageId, replyCount, lastReplyAt, mentions, reactions[{ emoji, userIds }], attachmentIds, editedAt, deletedAt; índices (workspaceId, channelId, parentMessageId, _id desc), (workspaceId, channelId, createdAt desc) e índice de texto message_text em bodyText
 - channel_reads: workspaceId, channelId, userId, lastReadAt; índice único (channelId, userId)
 - notifications ganhou os tipos chatMention e chatMessage e o entityType message
+- calendar_events: workspaceId, userId, title, start, end, allDay, attendeeIds, taskId (bloco de tempo), meetUrl, recurrence (RRULE), source (local|google), externalId; índices (workspaceId, userId, start), (workspaceId, attendeeIds, start), (workspaceId, taskId) e (workspaceId, source, externalId)
+- goal_folders: workspaceId, name, color, createdBy, deletedAt
+- goals: workspaceId, folderId, name, description, ownerIds, dueDate, color, private, completedAt, createdBy, deletedAt; índices (workspaceId, deletedAt, _id desc), (workspaceId, folderId, _id desc) e (workspaceId, ownerIds)
+- targets: workspaceId, goalId, name, type (number|boolean|currency|tasks), start, target, current, unit, taskIds, listId; índices (workspaceId, goalId), (workspaceId, type, taskIds) e (workspaceId, type, listId)
+- forms: workspaceId, listId, title, description, fields[{ id, label, type, required, options[{ id, label }], mapTo }], conditions[{ fieldId, op, value, showFieldIds }], defaultAssigneeId, defaultStatusId, notify, active, publicTokenHash (select:false e fora do toJSON), submissionCount, createdBy, deletedAt; índices (workspaceId, deletedAt, _id desc), (workspaceId, listId, _id desc) e (publicTokenHash)
+- sprint_folders: workspaceId, spaceId, folderId (Folder da hierarquia), name, durationDays (14), startDate, createdBy, deletedAt; índice único (workspaceId, folderId)
+- lists ganhou sprintFolderId, startDate, endDate e sprintClosedAt (índice (workspaceId, sprintFolderId, startDate))
+- notifications ganhou o tipo formSubmitted
 ## Endpoints
 - GET /api/v1/health (público) → { status: "ok", db: "up" | "down" }
 - POST /api/v1/auth/register (público, 5/min/IP) → 201 { user }; senha ≥ 8 com letra e número; e-mail duplicado → 409 EMAIL_IN_USE
@@ -289,14 +317,37 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - POST /api/v1/workspaces/:wsId/messages/:messageId/to-task { listId } → { task, messageUrl }
 - GET /api/v1/workspaces/:wsId/me/chat-activity → { items: [{ channelId, type, name, unread, lastMessageAt, lastReadAt }], unread }
 - /search ganhou o tipo message e o WebSocket a sala channel (eventos message.new/updated/deleted e typing efêmero)
+- POST/GET /api/v1/workspaces/:wsId/calendar/events · GET ?from&to (até 120 dias) · GET/PATCH/DELETE .../calendar/events/:eventId (só o dono edita)
+- GET /api/v1/workspaces/:wsId/me/planner?from&to → { from, to, events, dueTasks, unscheduledTasks }
+- POST /api/v1/workspaces/:wsId/me/planner/blocks { taskId, start, end } → evento com taskId
+- POST/GET/PATCH/DELETE /api/v1/workspaces/:wsId/goal-folders[/:folderId] (member)
+- POST/GET /api/v1/workspaces/:wsId/goals · GET ?folderId&mine&limit&cursor → { items: [{ goal, targets, progress }] } · GET/PATCH/DELETE .../goals/:goalId
+- POST/GET /api/v1/workspaces/:wsId/goals/:goalId/targets · PATCH/DELETE .../goals/:goalId/targets/:targetId → { target, progress }
+- POST/GET /api/v1/workspaces/:wsId/forms (member) → { form, token, url } (token só na criação) · GET/PATCH/DELETE .../forms/:formId
+- GET /api/v1/public/forms/:token (público) → { id, title, description, fields, conditions } sem mapTo
+- POST /api/v1/public/forms/:token/submit (público, 5/min/IP) { values, website? } → 201 { received, taskId, customId }
+- POST/GET/PATCH/DELETE /api/v1/workspaces/:wsId/sprint-folders[/:sprintFolderId] (member) → { sprintFolder, sprints }
+- POST /api/v1/workspaces/:wsId/sprint-folders/:sprintFolderId/sprints { name?, startDate? } → a List da próxima sprint
+- GET /api/v1/workspaces/:wsId/sprints/:sprintId · POST .../sprints/:sprintId/close (member) → { sprint, nextSprint, moved }
+- Card de dashboard aceita config.sprintId em burndown e burnup
 - Swagger em /api/docs (fora de produção)
 ## Variáveis de ambiente
-NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, UPLOAD_DIR=./storage/uploads (LocalDiskStorage), SMTP_HOST (vazio = só log), SMTP_PORT=587, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
+NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, UPLOAD_DIR=./storage/uploads (LocalDiskStorage), SMTP_HOST (vazio = só log), SMTP_PORT=587, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, PUBLIC_FORM_ORIGINS (CORS dos formulários públicos), SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
 ## Padrões aplicados
 - Prefixo global api/v1, helmet, cookie-parser, CORS com credentials, body limit 1 MB, shutdown hooks, trust proxy.
 - Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION. De tarefas: TASK_NOT_FOUND, TAG_NOT_FOUND, INVALID_STATUS, INVALID_ASSIGNEES, INVALID_WATCHERS, INVALID_TAGS, INVALID_TASK_PARENT, TASK_DEPTH_EXCEEDED, PRIMARY_LIST_IMMUTABLE. De inbox e lembretes: NOTIFICATION_NOT_FOUND, REMINDER_NOT_FOUND; sala de socket negada responde ack { code: 'FORBIDDEN_ROOM' }. De campos e views: CUSTOM_FIELD_NOT_FOUND, INVALID_CUSTOM_FIELD, INVALID_CUSTOM_FIELD_VALUE, CUSTOM_FIELD_REQUIRED, INVALID_FORMULA, INVALID_FIELD_FILTER, VIEW_NOT_FOUND, FORBIDDEN_VIEW, INVALID_VIEW_LOCATION. De busca, favoritos, lixeira e recorrência: FAVORITE_NOT_FOUND, INVALID_TRASH_ENTITY, INVALID_RECURRENCE. De Docs: DOC_NOT_FOUND, PAGE_NOT_FOUND, INVALID_DOC_LOCATION, INVALID_PAGE_PARENT, PAGE_DEPTH_EXCEEDED, PAGE_VERSION_CONFLICT, PAGE_VERSION_NOT_FOUND. Do chat: CHANNEL_NOT_FOUND, MESSAGE_NOT_FOUND, FORBIDDEN_CHANNEL, FORBIDDEN_MESSAGE, CHANNEL_MEMBER_REQUIRED, INVALID_CHANNEL_LOCATION, INVALID_CHANNEL_MEMBERS, INVALID_CHANNEL_TYPE, INVALID_MESSAGE_PARENT. De automações e templates: AUTOMATION_NOT_FOUND, INVALID_AUTOMATION, INVALID_AUTOMATION_ACTION, TEMPLATE_NOT_FOUND, INVALID_TEMPLATE_SOURCE, INVALID_TEMPLATE_TARGET, TEMPLATE_TOO_LARGE.
+- Códigos do planner, metas, formulários e sprints: CALENDAR_EVENT_NOT_FOUND, INVALID_EVENT_RANGE, INVALID_DATE_RANGE, INVALID_ATTENDEES, GOAL_NOT_FOUND, GOAL_FOLDER_NOT_FOUND, TARGET_NOT_FOUND, INVALID_TARGET, INVALID_GOAL_OWNERS, FORM_NOT_FOUND, INVALID_FORM, INVALID_FORM_SUBMISSION, FORM_SUBMISSION_REJECTED, SPRINT_NOT_FOUND, SPRINT_FOLDER_NOT_FOUND, INVALID_SPRINT.
 - Testes: `npm test` (unit) e `npm run test:e2e` (supertest + mongodb-memory-server). O mongod sobe uma vez em test/utils/global-setup.ts (env de teste em test-env.ts); `createTestApp()` em test/utils/e2e-app.ts dá app + clearDatabase() (e `{ listen: true }` abre porta real + baseUrl para o suite de socket); helpers de auth (registro, login, cookie, IP por teste) em test/utils/auth-client.ts.
 ## Pendências
+- O calendário não sincroniza com nada: CalendarProvider só tem o stub, recurrence é guardada como texto (não expande ocorrências) e nada impede dois eventos sobrepostos.
+- O planner não recorta por fuso do usuário (o período é UTC) e lista até 200 tarefas por seção, sem paginar.
+- O bloco de tempo não é refeito quando a tarefa é movida, fechada ou excluída: o evento fica no calendário.
+- Meta não entra na lixeira geral nem em activities; não tem evento de domínio, notificação nem histórico de progresso.
+- O alvo do tipo tasks recalcula na hora do evento, uma consulta por alvo, e não acompanha subtarefas nem as Lists secundárias da tarefa.
+- Formulário não guarda as submissões: só o contador e a tarefa criada; não tem anexo nem captcha, e o throttle do envio vive na memória do processo.
+- O envio público não valida a resposta pelo tipo do campo (dropdown aceita valor fora das opções) e o mapeamento para assignee confia no id enviado.
+- Fechar a sprint move até 500 tarefas, uma por vez, sem transação: uma falha no meio deixa a sprint parcialmente esvaziada.
+- Sprint não tem velocidade, pontos comprometidos nem arquivamento automático; a pasta de sprints não gera as sprints futuras sozinha.
 - Mensagem não tem upload próprio: attachmentIds só referencia anexo já existente (o Attachment continua com entityType task|comment).
 - Mensagem excluída ou canal arquivado não saem da busca por idade nem entram na lixeira geral; o canal não tem exclusão definitiva.
 - /me/chat-activity conta as não lidas canal por canal (até 100 canais, uma consulta por canal) e o canal não guarda lastMessageAt denormalizado.

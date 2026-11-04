@@ -91,6 +91,12 @@ export class NotificationTypeSettingsDto implements Partial<Record<NotificationT
   @ValidateNested()
   @Type(() => NotificationChannelsDto)
   chatMessage?: NotificationChannelsDto;
+
+  @ApiPropertyOptional({ type: NotificationChannelsDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => NotificationChannelsDto)
+  formSubmitted?: NotificationChannelsDto;
 }
 
 export class UpdateNotificationSettingsDto {

@@ -7,6 +7,8 @@ export const envValidationSchema = Joi.object({
     .pattern(/^mongodb(\+srv)?:\/\//)
     .required(),
   CORS_ORIGINS: Joi.string().default('http://localhost:5173'),
+  // Origins allowed on the public form routes (site of Azuos Dev).
+  PUBLIC_FORM_ORIGINS: Joi.string().allow('').default(''),
   APP_URL: Joi.string().uri().default('http://localhost:5173'),
   JWT_ACCESS_SECRET: Joi.string().min(16).required(),
   JWT_REFRESH_SECRET: Joi.string().min(16).required(),

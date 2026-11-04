@@ -10,18 +10,22 @@ import { HttpThrottlerGuard } from './common/guards/http-throttler.guard';
 import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { AutomationsModule } from './modules/automations/automations.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { CollaborationModule } from './modules/collaboration/collaboration.module';
 import { DashboardsModule } from './modules/dashboards/dashboards.module';
 import { DocsModule } from './modules/docs/docs.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { FieldsModule } from './modules/fields/fields.module';
+import { FormsModule } from './modules/forms/forms.module';
+import { GoalsModule } from './modules/goals/goals.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
 import { HierarchyModule } from './modules/hierarchy/hierarchy.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { SearchModule } from './modules/search/search.module';
+import { SprintsModule } from './modules/sprints/sprints.module';
 import { TimeModule } from './modules/time/time.module';
 import { TrashModule } from './modules/trash/trash.module';
 import { TasksModule } from './modules/tasks/tasks.module';
@@ -66,6 +70,10 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     AutomationsModule,
     DocsModule,
     ChatModule,
+    CalendarModule,
+    GoalsModule,
+    FormsModule,
+    SprintsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
