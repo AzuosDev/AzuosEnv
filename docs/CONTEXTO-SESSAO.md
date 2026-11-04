@@ -515,3 +515,8 @@ NODE_ENV, PORT, LOG_LEVEL=info (nestjs-pino; silent nos testes), MONGODB_URI, CO
 - Template de Space/Folder/List não leva campos personalizados, permissões, tags, responsáveis nem as automações do local.
 - A ação applyTemplate escolhe o destino pela List do evento; não aceita um local explícito além de listId.
 - automation_runs guarda só o total de ações executadas, não o resultado de cada ação.
+
+## Front
+Etapa concluída: F0 · Próxima: F1 (Setup e UI base)
+Telas prontas: (nenhuma)
+Pendências: (nenhuma)

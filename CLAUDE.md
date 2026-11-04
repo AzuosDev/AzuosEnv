@@ -30,5 +30,17 @@ Fonte da verdade do estado: docs/CONTEXTO-SESSAO.md. Modelo resumido: docs/SPEC.
 - Segredos só em .env; .env.example sempre atualizado.
 - Código em inglês; mensagens ao usuário em português.
 
-## Front (depois do backend)
-React + TanStack, 100% responsivo (celular, tablet, desktop), seguindo o protótipo Azuos Env e os tokens do globals.css da Azuos Dev (escuro padrão + claro).
+## Frontend (frontend/)
+- Etapas do front são F0 a F17. Validar em frontend/: npm run typecheck && npm run lint && npm test && npm run test:e2e. Commit: feat(front-N): resumo.
+- Stack: Vite + React + TypeScript strict; TanStack Router (rotas por arquivo), Query, Table e Virtual; Tailwind com os tokens Azuos; shadcn/ui (Radix) adaptado aos tokens; lucide-react; react-hook-form + zod; dnd-kit; Tiptap; socket.io-client; date-fns pt-BR.
+- Tokens: os mesmos do globals.css da Azuos Dev em triplets RGB (--paper, --paper-2, --surface, --surface-2, --line, --ink, --body, --muted, --accent, --signal, --signal-2, --on-signal, --scene, --scene-line, --dot) + --success, --warning, --danger, --info. Tema escuro padrão em :root, claro em [data-theme="light"], opção Sistema. Nunca usar cor fora dos tokens.
+- API: cliente tipado gerado de docs/openapi.json (openapi-typescript + openapi-fetch) em src/api. Nunca escrever tipos da API à mão. Nunca abrir o openapi.json inteiro: use os tipos gerados ou grep do path.
+- Auth: access token só em memória; refresh por cookie httpOnly (credentials: include); 401 → um refresh e repete; falhou → /login.
+- Estado do servidor só no TanStack Query (query keys em src/api/keys.ts). Socket atualiza/invalida o cache; nunca duplicar estado.
+- Estrutura: src/routes, src/features/<modulo>/{components,hooks}, src/components/ui, src/lib.
+- Referência visual: docs/prototipo/<Tela>.dc.html. Abra só o arquivo da tela da etapa e só quando precisar do layout.
+- Responsivo (mobile-first): 360, 768, 1024 e 1280+. Abaixo de 1024: sidebar vira drawer e o painel da tarefa vira tela cheia. Abaixo de 768: navegação global vira barra inferior, diálogos viram bottom sheet; tabela, Quadro e Gantt rolam só dentro do próprio container. A página nunca rola para os lados. Alvos de toque ≥ 44 px.
+- Toda tela nova ganha spec Playwright que abre em 360, 768 e 1280 e falha se document.documentElement.scrollWidth > innerWidth.
+- Acessibilidade: button, a e input + label nativos; foco visível; aria-label em botão só com ícone; contraste AA nos dois temas.
+- Testes: Vitest + Testing Library para regras e componentes com lógica; Playwright só para fluxos e responsividade (poucos specs, reporter line).
+- Textos em português; datas, números e moeda em pt-BR, no fuso do usuário.
