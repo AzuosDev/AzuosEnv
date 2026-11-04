@@ -11,6 +11,7 @@ Node.js LTS, NestJS 12 (ESM-only), MongoDB Atlas, Mongoose 9, JWT access+refresh
 Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @nestjs/event-emitter (EventEmitterModule.forRoot() global em AppModule).
 Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platform-socket.io + socket.io (dev: socket.io-client). Cron: @nestjs/schedule (ScheduleModule.forRoot()); cron dinâmico com SchedulerRegistry + CronJob do pacote cron. E-mail: nodemailer.
 ## Decisões
+- .gitattributes com `* text=auto eol=lf`: checkout sempre em LF (prettier usa endOfLine lf; com core.autocrlf=true no Windows o lint quebrava em todos os arquivos).
 - Multi-tenant por workspaceId; rotas /api/v1/workspaces/:wsId/...
 - Refresh token em cookie httpOnly, rotacionado, com detecção de reuso.
 - IDs visíveis de tarefa: PREFIXO-n (ex.: AZD-142), contador atômico por workspace.
