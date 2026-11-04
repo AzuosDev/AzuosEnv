@@ -9,6 +9,7 @@ export const NOTIFICATION_TYPES = [
   'reminder',
   'invited',
   'commentAssigned',
+  'automation',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

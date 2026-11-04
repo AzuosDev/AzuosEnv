@@ -1,11 +1,11 @@
 # CONTEXTO-SESSAO — Azuos Env
-Etapa concluída: 10 · Próxima: 11 (Fase 2)
+Etapa concluída: 11 · Próxima: 12 (Fase 3)
 Fase 1 concluída: auth, workspaces, hierarquia, tarefas, colaboração, campos, views, inbox, tempo real e busca.
-Fase 2 em andamento: tempo, timesheets, workload e dashboards (Etapa 10).
+Fase 2 concluída: tempo, timesheets, workload, dashboards (Etapa 10), automações e templates (Etapa 11).
 ## Stack
 Node.js LTS, NestJS 12 (ESM-only), MongoDB Atlas, Mongoose 9, JWT access+refresh (rotação), IA Grok (xAI). Front: React + TanStack. Exportação xlsx com exceljs.
 Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @nestjs/event-emitter (EventEmitterModule.forRoot() global em AppModule).
-Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platform-socket.io + socket.io (dev: socket.io-client). Cron: @nestjs/schedule (ScheduleModule.forRoot()). E-mail: nodemailer.
+Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platform-socket.io + socket.io (dev: socket.io-client). Cron: @nestjs/schedule (ScheduleModule.forRoot()); cron dinâmico com SchedulerRegistry + CronJob do pacote cron. E-mail: nodemailer.
 ## Decisões
 - Multi-tenant por workspaceId; rotas /api/v1/workspaces/:wsId/...
 - Refresh token em cookie httpOnly, rotacionado, com detecção de reuso.
@@ -89,6 +89,21 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - Séries de burndown/burnup são funções puras em dashboards/burn.ts; a linha ideal cai do restante do primeiro dia até zero.
 - Exportação em CSV (common/utils/csv.ts, BOM + CRLF) do timesheet e de cada card; cardTable define as colunas por tipo de card.
 - O expurgo definitivo da tarefa também apaga os lançamentos de tempo (TimeDataModule entra no TrashModule).
+- Automação vive em space|folder|list e vale para toda tarefa abaixo do local; a permissão é a do local (ver = view, criar/alterar/excluir = edit) e local invisível responde 404 AUTOMATION_NOT_FOUND.
+- O motor é o AutomationEngineService: o AutomationsListener traduz task.created/task.updated em ocorrências de gatilho, o engine carrega as automações ativas do local (cache por List, 30 s, invalidado em qualquer escrita de automação do workspace), avalia as condições e roda as ações como ator "automation" (ctx do criador com role owner).
+- Anti-loop por AsyncLocalStorage (automations/automation-context.ts): a cadeia { depth, automationIds } viaja no contexto assíncrono das ações. Uma automação nunca responde a um evento da própria cadeia e a cadeia para na profundidade 3. O listener lê a cadeia antes do primeiro await (por isso funciona com emit, que não é aguardado).
+- Condições são funções puras (automation-conditions.ts) sobre campos da tarefa, "field:<id>" e "payload.<caminho>"; ops eq/ne/contains/notContains/gt/lt/in/nin/isEmpty/isNotEmpty, com número e data ordenados como número e array comparado por pertinência.
+- Params de ação aceitam {{task.x}} e {{payload.x}} (automation-templating.ts); placeholder sozinho na string preserva o tipo original.
+- allSubtasksDone é derivado: statusId mudou, a tarefa tem pai e nenhum irmão está fora de done/closed -> o evento dispara para a tarefa-pai.
+- setStatus aceita statusId ou statusGroup (primeiro status do grupo no status set da List), para a receita valer em qualquer List.
+- dueDateArrived/dueDatePassed rodam no cron de 5 min (AutomationsScheduler.runDueTriggers, público para o e2e); o eventId é determinístico (<trigger>:<automationId>:<taskId>:<dueAt>) e automation_runs faz a dedupe.
+- schedule usa um CronJob por automação no SchedulerRegistry (nome automation:<id>), montado no onModuleInit e refeito a cada evento automations.changed.
+- webhookReceived e formSubmitted usam a mesma rota pública POST /api/v1/hooks/:automationId/:secret (um formulário posta no hook dele). O secret é opaco (32 bytes base64url), guardado só como sha256 (select:false e fora do toJSON) e devolvido uma única vez na criação; secret errado responde 404.
+- A ação notify criou o tipo de notificação automation (inbox ligado, e-mail desligado por padrão); sem userIds vai para os responsáveis da tarefa e a dedupe é por data.eventId.
+- Template guarda snapshot JSON sem ids: as datas viram offset em minutos a partir do momento em que foi salvo e são recalculadas na âncora do apply (startAt ou agora). Responsáveis, tags e status não entram no snapshot (não sobrevivem a outro local).
+- Aplicar delega para SpacesService/FoldersService/ListsService/TasksService/ChecklistsService/ViewsService: a permissão do destino é a de criar lá e o apply já herda views padrão, customId e eventos de domínio.
+- O snapshot de List não leva as views padrão (List e Board), que o ViewsListener recria sozinho na criação.
+- CollaborationModule passou a exportar ChecklistsService e CommentsService para as ações e os templates usarem sem duplicar regra.
 - activities é escrita só pelo ActivitiesListener, a partir dos eventos de tarefa e de comentário; falha ao gravar é logada e nunca derruba a requisição. Cada linha guarda taskId e listId, então o histórico da tarefa é um filtro direto e a view Activity usa as Lists visíveis.
 ## Módulos
 - health (src/modules/health) — público
@@ -109,6 +124,7 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - trash (src/modules/trash): trash.service, trash.controller (TrashController, ArchivedController), purge.service, trash.scheduler, trash-fields.ts
 - realtime (src/modules/realtime): events.gateway (Socket.IO /ws), room-access.service, realtime.listener, realtime-rooms.ts
 - time (src/modules/time): time-entries.service, timesheets.service, workload.service, clients.service, time.controller (TimerController, TimeEntriesController), timesheets.controller, workload.controller, time-data.module, time-fields.ts, time-events.ts, week.ts, schemas/time-entry
+- automations (src/modules/automations): automations.service/controller, automation-engine.service (motor), automation-actions.service, automation-runs.service, automations.listener, automations.scheduler (cron de datas + cron dinâmico), automation-hooks.controller (rota pública), templates.service/controller, automation-conditions.ts, automation-triggers.ts, automation-templating.ts, automation-context.ts (AsyncLocalStorage), automation-recipes.ts, automation-fields.ts, automation-events.ts, template-content.ts, template-offsets.ts, schemas/{automation,automation-run,template}
 - dashboards (src/modules/dashboards): dashboards.service/controller, card-data.service (aggregations), card-csv.ts, burn.ts, dashboard-cards.ts, schemas/dashboard
 - common: filters/all-exceptions.filter, guards/http-throttler.guard, pagination/{cursor,pagination-query.dto}, pipes/parse-object-id.pipe, schemas/base-schema-options, decorators/{public,current-user}, utils/{duration,hash (sha256Hex),slug (slugify)}
 ## Coleções
@@ -140,6 +156,10 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - activities: workspaceId, entityType (task|comment), entityId, action (created|updated|moved|deleted|restored|resolved|unresolved), actorId, changes[{ field, from, to }], taskId, listId
 - time_entries: workspaceId, userId, taskId, start, end (null = cronômetro rodando), durationMinutes, billable, note, source (timer|manual), approvalStatus (draft|submitted|approved|rejected), approvedBy; índices (workspaceId, userId, start desc), (workspaceId, taskId), (workspaceId, userId, end) e (workspaceId, approvalStatus, start)
 - dashboards: workspaceId, name, ownerId, private, cards[{ id, type (tasksByStatus|tasksByAssignee|workload|burndown|burnup|timeByClient|timeByUser|billable|overdueList|taskTable|calculator), config (Mixed), x, y, w, h }]; índice (workspaceId, _id desc)
+- automations: workspaceId, locationType (space|folder|list), locationId, name, active, trigger { type (taskCreated|statusChanged|assigneeChanged|priorityChanged|dueDateArrived|dueDatePassed|allSubtasksDone|formSubmitted|webhookReceived|schedule), params (Mixed) }, conditions[{ field, op, value }], actions[{ type (setStatus|assign|unassign|setPriority|addComment|moveToList|addTag|setCustomField|createTask|applyTemplate|notify|callWebhook), params (Mixed) }], secretHash (select:false e fora do toJSON), createdBy; índices (workspaceId, locationType, locationId, _id desc) e (workspaceId, active, trigger.type)
+- automation_runs: workspaceId, automationId, eventId, status (success|failed|skipped), error, actionsExecuted, durationMs, taskId; índices (workspaceId, automationId, _id desc) e (workspaceId, automationId, eventId); TTL de 90 dias em createdAt
+- templates: workspaceId, type (space|folder|list|task|checklist|view), name, content (Mixed: snapshot sem ids, datas em offset de minutos), createdBy; índice (workspaceId, type, _id desc)
+- notifications ganhou o tipo automation
 - tasks ganhou trackedMinutes (soma denormalizada dos lançamentos de tempo)
 ## Endpoints
 - GET /api/v1/health (público) → { status: "ok", db: "up" | "down" }
@@ -214,12 +234,18 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - GET /api/v1/workspaces/:wsId/workload?from&to&metric=tasks|hours|points&location&locationId → { days, members: [{ userId, capacityPerDay, total, byDay }] }
 - POST/GET /api/v1/workspaces/:wsId/dashboards { name, private?, cards? } (criar: member+) · GET/PATCH/DELETE .../dashboards/:dashboardId
 - POST /api/v1/workspaces/:wsId/dashboards/:dashboardId/cards/:cardId/data { config? } → { cardId, type, data } · GET .../cards/:cardId/export (CSV)
+- POST/GET /api/v1/workspaces/:wsId/automations { locationType, locationId, name, active?, trigger { type, params? }, conditions?, actions } -> criar devolve { automation, webhookSecret?, webhookUrl? } · GET ?locationType&locationId&active&limit&cursor
+- GET /api/v1/workspaces/:wsId/automations/recipes -> { items } (atribuir ao criar, revisor ao mudar status, avisar no prazo, urgente ao vencer, subtarefas fecham a mãe, formulário vira tarefa, resumo agendado; requires lista o que falta preencher)
+- GET/PATCH/DELETE /api/v1/workspaces/:wsId/automations/:automationId · GET .../automations/:automationId/runs?status&limit&cursor
+- POST /api/v1/hooks/:automationId/:secret (público) -> { received: true }; alimenta webhookReceived e formSubmitted, o corpo vira payload e um taskId válido no corpo direciona as ações; secret errado -> 404 AUTOMATION_NOT_FOUND
+- POST (member+) /GET /api/v1/workspaces/:wsId/templates { type, name, sourceId } · GET ?type · GET /DELETE (member+) .../templates/:templateId
+- POST /api/v1/workspaces/:wsId/templates/:templateId/apply { targetType?: space|folder|list|task, targetId?, name?, startAt? } -> 201 com o recurso recriado (ids novos, datas relativas recalculadas)
 - Swagger em /api/docs (fora de produção)
 ## Variáveis de ambiente
 NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, UPLOAD_DIR=./storage/uploads (LocalDiskStorage), SMTP_HOST (vazio = só log), SMTP_PORT=587, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
 ## Padrões aplicados
 - Prefixo global api/v1, helmet, cookie-parser, CORS com credentials, body limit 1 MB, shutdown hooks, trust proxy.
-- Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION. De tarefas: TASK_NOT_FOUND, TAG_NOT_FOUND, INVALID_STATUS, INVALID_ASSIGNEES, INVALID_WATCHERS, INVALID_TAGS, INVALID_TASK_PARENT, TASK_DEPTH_EXCEEDED, PRIMARY_LIST_IMMUTABLE. De inbox e lembretes: NOTIFICATION_NOT_FOUND, REMINDER_NOT_FOUND; sala de socket negada responde ack { code: 'FORBIDDEN_ROOM' }. De campos e views: CUSTOM_FIELD_NOT_FOUND, INVALID_CUSTOM_FIELD, INVALID_CUSTOM_FIELD_VALUE, CUSTOM_FIELD_REQUIRED, INVALID_FORMULA, INVALID_FIELD_FILTER, VIEW_NOT_FOUND, FORBIDDEN_VIEW, INVALID_VIEW_LOCATION. De busca, favoritos, lixeira e recorrência: FAVORITE_NOT_FOUND, INVALID_TRASH_ENTITY, INVALID_RECURRENCE.
+- Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION. De tarefas: TASK_NOT_FOUND, TAG_NOT_FOUND, INVALID_STATUS, INVALID_ASSIGNEES, INVALID_WATCHERS, INVALID_TAGS, INVALID_TASK_PARENT, TASK_DEPTH_EXCEEDED, PRIMARY_LIST_IMMUTABLE. De inbox e lembretes: NOTIFICATION_NOT_FOUND, REMINDER_NOT_FOUND; sala de socket negada responde ack { code: 'FORBIDDEN_ROOM' }. De campos e views: CUSTOM_FIELD_NOT_FOUND, INVALID_CUSTOM_FIELD, INVALID_CUSTOM_FIELD_VALUE, CUSTOM_FIELD_REQUIRED, INVALID_FORMULA, INVALID_FIELD_FILTER, VIEW_NOT_FOUND, FORBIDDEN_VIEW, INVALID_VIEW_LOCATION. De busca, favoritos, lixeira e recorrência: FAVORITE_NOT_FOUND, INVALID_TRASH_ENTITY, INVALID_RECURRENCE. De automações e templates: AUTOMATION_NOT_FOUND, INVALID_AUTOMATION, INVALID_AUTOMATION_ACTION, TEMPLATE_NOT_FOUND, INVALID_TEMPLATE_SOURCE, INVALID_TEMPLATE_TARGET, TEMPLATE_TOO_LARGE.
 - Testes: `npm test` (unit) e `npm run test:e2e` (supertest + mongodb-memory-server). O mongod sobe uma vez em test/utils/global-setup.ts (env de teste em test-env.ts); `createTestApp()` em test/utils/e2e-app.ts dá app + clearDatabase() (e `{ listen: true }` abre porta real + baseUrl para o suite de socket); helpers de auth (registro, login, cookie, IP por teste) em test/utils/auth-client.ts.
 ## Pendências
 - /tasks/query ordena e agrupa em memória com teto de 5000 documentos; migrar para aggregation quando o volume exigir.
@@ -247,3 +273,10 @@ NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCES
 - Lançamento aprovado não tem trilha de auditoria (só approvedBy, sem data nem histórico) e nada notifica o usuário sobre aprovação ou rejeição.
 - Nada impede dois lançamentos manuais sobrepostos no mesmo horário.
 - A escrita de tempo não entra na coleção activities nem gera notificação; os eventos time-entry.* e timesheet.* ainda não têm listener.
+- As automações rodam soltas da requisição (o emit dos eventos de domínio não é aguardado): nada garante a ordem entre duas automações do mesmo evento e o cliente não sabe quando terminaram (o e2e espera em loop).
+- O cache de automações por List e os CronJobs do gatilho schedule vivem na memória do processo: com mais de uma instância cada nó invalida só o seu cache e a automação agendada roda uma vez por nó.
+- callWebhook não tem retry nem backoff e aceita qualquer URL http(s), sem lista de permissão de destino.
+- O cron de datas varre até 500 tarefas por automação por ciclo, sem paginar nem recortar por workspace.
+- Template de Space/Folder/List não leva campos personalizados, permissões, tags, responsáveis nem as automações do local.
+- A ação applyTemplate escolhe o destino pela List do evento; não aceita um local explícito além de listId.
+- automation_runs guarda só o total de ações executadas, não o resultado de cada ação.

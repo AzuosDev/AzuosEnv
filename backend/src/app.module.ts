@@ -9,6 +9,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { HttpThrottlerGuard } from './common/guards/http-throttler.guard';
 import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
+import { AutomationsModule } from './modules/automations/automations.module';
 import { CollaborationModule } from './modules/collaboration/collaboration.module';
 import { DashboardsModule } from './modules/dashboards/dashboards.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
@@ -60,6 +61,7 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     TrashModule,
     TimeModule,
     DashboardsModule,
+    AutomationsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

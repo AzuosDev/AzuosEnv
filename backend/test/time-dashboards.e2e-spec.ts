@@ -49,7 +49,12 @@ interface TimesheetBody {
 interface WorkloadBody {
   days: string[];
   metric: string;
-  members: { userId: string; capacityPerDay: number; total: number; byDay: Record<string, number> }[];
+  members: {
+    userId: string;
+    capacityPerDay: number;
+    total: number;
+    byDay: Record<string, number>;
+  }[];
 }
 
 interface DashboardBody {
@@ -462,9 +467,7 @@ describe('Tempo, timesheets, workload e dashboards', () => {
       const task = await weekOfMember(fixture);
 
       const response = await withAuth(
-        http().get(
-          `/api/v1/workspaces/${fixture.workspace.id}/timesheets?weekStart=2026-01-08`,
-        ),
+        http().get(`/api/v1/workspaces/${fixture.workspace.id}/timesheets?weekStart=2026-01-08`),
         fixture.member.session,
       ).expect(200);
 
@@ -670,7 +673,9 @@ describe('Tempo, timesheets, workload e dashboards', () => {
       const dashboard = await createDashboard(fixture, fixture.owner, {
         name: 'Diretoria',
         private: true,
-        cards: [{ type: 'tasksByStatus', config: { location: 'list', locationId: fixture.list.id } }],
+        cards: [
+          { type: 'tasksByStatus', config: { location: 'list', locationId: fixture.list.id } },
+        ],
       });
 
       const mine = await withAuth(
@@ -745,7 +750,9 @@ describe('Tempo, timesheets, workload e dashboards', () => {
 
       const dashboard = await createDashboard(fixture, fixture.owner, {
         name: 'Entregas',
-        cards: [{ type: 'tasksByStatus', config: { location: 'list', locationId: fixture.list.id } }],
+        cards: [
+          { type: 'tasksByStatus', config: { location: 'list', locationId: fixture.list.id } },
+        ],
       });
       const cardId = dashboard.cards[0].id;
       const response = await cardData(fixture, fixture.owner, dashboard, cardId).expect(200);

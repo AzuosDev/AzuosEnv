@@ -48,5 +48,6 @@ import { DependenciesService } from './dependencies.service';
     ActivitiesService,
     ActivitiesListener,
   ],
+  exports: [ChecklistsService, CommentsService],
 })
 export class CollaborationModule {}
