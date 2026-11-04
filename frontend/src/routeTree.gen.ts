@@ -10,43 +10,139 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as PublicRouteImport } from './routes/_public'
+import { Route as AppOnboardingRouteImport } from './routes/_app.onboarding'
+import { Route as AppWorkspacesRouteImport } from './routes/_app.workspaces'
 import { Route as Char91_devChar93UiRouteImport } from './routes/[_dev].ui'
+import { Route as PublicCadastroRouteImport } from './routes/_public.cadastro'
+import { Route as PublicLoginRouteImport } from './routes/_public.login'
+import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
+import { Route as AppWWsIdRouteImport } from './routes/_app.w.$wsId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppOnboardingRoute = AppOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWorkspacesRoute = AppWorkspacesRouteImport.update({
+  id: '/workspaces',
+  path: '/workspaces',
+  getParentRoute: () => AppRoute,
+} as any)
 const Char91_devChar93UiRoute = Char91_devChar93UiRouteImport.update({
   id: '/_dev/ui',
   path: '/_dev/ui',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicCadastroRoute = PublicCadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicLoginRoute = PublicLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => PublicRoute,
+} as any)
+const ConviteTokenRoute = ConviteTokenRouteImport.update({
+  id: '/convite/$token',
+  path: '/convite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppWWsIdRoute = AppWWsIdRouteImport.update({
+  id: '/w/$wsId',
+  path: '/w/$wsId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/onboarding': typeof AppOnboardingRoute
+  '/workspaces': typeof AppWorkspacesRoute
   '/_dev/ui': typeof Char91_devChar93UiRoute
+  '/cadastro': typeof PublicCadastroRoute
+  '/login': typeof PublicLoginRoute
+  '/convite/$token': typeof ConviteTokenRoute
+  '/w/$wsId': typeof AppWWsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/onboarding': typeof AppOnboardingRoute
+  '/workspaces': typeof AppWorkspacesRoute
   '/_dev/ui': typeof Char91_devChar93UiRoute
+  '/cadastro': typeof PublicCadastroRoute
+  '/login': typeof PublicLoginRoute
+  '/convite/$token': typeof ConviteTokenRoute
+  '/w/$wsId': typeof AppWWsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_public': typeof PublicRouteWithChildren
+  '/_app/onboarding': typeof AppOnboardingRoute
+  '/_app/workspaces': typeof AppWorkspacesRoute
   '/_dev/ui': typeof Char91_devChar93UiRoute
+  '/_public/cadastro': typeof PublicCadastroRoute
+  '/_public/login': typeof PublicLoginRoute
+  '/convite/$token': typeof ConviteTokenRoute
+  '/_app/w/$wsId': typeof AppWWsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/_dev/ui'
+  fullPaths:
+    | '/'
+    | '/onboarding'
+    | '/workspaces'
+    | '/_dev/ui'
+    | '/cadastro'
+    | '/login'
+    | '/convite/$token'
+    | '/w/$wsId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/_dev/ui'
-  id: '__root__' | '/' | '/_dev/ui'
+  to:
+    | '/'
+    | '/onboarding'
+    | '/workspaces'
+    | '/_dev/ui'
+    | '/cadastro'
+    | '/login'
+    | '/convite/$token'
+    | '/w/$wsId'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_public'
+    | '/_app/onboarding'
+    | '/_app/workspaces'
+    | '/_dev/ui'
+    | '/_public/cadastro'
+    | '/_public/login'
+    | '/convite/$token'
+    | '/_app/w/$wsId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  PublicRoute: typeof PublicRouteWithChildren
   Char91_devChar93UiRoute: typeof Char91_devChar93UiRoute
+  ConviteTokenRoute: typeof ConviteTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +154,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/onboarding': {
+      id: '/_app/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AppOnboardingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/workspaces': {
+      id: '/_app/workspaces'
+      path: '/workspaces'
+      fullPath: '/workspaces'
+      preLoaderRoute: typeof AppWorkspacesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_dev/ui': {
       id: '/_dev/ui'
       path: '/_dev/ui'
@@ -65,12 +189,70 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91_devChar93UiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_public/cadastro': {
+      id: '/_public/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof PublicCadastroRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/login': {
+      id: '/_public/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof PublicLoginRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/convite/$token': {
+      id: '/convite/$token'
+      path: '/convite/$token'
+      fullPath: '/convite/$token'
+      preLoaderRoute: typeof ConviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/w/$wsId': {
+      id: '/_app/w/$wsId'
+      path: '/w/$wsId'
+      fullPath: '/w/$wsId'
+      preLoaderRoute: typeof AppWWsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppOnboardingRoute: typeof AppOnboardingRoute
+  AppWorkspacesRoute: typeof AppWorkspacesRoute
+  AppWWsIdRoute: typeof AppWWsIdRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppOnboardingRoute: AppOnboardingRoute,
+  AppWorkspacesRoute: AppWorkspacesRoute,
+  AppWWsIdRoute: AppWWsIdRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface PublicRouteChildren {
+  PublicCadastroRoute: typeof PublicCadastroRoute
+  PublicLoginRoute: typeof PublicLoginRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicCadastroRoute: PublicCadastroRoute,
+  PublicLoginRoute: PublicLoginRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  PublicRoute: PublicRouteWithChildren,
   Char91_devChar93UiRoute: Char91_devChar93UiRoute,
+  ConviteTokenRoute: ConviteTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -4,6 +4,8 @@ import { AuthenticatedUser, CurrentUser } from '../../common/decorators/current-
 import { RefreshTokensService } from '../auth/refresh-tokens.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { SuccessDto } from '../../common/dto/api-error.dto';
+import { AuthUserDto } from '../auth/dto/auth-response.dto';
 import { UsersService, toAuthenticatedUser } from './users.service';
 import { Types } from 'mongoose';
 
@@ -17,7 +19,7 @@ export class UsersController {
   ) {}
 
   @Patch('me')
-  @ApiOkResponse({ description: 'Perfil atualizado.' })
+  @ApiOkResponse({ description: 'Perfil atualizado.', type: AuthUserDto })
   async updateMe(
     @CurrentUser('id') userId: string,
     @Body() dto: UpdateProfileDto,
@@ -29,7 +31,10 @@ export class UsersController {
 
   /** Changes the password and revokes every refresh token of the user. */
   @Patch('me/password')
-  @ApiOkResponse({ description: 'Senha alterada; todas as sessões foram encerradas.' })
+  @ApiOkResponse({
+    description: 'Senha alterada; todas as sessões foram encerradas.',
+    type: SuccessDto,
+  })
   async changePassword(
     @CurrentUser('id') userId: string,
     @Body() dto: ChangePasswordDto,

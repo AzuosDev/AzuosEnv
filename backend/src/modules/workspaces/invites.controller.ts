@@ -21,7 +21,8 @@ import { Audit } from '../audit/audit.decorator';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
 import { CurrentMembership, CurrentWorkspace } from './decorators/workspace-context.decorator';
 import { Roles } from './decorators/roles.decorator';
-import { AcceptInviteDto, CreateInviteDto } from './dto/invite.dto';
+import { SuccessDto } from '../../common/dto/api-error.dto';
+import { AcceptInviteDto, AcceptedInviteDto, CreateInviteDto } from './dto/invite.dto';
 import { WorkspaceGuard } from './guards/workspace.guard';
 import { AcceptedInvite, CreatedInvite, InvitesService } from './invites.service';
 import { Invite, InviteDocument } from './schemas/invite.schema';
@@ -59,7 +60,7 @@ export class InvitesController {
   @Delete(':inviteId')
   @Audit('invite.revoked', 'invite', 'inviteId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Convite cancelado.' })
+  @ApiOkResponse({ description: 'Convite cancelado.', type: SuccessDto })
   async cancel(
     @CurrentMembership() membership: RequestMembership,
     @Param('inviteId', ParseObjectIdPipe) inviteId: Types.ObjectId,
@@ -79,7 +80,10 @@ export class InviteAcceptController {
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('accept')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Convite aceito com conta existente ou recém-criada.' })
+  @ApiOkResponse({
+    description: 'Convite aceito com conta existente ou recém-criada.',
+    type: AcceptedInviteDto,
+  })
   accept(@Body() dto: AcceptInviteDto): Promise<AcceptedInvite> {
     return this.invites.accept(dto);
   }

@@ -1,4 +1,5 @@
 export * from './decorators/current-user.decorator';
+export * from './dto/api-error.dto';
 export * from './decorators/public.decorator';
 export * from './filters/all-exceptions.filter';
 export * from './pagination/cursor';

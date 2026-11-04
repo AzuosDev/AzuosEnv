@@ -3467,6 +3467,10 @@ export interface components {
             acceptedAt?: string;
             invitedBy?: components["schemas"]["ObjectId"];
         };
+        SuccessDto: {
+            /** @example true */
+            success: boolean;
+        };
         AcceptInviteDto: {
             /** @description Token recebido no convite. */
             token: string;
@@ -3474,6 +3478,19 @@ export interface components {
             name?: string;
             /** @description Obrigatória quando ainda não existe conta. */
             password?: string;
+        };
+        AcceptedInviteWorkspaceDto: {
+            id: string;
+            /** @example Azuos Dev */
+            name: string;
+            /** @example azuos-dev */
+            slug: string;
+        };
+        AcceptedInviteDto: {
+            workspace: components["schemas"]["AcceptedInviteWorkspaceDto"];
+            member: components["schemas"]["WorkspaceMember"];
+            /** @description true quando a conta foi criada no aceite. */
+            accountCreated: boolean;
         };
         CreateTeamDto: {
             /** @example Squad Produto */
@@ -3507,6 +3524,33 @@ export interface components {
             /** @enum {string} */
             theme?: "dark" | "light" | "system";
         };
+        AuthUserDto: {
+            id: string;
+            /** @example Felipe Souza */
+            name: string;
+            /**
+             * Format: email
+             * @example felipe@azuos.dev
+             */
+            email: string;
+            /** Format: uri */
+            avatarUrl?: string;
+            /** @example America/Fortaleza */
+            timezone: string;
+            /** @example pt-BR */
+            locale: string;
+            /**
+             * @example dark
+             * @enum {string}
+             */
+            theme: "dark" | "light" | "system";
+            /** Format: date-time */
+            lastLoginAt?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
         ChangePasswordDto: {
             currentPassword: string;
             /** @example NovaSenha123 */
@@ -3523,6 +3567,9 @@ export interface components {
             /** @example Azuos2026 */
             password: string;
         };
+        RegisteredUserDto: {
+            user: components["schemas"]["AuthUserDto"];
+        };
         LoginDto: {
             /**
              * Format: email
@@ -3531,6 +3578,11 @@ export interface components {
             email: string;
             /** @example Azuos2026 */
             password: string;
+        };
+        AuthResponseDto: {
+            /** @description Access token; o front guarda apenas em memória. */
+            accessToken: string;
+            user: components["schemas"]["AuthUserDto"];
         };
         CreateApiKeyDto: {
             /** @example Integração do site */
@@ -5389,6 +5441,17 @@ export interface components {
             /** Format: date-time */
             deliveredAt: string | null;
         };
+        ApiErrorDto: {
+            /** @example 400 */
+            statusCode: number;
+            /**
+             * @description Código estável do erro.
+             * @example VALIDATION_ERROR
+             */
+            code: string;
+            /** @description Mensagem em português, pronta para exibição. */
+            message: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -5706,7 +5769,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -5728,7 +5793,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AcceptedInviteDto"];
+                };
             };
         };
     };
@@ -5848,7 +5915,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AuthUserDto"];
+                };
             };
         };
     };
@@ -5870,7 +5939,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -5892,7 +5963,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["RegisteredUserDto"];
+                };
             };
         };
     };
@@ -5914,7 +5987,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AuthResponseDto"];
+                };
             };
         };
     };
@@ -5932,7 +6007,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AuthResponseDto"];
+                };
             };
         };
     };
@@ -5950,7 +6027,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -5968,7 +6047,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -5986,7 +6067,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AuthUserDto"];
+                };
             };
         };
     };
@@ -6024,7 +6107,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };

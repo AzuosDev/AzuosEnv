@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsIn, IsOptional, IsString, Length, Matches, MaxLength } from 'class-validator';
 import { PASSWORD_PATTERN, PASSWORD_RULE_MESSAGE } from '../../auth/dto/password.rule';
+import { WorkspaceMember } from '../schemas/workspace-member.schema';
 import { ASSIGNABLE_ROLES, AssignableRole } from '../workspace-roles';
 
 const normalizeEmail = ({ value }: { value: unknown }): unknown =>
@@ -37,4 +38,28 @@ export class AcceptInviteDto {
   @MaxLength(128)
   @Matches(PASSWORD_PATTERN, { message: PASSWORD_RULE_MESSAGE })
   password?: string;
+}
+
+/** Workspace do convite aceito, no mínimo que o front precisa para seguir. */
+export class AcceptedInviteWorkspaceDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty({ example: 'Azuos Dev' })
+  name: string;
+
+  @ApiProperty({ example: 'azuos-dev' })
+  slug: string;
+}
+
+/** Resultado do aceite: workspace, vínculo criado e se a conta nasceu agora. */
+export class AcceptedInviteDto {
+  @ApiProperty({ type: AcceptedInviteWorkspaceDto })
+  workspace: AcceptedInviteWorkspaceDto;
+
+  @ApiProperty({ type: WorkspaceMember })
+  member: WorkspaceMember;
+
+  @ApiProperty({ description: 'true quando a conta foi criada no aceite.' })
+  accountCreated: boolean;
 }

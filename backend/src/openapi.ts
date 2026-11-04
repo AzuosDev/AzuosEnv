@@ -5,8 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { AppModule } from './app.module';
-import { API_PREFIX } from './app.setup';
+import { ApiErrorDto } from './common/dto/api-error.dto';
 
 /**
  * Writes docs/openapi.json, the contract the front is built against, and refuses to
@@ -35,6 +34,10 @@ async function generate(): Promise<void> {
   process.env.JWT_ACCESS_SECRET ??= 'openapi-access-secret-value';
   process.env.JWT_REFRESH_SECRET ??= 'openapi-refresh-secret-value';
 
+  // Importados só agora: o AppModule valida o ambiente enquanto carrega.
+  const { AppModule } = await import('./app.module');
+  const { API_PREFIX } = await import('./app.setup');
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ['error', 'warn', 'log'],
   });
@@ -57,6 +60,7 @@ async function generate(): Promise<void> {
         .addBearerAuth()
         .addServer(`/${API_PREFIX}`)
         .build(),
+      { extraModels: [ApiErrorDto] },
     );
 
     normalizeObjectId(document.components?.schemas);

@@ -19,7 +19,9 @@ import { AuthenticatedUser, CurrentUser } from '../../common/decorators/current-
 import { Public } from '../../common/decorators/public.decorator';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
 import { REFRESH_COOKIE_NAME, REFRESH_COOKIE_PATH } from './auth.constants';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { AuthService, SessionSummary } from './auth.service';
+import { AuthResponseDto, AuthUserDto, RegisteredUserDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokensService, RequestContext } from './refresh-tokens.service';
@@ -43,7 +45,7 @@ export class AuthController {
   @Public()
   @Throttle(CREDENTIALS_THROTTLE)
   @Post('register')
-  @ApiCreatedResponse({ description: 'Usuário criado.' })
+  @ApiCreatedResponse({ description: 'Usuário criado.', type: RegisteredUserDto })
   async register(@Body() dto: RegisterDto): Promise<{ user: AuthenticatedUser }> {
     return { user: await this.authService.register(dto) };
   }
@@ -52,7 +54,7 @@ export class AuthController {
   @Throttle(CREDENTIALS_THROTTLE)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Autenticado; refresh token no cookie.' })
+  @ApiOkResponse({ description: 'Autenticado; refresh token no cookie.', type: AuthResponseDto })
   async login(
     @Body() dto: LoginDto,
     @Req() request: Request,
@@ -68,7 +70,10 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Novo access token; refresh token rotacionado.' })
+  @ApiOkResponse({
+    description: 'Novo access token; refresh token rotacionado.',
+    type: AuthResponseDto,
+  })
   async refresh(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
@@ -86,7 +91,7 @@ export class AuthController {
   @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Sessão atual encerrada.' })
+  @ApiOkResponse({ description: 'Sessão atual encerrada.', type: SuccessDto })
   async logout(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
@@ -100,7 +105,7 @@ export class AuthController {
   @ApiBearerAuth()
   @Post('logout-all')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Todas as sessões do usuário encerradas.' })
+  @ApiOkResponse({ description: 'Todas as sessões do usuário encerradas.', type: SuccessDto })
   async logoutAll(
     @CurrentUser('id') userId: string,
     @Res({ passthrough: true }) response: Response,
@@ -113,7 +118,7 @@ export class AuthController {
 
   @ApiBearerAuth()
   @Get('me')
-  @ApiOkResponse({ description: 'Usuário autenticado.' })
+  @ApiOkResponse({ description: 'Usuário autenticado.', type: AuthUserDto })
   me(@CurrentUser() user: AuthenticatedUser): AuthenticatedUser {
     return user;
   }
@@ -128,7 +133,7 @@ export class AuthController {
   @ApiBearerAuth()
   @Delete('sessions/:id')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Sessão encerrada.' })
+  @ApiOkResponse({ description: 'Sessão encerrada.', type: SuccessDto })
   async revokeSession(
     @CurrentUser('id') userId: string,
     @Param('id', ParseObjectIdPipe) sessionId: Types.ObjectId,

@@ -2,6 +2,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { onSessionLost, setAccessToken } from '@/api/token-store';
+import { setSession } from '@/features/auth/session';
 import { createQueryClient } from '@/lib/query-client';
 import { routeTree } from './routeTree.gen';
 import './styles/globals.css';
@@ -19,6 +21,18 @@ declare module '@tanstack/react-router' {
     router: typeof router;
   }
 }
+
+/** Sessão perdida (refresh falhou): limpa tudo e volta para o login. */
+onSessionLost(() => {
+  setAccessToken(null);
+  queryClient.clear();
+  setSession(queryClient, null);
+  void router.navigate({
+    to: '/login',
+    search: { next: router.state.location.href },
+    replace: true,
+  });
+});
 
 const container = document.getElementById('root');
 

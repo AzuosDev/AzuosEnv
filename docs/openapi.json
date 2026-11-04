@@ -555,7 +555,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Convite cancelado."
+            "description": "Convite cancelado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -584,7 +591,14 @@
         },
         "responses": {
           "200": {
-            "description": "Convite aceito com conta existente ou recém-criada."
+            "description": "Convite aceito com conta existente ou recém-criada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptedInviteDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -777,7 +791,14 @@
         },
         "responses": {
           "200": {
-            "description": "Perfil atualizado."
+            "description": "Perfil atualizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthUserDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -806,7 +827,14 @@
         },
         "responses": {
           "200": {
-            "description": "Senha alterada; todas as sessões foram encerradas."
+            "description": "Senha alterada; todas as sessões foram encerradas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -836,7 +864,14 @@
         },
         "responses": {
           "201": {
-            "description": "Usuário criado."
+            "description": "Usuário criado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisteredUserDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -860,7 +895,14 @@
         },
         "responses": {
           "200": {
-            "description": "Autenticado; refresh token no cookie."
+            "description": "Autenticado; refresh token no cookie.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -874,7 +916,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Novo access token; refresh token rotacionado."
+            "description": "Novo access token; refresh token rotacionado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -888,7 +937,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Sessão atual encerrada."
+            "description": "Sessão atual encerrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -902,7 +958,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Todas as sessões do usuário encerradas."
+            "description": "Todas as sessões do usuário encerradas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -921,7 +984,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Usuário autenticado."
+            "description": "Usuário autenticado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthUserDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -968,7 +1038,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Sessão encerrada."
+            "description": "Sessão encerrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -12453,6 +12530,18 @@
           "expiresAt"
         ]
       },
+      "SuccessDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
       "AcceptInviteDto": {
         "type": "object",
         "properties": {
@@ -12476,6 +12565,47 @@
         },
         "required": [
           "token"
+        ]
+      },
+      "AcceptedInviteWorkspaceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Azuos Dev"
+          },
+          "slug": {
+            "type": "string",
+            "example": "azuos-dev"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ]
+      },
+      "AcceptedInviteDto": {
+        "type": "object",
+        "properties": {
+          "workspace": {
+            "$ref": "#/components/schemas/AcceptedInviteWorkspaceDto"
+          },
+          "member": {
+            "$ref": "#/components/schemas/WorkspaceMember"
+          },
+          "accountCreated": {
+            "type": "boolean",
+            "description": "true quando a conta foi criada no aceite."
+          }
+        },
+        "required": [
+          "workspace",
+          "member",
+          "accountCreated"
         ]
       },
       "CreateTeamDto": {
@@ -12578,6 +12708,64 @@
           }
         }
       },
+      "AuthUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Felipe Souza"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "felipe@azuos.dev"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "America/Fortaleza"
+          },
+          "locale": {
+            "type": "string",
+            "example": "pt-BR"
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "dark",
+              "light",
+              "system"
+            ],
+            "example": "dark"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "timezone",
+          "locale",
+          "theme"
+        ]
+      },
       "ChangePasswordDto": {
         "type": "object",
         "properties": {
@@ -12624,6 +12812,17 @@
           "password"
         ]
       },
+      "RegisteredUserDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/AuthUserDto"
+          }
+        },
+        "required": [
+          "user"
+        ]
+      },
       "LoginDto": {
         "type": "object",
         "properties": {
@@ -12642,6 +12841,22 @@
         "required": [
           "email",
           "password"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Access token; o front guarda apenas em memória."
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthUserDto"
+          }
+        },
+        "required": [
+          "accessToken",
+          "user"
         ]
       },
       "CreateApiKeyDto": {
@@ -18933,6 +19148,29 @@
           "error",
           "nextAttemptAt",
           "deliveredAt"
+        ]
+      },
+      "ApiErrorDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 400
+          },
+          "code": {
+            "type": "string",
+            "description": "Código estável do erro.",
+            "example": "VALIDATION_ERROR"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensagem em português, pronta para exibição."
+          }
+        },
+        "required": [
+          "statusCode",
+          "code",
+          "message"
         ]
       }
     }
