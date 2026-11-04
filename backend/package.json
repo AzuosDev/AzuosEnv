@@ -17,7 +17,8 @@
     "test:cov": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
     "test:e2e": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config ./test/jest-e2e.json --runInBand",
     "openapi": "nest build && node dist/openapi.js",
-    "test:cov:e2e": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config ./test/jest-e2e.json --runInBand --coverage"
+    "test:cov:e2e": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config ./test/jest-e2e.json --runInBand --coverage",
+    "start:e2e": "ts-node -T -O \"{\\\"rootDir\\\":\\\"./src\\\",\\\"declaration\\\":false}\" src/seed/start-e2e.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.3.2",

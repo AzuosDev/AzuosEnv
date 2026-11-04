@@ -517,6 +517,15 @@ NODE_ENV, PORT, LOG_LEVEL=info (nestjs-pino; silent nos testes), MONGODB_URI, CO
 - automation_runs guarda só o total de ações executadas, não o resultado de cada ação.
 
 ## Front
-Etapa concluída: F0 · Próxima: F1 (Setup e UI base)
-Telas prontas: (nenhuma)
-Pendências: (nenhuma)
+Etapa concluída: F1 · Próxima: F2
+Telas prontas: / (placeholder) e /_dev/ui (catálogo, só em dev)
+Stack: Vite 8 + React 19 + TS strict (alias @/), TanStack Router (rotas por arquivo em src/routes, routeTree.gen.ts commitado) + Query (staleTime 30 s, retry 1), Tailwind 3.4, shadcn/ui sobre Radix, lucide-react, react-hook-form + zod, sonner, date-fns, openapi-fetch.
+Tokens: src/styles/globals.css com os triplets RGB da Azuos Dev; escuro em :root e :root[data-theme="dark"], claro em :root[data-theme="light"]; classes .btn-signal, .stage, .dot-grid, .sheen, .heading. Fonte provisória Inter via --font-display. Cor sempre por token (tailwind.config.ts mapeia rgb(var(--token) / <alpha-value>)).
+Tema: ThemeProvider (src/lib/theme.tsx) com dark | light | system, grava em localStorage 'azuos-env:theme' e escreve data-theme no html; ThemeToggle em src/components/theme-toggle.tsx.
+UI base (src/components/ui): button (signal/ghost/outline/danger/nav), input, textarea, label, select, checkbox, switch, dialog (bottom sheet abaixo de 768), sheet (drawer), popover, dropdown-menu, tooltip, toast (sonner), avatar (iniciais), status-pill, priority-flag, tabs, skeleton, empty-state (.stage + .dot-grid), spinner.
+API: `npm run gen:api` gera src/api/schema.d.ts de docs/openapi.json (openapi-typescript); cliente openapi-fetch em src/api/client.ts (baseUrl VITE_API_URL, credentials include); chaves de cache em src/api/keys.ts.
+Env do front: VITE_API_URL (ver frontend/.env.example).
+Validação: cd frontend && npm run typecheck && npm run lint && npm test && npm run test:e2e.
+e2e: Playwright (reporter line) sobe o front (5173) e a API pelo novo script backend `npm run start:e2e` (mongodb-memory-server + seed, porta 3100, E2E_PORT muda). Helper e2e/helpers.ts: expectNoHorizontalScroll(page) em 360, 768 e 1280 e setTheme(page, tema).
+Decisões: rota do catálogo no arquivo `src/routes/[_dev].ui.tsx` (colchetes escapam o `_` e mantêm a URL /_dev/ui); fora de dev ela responde 404. Auth em memória + refresh por cookie entra na F2. `.sheen` não existe no protótipo: ficou como brilho diagonal sobre os tokens de signal, revisar quando o globals.css oficial chegar.
+Pendências: nenhuma.
