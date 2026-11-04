@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Azuos Env — Metas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.t-dark{color-scheme:dark;--paper:11 7 20;--paper-2:16 11 28;--surface:20 16 31;--surface-2:28 22 43;--line:44 36 62;--ink:245 243 249;--body:194 186 210;--muted:156 147 173;--accent:167 139 250;--signal:205 190 255;--signal-2:167 139 250;--on-signal:22 10 46;--scene:33 19 66;--scene-line:72 50 124;--dot:167 139 250;--success:34 197 94;--warning:245 158 11;--danger:239 68 68;--info:96 165 250}
+.t-light{color-scheme:light;--paper:248 246 252;--paper-2:240 236 249;--surface:255 255 255;--surface-2:245 241 252;--line:224 217 238;--ink:22 14 38;--body:72 63 94;--muted:101 92 122;--accent:109 40 217;--signal:139 92 246;--signal-2:109 40 217;--on-signal:255 255 255;--scene:236 228 255;--scene-line:212 198 250;--dot:124 58 237;--success:22 163 74;--warning:217 119 6;--danger:220 38 38;--info:37 99 235}
+.app{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:rgb(var(--paper));color:rgb(var(--ink));scrollbar-color:rgb(var(--line)) rgb(var(--paper))}
+.app button,.app input{font:inherit;color:inherit}
+.app button{cursor:pointer}
+.app button:disabled{cursor:not-allowed;opacity:.45}
+.app ::selection{background:rgb(var(--accent) / .35);color:rgb(var(--ink))}
+.app :focus-visible{outline:2px solid rgb(var(--accent));outline-offset:2px}
+a{color:rgb(var(--accent))}a:hover{color:rgb(var(--signal))}
+.btn-signal{background-image:linear-gradient(100deg,rgb(var(--signal)) 0%,rgb(var(--signal-2)) 100%);color:rgb(var(--on-signal));box-shadow:0 10px 30px -12px rgb(var(--signal-2) / .7);border:0}
+.ghost{background:transparent;border:1px solid rgb(var(--line));color:rgb(var(--body))}
+.ghost:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.nb{background:transparent;border:0;color:rgb(var(--muted))}
+.nb:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.card{background:rgb(var(--surface));border:1px solid rgb(var(--line))}
+.heading{font-weight:600;letter-spacing:-0.02em;line-height:1.02;color:rgb(var(--ink))}
+.ellip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</helmet>
+<div class="app {{themeClass}}" style="min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+<nav aria-label="Navegação global" style="flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; background: rgb(var(--paper-2)); border-right: 1px solid rgb(var(--line)); box-sizing: border-box;">
+<a href="Main.dc.html" class="btn-signal" aria-label="Azuos Env — início" style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; margin-bottom: 10px; text-decoration: none;">&lt;/&gt;</a>
+<sc-for list="{{gnav}}" as="g" hint-placeholder-count="10">
+<a class="nb" href="{{g.href}}" aria-label="{{g.label}}" title="{{g.label}}" aria-current="{{g.current}}" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{g.style}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{g.d}}"></path></svg>
+</a>
+</sc-for>
+<span style="flex: 1;"></span>
+<a class="nb" href="Configuracoes.dc.html" aria-label="Configurações" title="Configurações" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{settingsStyle}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{gearIcon}}"></path></svg>
+</a>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgb(var(--line));">
+<h1 class="heading" style="margin: 0; font-size: 24px;">Metas · Q4 2026</h1>
+<span style="font-size: 11.5px; color: rgb(var(--muted)); border: 1px solid rgb(var(--line)); border-radius: 999px; padding: 2px 8px;">Dados de exemplo</span>
+<span style="flex: 1;"></span>
+<button class="btn-signal" onClick="{{addGoal}}" style="height: 40px; padding: 0 16px; border-radius: 10px; font-weight: 600;">+ Nova meta</button>
+<button class="ghost" onClick="{{toggleTheme}}" aria-label="{{themeLabel}}" title="{{themeLabel}}" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{themeIcon}}"></path></svg></button>
+<div role="img" aria-label="Felipe de Souza" style="width: 36px; height: 36px; border-radius: 50%; background: rgb(var(--scene)); border: 1px solid rgb(var(--scene-line)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">FS</div>
+</header>
+
+<div style="padding: 20px 24px 40px; display: flex; flex-direction: column; gap: 14px; max-width: 1040px;">
+<p style="margin: 0; color: rgb(var(--body));">O progresso de cada meta é a média dos seus alvos. Alvos de tarefas atualizam sozinhos quando as tarefas são concluídas.</p>
+<sc-for list="{{goals}}" as="gl" hint-placeholder-count="3">
+<section class="card" style="border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px;">
+<div style="flex: 1 1 280px; display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+<h2 style="margin: 0; font-size: 17px; font-weight: 600;">{{gl.name}}</h2>
+<span style="font-size: 12.5px; color: rgb(var(--muted));">{{gl.owner}} · prazo {{gl.due}}</span>
+</div>
+<span style="font-size: 26px; font-weight: 600; color: rgb({{gl.tone}});">{{gl.pct}}</span>
+<button class="ghost" onClick="{{gl.toggle}}" aria-expanded="{{gl.expanded}}" style="height: 36px; padding: 0 12px; border-radius: 8px;">{{gl.toggleLabel}}</button>
+</div>
+<div style="height: 8px; border-radius: 999px; background: rgb(var(--surface-2)); overflow: hidden;"><div style="height: 8px; border-radius: 999px; background: rgb({{gl.tone}}); {{gl.bar}}"></div></div>
+<sc-if value="{{gl.open}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column;">
+<sc-for list="{{gl.targets}}" as="tg" hint-placeholder-count="2">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-height: 48px; border-top: 1px solid rgb(var(--line)); padding: 6px 0;">
+<span style="font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: rgb(var(--surface-2)); color: rgb(var(--muted));">{{tg.kind}}</span>
+<span style="flex: 1 1 220px;">{{tg.name}}</span>
+<sc-if value="{{tg.isNum}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; align-items: center; gap: 8px;">
+<button class="ghost" onClick="{{tg.dec}}" aria-label="Diminuir {{tg.name}}" style="width: 32px; height: 32px; border-radius: 8px;">−</button>
+<span style="min-width: 64px; text-align: center; font-weight: 600;">{{tg.value}}</span>
+<button class="ghost" onClick="{{tg.inc}}" aria-label="Aumentar {{tg.name}}" style="width: 32px; height: 32px; border-radius: 8px;">+</button>
+</div>
+</sc-if>
+<sc-if value="{{tg.isBool}}" hint-placeholder-val="{{false}}">
+<label style="display: flex; align-items: center; gap: 8px; cursor: pointer;"><input type="checkbox" checked="{{tg.done}}" onChange="{{tg.flip}}" style="width: 18px; height: 18px; margin: 0; accent-color: rgb(var(--accent));"><span style="color: rgb(var(--body));">{{tg.value}}</span></label>
+</sc-if>
+<sc-if value="{{tg.isTasks}}" hint-placeholder-val="{{false}}">
+<a href="Main.dc.html" style="font-weight: 600;">{{tg.value}}</a>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</section>
+</sc-for>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["escuro","claro"],"default":"escuro"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  shell(active) {
+    const self = this;
+    const s = this.state || {};
+    let stored = null;
+    try { stored = window.localStorage.getItem('azuos-theme'); } catch (e) {}
+    const theme = s.theme || stored || (this.props.tema === 'claro' ? 'light' : 'dark');
+    const NAV = [
+      ['tarefas', 'Tarefas', 'Main.dc.html', 'M9 11l3 3 8-8M20 12v7H4V5h11'],
+      ['planner', 'Planner', 'Planner.dc.html', 'M4 6h16v15H4zM4 10h16M8 3v4M16 3v4'],
+      ['chat', 'Chat', 'Chat.dc.html', 'M4 5h16v11H9l-5 4z'],
+      ['docs', 'Docs', 'Docs.dc.html', 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7'],
+      ['dash', 'Dashboards', 'Dashboards.dc.html', 'M4 20V10M10 20V4M16 20v-7M2 20h20'],
+      ['time', 'Timesheets', 'Timesheets.dc.html', 'M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'],
+      ['metas', 'Metas', 'Metas.dc.html', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z'],
+      ['auto', 'Automações', 'Automacoes.dc.html', 'M13 2 4 14h7l-1 8 9-12h-7z'],
+      ['wb', 'Whiteboard', 'Whiteboard.dc.html', 'M3 4h18v12H3zM8 20l4-4 4 4'],
+      ['ia', 'IA', 'IA.dc.html', 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z']
+    ];
+    const on = 'background: rgb(var(--accent) / 0.16); color: rgb(var(--ink));';
+    return {
+      themeClass: theme === 'light' ? 't-light' : 't-dark',
+      themeIcon: theme === 'light' ? 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z' : 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      themeLabel: theme === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro',
+      toggleTheme: () => { const n = theme === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('azuos-theme', n); } catch (e) {} self.setState({ theme: n }); },
+      gnav: NAV.map(i => ({ label: i[1], href: i[2], d: i[3], current: i[0] === active ? 'page' : 'false', style: i[0] === active ? on : '' })),
+      settingsStyle: active === 'config' ? on : '',
+      gearIcon: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z'
+    };
+  }
+  renderVals() {
+    const self = this;
+    const s = this.state || {};
+    const goals = s.goals || [
+      { id: 1, name: 'Entregar o uSolutionsPDV para a Cênio Construções', owner: 'Felipe de Souza', due: '19 dez', targets: [
+        { k: 'tasks', n: 'Tarefas da Sprint 3 concluídas', cur: 1, max: 8 },
+        { k: 'bool', n: 'Homologação final aprovada pelo cliente', done: false }
+      ] },
+      { id: 2, name: 'Comercial: novos contratos', owner: 'Ezequiel Santos', due: '31 dez', targets: [
+        { k: 'num', n: 'Contratos fechados', cur: 1, max: 3 },
+        { k: 'num', n: 'Propostas enviadas', cur: 2, max: 6 }
+      ] },
+      { id: 3, name: 'Presença digital da Azuos Dev', owner: 'Felipe de Souza', due: '31 dez', targets: [
+        { k: 'num', n: 'Posts no Instagram', cur: 5, max: 12 },
+        { k: 'bool', n: 'Domínio azuosdev.com no ar', done: false },
+        { k: 'bool', n: 'Seção de cases na landing page', done: false }
+      ] }
+    ];
+    const open = s.open || { 1: true };
+    const KIND = { tasks: 'Tarefas', num: 'Número', bool: 'Sim/Não' };
+    const setT = (gid, i, fn) => self.setState({ goals: goals.map(g => g.id === gid ? Object.assign({}, g, { targets: g.targets.map((t, j) => j === i ? fn(t) : t) }) : g) });
+    const prog = (t) => t.k === 'bool' ? (t.done ? 1 : 0) : Math.min(1, t.cur / t.max);
+    return Object.assign(this.shell('metas'), {
+      goals: goals.map(g => {
+        const p = g.targets.length ? g.targets.reduce((a, t) => a + prog(t), 0) / g.targets.length : 0;
+        const pct = Math.round(p * 100);
+        return {
+          name: g.name, owner: g.owner, due: g.due, pct: pct + '%',
+          tone: pct >= 100 ? 'var(--success)' : (pct < 25 ? 'var(--warning)' : 'var(--accent)'),
+          bar: 'width: ' + pct + '%;',
+          open: !!open[g.id], expanded: open[g.id] ? 'true' : 'false',
+          toggleLabel: open[g.id] ? 'Recolher' : 'Ver alvos',
+          toggle: () => self.setState({ open: Object.assign({}, open, { [g.id]: !open[g.id] }) }),
+          targets: g.targets.map((t, i) => ({
+            kind: KIND[t.k], name: t.n,
+            isNum: t.k === 'num', isBool: t.k === 'bool', isTasks: t.k === 'tasks',
+            value: t.k === 'bool' ? (t.done ? 'Concluído' : 'Pendente') : (t.cur + ' / ' + t.max + (t.k === 'tasks' ? ' tarefas' : '')),
+            done: !!t.done,
+            inc: () => setT(g.id, i, x => Object.assign({}, x, { cur: Math.min(x.max, x.cur + 1) })),
+            dec: () => setT(g.id, i, x => Object.assign({}, x, { cur: Math.max(0, x.cur - 1) })),
+            flip: () => setT(g.id, i, x => Object.assign({}, x, { done: !x.done }))
+          }))
+        };
+      }),
+      addGoal: () => {
+        const id = Date.now();
+        self.setState({ goals: goals.concat([{ id: id, name: 'Nova meta', owner: 'Felipe de Souza', due: '[PRAZO]', targets: [{ k: 'num', n: 'Alvo numérico', cur: 0, max: 10 }] }]), open: Object.assign({}, open, { [id]: true }) });
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

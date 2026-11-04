@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Azuos Env — Timesheets</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.t-dark{color-scheme:dark;--paper:11 7 20;--paper-2:16 11 28;--surface:20 16 31;--surface-2:28 22 43;--line:44 36 62;--ink:245 243 249;--body:194 186 210;--muted:156 147 173;--accent:167 139 250;--signal:205 190 255;--signal-2:167 139 250;--on-signal:22 10 46;--scene:33 19 66;--scene-line:72 50 124;--dot:167 139 250;--success:34 197 94;--warning:245 158 11;--danger:239 68 68;--info:96 165 250}
+.t-light{color-scheme:light;--paper:248 246 252;--paper-2:240 236 249;--surface:255 255 255;--surface-2:245 241 252;--line:224 217 238;--ink:22 14 38;--body:72 63 94;--muted:101 92 122;--accent:109 40 217;--signal:139 92 246;--signal-2:109 40 217;--on-signal:255 255 255;--scene:236 228 255;--scene-line:212 198 250;--dot:124 58 237;--success:22 163 74;--warning:217 119 6;--danger:220 38 38;--info:37 99 235}
+.app{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:rgb(var(--paper));color:rgb(var(--ink));scrollbar-color:rgb(var(--line)) rgb(var(--paper))}
+.app button,.app input,.app textarea,.app select{font:inherit;color:inherit}
+.app button{cursor:pointer}
+.app ::selection{background:rgb(var(--accent) / .35);color:rgb(var(--ink))}
+.app input{caret-color:rgb(var(--accent))}
+.app :focus-visible{outline:2px solid rgb(var(--accent));outline-offset:2px}
+a{color:rgb(var(--accent))}a:hover{color:rgb(var(--signal))}
+.btn-signal{background-image:linear-gradient(100deg,rgb(var(--signal)) 0%,rgb(var(--signal-2)) 100%);color:rgb(var(--on-signal));box-shadow:0 10px 30px -12px rgb(var(--signal-2) / .7);border:0}
+.ghost{background:transparent;border:1px solid rgb(var(--line));color:rgb(var(--body))}
+.ghost:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.nb{background:transparent;border:0;color:rgb(var(--muted))}
+.nb:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.card{background:rgb(var(--surface));border:1px solid rgb(var(--line))}
+.heading{font-weight:600;letter-spacing:-0.02em;line-height:1.02;color:rgb(var(--ink))}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ellip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcell{width:56px;height:34px;box-sizing:border-box;border-radius:8px;border:1px solid rgb(var(--line));background:rgb(var(--paper));text-align:center;padding:0 4px}
+</style>
+</helmet>
+<div class="app {{themeClass}}" style="min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+<nav aria-label="Navegação global" style="flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; background: rgb(var(--paper-2)); border-right: 1px solid rgb(var(--line)); box-sizing: border-box;">
+<a href="Main.dc.html" class="btn-signal" aria-label="Azuos Env — início" style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; margin-bottom: 10px; text-decoration: none;">&lt;/&gt;</a>
+<sc-for list="{{gnav}}" as="g" hint-placeholder-count="10">
+<a class="nb" href="{{g.href}}" aria-label="{{g.label}}" title="{{g.label}}" aria-current="{{g.current}}" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{g.style}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{g.d}}"></path></svg>
+</a>
+</sc-for>
+<span style="flex: 1;"></span>
+<a class="nb" href="Configuracoes.dc.html" aria-label="Configurações" title="Configurações" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{settingsStyle}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{gearIcon}}"></path></svg>
+</a>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgb(var(--line));">
+<h1 class="heading" style="margin: 0; font-size: 24px;">Timesheets</h1>
+<span style="font-size: 11.5px; color: rgb(var(--muted)); border: 1px solid rgb(var(--line)); border-radius: 999px; padding: 2px 8px;">Dados de exemplo</span>
+<span style="flex: 1;"></span>
+<span style="font-weight: 600;">26 out – 1 nov 2026</span>
+<button class="ghost" style="height: 36px; padding: 0 12px; border-radius: 8px;">Exportar</button>
+<button class="ghost" onClick="{{toggleTheme}}" aria-label="{{themeLabel}}" title="{{themeLabel}}" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{themeIcon}}"></path></svg></button>
+<div role="img" aria-label="Felipe de Souza" style="width: 36px; height: 36px; border-radius: 50%; background: rgb(var(--scene)); border: 1px solid rgb(var(--scene-line)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">FS</div>
+</header>
+
+<div style="padding: 16px 24px 0; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px; border-bottom: 1px solid rgb(var(--line));">
+<sc-for list="{{tabs}}" as="tb" hint-placeholder-count="3">
+<button onClick="{{tb.pick}}" aria-pressed="{{tb.pressed}}" style="height: 40px; padding: 0 14px; background: transparent; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; {{tb.style}}">{{tb.label}}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{isMine}}" hint-placeholder-val="{{true}}">
+<div style="padding: 20px 24px 40px; display: flex; flex-direction: column; gap: 16px;">
+<div style="display: flex; flex-wrap: wrap; gap: 12px;">
+<div class="card" style="flex: 1 1 320px; border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 14px;">
+<div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+<span style="font-size: 12.5px; color: rgb(var(--muted));">Timer</span>
+<span style="font-weight: 600;">{{timer.label}}</span>
+</div>
+<button class="{{timer.cls}}" onClick="{{timer.toggle}}" style="height: 40px; padding: 0 16px; border-radius: 10px; font-weight: 600;">{{timer.btn}}</button>
+</div>
+<div class="card" style="flex: 1 1 200px; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px;">
+<span style="font-size: 12.5px; color: rgb(var(--muted));">Total da semana</span>
+<span style="font-size: 28px; font-weight: 600;">{{weekTotal}}</span>
+<span style="font-size: 12px; color: rgb(var(--muted));">{{billTotal}} faturáveis</span>
+</div>
+<div class="card" style="flex: 1 1 260px; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px; justify-content: center;">
+<span style="font-size: 12.5px; color: rgb(var(--muted));">Status</span>
+<span style="font-weight: 600; color: rgb({{statusTone}});">{{statusLabel}}</span>
+<button class="btn-signal" onClick="{{submit}}" disabled="{{submitted}}" style="height: 36px; border-radius: 8px; font-weight: 600;">Enviar para aprovação</button>
+</div>
+</div>
+
+<div style="overflow-x: auto; border: 1px solid rgb(var(--line)); border-radius: 12px;">
+<table style="border-collapse: collapse; width: 100%; min-width: 980px; font-size: 13px;">
+<thead>
+<tr style="background: rgb(var(--surface-2)); text-align: left;">
+<th style="padding: 10px 12px; font-size: 12px; font-weight: 600; color: rgb(var(--muted));">Tarefa</th>
+<th style="padding: 10px 12px; font-size: 12px; font-weight: 600; color: rgb(var(--muted));">Cliente</th>
+<th style="padding: 10px 8px; font-size: 12px; font-weight: 600; color: rgb(var(--muted));">Faturável</th>
+<sc-for list="{{dayHeads}}" as="dh" hint-placeholder-count="7">
+<th style="padding: 10px 4px; font-size: 12px; font-weight: 600; text-align: center; {{dh.style}}">{{dh.label}}</th>
+</sc-for>
+<th style="padding: 10px 12px; font-size: 12px; font-weight: 600; color: rgb(var(--muted)); text-align: right;">Total</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+<tr style="border-top: 1px solid rgb(var(--line));">
+<td style="padding: 8px 12px;"><span style="font-size: 12px; color: rgb(var(--muted));">{{r.code}}</span> {{r.name}}</td>
+<td style="padding: 8px 12px; color: rgb(var(--body));">{{r.client}}</td>
+<td style="padding: 8px; text-align: center;"><input type="checkbox" aria-label="Faturável: {{r.name}}" checked="{{r.bill}}" onChange="{{r.toggleBill}}" style="width: 18px; height: 18px; margin: 0; accent-color: rgb(var(--accent));"></td>
+<sc-for list="{{r.cells}}" as="cl" hint-placeholder-count="7">
+<td style="padding: 6px 4px; text-align: center;"><input class="hcell" type="number" min="0" max="24" step="0.5" aria-label="{{cl.aria}}" value="{{cl.value}}" onInput="{{cl.set}}"></td>
+</sc-for>
+<td style="padding: 8px 12px; text-align: right; font-weight: 600;">{{r.total}}</td>
+</tr>
+</sc-for>
+<tr style="border-top: 1px solid rgb(var(--line)); background: rgb(var(--surface-2));">
+<td style="padding: 10px 12px; font-weight: 600;" colspan="3">Total por dia</td>
+<sc-for list="{{dayTotals}}" as="dt" hint-placeholder-count="7">
+<td style="padding: 10px 4px; text-align: center; font-weight: 600;">{{dt.value}}</td>
+</sc-for>
+<td style="padding: 10px 12px; text-align: right; font-weight: 700;">{{weekTotal}}</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div><button class="ghost" onClick="{{addRow}}" style="height: 36px; padding: 0 12px; border-radius: 8px;">+ Adicionar linha</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{isTeam}}" hint-placeholder-val="{{false}}">
+<div style="padding: 20px 24px 40px;">
+<div style="overflow-x: auto; border: 1px solid rgb(var(--line)); border-radius: 12px;">
+<table style="border-collapse: collapse; width: 100%; min-width: 760px; font-size: 13px;">
+<thead><tr style="background: rgb(var(--surface-2)); text-align: left;">
+<th style="padding: 10px 12px; font-size: 12px; color: rgb(var(--muted));">Pessoa</th>
+<sc-for list="{{dayHeads}}" as="dh" hint-placeholder-count="7"><th style="padding: 10px 4px; font-size: 12px; text-align: center; {{dh.style}}">{{dh.label}}</th></sc-for>
+<th style="padding: 10px 12px; font-size: 12px; color: rgb(var(--muted)); text-align: right;">Total</th>
+<th style="padding: 10px 12px; font-size: 12px; color: rgb(var(--muted)); text-align: right;">Faturável</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{team}}" as="tm" hint-placeholder-count="2">
+<tr style="border-top: 1px solid rgb(var(--line));">
+<td style="padding: 12px; font-weight: 500;">{{tm.name}}</td>
+<sc-for list="{{tm.days}}" as="v" hint-placeholder-count="7"><td style="padding: 12px 4px; text-align: center; color: rgb(var(--body));">{{v.value}}</td></sc-for>
+<td style="padding: 12px; text-align: right; font-weight: 600;">{{tm.total}}</td>
+<td style="padding: 12px; text-align: right; color: rgb(var(--body));">{{tm.bill}}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isApprove}}" hint-placeholder-val="{{false}}">
+<div style="padding: 20px 24px 40px; display: flex; flex-direction: column; gap: 10px; max-width: 880px;">
+<sc-for list="{{approvals}}" as="ap" hint-placeholder-count="2">
+<div class="card" style="border-radius: 12px; padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+<div style="flex: 1 1 240px; display: flex; flex-direction: column; gap: 2px;">
+<span style="font-weight: 600;">{{ap.name}}</span>
+<span style="font-size: 12.5px; color: rgb(var(--muted));">{{ap.week}} · {{ap.hours}}</span>
+</div>
+<span style="font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgb({{ap.tone}} / 0.16); color: rgb({{ap.tone}});">{{ap.status}}</span>
+<sc-if value="{{ap.pending}}" hint-placeholder-val="{{true}}">
+<button class="ghost" onClick="{{ap.reject}}" style="height: 36px; padding: 0 12px; border-radius: 8px;">Rejeitar</button>
+<button class="btn-signal" onClick="{{ap.approve}}" style="height: 36px; padding: 0 14px; border-radius: 8px; font-weight: 600;">Aprovar</button>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["escuro","claro"],"default":"escuro"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  shell(active) {
+    const self = this;
+    const s = this.state || {};
+    let stored = null;
+    try { stored = window.localStorage.getItem('azuos-theme'); } catch (e) {}
+    const theme = s.theme || stored || (this.props.tema === 'claro' ? 'light' : 'dark');
+    const NAV = [
+      ['tarefas', 'Tarefas', 'Main.dc.html', 'M9 11l3 3 8-8M20 12v7H4V5h11'],
+      ['planner', 'Planner', 'Planner.dc.html', 'M4 6h16v15H4zM4 10h16M8 3v4M16 3v4'],
+      ['chat', 'Chat', 'Chat.dc.html', 'M4 5h16v11H9l-5 4z'],
+      ['docs', 'Docs', 'Docs.dc.html', 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7'],
+      ['dash', 'Dashboards', 'Dashboards.dc.html', 'M4 20V10M10 20V4M16 20v-7M2 20h20'],
+      ['time', 'Timesheets', 'Timesheets.dc.html', 'M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'],
+      ['metas', 'Metas', 'Metas.dc.html', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z'],
+      ['auto', 'Automações', 'Automacoes.dc.html', 'M13 2 4 14h7l-1 8 9-12h-7z'],
+      ['wb', 'Whiteboard', 'Whiteboard.dc.html', 'M3 4h18v12H3zM8 20l4-4 4 4'],
+      ['ia', 'IA', 'IA.dc.html', 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z']
+    ];
+    const on = 'background: rgb(var(--accent) / 0.16); color: rgb(var(--ink));';
+    return {
+      themeClass: theme === 'light' ? 't-light' : 't-dark',
+      themeIcon: theme === 'light' ? 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z' : 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      themeLabel: theme === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro',
+      toggleTheme: () => { const n = theme === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('azuos-theme', n); } catch (e) {} self.setState({ theme: n }); },
+      gnav: NAV.map(i => ({ label: i[1], href: i[2], d: i[3], current: i[0] === active ? 'page' : 'false', style: i[0] === active ? on : '' })),
+      settingsStyle: active === 'config' ? on : '',
+      gearIcon: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z'
+    };
+  }
+  renderVals() {
+    const self = this;
+    const s = this.state || {};
+    const tab = s.tab || 'mine';
+    const rows = s.rows || [
+      { id: 1, code: 'AZD-142', name: 'Módulo de caixa offline', client: 'Cênio Construções', bill: true, h: [3, 2.5, 2, 0, 0, 0, 0] },
+      { id: 2, code: 'AZD-143', name: 'Sincronização PouchDB ↔ CouchDB', client: 'Cênio Construções', bill: true, h: [2, 3, 1.5, 0, 0, 0, 0] },
+      { id: 3, code: 'AZD-146', name: 'Emissão de cupom não fiscal', client: 'Cênio Construções', bill: true, h: [0, 1, 1.5, 0, 0, 0, 0] },
+      { id: 4, code: '—', name: 'Plano empresarial', client: 'Central Motos', bill: true, h: [1, 0, 1, 0, 0, 0, 0] },
+      { id: 5, code: '—', name: 'Posts do Instagram', client: 'Interno', bill: false, h: [0, 1, 0.5, 0, 0, 0, 0] }
+    ];
+    const running = s.running || null;
+    const submitted = !!s.submitted;
+    const appr = s.appr || { es: 'pending' };
+    const DAYS = ['Seg 26', 'Ter 27', 'Qua 28', 'Qui 29', 'Sex 30', 'Sáb 31', 'Dom 1'];
+    const fmt = (n) => (Math.round(n * 10) / 10).toString().replace('.', ',') + ' h';
+    const sum = (a) => a.reduce((x, y) => x + y, 0);
+    const setRows = (fn) => self.setState({ rows: rows.map(fn) });
+    const dayTotals = DAYS.map((d, i) => sum(rows.map(r => r.h[i])));
+    const total = sum(dayTotals);
+    const bill = sum(rows.filter(r => r.bill).map(r => sum(r.h)));
+    const ES = [6, 6.5, 5.5, 0, 0, 0, 0];
+    const tabBtn = (id, label) => ({
+      label: label, pressed: tab === id ? 'true' : 'false',
+      style: tab === id ? 'border-bottom-color: rgb(var(--accent)); color: rgb(var(--ink)); font-weight: 600;' : 'color: rgb(var(--muted));',
+      pick: () => self.setState({ tab: id })
+    });
+    const ST = { pending: ['Aguardando', 'var(--warning)'], ok: ['Aprovada', 'var(--success)'], no: ['Rejeitada', 'var(--danger)'] };
+    const approvals = [{ id: 'es', name: 'Ezequiel Santos', week: '19 – 25 out', hours: '38 h' }];
+    if (submitted) approvals.push({ id: 'fs', name: 'Felipe de Souza', week: '26 out – 1 nov', hours: fmt(total) });
+    return Object.assign(this.shell('time'), {
+      tabs: [tabBtn('mine', 'Minhas horas'), tabBtn('team', 'Equipe'), tabBtn('approve', 'Aprovações')],
+      isMine: tab === 'mine', isTeam: tab === 'team', isApprove: tab === 'approve',
+      dayHeads: DAYS.map((d, i) => ({ label: d, style: i === 2 ? 'color: rgb(var(--accent));' : 'color: rgb(var(--muted));' })),
+      rows: rows.map(r => ({
+        code: r.code, name: r.name, client: r.client, bill: r.bill, total: fmt(sum(r.h)),
+        toggleBill: () => setRows(x => x.id === r.id ? Object.assign({}, x, { bill: !x.bill }) : x),
+        cells: r.h.map((v, i) => ({
+          value: String(v), aria: 'Horas em ' + DAYS[i] + ': ' + r.name,
+          set: (e) => { const n = parseFloat(String(e.target.value).replace(',', '.')) || 0; setRows(x => x.id === r.id ? Object.assign({}, x, { h: x.h.map((y, j) => j === i ? n : y) }) : x); }
+        }))
+      })),
+      dayTotals: dayTotals.map(v => ({ value: v ? fmt(v) : '—' })),
+      weekTotal: fmt(total), billTotal: fmt(bill),
+      timer: running ? {
+        label: 'AZD-142 Módulo de caixa offline · rodando desde ' + running,
+        btn: 'Parar', cls: 'ghost',
+        toggle: () => self.setState({ running: null })
+      } : {
+        label: 'Nenhum timer ativo',
+        btn: 'Iniciar timer', cls: 'btn-signal',
+        toggle: () => { const d = new Date(); self.setState({ running: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') }); }
+      },
+      submitted: submitted,
+      statusLabel: submitted ? 'Enviada · aguardando aprovação' : 'Rascunho · não enviada',
+      statusTone: submitted ? 'var(--warning)' : 'var(--muted)',
+      submit: () => self.setState({ submitted: true, appr: Object.assign({}, appr, { fs: 'pending' }) }),
+      addRow: () => self.setState({ rows: rows.concat([{ id: Date.now(), code: 'AZD-149', name: 'Atalhos de teclado no PDV', client: 'Cênio Construções', bill: true, h: [0, 0, 0, 0, 0, 0, 0] }]) }),
+      team: [
+        { name: 'Felipe de Souza', days: dayTotals.map(v => ({ value: v ? fmt(v) : '—' })), total: fmt(total), bill: fmt(bill) },
+        { name: 'Ezequiel Santos', days: ES.map(v => ({ value: v ? fmt(v) : '—' })), total: fmt(sum(ES)), bill: fmt(sum(ES) - 2) }
+      ],
+      approvals: approvals.map(a => {
+        const st = ST[appr[a.id] || 'pending'];
+        return Object.assign({}, a, {
+          status: st[0], tone: st[1], pending: (appr[a.id] || 'pending') === 'pending',
+          approve: () => self.setState({ appr: Object.assign({}, appr, { [a.id]: 'ok' }) }),
+          reject: () => self.setState({ appr: Object.assign({}, appr, { [a.id]: 'no' }) })
+        });
+      })
+    });
+  }
+}
+</script>
+</body>
+</html>

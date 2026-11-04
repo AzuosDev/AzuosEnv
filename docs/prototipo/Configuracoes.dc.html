@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Azuos Env — Configurações</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.t-dark{color-scheme:dark;--paper:11 7 20;--paper-2:16 11 28;--surface:20 16 31;--surface-2:28 22 43;--line:44 36 62;--ink:245 243 249;--body:194 186 210;--muted:156 147 173;--accent:167 139 250;--signal:205 190 255;--signal-2:167 139 250;--on-signal:22 10 46;--scene:33 19 66;--scene-line:72 50 124;--dot:167 139 250;--success:34 197 94;--warning:245 158 11;--danger:239 68 68;--info:96 165 250}
+.t-light{color-scheme:light;--paper:248 246 252;--paper-2:240 236 249;--surface:255 255 255;--surface-2:245 241 252;--line:224 217 238;--ink:22 14 38;--body:72 63 94;--muted:101 92 122;--accent:109 40 217;--signal:139 92 246;--signal-2:109 40 217;--on-signal:255 255 255;--scene:236 228 255;--scene-line:212 198 250;--dot:124 58 237;--success:22 163 74;--warning:217 119 6;--danger:220 38 38;--info:37 99 235}
+.app{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:rgb(var(--paper));color:rgb(var(--ink));scrollbar-color:rgb(var(--line)) rgb(var(--paper))}
+.app button,.app input,.app select{font:inherit;color:inherit}
+.app button{cursor:pointer}
+.app ::selection{background:rgb(var(--accent) / .35);color:rgb(var(--ink))}
+.app input{caret-color:rgb(var(--accent))}
+.app :focus-visible{outline:2px solid rgb(var(--accent));outline-offset:2px}
+a{color:rgb(var(--accent))}a:hover{color:rgb(var(--signal))}
+.btn-signal{background-image:linear-gradient(100deg,rgb(var(--signal)) 0%,rgb(var(--signal-2)) 100%);color:rgb(var(--on-signal));box-shadow:0 10px 30px -12px rgb(var(--signal-2) / .7);border:0}
+.ghost{background:transparent;border:1px solid rgb(var(--line));color:rgb(var(--body))}
+.ghost:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.nb{background:transparent;border:0;color:rgb(var(--muted))}
+.nb:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.card{background:rgb(var(--surface));border:1px solid rgb(var(--line))}
+.field{height:40px;border-radius:8px;border:1px solid rgb(var(--line));background:rgb(var(--paper));padding:0 12px;box-sizing:border-box;width:100%}
+.lbl{font-size:12.5px;color:rgb(var(--muted))}
+.heading{font-weight:600;letter-spacing:-0.02em;line-height:1.02;color:rgb(var(--ink))}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</helmet>
+<div class="app {{themeClass}}" style="min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+<nav aria-label="Navegação global" style="flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; background: rgb(var(--paper-2)); border-right: 1px solid rgb(var(--line)); box-sizing: border-box;">
+<a href="Main.dc.html" class="btn-signal" aria-label="Azuos Env — início" style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; margin-bottom: 10px; text-decoration: none;">&lt;/&gt;</a>
+<sc-for list="{{gnav}}" as="g" hint-placeholder-count="10">
+<a class="nb" href="{{g.href}}" aria-label="{{g.label}}" title="{{g.label}}" aria-current="{{g.current}}" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{g.style}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{g.d}}"></path></svg>
+</a>
+</sc-for>
+<span style="flex: 1;"></span>
+<a class="nb" href="Configuracoes.dc.html" aria-label="Configurações" title="Configurações" aria-current="page" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{settingsStyle}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{gearIcon}}"></path></svg>
+</a>
+</nav>
+
+<aside aria-label="Seções de configuração" style="flex: 0 1 248px; min-width: 210px; box-sizing: border-box; padding: 16px 12px; background: rgb(var(--paper-2)); border-right: 1px solid rgb(var(--line)); display: flex; flex-direction: column; gap: 4px;">
+<h1 class="heading" style="margin: 0 0 12px; padding: 0 8px; font-size: 20px;">Configurações</h1>
+<sc-for list="{{sections}}" as="sc" hint-placeholder-count="8">
+<sc-if value="{{sc.isHead}}" hint-placeholder-val="{{false}}"><span style="font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--muted)); padding: 12px 8px 6px;">{{sc.label}}</span></sc-if>
+<sc-if value="{{sc.isItem}}" hint-placeholder-val="{{true}}"><button class="nb" onClick="{{sc.pick}}" aria-current="{{sc.current}}" style="height: 40px; border-radius: 8px; text-align: left; padding: 0 10px; {{sc.style}}">{{sc.label}}</button></sc-if>
+</sc-for>
+</aside>
+
+<main style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column;">
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgb(var(--line));">
+<h2 style="margin: 0; font-size: 18px; font-weight: 600; flex: 1;">{{title}}</h2>
+<button class="ghost" onClick="{{toggleTheme}}" aria-label="{{themeLabel}}" title="{{themeLabel}}" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{themeIcon}}"></path></svg></button>
+<div role="img" aria-label="Felipe de Souza" style="width: 36px; height: 36px; border-radius: 50%; background: rgb(var(--scene)); border: 1px solid rgb(var(--scene-line)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">FS</div>
+</header>
+<div style="padding: 24px; max-width: 860px; display: flex; flex-direction: column; gap: 16px;">
+
+<sc-if value="{{is.geral}}" hint-placeholder-val="{{true}}">
+<div class="card" style="border-radius: 14px; padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="ws" class="lbl">Nome do workspace</label><input id="ws" class="field" value="Azuos Dev"></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="slug" class="lbl">Prefixo dos IDs de tarefa</label><input id="slug" class="field" value="AZD"></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="tz" class="lbl">Fuso horário padrão</label><select id="tz" class="field"><option>America/Fortaleza (UTC−3)</option><option>America/Sao_Paulo (UTC−3)</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="df" class="lbl">Formato de data</label><select id="df" class="field"><option>28/10/2026</option><option>28 out 2026</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 6px;"><label for="lang" class="lbl">Idioma</label><select id="lang" class="field"><option>Português (Brasil)</option><option>English</option></select></div>
+<div style="display: flex; align-items: flex-end;"><button class="btn-signal" onClick="{{save}}" style="height: 40px; padding: 0 18px; border-radius: 10px; font-weight: 600;">{{saveLabel}}</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{is.pessoas}}" hint-placeholder-val="{{false}}">
+<div class="card" style="border-radius: 14px; padding: 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;">
+<div style="flex: 2 1 240px; display: flex; flex-direction: column; gap: 6px;"><label for="inv" class="lbl">Convidar por e-mail</label><input id="inv" class="field" type="email" placeholder="nome@empresa.com" value="{{invite}}" onInput="{{setInvite}}"></div>
+<div style="flex: 1 1 160px; display: flex; flex-direction: column; gap: 6px;"><label for="role" class="lbl">Papel</label><select id="role" class="field" value="{{inviteRole}}" onChange="{{setInviteRole}}"><option>Membro</option><option>Admin</option><option>Membro limitado</option><option>Convidado (cliente)</option></select></div>
+<button class="btn-signal" onClick="{{sendInvite}}" style="height: 40px; padding: 0 18px; border-radius: 10px; font-weight: 600;">Convidar</button>
+</div>
+<div style="overflow-x: auto; border: 1px solid rgb(var(--line)); border-radius: 12px;">
+<table style="border-collapse: collapse; width: 100%; min-width: 600px; font-size: 13px;">
+<thead><tr style="background: rgb(var(--surface-2)); text-align: left;"><th style="padding: 10px 12px; font-size: 12px; color: rgb(var(--muted));">Pessoa</th><th style="padding: 10px 12px; font-size: 12px; color: rgb(var(--muted));">Papel</th><th style="padding: 10px 12px; font-size: 12px; color: rgb(var(--muted));">Acesso</th><th style="padding: 10px 12px; font-size: 12px; color: rgb(var(--muted));">Status</th></tr></thead>
+<tbody>
+<sc-for list="{{members}}" as="mb" hint-placeholder-count="3">
+<tr style="border-top: 1px solid rgb(var(--line));">
+<td style="padding: 12px; display: flex; align-items: center; gap: 10px;"><span style="width: 30px; height: 30px; border-radius: 50%; background: rgb(var(--scene)); border: 1px solid rgb(var(--scene-line)); display: inline-flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700;">{{mb.initials}}</span>{{mb.name}}</td>
+<td style="padding: 12px;">{{mb.role}}</td>
+<td style="padding: 12px; color: rgb(var(--body));">{{mb.access}}</td>
+<td style="padding: 12px;"><span style="font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: rgb({{mb.tone}} / 0.16); color: rgb({{mb.tone}});">{{mb.status}}</span></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</sc-if>
+
+<sc-if value="{{is.clickapps}}" hint-placeholder-val="{{false}}">
+<p style="margin: 0; color: rgb(var(--body));">Liga e desliga recursos por Space. Space: <strong>Clientes</strong></p>
+<div class="card" style="border-radius: 14px; padding: 4px 16px;">
+<sc-for list="{{apps}}" as="ap" hint-placeholder-count="8">
+<label style="display: flex; align-items: center; gap: 14px; min-height: 56px; border-bottom: 1px solid rgb(var(--line)); cursor: pointer;">
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 500;">{{ap.name}}</span><span style="font-size: 12.5px; color: rgb(var(--muted));">{{ap.desc}}</span></span>
+<input type="checkbox" role="switch" checked="{{ap.on}}" onChange="{{ap.toggle}}" style="width: 40px; height: 22px; margin: 0; accent-color: rgb(var(--accent));">
+</label>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{is.integracoes}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+<sc-for list="{{integrations}}" as="it" hint-placeholder-count="4">
+<div class="card" style="border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+<span style="font-weight: 600;">{{it.name}}</span>
+<span style="font-size: 13px; color: rgb(var(--body)); line-height: 1.5; flex: 1;">{{it.desc}}</span>
+<button class="{{it.cls}}" onClick="{{it.toggle}}" style="height: 36px; border-radius: 8px; font-weight: 600;">{{it.btn}}</button>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{is.notificacoes}}" hint-placeholder-val="{{false}}">
+<div style="overflow-x: auto; border: 1px solid rgb(var(--line)); border-radius: 12px;">
+<table style="border-collapse: collapse; width: 100%; min-width: 520px; font-size: 13px;">
+<thead><tr style="background: rgb(var(--surface-2)); text-align: left;"><th style="padding: 10px 12px; font-size: 12px; color: rgb(var(--muted));">Evento</th><th style="padding: 10px 12px; font-size: 12px; color: rgb(var(--muted)); text-align: center;">Inbox</th><th style="padding: 10px 12px; font-size: 12px; color: rgb(var(--muted)); text-align: center;">E-mail</th><th style="padding: 10px 12px; font-size: 12px; color: rgb(var(--muted)); text-align: center;">Push</th></tr></thead>
+<tbody>
+<sc-for list="{{notif}}" as="nf" hint-placeholder-count="6">
+<tr style="border-top: 1px solid rgb(var(--line));">
+<td style="padding: 12px;">{{nf.name}}</td>
+<sc-for list="{{nf.cells}}" as="cl" hint-placeholder-count="3">
+<td style="padding: 12px; text-align: center;"><input type="checkbox" aria-label="{{cl.aria}}" checked="{{cl.on}}" onChange="{{cl.toggle}}" style="width: 18px; height: 18px; margin: 0; accent-color: rgb(var(--accent));"></td>
+</sc-for>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</sc-if>
+
+<sc-if value="{{is.aparencia}}" hint-placeholder-val="{{false}}">
+<fieldset class="card" style="border-radius: 14px; padding: 18px; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+<legend style="font-weight: 600; padding: 0 6px;">Tema</legend>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+<sc-for list="{{themes}}" as="th" hint-placeholder-count="2">
+<button onClick="{{th.pick}}" aria-pressed="{{th.pressed}}" style="border-radius: 12px; padding: 10px; text-align: left; display: flex; flex-direction: column; gap: 10px; background: transparent; {{th.border}}">
+<span style="height: 90px; border-radius: 8px; display: flex; gap: 6px; padding: 8px; box-sizing: border-box; {{th.preview}}"><span style="width: 28%; border-radius: 4px; {{th.side}}"></span><span style="flex: 1; display: flex; flex-direction: column; gap: 6px;"><span style="height: 10px; width: 60%; border-radius: 3px; {{th.ink}}"></span><span style="height: 24px; width: 70px; border-radius: 6px; background-image: linear-gradient(100deg, #8B5CF6, #6D28D9);"></span></span></span>
+<span style="font-weight: 600;">{{th.label}}</span>
+</button>
+</sc-for>
+</div>
+<span style="font-size: 12.5px; color: rgb(var(--muted));">Cores idênticas ao site azuos-dev.vercel.app (globals.css). Escuro é o padrão.</span>
+</fieldset>
+</sc-if>
+
+<sc-if value="{{is.seguranca}}" hint-placeholder-val="{{false}}">
+<div class="card" style="border-radius: 14px; padding: 4px 16px;">
+<label style="display: flex; align-items: center; gap: 14px; min-height: 60px; border-bottom: 1px solid rgb(var(--line)); cursor: pointer;">
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 500;">Verificação em duas etapas obrigatória</span><span style="font-size: 12.5px; color: rgb(var(--muted));">Todos os membros precisam de 2FA para entrar.</span></span>
+<input type="checkbox" role="switch" checked="{{twofa}}" onChange="{{toggle2fa}}" style="width: 40px; height: 22px; margin: 0; accent-color: rgb(var(--accent));">
+</label>
+<div style="display: flex; align-items: center; gap: 14px; min-height: 60px; border-bottom: 1px solid rgb(var(--line));">
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 500;">Sessão atual</span><span style="font-size: 12.5px; color: rgb(var(--muted));">Windows · app desktop · ativa agora</span></span>
+</div>
+<div style="display: flex; align-items: center; gap: 14px; min-height: 60px;">
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 500;">Log de auditoria</span><span style="font-size: 12.5px; color: rgb(var(--muted));">Quem mudou permissões, convites e integrações.</span></span>
+<button class="ghost" style="height: 36px; padding: 0 12px; border-radius: 8px;">Ver log</button>
+</div>
+</div>
+</sc-if>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["escuro","claro"],"default":"escuro"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const self = this;
+    const s = this.state || {};
+    let stored = null;
+    try { stored = window.localStorage.getItem('azuos-theme'); } catch (e) {}
+    const theme = s.theme || stored || (this.props.tema === 'claro' ? 'light' : 'dark');
+    const setTheme = (n) => { try { window.localStorage.setItem('azuos-theme', n); } catch (e) {} self.setState({ theme: n }); };
+    const NAV = [
+      ['tarefas', 'Tarefas', 'Main.dc.html', 'M9 11l3 3 8-8M20 12v7H4V5h11'],
+      ['planner', 'Planner', 'Planner.dc.html', 'M4 6h16v15H4zM4 10h16M8 3v4M16 3v4'],
+      ['chat', 'Chat', 'Chat.dc.html', 'M4 5h16v11H9l-5 4z'],
+      ['docs', 'Docs', 'Docs.dc.html', 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7'],
+      ['dash', 'Dashboards', 'Dashboards.dc.html', 'M4 20V10M10 20V4M16 20v-7M2 20h20'],
+      ['time', 'Timesheets', 'Timesheets.dc.html', 'M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'],
+      ['metas', 'Metas', 'Metas.dc.html', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z'],
+      ['auto', 'Automações', 'Automacoes.dc.html', 'M13 2 4 14h7l-1 8 9-12h-7z'],
+      ['wb', 'Whiteboard', 'Whiteboard.dc.html', 'M3 4h18v12H3zM8 20l4-4 4 4'],
+      ['ia', 'IA', 'IA.dc.html', 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z']
+    ];
+    const sec = s.sec || 'geral';
+    const SECS = [
+      ['h', 'Workspace'], ['geral', 'Geral'], ['pessoas', 'Pessoas e papéis'], ['clickapps', 'Spaces e ClickApps'], ['integracoes', 'Integrações'],
+      ['h', 'Pessoal'], ['notificacoes', 'Notificações'], ['aparencia', 'Aparência'], ['seguranca', 'Segurança']
+    ];
+    const TITLES = { geral: 'Geral', pessoas: 'Pessoas e papéis', clickapps: 'Spaces e ClickApps', integracoes: 'Integrações', notificacoes: 'Notificações', aparencia: 'Aparência', seguranca: 'Segurança' };
+    const members = s.members || [
+      { initials: 'FS', name: 'Felipe de Souza', role: 'Owner', access: 'Tudo', status: 'Ativo' },
+      { initials: 'ES', name: 'Ezequiel Santos', role: 'Admin', access: 'Tudo, exceto faturamento', status: 'Ativo' },
+      { initials: 'CC', name: 'Cênio Construções', role: 'Convidado (cliente)', access: 'Folder Cênio Construções', status: 'Ativo' }
+    ];
+    const apps = s.apps || [
+      { n: 'Prioridades', d: 'Urgente, Alta, Normal, Baixa', on: true },
+      { n: 'Tags', d: 'Etiquetas coloridas por Space', on: true },
+      { n: 'Time tracking', d: 'Timer e lançamentos nas tarefas', on: true },
+      { n: 'Estimativas', d: 'Horas ou pontos por tarefa', on: true },
+      { n: 'Sprints', d: 'Folders de sprint com burndown', on: true },
+      { n: 'IDs personalizados', d: 'AZD-142 em vez de IDs aleatórios', on: true },
+      { n: 'Tarefa em várias Lists', d: 'A mesma tarefa aparece em mais de uma List', on: false },
+      { n: 'Campos personalizados', d: 'Cliente, Repositório, Ambiente, Faturável…', on: true }
+    ];
+    const integ = s.integ || { github: false, google: false, email: true, hooks: false };
+    const notif = s.notif || {
+      'Atribuída a mim': [true, true, true], 'Menção em comentário': [true, true, true], 'Mudança de status': [true, false, false],
+      'Prazo vence hoje': [true, true, true], 'Comentário em tarefa que sigo': [true, false, false], 'Resumo diário às 08:00': [true, true, false]
+    };
+    const on = 'background: rgb(var(--accent) / 0.16); color: rgb(var(--ink));';
+    const isMap = {};
+    Object.keys(TITLES).forEach(k => { isMap[k] = k === sec; });
+    const CH = ['Inbox', 'E-mail', 'Push'];
+    return {
+      themeClass: theme === 'light' ? 't-light' : 't-dark',
+      themeIcon: theme === 'light' ? 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z' : 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      themeLabel: theme === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro',
+      toggleTheme: () => setTheme(theme === 'light' ? 'dark' : 'light'),
+      gnav: NAV.map(i => ({ label: i[1], href: i[2], d: i[3], current: 'false', style: '' })),
+      settingsStyle: on,
+      gearIcon: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
+      sections: SECS.map(x => ({
+        isHead: x[0] === 'h', isItem: x[0] !== 'h', label: x[1],
+        current: x[0] === sec ? 'page' : 'false',
+        style: x[0] === sec ? 'background: rgb(var(--accent) / 0.14); color: rgb(var(--ink)); font-weight: 600;' : 'color: rgb(var(--body));',
+        pick: () => self.setState({ sec: x[0] })
+      })),
+      title: TITLES[sec], is: isMap,
+      saveLabel: s.saved ? 'Salvo' : 'Salvar alterações',
+      save: () => self.setState({ saved: true }),
+      invite: s.invite || '', inviteRole: s.inviteRole || 'Membro',
+      setInvite: (e) => self.setState({ invite: e.target.value }),
+      setInviteRole: (e) => self.setState({ inviteRole: e.target.value }),
+      sendInvite: () => {
+        const em = (s.invite || '').trim();
+        if (!em) return;
+        self.setState({ invite: '', members: members.concat([{ initials: em.slice(0, 2).toUpperCase(), name: em, role: s.inviteRole || 'Membro', access: 'Definido pelo papel', status: 'Convite enviado', pending: true }]) });
+      },
+      members: members.map(m => Object.assign({}, m, { tone: m.pending ? 'var(--warning)' : 'var(--success)' })),
+      apps: apps.map((a, i) => ({ name: a.n, desc: a.d, on: a.on, toggle: () => self.setState({ apps: apps.map((x, j) => j === i ? Object.assign({}, x, { on: !x.on }) : x) }) })),
+      integrations: [
+        ['github', 'GitHub', 'PR aberto move para Code review; PR mesclado move para Deploy.'],
+        ['google', 'Google Agenda', 'Sincroniza o Planner nos dois sentidos.'],
+        ['email', 'E-mail', 'Cria tarefas por e-mail e envia notificações.'],
+        ['hooks', 'Webhooks e API', 'Eventos para sistemas externos, como o formulário da landing page.']
+      ].map(x => ({
+        name: x[1], desc: x[2],
+        btn: integ[x[0]] ? 'Conectado · desconectar' : 'Conectar',
+        cls: integ[x[0]] ? 'ghost' : 'btn-signal',
+        toggle: () => self.setState({ integ: Object.assign({}, integ, { [x[0]]: !integ[x[0]] }) })
+      })),
+      notif: Object.keys(notif).map(k => ({
+        name: k,
+        cells: notif[k].map((v, i) => ({ on: v, aria: k + ' por ' + CH[i], toggle: () => self.setState({ notif: Object.assign({}, notif, { [k]: notif[k].map((y, j) => j === i ? !y : y) }) }) }))
+      })),
+      themes: [['dark', 'Escuro (padrão)', '#0B0714', '#100B1C', '#F5F3F9'], ['light', 'Claro', '#F8F6FC', '#F0ECF9', '#160E26']].map(t => ({
+        label: t[1], pressed: theme === t[0] ? 'true' : 'false',
+        border: theme === t[0] ? 'border: 2px solid rgb(var(--accent));' : 'border: 1px solid rgb(var(--line));',
+        preview: 'background: ' + t[2] + ';', side: 'background: ' + t[3] + ';', ink: 'background: ' + t[4] + ';',
+        pick: () => setTheme(t[0])
+      })),
+      twofa: !!s.twofa,
+      toggle2fa: () => self.setState({ twofa: !s.twofa })
+    };
+  }
+}
+</script>
+</body>
+</html>

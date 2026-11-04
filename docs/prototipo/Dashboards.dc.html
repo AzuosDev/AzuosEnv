@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Azuos Env — Dashboards</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.t-dark{color-scheme:dark;--paper:11 7 20;--paper-2:16 11 28;--surface:20 16 31;--surface-2:28 22 43;--line:44 36 62;--ink:245 243 249;--body:194 186 210;--muted:156 147 173;--accent:167 139 250;--signal:205 190 255;--signal-2:167 139 250;--on-signal:22 10 46;--scene:33 19 66;--scene-line:72 50 124;--dot:167 139 250;--success:34 197 94;--warning:245 158 11;--danger:239 68 68;--info:96 165 250}
+.t-light{color-scheme:light;--paper:248 246 252;--paper-2:240 236 249;--surface:255 255 255;--surface-2:245 241 252;--line:224 217 238;--ink:22 14 38;--body:72 63 94;--muted:101 92 122;--accent:109 40 217;--signal:139 92 246;--signal-2:109 40 217;--on-signal:255 255 255;--scene:236 228 255;--scene-line:212 198 250;--dot:124 58 237;--success:22 163 74;--warning:217 119 6;--danger:220 38 38;--info:37 99 235}
+.app{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:rgb(var(--paper));color:rgb(var(--ink));scrollbar-color:rgb(var(--line)) rgb(var(--paper))}
+.app button,.app input,.app textarea,.app select{font:inherit;color:inherit}
+.app button{cursor:pointer}
+.app ::selection{background:rgb(var(--accent) / .35);color:rgb(var(--ink))}
+.app :focus-visible{outline:2px solid rgb(var(--accent));outline-offset:2px}
+a{color:rgb(var(--accent))}a:hover{color:rgb(var(--signal))}
+.btn-signal{background-image:linear-gradient(100deg,rgb(var(--signal)) 0%,rgb(var(--signal-2)) 100%);color:rgb(var(--on-signal));box-shadow:0 10px 30px -12px rgb(var(--signal-2) / .7);border:0}
+.ghost{background:transparent;border:1px solid rgb(var(--line));color:rgb(var(--body))}
+.ghost:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.nb{background:transparent;border:0;color:rgb(var(--muted))}
+.nb:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.card{background:rgb(var(--surface));border:1px solid rgb(var(--line))}
+.heading{font-weight:600;letter-spacing:-0.02em;line-height:1.02;color:rgb(var(--ink))}
+.ellip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</helmet>
+<div class="app {{themeClass}}" style="min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+<nav aria-label="Navegação global" style="flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; background: rgb(var(--paper-2)); border-right: 1px solid rgb(var(--line)); box-sizing: border-box;">
+<a href="Main.dc.html" class="btn-signal" aria-label="Azuos Env — início" style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; margin-bottom: 10px; text-decoration: none;">&lt;/&gt;</a>
+<sc-for list="{{gnav}}" as="g" hint-placeholder-count="10">
+<a class="nb" href="{{g.href}}" aria-label="{{g.label}}" title="{{g.label}}" aria-current="{{g.current}}" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{g.style}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{g.d}}"></path></svg>
+</a>
+</sc-for>
+<span style="flex: 1;"></span>
+<a class="nb" href="Configuracoes.dc.html" aria-label="Configurações" title="Configurações" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{settingsStyle}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{gearIcon}}"></path></svg>
+</a>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgb(var(--line));">
+<h1 class="heading" style="margin: 0; font-size: 24px;">Dashboard · Clientes</h1>
+<span style="font-size: 11.5px; color: rgb(var(--muted)); border: 1px solid rgb(var(--line)); border-radius: 999px; padding: 2px 8px;">Dados de exemplo</span>
+<span style="flex: 1;"></span>
+<div role="group" aria-label="Filtrar por pessoa" style="display: flex; border: 1px solid rgb(var(--line)); border-radius: 8px; overflow: hidden;">
+<sc-for list="{{people}}" as="p" hint-placeholder-count="3">
+<button onClick="{{p.pick}}" aria-pressed="{{p.pressed}}" style="height: 34px; padding: 0 12px; border: 0; {{p.style}}">{{p.label}}</button>
+</sc-for>
+</div>
+<button class="ghost" style="height: 36px; padding: 0 12px; border-radius: 8px;">Semana atual</button>
+<button class="ghost" style="height: 36px; padding: 0 12px; border-radius: 8px;">+ Card</button>
+<button class="ghost" onClick="{{toggleTheme}}" aria-label="{{themeLabel}}" title="{{themeLabel}}" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{themeIcon}}"></path></svg></button>
+<div role="img" aria-label="Felipe de Souza" style="width: 36px; height: 36px; border-radius: 50%; background: rgb(var(--scene)); border: 1px solid rgb(var(--scene-line)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">FS</div>
+</header>
+
+<div style="padding: 20px 24px 40px; display: flex; flex-direction: column; gap: 16px;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+<sc-for list="{{kpis}}" as="k" hint-placeholder-count="4">
+<div class="card" style="border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 6px;">
+<span style="font-size: 12.5px; color: rgb(var(--muted));">{{k.label}}</span>
+<span style="font-size: 32px; font-weight: 600; letter-spacing: -0.02em; color: rgb({{k.tone}});">{{k.value}}</span>
+<span style="font-size: 12px; color: rgb(var(--muted));">{{k.note}}</span>
+</div>
+</sc-for>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 12px;">
+<section class="card" aria-label="Burndown da Sprint 3" style="border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600;">Burndown · Sprint 3</h2>
+<span style="font-size: 12.5px; color: rgb(var(--body));">7 de 8 tarefas ainda abertas no 8º de 10 dias úteis: sprint atrasada.</span>
+<svg viewBox="0 0 560 230" role="img" aria-label="Burndown: linha real acima da ideal, 7 tarefas restantes em 28 de outubro contra 1,8 ideais" style="width: 100%; height: auto;">
+<line x1="40" y1="190" x2="540" y2="190" stroke="rgb(var(--line))"></line>
+<line x1="40" y1="110" x2="540" y2="110" stroke="rgb(var(--line))" stroke-dasharray="2 4"></line>
+<line x1="40" y1="30" x2="540" y2="30" stroke="rgb(var(--line))" stroke-dasharray="2 4"></line>
+<text x="30" y="194" text-anchor="end" font-size="11" fill="rgb(var(--muted))">0</text>
+<text x="30" y="114" text-anchor="end" font-size="11" fill="rgb(var(--muted))">4</text>
+<text x="30" y="34" text-anchor="end" font-size="11" fill="rgb(var(--muted))">8</text>
+<path d="{{idealPath}}" fill="none" stroke="rgb(var(--muted))" stroke-width="1.5" stroke-dasharray="5 5"></path>
+<path d="{{realPath}}" fill="none" stroke="rgb(var(--accent))" stroke-width="2.5" stroke-linejoin="round"></path>
+<circle cx="{{todayX}}" cy="{{todayY}}" r="5" fill="rgb(var(--accent))"></circle>
+<text x="{{todayLabelX}}" y="{{todayLabelY}}" font-size="12" font-weight="600" fill="rgb(var(--ink))">Real: 7</text>
+<text x="120" y="74" font-size="11.5" fill="rgb(var(--muted))">Ideal</text>
+<text x="40" y="212" font-size="11" fill="rgb(var(--muted))">19 out</text>
+<text x="{{todayX}}" y="212" font-size="11" fill="rgb(var(--accent))" text-anchor="middle" font-weight="600">hoje</text>
+<text x="540" y="212" font-size="11" fill="rgb(var(--muted))" text-anchor="end">30 out</text>
+</svg>
+</section>
+
+<section class="card" aria-label="Tarefas por status" style="border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600;">Tarefas por status</h2>
+<sc-for list="{{byStatus}}" as="b" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: 120px minmax(0, 1fr) 32px; align-items: center; gap: 10px;">
+<span style="font-size: 13px; color: rgb(var(--body));">{{b.label}}</span>
+<span style="height: 14px; border-radius: 4px; background: rgb(var(--surface-2)); overflow: hidden;"><span style="display: block; height: 14px; border-radius: 4px; background: rgb({{b.tone}}); {{b.width}}"></span></span>
+<span style="font-size: 13px; font-weight: 600; text-align: right;">{{b.value}}</span>
+</div>
+</sc-for>
+</section>
+
+<section class="card" aria-label="Horas por cliente" style="border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600;">Horas por cliente · semana</h2>
+<sc-for list="{{byClient}}" as="b" hint-placeholder-count="3">
+<div style="display: grid; grid-template-columns: 140px minmax(0, 1fr) 52px; align-items: center; gap: 10px;">
+<span style="font-size: 13px; color: rgb(var(--body));">{{b.label}}</span>
+<span style="height: 14px; border-radius: 4px; background: rgb(var(--surface-2)); overflow: hidden;"><span style="display: block; height: 14px; border-radius: 4px; background: rgb(var(--accent)); {{b.width}}"></span></span>
+<span style="font-size: 13px; font-weight: 600; text-align: right;">{{b.value}}</span>
+</div>
+</sc-for>
+<a href="Timesheets.dc.html" style="font-size: 12.5px;">Ver timesheets</a>
+</section>
+
+<section class="card" aria-label="Carga por pessoa" style="border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600;">Tarefas abertas por pessoa</h2>
+<sc-for list="{{byPerson}}" as="b" hint-placeholder-count="2">
+<div style="display: grid; grid-template-columns: 140px minmax(0, 1fr) 32px; align-items: center; gap: 10px;">
+<span style="font-size: 13px; color: rgb(var(--body));">{{b.label}}</span>
+<span style="height: 14px; border-radius: 4px; background: rgb(var(--surface-2)); overflow: hidden;"><span style="display: block; height: 14px; border-radius: 4px; background: rgb(var(--info)); {{b.width}}"></span></span>
+<span style="font-size: 13px; font-weight: 600; text-align: right;">{{b.value}}</span>
+</div>
+</sc-for>
+<a href="Main.dc.html" style="font-size: 12.5px;">Abrir Workload</a>
+</section>
+
+<section class="card" aria-label="Precisa de atenção" style="border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px;">
+<h2 style="margin: 0 0 8px; font-size: 15px; font-weight: 600;">Precisa de atenção</h2>
+<sc-for list="{{attention}}" as="a" hint-placeholder-count="3">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 8px; border-radius: 8px; color: rgb(var(--ink)); text-decoration: none; border-bottom: 1px solid rgb(var(--line));">
+<span style="font-size: 12px; color: rgb(var(--muted));">{{a.code}}</span>
+<span class="ellip" style="flex: 1;">{{a.name}}</span>
+<span style="font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: rgb({{a.tone}} / 0.16); color: rgb({{a.tone}});">{{a.flag}}</span>
+</a>
+</sc-for>
+<sc-if value="{{noAttention}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: rgb(var(--muted));">Nada atrasado para este filtro.</span></sc-if>
+</section>
+</div>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["escuro","claro"],"default":"escuro"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  shell(active) {
+    const self = this;
+    const s = this.state || {};
+    let stored = null;
+    try { stored = window.localStorage.getItem('azuos-theme'); } catch (e) {}
+    const theme = s.theme || stored || (this.props.tema === 'claro' ? 'light' : 'dark');
+    const NAV = [
+      ['tarefas', 'Tarefas', 'Main.dc.html', 'M9 11l3 3 8-8M20 12v7H4V5h11'],
+      ['planner', 'Planner', 'Planner.dc.html', 'M4 6h16v15H4zM4 10h16M8 3v4M16 3v4'],
+      ['chat', 'Chat', 'Chat.dc.html', 'M4 5h16v11H9l-5 4z'],
+      ['docs', 'Docs', 'Docs.dc.html', 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7'],
+      ['dash', 'Dashboards', 'Dashboards.dc.html', 'M4 20V10M10 20V4M16 20v-7M2 20h20'],
+      ['time', 'Timesheets', 'Timesheets.dc.html', 'M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'],
+      ['metas', 'Metas', 'Metas.dc.html', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z'],
+      ['auto', 'Automações', 'Automacoes.dc.html', 'M13 2 4 14h7l-1 8 9-12h-7z'],
+      ['wb', 'Whiteboard', 'Whiteboard.dc.html', 'M3 4h18v12H3zM8 20l4-4 4 4'],
+      ['ia', 'IA', 'IA.dc.html', 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z']
+    ];
+    const on = 'background: rgb(var(--accent) / 0.16); color: rgb(var(--ink));';
+    return {
+      themeClass: theme === 'light' ? 't-light' : 't-dark',
+      themeIcon: theme === 'light' ? 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z' : 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      themeLabel: theme === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro',
+      toggleTheme: () => { const n = theme === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('azuos-theme', n); } catch (e) {} self.setState({ theme: n }); },
+      gnav: NAV.map(i => ({ label: i[1], href: i[2], d: i[3], current: i[0] === active ? 'page' : 'false', style: i[0] === active ? on : '' })),
+      settingsStyle: active === 'config' ? on : '',
+      gearIcon: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z'
+    };
+  }
+  renderVals() {
+    const self = this;
+    const s = this.state || {};
+    const who = s.who || 'all';
+    const TODAY = '2026-10-28';
+    const TASKS = [
+      { id: 142, name: 'Módulo de caixa offline', status: 'doing', who: 'FS', due: '2026-10-30' },
+      { id: 143, name: 'Sincronização PouchDB ↔ CouchDB', status: 'review', who: 'FS', due: '2026-10-27' },
+      { id: 144, name: 'Cadastro de produtos com código de barras', status: 'todo', who: 'ES', due: '2026-11-04' },
+      { id: 145, name: 'Relatório de vendas diário', status: 'todo', who: 'ES', due: '2026-11-06' },
+      { id: 146, name: 'Emissão de cupom não fiscal', status: 'homolog', who: 'FS', due: '2026-10-28' },
+      { id: 147, name: 'Tela de login com PIN', status: 'done', who: 'ES', due: '2026-10-23' },
+      { id: 148, name: 'Correção: estoque negativo na venda', status: 'doing', who: 'ES', due: '2026-10-29' },
+      { id: 149, name: 'Atalhos de teclado no PDV', status: 'todo', who: 'FS', due: '2026-11-03' }
+    ];
+    const HOURS = { FS: { 'Cênio Construções': 16.5, 'Central Motos': 2, 'Interno': 1.5 }, ES: { 'Cênio Construções': 12, 'Central Motos': 4, 'Interno': 2 } };
+    const tasks = TASKS.filter(t => who === 'all' || t.who === who);
+    const open = tasks.filter(t => t.status !== 'done');
+    const overdue = open.filter(t => t.due < TODAY);
+    const today = open.filter(t => t.due === TODAY);
+    const fmtH = (n) => String(n).replace('.', ',') + ' h';
+    const clients = ['Cênio Construções', 'Central Motos', 'Interno'];
+    const hrs = clients.map(c => (who === 'all' ? HOURS.FS[c] + HOURS.ES[c] : HOURS[who][c]));
+    const totalH = hrs.reduce((a, b) => a + b, 0);
+    const billH = totalH - hrs[2];
+    const ST = [['todo', 'A fazer', 'var(--muted)'], ['doing', 'Em andamento', 'var(--info)'], ['review', 'Code review', 'var(--accent)'], ['homolog', 'Homologação', 'var(--warning)'], ['done', 'Concluído', 'var(--success)']];
+    const counts = ST.map(x => tasks.filter(t => t.status === x[0]).length);
+    const maxC = Math.max(1, ...counts);
+    const maxH = Math.max(1, ...hrs);
+    const persons = [['FS', 'Felipe de Souza'], ['ES', 'Ezequiel Santos']].filter(p => who === 'all' || p[0] === who);
+    const pc = persons.map(p => TASKS.filter(t => t.who === p[0] && t.status !== 'done').length);
+    const maxP = Math.max(1, ...pc);
+    const X = (i) => 40 + i * (500 / 9);
+    const Y = (v) => 190 - v * 20;
+    const real = [8, 8, 8, 8, 7, 7, 7, 7];
+    const realPath = real.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v)).join(' ');
+    const idealPath = 'M' + X(0) + ' ' + Y(8) + ' L' + X(9) + ' ' + Y(0);
+    const att = overdue.map(t => ({ code: 'AZD-' + t.id, name: t.name, flag: 'Atrasada', tone: 'var(--danger)' }))
+      .concat(today.map(t => ({ code: 'AZD-' + t.id, name: t.name, flag: 'Vence hoje', tone: 'var(--warning)' })))
+      .concat(open.filter(t => t.due === '2026-10-29').map(t => ({ code: 'AZD-' + t.id, name: t.name, flag: 'Amanhã', tone: 'var(--info)' })));
+    const peopleBtns = [['all', 'Todos'], ['FS', 'Felipe'], ['ES', 'Ezequiel']].map(p => ({
+      label: p[1], pressed: who === p[0] ? 'true' : 'false',
+      style: who === p[0] ? 'background: rgb(var(--accent) / 0.16); color: rgb(var(--ink)); font-weight: 600;' : 'background: transparent; color: rgb(var(--muted));',
+      pick: () => self.setState({ who: p[0] })
+    }));
+    return Object.assign(this.shell('dash'), {
+      people: peopleBtns,
+      kpis: [
+        { label: 'Tarefas abertas', value: String(open.length), note: 'Space Clientes', tone: 'var(--ink)' },
+        { label: 'Atrasadas', value: String(overdue.length), note: 'prazo antes de hoje', tone: overdue.length ? 'var(--danger)' : 'var(--ink)' },
+        { label: 'Vencem hoje', value: String(today.length), note: '28 out', tone: today.length ? 'var(--warning)' : 'var(--ink)' },
+        { label: 'Horas na semana', value: fmtH(totalH), note: fmtH(billH) + ' faturáveis', tone: 'var(--ink)' }
+      ],
+      byStatus: ST.map((x, i) => ({ label: x[1], tone: x[2], value: String(counts[i]), width: 'width: ' + Math.round(counts[i] * 100 / maxC) + '%;' })),
+      byClient: clients.map((c, i) => ({ label: c, value: fmtH(hrs[i]), width: 'width: ' + Math.round(hrs[i] * 100 / maxH) + '%;' })),
+      byPerson: persons.map((p, i) => ({ label: p[1], value: String(pc[i]), width: 'width: ' + Math.round(pc[i] * 100 / maxP) + '%;' })),
+      attention: att, noAttention: att.length === 0,
+      realPath: realPath, idealPath: idealPath,
+      todayX: X(7).toFixed(1), todayY: String(Y(7)),
+      todayLabelX: (X(7) - 52).toFixed(1), todayLabelY: String(Y(7) - 12)
+    });
+  }
+}
+</script>
+</body>
+</html>
