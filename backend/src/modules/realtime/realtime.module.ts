@@ -5,6 +5,7 @@ import { DocsDataModule } from '../docs/docs-data.module';
 import { HierarchyModule } from '../hierarchy/hierarchy.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { UsersModule } from '../users/users.module';
+import { WhiteboardsDataModule } from '../whiteboards/whiteboards-data.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { EventsGateway } from './events.gateway';
 import { RealtimeListener } from './realtime.listener';
@@ -19,6 +20,7 @@ import { RoomAccessService } from './room-access.service';
     TasksModule,
     DocsDataModule,
     ChatDataModule,
+    WhiteboardsDataModule,
   ],
   providers: [RoomAccessService, EventsGateway, RealtimeListener],
 })

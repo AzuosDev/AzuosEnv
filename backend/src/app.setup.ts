@@ -2,12 +2,14 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
-import { RequestHandler } from 'express';
+import { NextFunction, Request, RequestHandler, Response, raw } from 'express';
 import helmet from 'helmet';
 
 export const API_PREFIX = 'api/v1';
 export const SWAGGER_PATH = 'api/docs';
 export const PUBLIC_FORMS_PATH = `/${API_PREFIX}/public/forms`;
+/** Route whose raw body is kept, to verify the signature of GitHub. */
+export const GITHUB_WEBHOOK_PATH = `/${API_PREFIX}/integrations/github/webhook`;
 const BODY_LIMIT = '1mb';
 
 export interface ConfigureAppOptions {
@@ -23,6 +25,9 @@ export function configureApp(app: NestExpressApplication, options: ConfigureAppO
   app.setGlobalPrefix(API_PREFIX);
   app.use(helmet());
   app.use(cookieParser());
+  // Registered before the JSON parser so the raw bytes of the GitHub webhook are
+  // still available when its signature is verified.
+  app.use(GITHUB_WEBHOOK_PATH, raw({ type: '*/*', limit: BODY_LIMIT }), keepRawBody);
   app.useBodyParser('json', { limit: BODY_LIMIT });
   app.useBodyParser('urlencoded', { limit: BODY_LIMIT, extended: true });
 
@@ -51,6 +56,38 @@ export function configureApp(app: NestExpressApplication, options: ConfigureAppO
     );
     SwaggerModule.setup(SWAGGER_PATH, app, document);
   }
+}
+
+/**
+ * The signature of GitHub covers the exact bytes of the body, so this route keeps
+ * the raw buffer and parses the JSON itself; everywhere else nothing extra is held.
+ */
+function keepRawBody(request: Request, _response: Response, next: NextFunction): void {
+  const typed = request as RawBodyRequest;
+
+  if (Buffer.isBuffer(request.body)) {
+    typed.rawBody = request.body;
+    typed.body = parseJsonBody(request.body);
+  }
+
+  next();
+}
+
+function parseJsonBody(buffer: Buffer): Record<string, unknown> {
+  try {
+    const parsed: unknown = JSON.parse(buffer.toString('utf8'));
+
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+/** Request whose raw body was kept by `keepRawBody`. */
+export interface RawBodyRequest extends Request {
+  rawBody?: Buffer;
 }
 
 /**

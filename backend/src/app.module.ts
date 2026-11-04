@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { ApiKeyScopeGuard } from './modules/api-keys/guards/api-key-scope.guard';
 import { HttpThrottlerGuard } from './common/guards/http-throttler.guard';
 import { envValidationSchema } from './config/env.validation';
 import { AiModule } from './modules/ai/ai.module';
@@ -23,6 +24,7 @@ import { GoalsModule } from './modules/goals/goals.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
 import { HierarchyModule } from './modules/hierarchy/hierarchy.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { SearchModule } from './modules/search/search.module';
@@ -32,6 +34,7 @@ import { TrashModule } from './modules/trash/trash.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { UsersModule } from './modules/users/users.module';
 import { ViewsModule } from './modules/views/views.module';
+import { WhiteboardsModule } from './modules/whiteboards/whiteboards.module';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
 
 @Module({
@@ -76,11 +79,14 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     FormsModule,
     SprintsModule,
     AiModule,
+    WhiteboardsModule,
+    IntegrationsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_GUARD, useClass: HttpThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: ApiKeyScopeGuard },
     {
       provide: APP_PIPE,
       useFactory: () =>

@@ -17,16 +17,30 @@ export interface TestApp {
   close(): Promise<void>;
 }
 
+export interface ProviderOverride {
+  /** Injection token of the provider to replace (class or symbol). */
+  token: unknown;
+  value: unknown;
+}
+
 export interface CreateTestAppOptions {
   /** Binds a real port, needed by the Socket.IO suite. */
   listen?: boolean;
+  /** Replaces providers of the app, used for the mocked calendar provider. */
+  overrides?: ProviderOverride[];
 }
 
 /**
  * Boots the application against the in-memory MongoDB started by the global setup.
  */
 export async function createTestApp(options: CreateTestAppOptions = {}): Promise<TestApp> {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+  const builder = Test.createTestingModule({ imports: [AppModule] });
+
+  for (const override of options.overrides ?? []) {
+    builder.overrideProvider(override.token).useValue(override.value);
+  }
+
+  const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<NestExpressApplication>();
 
   configureApp(app, { swagger: false });

@@ -34,6 +34,20 @@ export const envValidationSchema = Joi.object({
     .when('XAI_API_KEY', { is: Joi.string().min(1), then: Joi.string().min(1).required() }),
   // Tokens (in + out) one workspace may spend per calendar month; 0 = no ceiling.
   AI_MONTHLY_TOKEN_BUDGET: Joi.number().integer().min(0).default(1_000_000),
+  // Passphrase of the secrets at rest (OAuth tokens, webhook secrets). Empty falls
+  // back to JWT_ACCESS_SECRET, which keeps development and the tests working.
+  ENCRYPTION_KEY: Joi.string().allow('').default(''),
+  // Without GOOGLE_CLIENT_ID the CalendarProvider stays the stub.
+  GOOGLE_CLIENT_ID: Joi.string().allow('').default(''),
+  GOOGLE_CLIENT_SECRET: Joi.string()
+    .allow('')
+    .default('')
+    .when('GOOGLE_CLIENT_ID', { is: Joi.string().min(1), then: Joi.string().min(1).required() }),
+  GOOGLE_REDIRECT_URI: Joi.string()
+    .uri()
+    .default('http://localhost:3000/api/v1/integrations/google/callback'),
+  // Calendar of the connected account; `primary` is the main one of the user.
+  GOOGLE_CALENDAR_ID: Joi.string().default('primary'),
 })
   .unknown(true)
   .options({ abortEarly: false });

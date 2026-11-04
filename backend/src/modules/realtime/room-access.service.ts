@@ -8,6 +8,7 @@ import { permissionContextFrom } from '../hierarchy/permission.service';
 import { AccessTokenPayload } from '../auth/strategies/jwt.strategy';
 import { TaskAccessService } from '../tasks/task-access.service';
 import { UsersService } from '../users/users.service';
+import { WhiteboardsAccessService } from '../whiteboards/whiteboards-access.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { RoomPayload, isRoomKind, roomName } from './realtime-rooms';
 
@@ -22,6 +23,7 @@ export class RoomAccessService {
     private readonly taskAccess: TaskAccessService,
     private readonly docs: DocsAccessService,
     private readonly chat: ChatAccessService,
+    private readonly whiteboards: WhiteboardsAccessService,
   ) {}
 
   /** Reads the access token of `auth.token` and answers the id of the user. */
@@ -76,6 +78,12 @@ export class RoomAccessService {
       const doc = await this.docs.requireDoc(ctx, new Types.ObjectId(id), 'view');
 
       return roomName('doc', String(doc._id));
+    }
+
+    if (kind === 'board') {
+      const board = await this.whiteboards.requireWhiteboard(ctx, new Types.ObjectId(id), 'view');
+
+      return roomName('board', String(board._id));
     }
 
     if (kind === 'channel') {

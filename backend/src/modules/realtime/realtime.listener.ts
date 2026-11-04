@@ -39,6 +39,15 @@ import {
   TaskMovedEvent,
   TaskUpdatedEvent,
 } from '../tasks/task-events';
+import {
+  WHITEBOARD_CREATED,
+  WHITEBOARD_DELETED,
+  WHITEBOARD_UPDATED,
+  WhiteboardCreatedEvent,
+  WhiteboardDeletedEvent,
+  WhiteboardEventBase,
+  WhiteboardUpdatedEvent,
+} from '../whiteboards/whiteboard-events';
 import { EventsGateway } from './events.gateway';
 import { roomName, userRoom } from './realtime-rooms';
 
@@ -131,6 +140,24 @@ export class RealtimeListener {
     this.gateway.emitToRooms(messageRooms(event), 'message.deleted', messagePayload(event));
   }
 
+  @OnEvent(WHITEBOARD_CREATED)
+  onWhiteboardCreated(event: WhiteboardCreatedEvent): void {
+    this.gateway.emitToRooms(boardRooms(event), 'whiteboard.created', boardPayload(event));
+  }
+
+  @OnEvent(WHITEBOARD_UPDATED)
+  onWhiteboardUpdated(event: WhiteboardUpdatedEvent): void {
+    this.gateway.emitToRooms(boardRooms(event), 'whiteboard.updated', {
+      ...boardPayload(event),
+      ops: event.ops,
+    });
+  }
+
+  @OnEvent(WHITEBOARD_DELETED)
+  onWhiteboardDeleted(event: WhiteboardDeletedEvent): void {
+    this.gateway.emitToRooms(boardRooms(event), 'whiteboard.deleted', boardPayload(event));
+  }
+
   @OnEvent(NOTIFICATION_CREATED)
   onNotificationCreated(event: NotificationCreatedEvent): void {
     this.gateway.emitToRooms([userRoom(String(event.userId))], 'notification.new', {
@@ -174,6 +201,19 @@ function pagePayload(event: PageEventBase): Record<string, unknown> {
     docId: String(event.docId),
     pageId: String(event.pageId),
     parentPageId: event.parentPageId ? String(event.parentPageId) : null,
+    version: event.version,
+    actorId: String(event.actorId),
+  };
+}
+
+function boardRooms(event: WhiteboardEventBase): string[] {
+  return [roomName('ws', String(event.workspaceId)), roomName('board', String(event.whiteboardId))];
+}
+
+function boardPayload(event: WhiteboardEventBase): Record<string, unknown> {
+  return {
+    workspaceId: String(event.workspaceId),
+    whiteboardId: String(event.whiteboardId),
     version: event.version,
     actorId: String(event.actorId),
   };
