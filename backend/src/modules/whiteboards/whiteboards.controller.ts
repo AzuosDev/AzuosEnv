@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -30,7 +31,7 @@ import {
   UpdateWhiteboardDto,
   WhiteboardQueryDto,
 } from './dto/whiteboard.dto';
-import { WhiteboardDocument } from './schemas/whiteboard.schema';
+import { Whiteboard, WhiteboardDocument } from './schemas/whiteboard.schema';
 import { ElementTaskResult, WhiteboardsService } from './whiteboards.service';
 
 @ApiTags('whiteboards')
@@ -41,7 +42,7 @@ export class WhiteboardsController {
   constructor(private readonly whiteboards: WhiteboardsService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Quadro criado.' })
+  @ApiCreatedResponse({ description: 'Quadro criado.', type: Whiteboard })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateWhiteboardDto,
@@ -50,7 +51,7 @@ export class WhiteboardsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Quadros visíveis, mais novos primeiro.' })
+  @ApiPagedResponse(Whiteboard, 'Quadros visíveis, mais novos primeiro.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: WhiteboardQueryDto,
@@ -59,7 +60,7 @@ export class WhiteboardsController {
   }
 
   @Get(':whiteboardId')
-  @ApiOkResponse({ description: 'Quadro com os elementos e a versão atual.' })
+  @ApiOkResponse({ description: 'Quadro com os elementos e a versão atual.', type: Whiteboard })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('whiteboardId', ParseObjectIdPipe) whiteboardId: Types.ObjectId,
@@ -68,7 +69,7 @@ export class WhiteboardsController {
   }
 
   @Patch(':whiteboardId')
-  @ApiOkResponse({ description: 'Quadro renomeado.' })
+  @ApiOkResponse({ description: 'Quadro renomeado.', type: Whiteboard })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('whiteboardId', ParseObjectIdPipe) whiteboardId: Types.ObjectId,
@@ -78,7 +79,10 @@ export class WhiteboardsController {
   }
 
   @Patch(':whiteboardId/elements')
-  @ApiOkResponse({ description: 'Lote aplicado; divergência de versão responde 409.' })
+  @ApiOkResponse({
+    description: 'Lote aplicado; divergência de versão responde 409.',
+    type: Whiteboard,
+  })
   patchElements(
     @CurrentMembership() membership: RequestMembership,
     @Param('whiteboardId', ParseObjectIdPipe) whiteboardId: Types.ObjectId,
@@ -119,7 +123,7 @@ export class WhiteboardsController {
 
   @Post(':whiteboardId/restore')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Quadro restaurado.' })
+  @ApiOkResponse({ description: 'Quadro restaurado.', type: Whiteboard })
   restore(
     @CurrentMembership() membership: RequestMembership,
     @Param('whiteboardId', ParseObjectIdPipe) whiteboardId: Types.ObjectId,

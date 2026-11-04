@@ -25,7 +25,7 @@ import {
   CustomFieldQueryDto,
   UpdateCustomFieldDto,
 } from './dto/custom-field.dto';
-import { CustomFieldDocument } from './schemas/custom-field.schema';
+import { CustomField, CustomFieldDocument } from './schemas/custom-field.schema';
 
 @ApiTags('custom-fields')
 @ApiBearerAuth()
@@ -35,7 +35,7 @@ export class CustomFieldsController {
   constructor(private readonly fields: CustomFieldsService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Campo personalizado criado.' })
+  @ApiCreatedResponse({ description: 'Campo personalizado criado.', type: CustomField })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateCustomFieldDto,
@@ -44,7 +44,7 @@ export class CustomFieldsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Campos do escopo e os herdados de cima.' })
+  @ApiOkResponse({ description: 'Campos do escopo e os herdados de cima.', type: [CustomField] })
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: CustomFieldQueryDto,
@@ -57,7 +57,7 @@ export class CustomFieldsController {
   }
 
   @Get(':fieldId')
-  @ApiOkResponse({ description: 'Campo personalizado.' })
+  @ApiOkResponse({ description: 'Campo personalizado.', type: CustomField })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('fieldId', ParseObjectIdPipe) fieldId: Types.ObjectId,
@@ -66,7 +66,7 @@ export class CustomFieldsController {
   }
 
   @Patch(':fieldId')
-  @ApiOkResponse({ description: 'Campo atualizado.' })
+  @ApiOkResponse({ description: 'Campo atualizado.', type: CustomField })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('fieldId', ParseObjectIdPipe) fieldId: Types.ObjectId,
@@ -77,7 +77,7 @@ export class CustomFieldsController {
 
   @Post(':fieldId/reorder')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Campo reordenado no escopo.' })
+  @ApiOkResponse({ description: 'Campo reordenado no escopo.', type: CustomField })
   reorder(
     @CurrentMembership() membership: RequestMembership,
     @Param('fieldId', ParseObjectIdPipe) fieldId: Types.ObjectId,

@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
 import { permissionContextFrom } from '../hierarchy/permission.service';
@@ -8,7 +9,7 @@ import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { ActivitiesService } from './activities.service';
 import { ActivityQueryDto } from './dto/activity.dto';
-import { ActivityDocument } from './schemas/activity.schema';
+import { Activity, ActivityDocument } from './schemas/activity.schema';
 
 @ApiTags('activity')
 @ApiBearerAuth()
@@ -18,7 +19,7 @@ export class TaskActivityController {
   constructor(private readonly activities: ActivitiesService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Histórico da tarefa, do mais recente ao mais antigo.' })
+  @ApiPagedResponse(Activity, 'Histórico da tarefa, do mais recente ao mais antigo.')
   forTask(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -36,7 +37,7 @@ export class ActivityController {
   constructor(private readonly activities: ActivitiesService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'View Activity do workspace, filtrada por location.' })
+  @ApiPagedResponse(Activity, 'View Activity do workspace, filtrada por location.')
   forWorkspace(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: ActivityQueryDto,

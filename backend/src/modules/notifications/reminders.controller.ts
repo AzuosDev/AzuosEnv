@@ -9,7 +9,8 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -19,7 +20,7 @@ import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { CreateReminderDto, ReminderQueryDto, UpdateReminderDto } from './dto/reminder.dto';
 import { RemindersService } from './reminders.service';
-import { ReminderDocument } from './schemas/reminder.schema';
+import { Reminder, ReminderDocument } from './schemas/reminder.schema';
 
 @ApiTags('reminders')
 @ApiBearerAuth()
@@ -29,7 +30,7 @@ export class RemindersController {
   constructor(private readonly reminders: RemindersService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Lembrete criado para quem chamou.' })
+  @ApiCreatedResponse({ description: 'Lembrete criado para quem chamou.', type: Reminder })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateReminderDto,
@@ -38,7 +39,7 @@ export class RemindersController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Lembretes do usuário, do mais recente ao mais antigo.' })
+  @ApiPagedResponse(Reminder, 'Lembretes do usuário, do mais recente ao mais antigo.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: ReminderQueryDto,

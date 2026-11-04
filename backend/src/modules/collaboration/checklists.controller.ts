@@ -25,7 +25,7 @@ import {
   UpdateChecklistDto,
   UpdateChecklistItemDto,
 } from './dto/checklist.dto';
-import { ChecklistDocument } from './schemas/checklist.schema';
+import { Checklist, ChecklistDocument } from './schemas/checklist.schema';
 
 @ApiTags('checklists')
 @ApiBearerAuth()
@@ -35,7 +35,7 @@ export class TaskChecklistsController {
   constructor(private readonly checklists: ChecklistsService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Checklist criada na tarefa.' })
+  @ApiCreatedResponse({ description: 'Checklist criada na tarefa.', type: Checklist })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -45,7 +45,7 @@ export class TaskChecklistsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Checklists da tarefa, em ordem manual.' })
+  @ApiOkResponse({ description: 'Checklists da tarefa, em ordem manual.', type: [Checklist] })
   list(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -62,7 +62,7 @@ export class ChecklistsController {
   constructor(private readonly checklists: ChecklistsService) {}
 
   @Patch(':checklistId')
-  @ApiOkResponse({ description: 'Checklist atualizada.' })
+  @ApiOkResponse({ description: 'Checklist atualizada.', type: Checklist })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('checklistId', ParseObjectIdPipe) checklistId: Types.ObjectId,
@@ -73,7 +73,7 @@ export class ChecklistsController {
 
   @Post(':checklistId/reorder')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Checklist reordenada na tarefa.' })
+  @ApiOkResponse({ description: 'Checklist reordenada na tarefa.', type: Checklist })
   reorder(
     @CurrentMembership() membership: RequestMembership,
     @Param('checklistId', ParseObjectIdPipe) checklistId: Types.ObjectId,
@@ -95,7 +95,7 @@ export class ChecklistsController {
   }
 
   @Post(':checklistId/items')
-  @ApiCreatedResponse({ description: 'Item adicionado à checklist.' })
+  @ApiCreatedResponse({ description: 'Item adicionado à checklist.', type: Checklist })
   addItem(
     @CurrentMembership() membership: RequestMembership,
     @Param('checklistId', ParseObjectIdPipe) checklistId: Types.ObjectId,
@@ -105,7 +105,7 @@ export class ChecklistsController {
   }
 
   @Patch(':checklistId/items/:itemId')
-  @ApiOkResponse({ description: 'Item atualizado.' })
+  @ApiOkResponse({ description: 'Item atualizado.', type: Checklist })
   updateItem(
     @CurrentMembership() membership: RequestMembership,
     @Param('checklistId', ParseObjectIdPipe) checklistId: Types.ObjectId,
@@ -117,7 +117,7 @@ export class ChecklistsController {
 
   @Post(':checklistId/items/:itemId/reorder')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Item reordenado entre os irmãos.' })
+  @ApiOkResponse({ description: 'Item reordenado entre os irmãos.', type: Checklist })
   reorderItem(
     @CurrentMembership() membership: RequestMembership,
     @Param('checklistId', ParseObjectIdPipe) checklistId: Types.ObjectId,
@@ -129,7 +129,7 @@ export class ChecklistsController {
 
   @Delete(':checklistId/items/:itemId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Item e subitens removidos.' })
+  @ApiOkResponse({ description: 'Item e subitens removidos.', type: Checklist })
   removeItem(
     @CurrentMembership() membership: RequestMembership,
     @Param('checklistId', ParseObjectIdPipe) checklistId: Types.ObjectId,

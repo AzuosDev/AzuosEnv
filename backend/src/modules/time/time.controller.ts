@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -25,7 +26,7 @@ import {
   TimeEntryQueryDto,
   UpdateTimeEntryDto,
 } from './dto/time-entry.dto';
-import { TimeEntryDocument } from './schemas/time-entry.schema';
+import { TimeEntry, TimeEntryDocument } from './schemas/time-entry.schema';
 import { TimeEntriesService, TimerResult } from './time-entries.service';
 
 @ApiTags('time')
@@ -47,7 +48,7 @@ export class TimerController {
 
   @Post('stop')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Cronômetro parado.' })
+  @ApiOkResponse({ description: 'Cronômetro parado.', type: TimeEntry })
   stop(@CurrentMembership() membership: RequestMembership): Promise<TimeEntryDocument> {
     return this.entries.stopTimer(permissionContextFrom(membership));
   }
@@ -69,7 +70,7 @@ export class TimeEntriesController {
   constructor(private readonly entries: TimeEntriesService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Lançamento manual criado.' })
+  @ApiCreatedResponse({ description: 'Lançamento manual criado.', type: TimeEntry })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateTimeEntryDto,
@@ -78,7 +79,7 @@ export class TimeEntriesController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Lançamentos do usuário, mais recentes primeiro.' })
+  @ApiPagedResponse(TimeEntry, 'Lançamentos do usuário, mais recentes primeiro.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: TimeEntryQueryDto,
@@ -87,7 +88,7 @@ export class TimeEntriesController {
   }
 
   @Patch(':entryId')
-  @ApiOkResponse({ description: 'Lançamento atualizado.' })
+  @ApiOkResponse({ description: 'Lançamento atualizado.', type: TimeEntry })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('entryId', ParseObjectIdPipe) entryId: Types.ObjectId,

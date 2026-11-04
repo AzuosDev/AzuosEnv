@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import {
@@ -99,6 +100,7 @@ export class Form {
   active: boolean;
 
   /** sha256 of the opaque token; the plain value is shown once, on creation. */
+  @ApiHideProperty()
   @Prop({ type: String, required: true, select: false })
   publicTokenHash: string;
 

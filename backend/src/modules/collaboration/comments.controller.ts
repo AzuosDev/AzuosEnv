@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
@@ -28,7 +29,7 @@ import {
   ReactionDto,
   UpdateCommentDto,
 } from './dto/comment.dto';
-import { CommentDocument } from './schemas/comment.schema';
+import { Comment, CommentDocument } from './schemas/comment.schema';
 
 @ApiTags('comments')
 @ApiBearerAuth()
@@ -38,7 +39,7 @@ export class TaskCommentsController {
   constructor(private readonly comments: CommentsService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Comentário criado na tarefa.' })
+  @ApiCreatedResponse({ description: 'Comentário criado na tarefa.', type: Comment })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -66,7 +67,7 @@ export class CommentsController {
   constructor(private readonly comments: CommentsService) {}
 
   @Patch(':commentId')
-  @ApiOkResponse({ description: 'Comentário editado (só o autor).' })
+  @ApiOkResponse({ description: 'Comentário editado (só o autor).', type: Comment })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('commentId', ParseObjectIdPipe) commentId: Types.ObjectId,
@@ -77,7 +78,7 @@ export class CommentsController {
 
   @Post(':commentId/reactions')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Reação alternada no comentário.' })
+  @ApiOkResponse({ description: 'Reação alternada no comentário.', type: Comment })
   react(
     @CurrentMembership() membership: RequestMembership,
     @Param('commentId', ParseObjectIdPipe) commentId: Types.ObjectId,
@@ -88,7 +89,7 @@ export class CommentsController {
 
   @Post(':commentId/assign')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Responsável do comentário definido ou removido.' })
+  @ApiOkResponse({ description: 'Responsável do comentário definido ou removido.', type: Comment })
   assign(
     @CurrentMembership() membership: RequestMembership,
     @Param('commentId', ParseObjectIdPipe) commentId: Types.ObjectId,
@@ -99,7 +100,7 @@ export class CommentsController {
 
   @Post(':commentId/resolve')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Comentário resolvido.' })
+  @ApiOkResponse({ description: 'Comentário resolvido.', type: Comment })
   resolve(
     @CurrentMembership() membership: RequestMembership,
     @Param('commentId', ParseObjectIdPipe) commentId: Types.ObjectId,
@@ -109,7 +110,7 @@ export class CommentsController {
 
   @Post(':commentId/unresolve')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Comentário reaberto.' })
+  @ApiOkResponse({ description: 'Comentário reaberto.', type: Comment })
   unresolve(
     @CurrentMembership() membership: RequestMembership,
     @Param('commentId', ParseObjectIdPipe) commentId: Types.ObjectId,
@@ -138,7 +139,7 @@ export class CommentInboxController {
   constructor(private readonly comments: CommentsService) {}
 
   @Get('assigned-comments')
-  @ApiOkResponse({ description: 'Comentários atribuídos ao usuário autenticado.' })
+  @ApiPagedResponse(Comment, 'Comentários atribuídos ao usuário autenticado.')
   assigned(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: AssignedCommentsQueryDto,
@@ -147,7 +148,7 @@ export class CommentInboxController {
   }
 
   @Get('replies')
-  @ApiOkResponse({ description: 'Respostas de outras pessoas aos meus comentários.' })
+  @ApiPagedResponse(Comment, 'Respostas de outras pessoas aos meus comentários.')
   replies(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: PaginationQueryDto,

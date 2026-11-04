@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -22,7 +23,7 @@ import { CreateFolderDto, FolderQueryDto, MoveFolderDto, UpdateFolderDto } from 
 import { ReorderDto } from './dto/reorder.dto';
 import { FoldersService } from './folders.service';
 import { permissionContextFrom } from './permission.service';
-import { FolderDocument } from './schemas/folder.schema';
+import { Folder, FolderDocument } from './schemas/folder.schema';
 
 @ApiTags('folders')
 @ApiBearerAuth()
@@ -32,7 +33,7 @@ export class FoldersController {
   constructor(private readonly folders: FoldersService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Folder criado.' })
+  @ApiCreatedResponse({ description: 'Folder criado.', type: Folder })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateFolderDto,
@@ -41,7 +42,7 @@ export class FoldersController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Folders visíveis para o usuário.' })
+  @ApiPagedResponse(Folder, 'Folders visíveis para o usuário.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: FolderQueryDto,
@@ -50,7 +51,7 @@ export class FoldersController {
   }
 
   @Get(':folderId')
-  @ApiOkResponse({ description: 'Folder.' })
+  @ApiOkResponse({ description: 'Folder.', type: Folder })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('folderId', ParseObjectIdPipe) folderId: Types.ObjectId,
@@ -59,7 +60,7 @@ export class FoldersController {
   }
 
   @Patch(':folderId')
-  @ApiOkResponse({ description: 'Folder atualizado.' })
+  @ApiOkResponse({ description: 'Folder atualizado.', type: Folder })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('folderId', ParseObjectIdPipe) folderId: Types.ObjectId,
@@ -70,7 +71,7 @@ export class FoldersController {
 
   @Post(':folderId/move')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Folder movido.' })
+  @ApiOkResponse({ description: 'Folder movido.', type: Folder })
   move(
     @CurrentMembership() membership: RequestMembership,
     @Param('folderId', ParseObjectIdPipe) folderId: Types.ObjectId,
@@ -81,7 +82,7 @@ export class FoldersController {
 
   @Post(':folderId/reorder')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Folder reordenado.' })
+  @ApiOkResponse({ description: 'Folder reordenado.', type: Folder })
   reorder(
     @CurrentMembership() membership: RequestMembership,
     @Param('folderId', ParseObjectIdPipe) folderId: Types.ObjectId,
@@ -92,7 +93,7 @@ export class FoldersController {
 
   @Post(':folderId/archive')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Folder arquivado.' })
+  @ApiOkResponse({ description: 'Folder arquivado.', type: Folder })
   archive(
     @CurrentMembership() membership: RequestMembership,
     @Param('folderId', ParseObjectIdPipe) folderId: Types.ObjectId,
@@ -102,7 +103,7 @@ export class FoldersController {
 
   @Post(':folderId/unarchive')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Folder desarquivado.' })
+  @ApiOkResponse({ description: 'Folder desarquivado.', type: Folder })
   unarchive(
     @CurrentMembership() membership: RequestMembership,
     @Param('folderId', ParseObjectIdPipe) folderId: Types.ObjectId,
@@ -112,7 +113,7 @@ export class FoldersController {
 
   @Post(':folderId/restore')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Folder restaurado da lixeira.' })
+  @ApiOkResponse({ description: 'Folder restaurado da lixeira.', type: Folder })
   restore(
     @CurrentMembership() membership: RequestMembership,
     @Param('folderId', ParseObjectIdPipe) folderId: Types.ObjectId,

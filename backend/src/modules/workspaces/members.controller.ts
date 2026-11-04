@@ -11,16 +11,18 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
+import { Audit } from '../audit/audit.decorator';
 import { CurrentMembership } from './decorators/workspace-context.decorator';
 import { Roles } from './decorators/roles.decorator';
 import { UpdateMemberRoleDto } from './dto/member.dto';
 import { WorkspaceGuard } from './guards/workspace.guard';
 import { MembersService } from './members.service';
-import { WorkspaceMemberDocument } from './schemas/workspace-member.schema';
+import { WorkspaceMember, WorkspaceMemberDocument } from './schemas/workspace-member.schema';
 import { RequestMembership, workspaceObjectId } from './workspace-context';
 
 @ApiTags('workspace-members')
@@ -31,7 +33,7 @@ export class MembersController {
   constructor(private readonly members: MembersService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Membros do workspace.' })
+  @ApiPagedResponse(WorkspaceMember, 'Membros do workspace.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: PaginationQueryDto,
@@ -40,8 +42,9 @@ export class MembersController {
   }
 
   @Patch(':memberId')
+  @Audit('member.role.changed', 'member', 'memberId')
   @Roles('admin')
-  @ApiOkResponse({ description: 'Papel do membro atualizado.' })
+  @ApiOkResponse({ description: 'Papel do membro atualizado.', type: WorkspaceMember })
   updateRole(
     @CurrentMembership() membership: RequestMembership,
     @Param('memberId', ParseObjectIdPipe) memberId: Types.ObjectId,
@@ -51,9 +54,10 @@ export class MembersController {
   }
 
   @Post(':memberId/deactivate')
+  @Audit('member.deactivated', 'member', 'memberId')
   @Roles('admin')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Membro desativado.' })
+  @ApiOkResponse({ description: 'Membro desativado.', type: WorkspaceMember })
   deactivate(
     @CurrentMembership() membership: RequestMembership,
     @Param('memberId', ParseObjectIdPipe) memberId: Types.ObjectId,

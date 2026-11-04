@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import { DOC_LOCATION_TYPES, DocLocationType } from '../docs-fields';
@@ -10,6 +11,7 @@ export class DocShare {
   public: boolean;
 
   /** sha256 of the opaque token; the plain value is shown once, on sharing. */
+  @ApiHideProperty()
   @Prop({ type: String, default: null, select: false })
   tokenHash: string | null;
 }

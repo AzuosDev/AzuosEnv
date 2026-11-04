@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { AuthenticatedUser, CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CursorPage } from '../../common/pagination/cursor';
@@ -12,7 +13,7 @@ import { UpdateNotificationSettingsDto } from './dto/notification-settings.dto';
 import { NotificationPreferences } from './notification-fields';
 import { NotificationSettingsService } from './notification-settings.service';
 import { InboxCounts, NotificationsService } from './notifications.service';
-import { NotificationDocument } from './schemas/notification.schema';
+import { Notification, NotificationDocument } from './schemas/notification.schema';
 
 @ApiTags('inbox')
 @ApiBearerAuth()
@@ -22,7 +23,7 @@ export class InboxController {
   constructor(private readonly notifications: NotificationsService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Notificações da aba pedida, da mais recente à mais antiga.' })
+  @ApiPagedResponse(Notification, 'Notificações da aba pedida, da mais recente à mais antiga.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: InboxQueryDto,

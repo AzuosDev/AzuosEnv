@@ -1,7 +1,7 @@
-import { Logger } from '@nestjs/common';
+import { INestApplicationContext, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { AppModule } from '../app.module';
 import { CustomFieldsService } from '../modules/fields/custom-fields.service';
 import { CreateCustomFieldDto } from '../modules/fields/dto/custom-field.dto';
@@ -15,7 +15,23 @@ import { Space, SpaceDocument } from '../modules/hierarchy/schemas/space.schema'
 import { SpacesService } from '../modules/hierarchy/spaces.service';
 import { StatusSetsService } from '../modules/hierarchy/status-sets.service';
 import { StatusTemplate } from '../modules/hierarchy/status-templates';
+import { ChannelsService } from '../modules/chat/channels.service';
+import { Channel } from '../modules/chat/schemas/channel.schema';
+import { MessagesService } from '../modules/chat/messages.service';
+import { CommentsService } from '../modules/collaboration/comments.service';
+import { Comment } from '../modules/collaboration/schemas/comment.schema';
+import { DocPagesService } from '../modules/docs/doc-pages.service';
+import { DocsService } from '../modules/docs/docs.service';
+import { Doc } from '../modules/docs/schemas/doc.schema';
+import { GoalFoldersService } from '../modules/goals/goal-folders.service';
+import { GoalsService } from '../modules/goals/goals.service';
+import { Goal } from '../modules/goals/schemas/goal.schema';
+import { TargetsService } from '../modules/goals/targets.service';
+import { NotificationsService } from '../modules/notifications/notifications.service';
+import { Notification } from '../modules/notifications/schemas/notification.schema';
 import { CountersService } from '../modules/tasks/counters.service';
+import { TimeEntriesService } from '../modules/time/time-entries.service';
+import { TimeEntry } from '../modules/time/schemas/time-entry.schema';
 import { Task } from '../modules/tasks/schemas/task.schema';
 import { TasksService } from '../modules/tasks/tasks.service';
 import { TaskPriority, TaskType } from '../modules/tasks/task-fields';
@@ -282,10 +298,168 @@ async function run(): Promise<void> {
       });
     }
 
+    await seedCollaboration(app, ctx, workspace, sprint._id);
+
     logger.log(`Workspace ${workspace.name} (${workspace.taskPrefix}) pronto.`);
     logger.log(`Acesso: ${SEED_EMAIL}`);
   } finally {
     await app.close();
+  }
+}
+
+/**
+ * Content of the prototype that the screens of the front need in order to show
+ * something real: comments, Inbox, hours, a goal, a channel and a Doc. Every block
+ * checks whether it already exists, so the seed stays safe to run again.
+ */
+async function seedCollaboration(
+  app: INestApplicationContext,
+  ctx: PermissionContext,
+  workspace: WorkspaceDocument,
+  sprintListId: Types.ObjectId,
+): Promise<void> {
+  const taskModel = app.get<Model<Task>>(getModelToken(Task.name));
+  const tasks = await taskModel
+    .find({ workspaceId: workspace._id, listId: sprintListId })
+    .sort({ position: 1 })
+    .exec();
+
+  if (tasks.length === 0) {
+    return;
+  }
+
+  const [sangria, tef] = tasks;
+  const comments = app.get(CommentsService);
+  const commentModel = app.get<Model<Comment>>(getModelToken(Comment.name));
+
+  if ((await commentModel.countDocuments({ workspaceId: workspace._id })) === 0) {
+    await comments.create(ctx, String(sangria._id), {
+      bodyText: 'Cliente confirmou que acontece só com sangria parcial. Reproduzido no caixa 2.',
+    });
+    await comments.create(ctx, String(sangria._id), {
+      bodyText: 'Corrigido o arredondamento; subindo para homologação hoje.',
+    });
+    await comments.create(ctx, String(tef._id), {
+      bodyText: 'Stone liberou as credenciais de homologação.',
+    });
+  }
+
+  const notifications = app.get(NotificationsService);
+  const notificationModel = app.get<Model<Notification>>(getModelToken(Notification.name));
+
+  if ((await notificationModel.countDocuments({ workspaceId: workspace._id })) === 0) {
+    await notifications.deliver({
+      workspaceId: workspace._id,
+      type: 'assigned',
+      entityType: 'task',
+      entityId: sangria._id,
+      actorId: null,
+      recipients: [{ userId: ctx.userId, bucket: 'primary' }],
+      data: { taskName: sangria.name, customId: sangria.customId },
+    });
+    await notifications.deliver({
+      workspaceId: workspace._id,
+      type: 'dueSoon',
+      entityType: 'task',
+      entityId: tef._id,
+      actorId: null,
+      recipients: [{ userId: ctx.userId, bucket: 'primary' }],
+      data: { taskName: tef.name, customId: tef.customId, dueAt: tef.dueAt },
+    });
+  }
+
+  const timeEntries = app.get(TimeEntriesService);
+  const timeEntryModel = app.get<Model<TimeEntry>>(getModelToken(TimeEntry.name));
+
+  if ((await timeEntryModel.countDocuments({ workspaceId: workspace._id })) === 0) {
+    await timeEntries.create(ctx, {
+      taskId: String(sangria._id),
+      start: inDays(-1),
+      durationMinutes: 150,
+      billable: true,
+      note: 'Investigação e correção da sangria parcial.',
+    });
+    await timeEntries.create(ctx, {
+      taskId: String(tef._id),
+      start: inDays(0),
+      durationMinutes: 90,
+      billable: true,
+      note: 'Preparo do ambiente de homologação da Stone.',
+    });
+  }
+
+  const goals = app.get(GoalsService);
+  const targets = app.get(TargetsService);
+  const goalFolders = app.get(GoalFoldersService);
+  const goalModel = app.get<Model<Goal>>(getModelToken(Goal.name));
+
+  if ((await goalModel.countDocuments({ workspaceId: workspace._id })) === 0) {
+    const folder = await goalFolders.create(ctx, { name: 'Metas 2026' });
+    const goal = await goals.create(ctx, {
+      folderId: String(folder._id),
+      name: 'Entregar o PDV da Cênio',
+      description: 'Fechar a Sprint 3 e subir a versão 3.2 em produção.',
+      ownerIds: [String(ctx.userId)],
+      dueDate: inDays(21),
+    });
+
+    await targets.create(ctx, goal, {
+      name: 'Tarefas da Sprint 3 concluídas',
+      type: 'tasks',
+      listId: String(sprintListId),
+    });
+    await targets.create(ctx, goal, {
+      name: 'Horas faturáveis no mês',
+      type: 'number',
+      start: 0,
+      target: 160,
+      current: 4,
+      unit: 'h',
+    });
+  }
+
+  const channels = app.get(ChannelsService);
+  const messages = app.get(MessagesService);
+  const channelModel = app.get<Model<Channel>>(getModelToken(Channel.name));
+
+  if ((await channelModel.countDocuments({ workspaceId: workspace._id })) === 0) {
+    const channel = await channels.create(ctx, {
+      name: 'usolutionspdv',
+      locationType: 'list',
+      locationId: String(sprintListId),
+    });
+
+    await messages.create(ctx, channel._id, {
+      bodyText: 'Sprint 3 começou. Foco no fechamento de caixa e no TEF.',
+    });
+    await messages.create(ctx, channel._id, {
+      bodyText: 'Deploy da 3.2 na Cênio combinado para a próxima semana.',
+    });
+  }
+
+  const docs = app.get(DocsService);
+  const pages = app.get(DocPagesService);
+  const docModel = app.get<Model<Doc>>(getModelToken(Doc.name));
+
+  if ((await docModel.countDocuments({ workspaceId: workspace._id })) === 0) {
+    const doc = await docs.create(ctx, {
+      locationType: 'list',
+      locationId: String(sprintListId),
+      title: 'Guia do uSolutionsPDV',
+      icon: 'book',
+    });
+
+    const root = await pages.create(ctx, doc._id, {
+      title: 'Ambientes e versões',
+      contentText:
+        'Dev, staging e produção da Cênio. A versão 3.2 sobe depois da homologação do TEF.',
+    });
+
+    await pages.create(ctx, doc._id, {
+      title: 'Checklist de deploy',
+      parentPageId: String(root._id),
+      contentText: 'Backup do banco, migração, smoke test no caixa 1 e aviso no canal do cliente.',
+    });
   }
 }
 

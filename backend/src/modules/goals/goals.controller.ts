@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
@@ -29,7 +30,7 @@ import {
 import { CreateTargetDto, UpdateTargetDto } from './dto/target.dto';
 import { GoalFoldersService } from './goal-folders.service';
 import { GoalView, GoalsService } from './goals.service';
-import { GoalFolderDocument } from './schemas/goal-folder.schema';
+import { GoalFolder, GoalFolderDocument } from './schemas/goal-folder.schema';
 import { TargetDocument } from './schemas/target.schema';
 import { TargetsService } from './targets.service';
 
@@ -47,7 +48,7 @@ export class GoalFoldersController {
 
   @Post()
   @Roles('member')
-  @ApiCreatedResponse({ description: 'Pasta de metas criada.' })
+  @ApiCreatedResponse({ description: 'Pasta de metas criada.', type: GoalFolder })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateGoalFolderDto,
@@ -56,7 +57,7 @@ export class GoalFoldersController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Pastas de metas do workspace.' })
+  @ApiPagedResponse(GoalFolder, 'Pastas de metas do workspace.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: PaginationQueryDto,
@@ -66,7 +67,7 @@ export class GoalFoldersController {
 
   @Patch(':folderId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Pasta atualizada.' })
+  @ApiOkResponse({ description: 'Pasta atualizada.', type: GoalFolder })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('folderId', ParseObjectIdPipe) folderId: Types.ObjectId,

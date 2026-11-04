@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Response } from 'express';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
@@ -40,7 +41,7 @@ import {
   DashboardQueryDto,
   UpdateDashboardDto,
 } from './dto/dashboard.dto';
-import { DashboardDocument } from './schemas/dashboard.schema';
+import { Dashboard, DashboardDocument } from './schemas/dashboard.schema';
 
 interface CardDataResponse {
   cardId: string;
@@ -60,7 +61,7 @@ export class DashboardsController {
 
   @Post()
   @Roles('member')
-  @ApiCreatedResponse({ description: 'Dashboard criado.' })
+  @ApiCreatedResponse({ description: 'Dashboard criado.', type: Dashboard })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateDashboardDto,
@@ -69,7 +70,7 @@ export class DashboardsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Dashboards visíveis, mais novos primeiro.' })
+  @ApiPagedResponse(Dashboard, 'Dashboards visíveis, mais novos primeiro.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: DashboardQueryDto,
@@ -78,7 +79,7 @@ export class DashboardsController {
   }
 
   @Get(':dashboardId')
-  @ApiOkResponse({ description: 'Dashboard.' })
+  @ApiOkResponse({ description: 'Dashboard.', type: Dashboard })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('dashboardId', ParseObjectIdPipe) dashboardId: Types.ObjectId,
@@ -87,7 +88,7 @@ export class DashboardsController {
   }
 
   @Patch(':dashboardId')
-  @ApiOkResponse({ description: 'Dashboard atualizado.' })
+  @ApiOkResponse({ description: 'Dashboard atualizado.', type: Dashboard })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('dashboardId', ParseObjectIdPipe) dashboardId: Types.ObjectId,

@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../../common/schemas/base-schema-options';
 import { DEFAULT_DEPLOY_STATUS, DEFAULT_REVIEW_STATUS } from '../github-fields';
@@ -17,6 +18,7 @@ export class GithubIntegration {
   repository: string;
 
   /** Encrypted by the SecretsService; shown in plain only when it is generated. */
+  @ApiHideProperty()
   @Prop({ required: true, select: false })
   secret: string;
 

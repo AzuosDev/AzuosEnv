@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { Audit } from '../../audit/audit.decorator';
 import { Public } from '../../../common/decorators/public.decorator';
 import { ParseObjectIdPipe } from '../../../common/pipes/parse-object-id.pipe';
 import { RawBodyRequest } from '../../../app.setup';
@@ -36,6 +37,7 @@ export class GithubIntegrationsController {
   constructor(private readonly github: GithubService) {}
 
   @Post()
+  @Audit('integration.github.created', 'integration')
   @ApiCreatedResponse({ description: 'Repositório ligado; o secret aparece só aqui.' })
   create(
     @CurrentMembership() membership: RequestMembership,
@@ -53,6 +55,7 @@ export class GithubIntegrationsController {
   }
 
   @Patch(':integrationId')
+  @Audit('integration.github.updated', 'integration', 'integrationId')
   @ApiOkResponse({ description: 'Integração atualizada.' })
   update(
     @CurrentMembership() membership: RequestMembership,
@@ -63,6 +66,7 @@ export class GithubIntegrationsController {
   }
 
   @Delete(':integrationId')
+  @Audit('integration.github.deleted', 'integration', 'integrationId')
   @ApiOkResponse({ description: 'Integração removida.' })
   async remove(
     @CurrentMembership() membership: RequestMembership,

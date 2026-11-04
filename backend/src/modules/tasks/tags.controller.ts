@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -21,7 +22,7 @@ import { CurrentMembership } from '../workspaces/decorators/workspace-context.de
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { CreateTagDto, TagQueryDto, UpdateTagDto } from './dto/tag.dto';
-import { TagDocument } from './schemas/tag.schema';
+import { Tag, TagDocument } from './schemas/tag.schema';
 import { TagsService } from './tags.service';
 
 @ApiTags('tags')
@@ -33,7 +34,7 @@ export class TagsController {
 
   @Post()
   @Roles('member')
-  @ApiCreatedResponse({ description: 'Tag criada.' })
+  @ApiCreatedResponse({ description: 'Tag criada.', type: Tag })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateTagDto,
@@ -42,7 +43,7 @@ export class TagsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Tags dos Spaces visíveis.' })
+  @ApiPagedResponse(Tag, 'Tags dos Spaces visíveis.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: TagQueryDto,
@@ -51,7 +52,7 @@ export class TagsController {
   }
 
   @Patch(':tagId')
-  @ApiOkResponse({ description: 'Tag atualizada.' })
+  @ApiOkResponse({ description: 'Tag atualizada.', type: Tag })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('tagId', ParseObjectIdPipe) tagId: Types.ObjectId,

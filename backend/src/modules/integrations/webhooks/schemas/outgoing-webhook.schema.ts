@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../../common/schemas/base-schema-options';
 import { OUTGOING_WEBHOOK_EVENTS, OutgoingWebhookEvent } from '../webhook-fields';
@@ -19,6 +20,7 @@ export class OutgoingWebhook {
   events: OutgoingWebhookEvent[];
 
   /** Encrypted by the SecretsService; the plain value is shown once, on creation. */
+  @ApiHideProperty()
   @Prop({ required: true, select: false })
   secret: string;
 

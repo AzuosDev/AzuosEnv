@@ -8,6 +8,7 @@ build/
 
 # Tests
 coverage/
+coverage-e2e/
 
 # Environment (secrets)
 .env

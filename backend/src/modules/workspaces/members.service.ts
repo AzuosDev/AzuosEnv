@@ -97,6 +97,7 @@ export class MembersService {
     const members = await this.model
       .find({ workspaceId, userId: { $in: userIds }, status: 'active' })
       .select('userId')
+      .lean()
       .exec();
 
     return members.map((member) => member.userId);
@@ -107,6 +108,7 @@ export class MembersService {
     const members = await this.model
       .find({ workspaceId, status: 'active' })
       .select('userId')
+      .lean()
       .exec();
 
     return members.map((member) => member.userId);

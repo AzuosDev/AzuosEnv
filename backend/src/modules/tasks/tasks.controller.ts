@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CursorPage } from '../../common/pagination/cursor';
@@ -32,7 +33,7 @@ import {
   SubtaskQueryDto,
   UpdateTaskDto,
 } from './dto/task.dto';
-import { TaskDocument } from './schemas/task.schema';
+import { Task, TaskDocument } from './schemas/task.schema';
 import { MyTasksResult, TaskQueryResult, TaskQueryService } from './task-query.service';
 import { BulkResult, TaskDetail, TasksService } from './tasks.service';
 
@@ -44,7 +45,7 @@ export class ListTasksController {
   constructor(private readonly tasks: TasksService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Tarefa criada.' })
+  @ApiCreatedResponse({ description: 'Tarefa criada.', type: Task })
   create(
     @CurrentMembership() membership: RequestMembership,
     @CurrentWorkspace() workspace: WorkspaceDocument,
@@ -97,7 +98,7 @@ export class TasksController {
   }
 
   @Get(':idOrCustomId/subtasks')
-  @ApiOkResponse({ description: 'Subtarefas diretas.' })
+  @ApiPagedResponse(Task, 'Subtarefas diretas.')
   subtasks(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -107,7 +108,7 @@ export class TasksController {
   }
 
   @Patch(':idOrCustomId')
-  @ApiOkResponse({ description: 'Tarefa atualizada.' })
+  @ApiOkResponse({ description: 'Tarefa atualizada.', type: Task })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -118,7 +119,7 @@ export class TasksController {
 
   @Post(':idOrCustomId/move')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Tarefa movida de List e/ou posição.' })
+  @ApiOkResponse({ description: 'Tarefa movida de List e/ou posição.', type: Task })
   move(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -129,7 +130,7 @@ export class TasksController {
 
   @Post(':idOrCustomId/lists')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Tarefa adicionada a outra List.' })
+  @ApiOkResponse({ description: 'Tarefa adicionada a outra List.', type: Task })
   addList(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -140,7 +141,7 @@ export class TasksController {
 
   @Delete(':idOrCustomId/lists/:listId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Tarefa removida da List secundária.' })
+  @ApiOkResponse({ description: 'Tarefa removida da List secundária.', type: Task })
   removeList(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -155,7 +156,7 @@ export class TasksController {
 
   @Post(':idOrCustomId/restore')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Tarefa restaurada da lixeira.' })
+  @ApiOkResponse({ description: 'Tarefa restaurada da lixeira.', type: Task })
   restore(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,

@@ -1,11 +1,16 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { AppLoggerModule } from './common/logging/logger.module';
+import { MongoSanitizePipe } from './common/pipes/mongo-sanitize.pipe';
+import { AuditInterceptor } from './modules/audit/audit.interceptor';
+import { AuditModule } from './modules/audit/audit.module';
+import { ImportModule } from './modules/import/import.module';
 import { ApiKeyScopeGuard } from './modules/api-keys/guards/api-key-scope.guard';
 import { HttpThrottlerGuard } from './common/guards/http-throttler.guard';
 import { envValidationSchema } from './config/env.validation';
@@ -55,6 +60,8 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
+    AppLoggerModule,
+    AuditModule,
     AuthModule,
     HealthModule,
     UsersModule,
@@ -81,12 +88,16 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     AiModule,
     WhiteboardsModule,
     IntegrationsModule,
+    ImportModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_GUARD, useClass: HttpThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: ApiKeyScopeGuard },
+    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
+    // Runs before the ValidationPipe: strips $ and dotted keys from every input.
+    { provide: APP_PIPE, useClass: MongoSanitizePipe },
     {
       provide: APP_PIPE,
       useFactory: () =>

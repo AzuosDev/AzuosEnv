@@ -28,7 +28,7 @@ import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { AttachmentsService, UploadedFile } from './attachments.service';
 import { MAX_UPLOAD_BYTES } from './collaboration-fields';
-import { AttachmentDocument } from './schemas/attachment.schema';
+import { Attachment, AttachmentDocument } from './schemas/attachment.schema';
 
 const UPLOAD_FIELD = 'file';
 
@@ -61,7 +61,7 @@ export class TaskAttachmentsController {
   @UploadFile()
   @ApiConsumes('multipart/form-data')
   @UploadBody()
-  @ApiCreatedResponse({ description: 'Anexo enviado para a tarefa.' })
+  @ApiCreatedResponse({ description: 'Anexo enviado para a tarefa.', type: Attachment })
   upload(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -71,7 +71,7 @@ export class TaskAttachmentsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Anexos da tarefa e dos seus comentários.' })
+  @ApiOkResponse({ description: 'Anexos da tarefa e dos seus comentários.', type: [Attachment] })
   list(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -91,7 +91,7 @@ export class CommentAttachmentsController {
   @UploadFile()
   @ApiConsumes('multipart/form-data')
   @UploadBody()
-  @ApiCreatedResponse({ description: 'Anexo enviado para o comentário.' })
+  @ApiCreatedResponse({ description: 'Anexo enviado para o comentário.', type: Attachment })
   upload(
     @CurrentMembership() membership: RequestMembership,
     @Param('commentId', ParseObjectIdPipe) commentId: Types.ObjectId,

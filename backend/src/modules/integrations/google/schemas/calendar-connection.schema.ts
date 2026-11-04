@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../../common/schemas/base-schema-options';
 
@@ -21,10 +22,12 @@ export class CalendarConnection {
   @Prop({ type: String, default: null })
   email: string | null;
 
+  @ApiHideProperty()
   @Prop({ required: true, select: false })
   accessToken: string;
 
   /** Google only hands a refresh token on the first consent. */
+  @ApiHideProperty()
   @Prop({ type: String, default: null, select: false })
   refreshToken: string | null;
 

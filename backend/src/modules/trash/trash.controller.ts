@@ -15,6 +15,7 @@ import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
+import { Audit } from '../audit/audit.decorator';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import { Roles } from '../workspaces/decorators/roles.decorator';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
@@ -66,6 +67,7 @@ export class TrashController {
   }
 
   @Delete(':entityType/:entityId')
+  @Audit('resource.purged', 'resource', 'entityId')
   @Roles('admin')
   @ApiOkResponse({ description: 'Item apagado de vez, com tudo que ele contém.' })
   async remove(

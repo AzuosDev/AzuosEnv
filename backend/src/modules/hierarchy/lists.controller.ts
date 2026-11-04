@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -22,7 +23,7 @@ import { CreateListDto, ListQueryDto, MoveListDto, UpdateListDto } from './dto/l
 import { ReorderDto } from './dto/reorder.dto';
 import { ListsService } from './lists.service';
 import { permissionContextFrom } from './permission.service';
-import { ListDocument } from './schemas/list.schema';
+import { List, ListDocument } from './schemas/list.schema';
 import { EffectiveStatuses } from './status-sets.service';
 
 @ApiTags('lists')
@@ -33,7 +34,7 @@ export class ListsController {
   constructor(private readonly lists: ListsService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'List criada.' })
+  @ApiCreatedResponse({ description: 'List criada.', type: List })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateListDto,
@@ -42,7 +43,7 @@ export class ListsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Lists visíveis para o usuário.' })
+  @ApiPagedResponse(List, 'Lists visíveis para o usuário.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: ListQueryDto,
@@ -51,7 +52,7 @@ export class ListsController {
   }
 
   @Get(':listId')
-  @ApiOkResponse({ description: 'List.' })
+  @ApiOkResponse({ description: 'List.', type: List })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('listId', ParseObjectIdPipe) listId: Types.ObjectId,
@@ -69,7 +70,7 @@ export class ListsController {
   }
 
   @Patch(':listId')
-  @ApiOkResponse({ description: 'List atualizada.' })
+  @ApiOkResponse({ description: 'List atualizada.', type: List })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('listId', ParseObjectIdPipe) listId: Types.ObjectId,
@@ -80,7 +81,7 @@ export class ListsController {
 
   @Post(':listId/move')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'List movida.' })
+  @ApiOkResponse({ description: 'List movida.', type: List })
   move(
     @CurrentMembership() membership: RequestMembership,
     @Param('listId', ParseObjectIdPipe) listId: Types.ObjectId,
@@ -91,7 +92,7 @@ export class ListsController {
 
   @Post(':listId/reorder')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'List reordenada.' })
+  @ApiOkResponse({ description: 'List reordenada.', type: List })
   reorder(
     @CurrentMembership() membership: RequestMembership,
     @Param('listId', ParseObjectIdPipe) listId: Types.ObjectId,
@@ -102,7 +103,7 @@ export class ListsController {
 
   @Post(':listId/archive')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'List arquivada.' })
+  @ApiOkResponse({ description: 'List arquivada.', type: List })
   archive(
     @CurrentMembership() membership: RequestMembership,
     @Param('listId', ParseObjectIdPipe) listId: Types.ObjectId,
@@ -112,7 +113,7 @@ export class ListsController {
 
   @Post(':listId/unarchive')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'List desarquivada.' })
+  @ApiOkResponse({ description: 'List desarquivada.', type: List })
   unarchive(
     @CurrentMembership() membership: RequestMembership,
     @Param('listId', ParseObjectIdPipe) listId: Types.ObjectId,
@@ -122,7 +123,7 @@ export class ListsController {
 
   @Post(':listId/restore')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'List restaurada da lixeira.' })
+  @ApiOkResponse({ description: 'List restaurada da lixeira.', type: List })
   restore(
     @CurrentMembership() membership: RequestMembership,
     @Param('listId', ParseObjectIdPipe) listId: Types.ObjectId,

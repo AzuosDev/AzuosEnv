@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -26,8 +27,8 @@ import {
   CreateAutomationDto,
   UpdateAutomationDto,
 } from './dto/automation.dto';
-import { AutomationDocument } from './schemas/automation.schema';
-import { AutomationRunDocument } from './schemas/automation-run.schema';
+import { Automation, AutomationDocument } from './schemas/automation.schema';
+import { AutomationRun, AutomationRunDocument } from './schemas/automation-run.schema';
 
 @ApiTags('automations')
 @ApiBearerAuth()
@@ -49,7 +50,7 @@ export class AutomationsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Automações dos locais visíveis, mais novas primeiro.' })
+  @ApiPagedResponse(Automation, 'Automações dos locais visíveis, mais novas primeiro.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: AutomationQueryDto,
@@ -65,7 +66,7 @@ export class AutomationsController {
   }
 
   @Get(':automationId')
-  @ApiOkResponse({ description: 'Automação.' })
+  @ApiOkResponse({ description: 'Automação.', type: Automation })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('automationId', ParseObjectIdPipe) automationId: Types.ObjectId,
@@ -99,7 +100,7 @@ export class AutomationsController {
   }
 
   @Get(':automationId/runs')
-  @ApiOkResponse({ description: 'Execuções da automação, mais novas primeiro.' })
+  @ApiPagedResponse(AutomationRun, 'Execuções da automação, mais novas primeiro.')
   async runHistory(
     @CurrentMembership() membership: RequestMembership,
     @Param('automationId', ParseObjectIdPipe) automationId: Types.ObjectId,

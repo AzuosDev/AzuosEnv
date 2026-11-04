@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { HydratedDocument } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 
@@ -17,6 +18,7 @@ export class User {
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
 
+  @ApiHideProperty()
   @Prop({ required: true, select: false })
   passwordHash: string;
 

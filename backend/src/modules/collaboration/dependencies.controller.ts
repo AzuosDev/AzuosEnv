@@ -18,7 +18,7 @@ import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { DependenciesService } from './dependencies.service';
 import { CreateDependencyDto } from './dto/dependency.dto';
-import { TaskDependencyDocument } from './schemas/task-dependency.schema';
+import { TaskDependency, TaskDependencyDocument } from './schemas/task-dependency.schema';
 
 @ApiTags('dependencies')
 @ApiBearerAuth()
@@ -28,7 +28,10 @@ export class TaskDependenciesController {
   constructor(private readonly dependencies: DependenciesService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Dependência criada; ciclo responde 400.' })
+  @ApiCreatedResponse({
+    description: 'Dependência criada; ciclo responde 400.',
+    type: TaskDependency,
+  })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -38,7 +41,7 @@ export class TaskDependenciesController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Dependências nos dois sentidos.' })
+  @ApiOkResponse({ description: 'Dependências nos dois sentidos.', type: [TaskDependency] })
   list(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,

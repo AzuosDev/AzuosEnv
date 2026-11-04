@@ -12,10 +12,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
-import { ListDocument } from '../hierarchy/schemas/list.schema';
+import { List, ListDocument } from '../hierarchy/schemas/list.schema';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import { Roles } from '../workspaces/decorators/roles.decorator';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
@@ -27,7 +28,7 @@ import {
   SprintFolderQueryDto,
   UpdateSprintFolderDto,
 } from './dto/sprint.dto';
-import { SprintFolderDocument } from './schemas/sprint-folder.schema';
+import { SprintFolder, SprintFolderDocument } from './schemas/sprint-folder.schema';
 import { CloseSprintResult, SprintFolderView, SprintsService } from './sprints.service';
 
 @ApiTags('sprints')
@@ -48,7 +49,7 @@ export class SprintFoldersController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Pastas de sprints visíveis.' })
+  @ApiPagedResponse(SprintFolder, 'Pastas de sprints visíveis.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: SprintFolderQueryDto,
@@ -67,7 +68,7 @@ export class SprintFoldersController {
 
   @Patch(':sprintFolderId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Pasta de sprints atualizada.' })
+  @ApiOkResponse({ description: 'Pasta de sprints atualizada.', type: SprintFolder })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('sprintFolderId', ParseObjectIdPipe) sprintFolderId: Types.ObjectId,
@@ -90,7 +91,7 @@ export class SprintFoldersController {
 
   @Post(':sprintFolderId/sprints')
   @Roles('member')
-  @ApiCreatedResponse({ description: 'Próxima sprint criada na pasta.' })
+  @ApiCreatedResponse({ description: 'Próxima sprint criada na pasta.', type: List })
   createSprint(
     @CurrentMembership() membership: RequestMembership,
     @Param('sprintFolderId', ParseObjectIdPipe) sprintFolderId: Types.ObjectId,
@@ -108,7 +109,7 @@ export class SprintsController {
   constructor(private readonly sprints: SprintsService) {}
 
   @Get(':sprintId')
-  @ApiOkResponse({ description: 'Sprint (a List com as datas do ciclo).' })
+  @ApiOkResponse({ description: 'Sprint (a List com as datas do ciclo).', type: List })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('sprintId', ParseObjectIdPipe) sprintId: Types.ObjectId,

@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import {
@@ -76,6 +77,7 @@ export class Automation {
   actions: AutomationAction[];
 
   /** sha256 of the hook secret; the plain value is shown once, on creation. */
+  @ApiHideProperty()
   @Prop({ type: String, default: null, select: false })
   secretHash: string | null;
 

@@ -244,6 +244,7 @@ export class HierarchyAccessService {
     const children = await this.folders
       .find({ workspaceId, parentFolderId: folderId })
       .select('_id')
+      .lean()
       .exec();
 
     return [folderId, ...children.map((child) => child._id)];

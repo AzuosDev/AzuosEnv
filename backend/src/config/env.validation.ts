@@ -7,6 +7,10 @@ export const envValidationSchema = Joi.object({
     .pattern(/^mongodb(\+srv)?:\/\//)
     .required(),
   CORS_ORIGINS: Joi.string().default('http://localhost:5173'),
+  // Level of the structured log (nestjs-pino); silent in the test environment.
+  LOG_LEVEL: Joi.string()
+    .valid('fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent')
+    .default('info'),
   // Origins allowed on the public form routes (site of Azuos Dev).
   PUBLIC_FORM_ORIGINS: Joi.string().allow('').default(''),
   APP_URL: Joi.string().uri().default('http://localhost:5173'),
@@ -15,6 +19,11 @@ export const envValidationSchema = Joi.object({
   JWT_ACCESS_TTL: Joi.string().default('15m'),
   JWT_REFRESH_TTL: Joi.string().default('30d'),
   COOKIE_SECURE: Joi.boolean().default(false),
+  // `none` é necessário quando o front está em outro domínio; exige COOKIE_SECURE.
+  COOKIE_SAME_SITE: Joi.string()
+    .valid('lax', 'strict', 'none')
+    .default('lax')
+    .when('COOKIE_SECURE', { is: false, then: Joi.valid('lax', 'strict') }),
   COOKIE_DOMAIN: Joi.string().allow('').default(''),
   UPLOAD_DIR: Joi.string().default('./storage/uploads'),
   // Without SMTP_HOST the MailService only logs the message.

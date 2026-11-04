@@ -1,0 +1,36 @@
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    # Mongo local opcional: em produção aponte MONGODB_URI para o Atlas e suba
+    # somente o serviço backend (docker compose up backend).
+    profiles: [local]
+    environment:
+      MONGO_INITDB_DATABASE: azuos-env
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - '27017:27017'
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+    ports:
+      - '3000:3000'
+    volumes:
+      - uploads:/app/storage/uploads
+
+volumes:
+  mongo-data:
+  uploads:

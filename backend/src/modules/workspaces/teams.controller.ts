@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
@@ -20,7 +21,7 @@ import { CurrentMembership } from './decorators/workspace-context.decorator';
 import { Roles } from './decorators/roles.decorator';
 import { CreateTeamDto, UpdateTeamDto } from './dto/team.dto';
 import { WorkspaceGuard } from './guards/workspace.guard';
-import { TeamDocument } from './schemas/team.schema';
+import { Team, TeamDocument } from './schemas/team.schema';
 import { TeamsService } from './teams.service';
 import { RequestMembership, workspaceObjectId } from './workspace-context';
 
@@ -33,7 +34,7 @@ export class TeamsController {
 
   @Post()
   @Roles('admin')
-  @ApiCreatedResponse({ description: 'Equipe criada.' })
+  @ApiCreatedResponse({ description: 'Equipe criada.', type: Team })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateTeamDto,
@@ -42,7 +43,7 @@ export class TeamsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Equipes do workspace.' })
+  @ApiPagedResponse(Team, 'Equipes do workspace.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: PaginationQueryDto,
@@ -52,7 +53,7 @@ export class TeamsController {
 
   @Patch(':teamId')
   @Roles('admin')
-  @ApiOkResponse({ description: 'Equipe atualizada.' })
+  @ApiOkResponse({ description: 'Equipe atualizada.', type: Team })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('teamId', ParseObjectIdPipe) teamId: Types.ObjectId,

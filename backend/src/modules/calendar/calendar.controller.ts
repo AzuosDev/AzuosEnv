@@ -24,7 +24,7 @@ import {
   UpdateCalendarEventDto,
 } from './dto/calendar-event.dto';
 import { PlannerResult, PlannerService } from './planner.service';
-import { CalendarEventDocument } from './schemas/calendar-event.schema';
+import { CalendarEvent, CalendarEventDocument } from './schemas/calendar-event.schema';
 
 @ApiTags('calendar')
 @ApiBearerAuth()
@@ -34,7 +34,10 @@ export class CalendarEventsController {
   constructor(private readonly calendar: CalendarService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Evento criado no calendário do usuário.' })
+  @ApiCreatedResponse({
+    description: 'Evento criado no calendário do usuário.',
+    type: CalendarEvent,
+  })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateCalendarEventDto,
@@ -52,7 +55,7 @@ export class CalendarEventsController {
   }
 
   @Get(':eventId')
-  @ApiOkResponse({ description: 'Evento.' })
+  @ApiOkResponse({ description: 'Evento.', type: CalendarEvent })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('eventId', ParseObjectIdPipe) eventId: Types.ObjectId,
@@ -61,7 +64,7 @@ export class CalendarEventsController {
   }
 
   @Patch(':eventId')
-  @ApiOkResponse({ description: 'Evento atualizado.' })
+  @ApiOkResponse({ description: 'Evento atualizado.', type: CalendarEvent })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('eventId', ParseObjectIdPipe) eventId: Types.ObjectId,
@@ -99,7 +102,10 @@ export class PlannerController {
   }
 
   @Post('blocks')
-  @ApiCreatedResponse({ description: 'Bloco de tempo da tarefa criado no calendário.' })
+  @ApiCreatedResponse({
+    description: 'Bloco de tempo da tarefa criado no calendário.',
+    type: CalendarEvent,
+  })
   block(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateTimeBlockDto,

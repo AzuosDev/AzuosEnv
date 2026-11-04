@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Response } from 'express';
 import { Types } from 'mongoose';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -48,7 +49,7 @@ import {
   UpdateAiAgentDto,
 } from './dto/ai.dto';
 import { AiEnabledGuard } from './guards/ai-enabled.guard';
-import { AiAgentDocument } from './schemas/ai-agent.schema';
+import { AiAgent, AiAgentDocument } from './schemas/ai-agent.schema';
 
 @ApiTags('ai')
 @ApiBearerAuth()
@@ -168,7 +169,7 @@ export class AiAgentsController {
 
   @Post()
   @Roles('admin')
-  @ApiCreatedResponse({ description: 'Agente agendado criado.' })
+  @ApiCreatedResponse({ description: 'Agente agendado criado.', type: AiAgent })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateAiAgentDto,
@@ -177,7 +178,7 @@ export class AiAgentsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Agentes do workspace, mais novos primeiro.' })
+  @ApiPagedResponse(AiAgent, 'Agentes do workspace, mais novos primeiro.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: PaginationQueryDto,
@@ -186,7 +187,7 @@ export class AiAgentsController {
   }
 
   @Get(':agentId')
-  @ApiOkResponse({ description: 'Agente agendado.' })
+  @ApiOkResponse({ description: 'Agente agendado.', type: AiAgent })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('agentId', ParseObjectIdPipe) agentId: Types.ObjectId,
@@ -196,7 +197,7 @@ export class AiAgentsController {
 
   @Patch(':agentId')
   @Roles('admin')
-  @ApiOkResponse({ description: 'Agente atualizado.' })
+  @ApiOkResponse({ description: 'Agente atualizado.', type: AiAgent })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('agentId', ParseObjectIdPipe) agentId: Types.ObjectId,

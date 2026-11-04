@@ -10,7 +10,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
+import { Audit } from '../../audit/audit.decorator';
 import { CursorPage } from '../../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../../common/pipes/parse-object-id.pipe';
 import { permissionContextFrom } from '../../hierarchy/permission.service';
@@ -24,8 +26,8 @@ import {
   UpdateOutgoingWebhookDto,
 } from './dto/outgoing-webhook.dto';
 import { OutgoingWebhooksService, WebhookWithSecret } from './outgoing-webhooks.service';
-import { OutgoingWebhookDocument } from './schemas/outgoing-webhook.schema';
-import { WebhookDeliveryDocument } from './schemas/webhook-delivery.schema';
+import { OutgoingWebhook, OutgoingWebhookDocument } from './schemas/outgoing-webhook.schema';
+import { WebhookDelivery, WebhookDeliveryDocument } from './schemas/webhook-delivery.schema';
 
 @ApiTags('integrations')
 @ApiBearerAuth()
@@ -36,6 +38,7 @@ export class OutgoingWebhooksController {
   constructor(private readonly webhooks: OutgoingWebhooksService) {}
 
   @Post()
+  @Audit('webhook.created', 'webhook')
   @ApiCreatedResponse({ description: 'Webhook criado; o secret aparece só nesta resposta.' })
   create(
     @CurrentMembership() membership: RequestMembership,
@@ -53,7 +56,7 @@ export class OutgoingWebhooksController {
   }
 
   @Get(':webhookId')
-  @ApiOkResponse({ description: 'Webhook.' })
+  @ApiOkResponse({ description: 'Webhook.', type: OutgoingWebhook })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('webhookId', ParseObjectIdPipe) webhookId: Types.ObjectId,
@@ -62,6 +65,7 @@ export class OutgoingWebhooksController {
   }
 
   @Patch(':webhookId')
+  @Audit('webhook.updated', 'webhook', 'webhookId')
   @ApiOkResponse({ description: 'Webhook atualizado.' })
   update(
     @CurrentMembership() membership: RequestMembership,
@@ -72,6 +76,7 @@ export class OutgoingWebhooksController {
   }
 
   @Delete(':webhookId')
+  @Audit('webhook.deleted', 'webhook', 'webhookId')
   @ApiOkResponse({ description: 'Webhook removido com o log de entregas.' })
   async remove(
     @CurrentMembership() membership: RequestMembership,
@@ -83,7 +88,7 @@ export class OutgoingWebhooksController {
   }
 
   @Get(':webhookId/deliveries')
-  @ApiOkResponse({ description: 'Log de entregas, mais novas primeiro.' })
+  @ApiPagedResponse(WebhookDelivery, 'Log de entregas, mais novas primeiro.')
   deliveries(
     @CurrentMembership() membership: RequestMembership,
     @Param('webhookId', ParseObjectIdPipe) webhookId: Types.ObjectId,

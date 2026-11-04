@@ -11,17 +11,19 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
+import { Audit } from '../audit/audit.decorator';
 import { CurrentMembership, CurrentWorkspace } from './decorators/workspace-context.decorator';
 import { Roles } from './decorators/roles.decorator';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { TransferOwnershipDto } from './dto/member.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { WorkspaceGuard } from './guards/workspace.guard';
-import { WorkspaceMemberDocument } from './schemas/workspace-member.schema';
-import { WorkspaceDocument } from './schemas/workspace.schema';
+import { WorkspaceMember, WorkspaceMemberDocument } from './schemas/workspace-member.schema';
+import { Workspace, WorkspaceDocument } from './schemas/workspace.schema';
 import { RequestMembership } from './workspace-context';
 import { WorkspacesService } from './workspaces.service';
 
@@ -32,7 +34,7 @@ export class WorkspacesController {
   constructor(private readonly workspaces: WorkspacesService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Workspace criado; quem cria vira owner.' })
+  @ApiCreatedResponse({ description: 'Workspace criado; quem cria vira owner.', type: Workspace })
   create(
     @CurrentUser('id') userId: string,
     @Body() dto: CreateWorkspaceDto,
@@ -41,7 +43,7 @@ export class WorkspacesController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Workspaces em que o usuário é membro ativo.' })
+  @ApiPagedResponse(Workspace, 'Workspaces em que o usuário é membro ativo.')
   list(
     @CurrentUser('id') userId: string,
     @Query() query: PaginationQueryDto,
@@ -60,9 +62,10 @@ export class WorkspacesController {
   }
 
   @Patch(':wsId')
+  @Audit('workspace.updated', 'workspace')
   @UseGuards(WorkspaceGuard)
   @Roles('admin')
-  @ApiOkResponse({ description: 'Workspace atualizado.' })
+  @ApiOkResponse({ description: 'Workspace atualizado.', type: Workspace })
   update(
     @CurrentWorkspace() workspace: WorkspaceDocument,
     @Body() dto: UpdateWorkspaceDto,
@@ -71,6 +74,7 @@ export class WorkspacesController {
   }
 
   @Delete(':wsId')
+  @Audit('workspace.deleted', 'workspace')
   @UseGuards(WorkspaceGuard)
   @Roles('owner')
   @HttpCode(HttpStatus.OK)
@@ -82,10 +86,14 @@ export class WorkspacesController {
   }
 
   @Post(':wsId/transfer-ownership')
+  @Audit('workspace.ownership.transferred', 'workspace')
   @UseGuards(WorkspaceGuard)
   @Roles('owner')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Posse transferida; o antigo owner fica como admin.' })
+  @ApiOkResponse({
+    description: 'Posse transferida; o antigo owner fica como admin.',
+    type: WorkspaceMember,
+  })
   transferOwnership(
     @CurrentWorkspace() workspace: WorkspaceDocument,
     @CurrentMembership() membership: RequestMembership,

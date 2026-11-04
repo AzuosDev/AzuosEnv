@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import { API_KEY_SCOPES, ApiKeyScope } from '../api-key-fields';
@@ -19,6 +20,7 @@ export class ApiKey {
   @Prop({ required: true })
   hint: string;
 
+  @ApiHideProperty()
   @Prop({ required: true, unique: true, select: false })
   tokenHash: string;
 

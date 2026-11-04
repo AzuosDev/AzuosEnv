@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
@@ -39,8 +40,8 @@ import {
   MessageToTaskDto,
   UpdateMessageDto,
 } from './dto/message.dto';
-import { ChannelDocument } from './schemas/channel.schema';
-import { MessageDocument } from './schemas/message.schema';
+import { Channel, ChannelDocument } from './schemas/channel.schema';
+import { Message, MessageDocument } from './schemas/message.schema';
 
 @ApiTags('chat')
 @ApiBearerAuth()
@@ -53,7 +54,7 @@ export class ChannelsController {
   ) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Canal criado.' })
+  @ApiCreatedResponse({ description: 'Canal criado.', type: Channel })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateChannelDto,
@@ -62,7 +63,7 @@ export class ChannelsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Canais visíveis, mais novos primeiro.' })
+  @ApiPagedResponse(Channel, 'Canais visíveis, mais novos primeiro.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: ChannelQueryDto,
@@ -72,7 +73,10 @@ export class ChannelsController {
 
   @Post('dm')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Conversa direta do par, criada se ainda não existir.' })
+  @ApiOkResponse({
+    description: 'Conversa direta do par, criada se ainda não existir.',
+    type: Channel,
+  })
   dm(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateDmDto,
@@ -81,7 +85,7 @@ export class ChannelsController {
   }
 
   @Get(':channelId')
-  @ApiOkResponse({ description: 'Canal.' })
+  @ApiOkResponse({ description: 'Canal.', type: Channel })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
@@ -90,7 +94,7 @@ export class ChannelsController {
   }
 
   @Patch(':channelId')
-  @ApiOkResponse({ description: 'Canal atualizado.' })
+  @ApiOkResponse({ description: 'Canal atualizado.', type: Channel })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
@@ -112,7 +116,7 @@ export class ChannelsController {
 
   @Post(':channelId/unarchive')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Canal desarquivado.' })
+  @ApiOkResponse({ description: 'Canal desarquivado.', type: Channel })
   unarchive(
     @CurrentMembership() membership: RequestMembership,
     @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
@@ -122,7 +126,7 @@ export class ChannelsController {
 
   @Post(':channelId/join')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Entrou no canal.' })
+  @ApiOkResponse({ description: 'Entrou no canal.', type: Channel })
   join(
     @CurrentMembership() membership: RequestMembership,
     @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
@@ -132,7 +136,7 @@ export class ChannelsController {
 
   @Post(':channelId/leave')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Saiu do canal.' })
+  @ApiOkResponse({ description: 'Saiu do canal.', type: Channel })
   leave(
     @CurrentMembership() membership: RequestMembership,
     @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
@@ -142,7 +146,7 @@ export class ChannelsController {
 
   @Post(':channelId/members')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Participantes adicionados.' })
+  @ApiOkResponse({ description: 'Participantes adicionados.', type: Channel })
   addMembers(
     @CurrentMembership() membership: RequestMembership,
     @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
@@ -152,7 +156,7 @@ export class ChannelsController {
   }
 
   @Delete(':channelId/members/:userId')
-  @ApiOkResponse({ description: 'Participante removido.' })
+  @ApiOkResponse({ description: 'Participante removido.', type: Channel })
   removeMember(
     @CurrentMembership() membership: RequestMembership,
     @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
@@ -174,7 +178,7 @@ export class ChannelsController {
   }
 
   @Post(':channelId/messages')
-  @ApiCreatedResponse({ description: 'Mensagem enviada.' })
+  @ApiCreatedResponse({ description: 'Mensagem enviada.', type: Message })
   send(
     @CurrentMembership() membership: RequestMembership,
     @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
@@ -184,7 +188,7 @@ export class ChannelsController {
   }
 
   @Get(':channelId/messages')
-  @ApiOkResponse({ description: 'Mensagens do canal, mais novas primeiro.' })
+  @ApiPagedResponse(Message, 'Mensagens do canal, mais novas primeiro.')
   listMessages(
     @CurrentMembership() membership: RequestMembership,
     @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
@@ -202,7 +206,7 @@ export class MessagesController {
   constructor(private readonly messages: MessagesService) {}
 
   @Patch(':messageId')
-  @ApiOkResponse({ description: 'Mensagem editada.' })
+  @ApiOkResponse({ description: 'Mensagem editada.', type: Message })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('messageId', ParseObjectIdPipe) messageId: Types.ObjectId,
@@ -224,7 +228,7 @@ export class MessagesController {
 
   @Post(':messageId/reactions')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Reação alternada.' })
+  @ApiOkResponse({ description: 'Reação alternada.', type: Message })
   react(
     @CurrentMembership() membership: RequestMembership,
     @Param('messageId', ParseObjectIdPipe) messageId: Types.ObjectId,
@@ -234,7 +238,7 @@ export class MessagesController {
   }
 
   @Get(':messageId/replies')
-  @ApiOkResponse({ description: 'Respostas da thread, mais antigas primeiro.' })
+  @ApiPagedResponse(Message, 'Respostas da thread, mais antigas primeiro.')
   replies(
     @CurrentMembership() membership: RequestMembership,
     @Param('messageId', ParseObjectIdPipe) messageId: Types.ObjectId,

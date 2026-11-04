@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import { ATTACHMENT_ENTITY_TYPES, AttachmentEntityType } from '../collaboration-fields';
@@ -28,6 +29,7 @@ export class Attachment {
   size: number;
 
   /** Key of the StorageService; never exposed by the API. */
+  @ApiHideProperty()
   @Prop({ required: true, select: false })
   storageKey: string;
 

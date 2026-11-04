@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
@@ -21,7 +22,7 @@ import { CurrentMembership } from '../workspaces/decorators/workspace-context.de
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership, workspaceObjectId } from '../workspaces/workspace-context';
 import { CreateStatusSetDto, UpdateStatusSetDto } from './dto/status-set.dto';
-import { StatusSetDocument } from './schemas/status-set.schema';
+import { StatusSet, StatusSetDocument } from './schemas/status-set.schema';
 import { StatusSetsService } from './status-sets.service';
 
 @ApiTags('status-sets')
@@ -33,7 +34,7 @@ export class StatusSetsController {
 
   @Post()
   @Roles('member')
-  @ApiCreatedResponse({ description: 'Conjunto de statuses criado.' })
+  @ApiCreatedResponse({ description: 'Conjunto de statuses criado.', type: StatusSet })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateStatusSetDto,
@@ -42,7 +43,7 @@ export class StatusSetsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Conjuntos de statuses do workspace.' })
+  @ApiPagedResponse(StatusSet, 'Conjuntos de statuses do workspace.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: PaginationQueryDto,
@@ -51,7 +52,7 @@ export class StatusSetsController {
   }
 
   @Get(':statusSetId')
-  @ApiOkResponse({ description: 'Conjunto de statuses.' })
+  @ApiOkResponse({ description: 'Conjunto de statuses.', type: StatusSet })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('statusSetId', ParseObjectIdPipe) statusSetId: Types.ObjectId,
@@ -61,7 +62,7 @@ export class StatusSetsController {
 
   @Patch(':statusSetId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Conjunto de statuses atualizado.' })
+  @ApiOkResponse({ description: 'Conjunto de statuses atualizado.', type: StatusSet })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('statusSetId', ParseObjectIdPipe) statusSetId: Types.ObjectId,

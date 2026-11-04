@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -20,7 +21,7 @@ import { permissionContextFrom } from '../hierarchy/permission.service';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
-import { CommentDocument } from '../collaboration/schemas/comment.schema';
+import { Comment, CommentDocument } from '../collaboration/schemas/comment.schema';
 import { DocPagesService } from './doc-pages.service';
 import { DocsService } from './docs.service';
 import { PageCommentThread, PageCommentsService } from './page-comments.service';
@@ -31,9 +32,9 @@ import {
   MovePageDto,
   UpdatePageDto,
 } from './dto/doc-page.dto';
-import { DocDocument } from './schemas/doc.schema';
-import { DocPageDocument } from './schemas/doc-page.schema';
-import { DocPageVersionDocument } from './schemas/doc-page-version.schema';
+import { Doc, DocDocument } from './schemas/doc.schema';
+import { DocPage, DocPageDocument } from './schemas/doc-page.schema';
+import { DocPageVersion, DocPageVersionDocument } from './schemas/doc-page-version.schema';
 
 interface ShareResponse {
   doc: DocDocument;
@@ -53,7 +54,7 @@ export class DocsController {
   ) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Doc criado.' })
+  @ApiCreatedResponse({ description: 'Doc criado.', type: Doc })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateDocDto,
@@ -62,7 +63,7 @@ export class DocsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Hub de Docs por aba (recent, favorites, mine, all).' })
+  @ApiPagedResponse(Doc, 'Hub de Docs por aba (recent, favorites, mine, all).')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: DocQueryDto,
@@ -71,7 +72,7 @@ export class DocsController {
   }
 
   @Get(':docId')
-  @ApiOkResponse({ description: 'Doc.' })
+  @ApiOkResponse({ description: 'Doc.', type: Doc })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('docId', ParseObjectIdPipe) docId: Types.ObjectId,
@@ -80,7 +81,7 @@ export class DocsController {
   }
 
   @Patch(':docId')
-  @ApiOkResponse({ description: 'Doc atualizado.' })
+  @ApiOkResponse({ description: 'Doc atualizado.', type: Doc })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('docId', ParseObjectIdPipe) docId: Types.ObjectId,
@@ -102,7 +103,7 @@ export class DocsController {
 
   @Post(':docId/restore')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Doc restaurado.' })
+  @ApiOkResponse({ description: 'Doc restaurado.', type: Doc })
   restore(
     @CurrentMembership() membership: RequestMembership,
     @Param('docId', ParseObjectIdPipe) docId: Types.ObjectId,
@@ -112,7 +113,7 @@ export class DocsController {
 
   @Post(':docId/archive')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Doc arquivado.' })
+  @ApiOkResponse({ description: 'Doc arquivado.', type: Doc })
   archive(
     @CurrentMembership() membership: RequestMembership,
     @Param('docId', ParseObjectIdPipe) docId: Types.ObjectId,
@@ -122,7 +123,7 @@ export class DocsController {
 
   @Post(':docId/unarchive')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Doc desarquivado.' })
+  @ApiOkResponse({ description: 'Doc desarquivado.', type: Doc })
   unarchive(
     @CurrentMembership() membership: RequestMembership,
     @Param('docId', ParseObjectIdPipe) docId: Types.ObjectId,
@@ -142,7 +143,7 @@ export class DocsController {
   }
 
   @Post(':docId/pages')
-  @ApiCreatedResponse({ description: 'Página criada.' })
+  @ApiCreatedResponse({ description: 'Página criada.', type: DocPage })
   createPage(
     @CurrentMembership() membership: RequestMembership,
     @Param('docId', ParseObjectIdPipe) docId: Types.ObjectId,
@@ -172,7 +173,7 @@ export class DocPagesController {
   ) {}
 
   @Get(':pageId')
-  @ApiOkResponse({ description: 'Página.' })
+  @ApiOkResponse({ description: 'Página.', type: DocPage })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('pageId', ParseObjectIdPipe) pageId: Types.ObjectId,
@@ -181,7 +182,7 @@ export class DocPagesController {
   }
 
   @Patch(':pageId')
-  @ApiOkResponse({ description: 'Página salva; versão divergente responde 409.' })
+  @ApiOkResponse({ description: 'Página salva; versão divergente responde 409.', type: DocPage })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('pageId', ParseObjectIdPipe) pageId: Types.ObjectId,
@@ -192,7 +193,7 @@ export class DocPagesController {
 
   @Post(':pageId/move')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Página movida ou reordenada.' })
+  @ApiOkResponse({ description: 'Página movida ou reordenada.', type: DocPage })
   move(
     @CurrentMembership() membership: RequestMembership,
     @Param('pageId', ParseObjectIdPipe) pageId: Types.ObjectId,
@@ -213,7 +214,7 @@ export class DocPagesController {
   }
 
   @Post(':pageId/comments')
-  @ApiCreatedResponse({ description: 'Comentário criado na página.' })
+  @ApiCreatedResponse({ description: 'Comentário criado na página.', type: Comment })
   createComment(
     @CurrentMembership() membership: RequestMembership,
     @Param('pageId', ParseObjectIdPipe) pageId: Types.ObjectId,
@@ -233,7 +234,7 @@ export class DocPagesController {
   }
 
   @Get(':pageId/versions')
-  @ApiOkResponse({ description: 'Versões da página, mais novas primeiro.' })
+  @ApiPagedResponse(DocPageVersion, 'Versões da página, mais novas primeiro.')
   versions(
     @CurrentMembership() membership: RequestMembership,
     @Param('pageId', ParseObjectIdPipe) pageId: Types.ObjectId,
@@ -244,7 +245,7 @@ export class DocPagesController {
 
   @Post(':pageId/versions/:versionId/restore')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Página restaurada para a versão.' })
+  @ApiOkResponse({ description: 'Página restaurada para a versão.', type: DocPage })
   restoreVersion(
     @CurrentMembership() membership: RequestMembership,
     @Param('pageId', ParseObjectIdPipe) pageId: Types.ObjectId,

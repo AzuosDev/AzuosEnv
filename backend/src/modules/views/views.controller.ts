@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Response } from 'express';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
@@ -23,7 +24,7 @@ import { CurrentMembership } from '../workspaces/decorators/workspace-context.de
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { CreateViewDto, ExportQueryDto, UpdateViewDto, ViewQueryDto } from './dto/view.dto';
-import { ViewDocument } from './schemas/view.schema';
+import { View, ViewDocument } from './schemas/view.schema';
 import { ViewExportService } from './view-export.service';
 import { ViewsService } from './views.service';
 
@@ -38,7 +39,7 @@ export class ViewsController {
   ) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'View criada.' })
+  @ApiCreatedResponse({ description: 'View criada.', type: View })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateViewDto,
@@ -47,7 +48,7 @@ export class ViewsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Views visíveis; com locationType vêm na ordem manual.' })
+  @ApiPagedResponse(View, 'Views visíveis; com locationType vêm na ordem manual.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: ViewQueryDto,
@@ -56,7 +57,7 @@ export class ViewsController {
   }
 
   @Get(':viewId')
-  @ApiOkResponse({ description: 'View.' })
+  @ApiOkResponse({ description: 'View.', type: View })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('viewId', ParseObjectIdPipe) viewId: Types.ObjectId,
@@ -87,7 +88,7 @@ export class ViewsController {
   }
 
   @Patch(':viewId')
-  @ApiOkResponse({ description: 'View atualizada.' })
+  @ApiOkResponse({ description: 'View atualizada.', type: View })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('viewId', ParseObjectIdPipe) viewId: Types.ObjectId,
@@ -97,7 +98,7 @@ export class ViewsController {
   }
 
   @Post(':viewId/duplicate')
-  @ApiCreatedResponse({ description: 'View duplicada no mesmo local.' })
+  @ApiCreatedResponse({ description: 'View duplicada no mesmo local.', type: View })
   duplicate(
     @CurrentMembership() membership: RequestMembership,
     @Param('viewId', ParseObjectIdPipe) viewId: Types.ObjectId,
@@ -107,7 +108,7 @@ export class ViewsController {
 
   @Post(':viewId/reorder')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'View reordenada no local.' })
+  @ApiOkResponse({ description: 'View reordenada no local.', type: View })
   reorder(
     @CurrentMembership() membership: RequestMembership,
     @Param('viewId', ParseObjectIdPipe) viewId: Types.ObjectId,

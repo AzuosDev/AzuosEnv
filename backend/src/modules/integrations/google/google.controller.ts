@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { Audit } from '../../audit/audit.decorator';
 import { Public } from '../../../common/decorators/public.decorator';
 import { permissionContextFrom } from '../../hierarchy/permission.service';
 import { CurrentMembership } from '../../workspaces/decorators/workspace-context.decorator';
@@ -43,6 +44,7 @@ export class GoogleIntegrationController {
   }
 
   @Delete()
+  @Audit('integration.google.disconnected', 'integration')
   @ApiOkResponse({ description: 'Conta desconectada.' })
   async disconnect(@CurrentMembership() membership: RequestMembership): Promise<{ success: true }> {
     const ctx = permissionContextFrom(membership);

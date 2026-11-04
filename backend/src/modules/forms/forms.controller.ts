@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -20,7 +21,7 @@ import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { CreateFormDto, FormQueryDto, UpdateFormDto } from './dto/form.dto';
 import { FormResult, FormsService } from './forms.service';
-import { FormDocument } from './schemas/form.schema';
+import { Form, FormDocument } from './schemas/form.schema';
 
 @ApiTags('forms')
 @ApiBearerAuth()
@@ -40,7 +41,7 @@ export class FormsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Formulários visíveis do workspace.' })
+  @ApiPagedResponse(Form, 'Formulários visíveis do workspace.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: FormQueryDto,
@@ -49,7 +50,7 @@ export class FormsController {
   }
 
   @Get(':formId')
-  @ApiOkResponse({ description: 'Formulário.' })
+  @ApiOkResponse({ description: 'Formulário.', type: Form })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('formId', ParseObjectIdPipe) formId: Types.ObjectId,
@@ -59,7 +60,7 @@ export class FormsController {
 
   @Patch(':formId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Formulário atualizado.' })
+  @ApiOkResponse({ description: 'Formulário atualizado.', type: Form })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('formId', ParseObjectIdPipe) formId: Types.ObjectId,

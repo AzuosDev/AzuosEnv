@@ -18,7 +18,7 @@ import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { ResourceQueryDto, ShareDto } from './dto/permission.dto';
 import { permissionContextFrom } from './permission.service';
-import { PermissionDocument } from './schemas/permission.schema';
+import { Permission, PermissionDocument } from './schemas/permission.schema';
 import { SharingService } from './sharing.service';
 
 @ApiTags('permissions')
@@ -29,7 +29,7 @@ export class SharingController {
   constructor(private readonly sharing: SharingService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Recurso compartilhado.' })
+  @ApiCreatedResponse({ description: 'Recurso compartilhado.', type: Permission })
   share(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: ShareDto,
@@ -38,7 +38,7 @@ export class SharingController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Compartilhamentos do recurso.' })
+  @ApiOkResponse({ description: 'Compartilhamentos do recurso.', type: [Permission] })
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: ResourceQueryDto,

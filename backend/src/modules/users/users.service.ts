@@ -61,6 +61,22 @@ export class UsersService {
     return this.model.findOne({ email: email.trim().toLowerCase() }).exec();
   }
 
+  /** Accounts of the given e-mails; used by the import to match the assignees. */
+  findManyByEmail(emails: string[]): Promise<UserDocument[]> {
+    const wanted = [...new Set(emails.map((email) => email.trim().toLowerCase()))].filter(
+      (email) => email.length > 0,
+    );
+
+    if (wanted.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    return this.model
+      .find({ email: { $in: wanted } })
+      .select('name email')
+      .exec();
+  }
+
   /** Name of each user, used for the labels of grouped task lists. */
   async namesByIds(ids: Types.ObjectId[]): Promise<Map<string, string>> {
     if (ids.length === 0) {

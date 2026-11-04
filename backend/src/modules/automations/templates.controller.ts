@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -24,7 +25,7 @@ import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { WorkspaceDocument } from '../workspaces/schemas/workspace.schema';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { ApplyTemplateDto, CreateTemplateDto, TemplateQueryDto } from './dto/template.dto';
-import { TemplateDocument } from './schemas/template.schema';
+import { Template, TemplateDocument } from './schemas/template.schema';
 import { AppliedTemplate, TemplatesService } from './templates.service';
 
 @ApiTags('templates')
@@ -36,7 +37,7 @@ export class TemplatesController {
 
   @Post()
   @Roles('member')
-  @ApiCreatedResponse({ description: 'Recurso salvo como template.' })
+  @ApiCreatedResponse({ description: 'Recurso salvo como template.', type: Template })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateTemplateDto,
@@ -45,7 +46,7 @@ export class TemplatesController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Templates do workspace, mais novos primeiro.' })
+  @ApiPagedResponse(Template, 'Templates do workspace, mais novos primeiro.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: TemplateQueryDto,
@@ -54,7 +55,7 @@ export class TemplatesController {
   }
 
   @Get(':templateId')
-  @ApiOkResponse({ description: 'Template.' })
+  @ApiOkResponse({ description: 'Template.', type: Template })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('templateId', ParseObjectIdPipe) templateId: Types.ObjectId,

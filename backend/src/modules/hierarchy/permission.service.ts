@@ -90,8 +90,11 @@ export class PermissionService {
   /** Every permission of the requester (as user or through a team) in the workspace. */
   async explicitLevels(ctx: PermissionContext): Promise<ExplicitLevels> {
     const principalIds = [ctx.userId, ...(await this.teamIds(ctx))];
+    // Projection and lean: only the level of the chain is read, never saved back.
     const docs = await this.model
       .find({ workspaceId: ctx.workspaceId, principalId: { $in: principalIds } })
+      .select('resourceType resourceId level')
+      .lean()
       .exec();
 
     const levels: ExplicitLevels = new Map();

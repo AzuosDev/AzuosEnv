@@ -72,7 +72,11 @@ export class TeamsService {
     workspaceId: Types.ObjectId,
     userId: Types.ObjectId,
   ): Promise<Types.ObjectId[]> {
-    const teams = await this.model.find({ workspaceId, memberIds: userId }).select('_id').exec();
+    const teams = await this.model
+      .find({ workspaceId, memberIds: userId })
+      .select('_id')
+      .lean()
+      .exec();
 
     return teams.map((team) => team._id);
   }

@@ -4,6 +4,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import { NextFunction, Request, RequestHandler, Response, raw } from 'express';
 import helmet from 'helmet';
+import { REQUEST_ID_HEADER } from './common/logging/logger.module';
 
 export const API_PREFIX = 'api/v1';
 export const SWAGGER_PATH = 'api/docs';
@@ -40,6 +41,11 @@ export function configureApp(app: NestExpressApplication, options: ConfigureAppO
   app.enableCors({
     origin: parseCorsOrigins(config.get<string>('CORS_ORIGINS')),
     credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', REQUEST_ID_HEADER],
+    // O front lê o requestId para citar no suporte e o nome do arquivo exportado.
+    exposedHeaders: [REQUEST_ID_HEADER, 'Content-Disposition'],
+    maxAge: 600,
   });
 
   app.enableShutdownHooks();

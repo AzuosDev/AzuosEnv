@@ -167,7 +167,8 @@ export class AuthController {
 
     return {
       httpOnly: true,
-      sameSite: 'lax',
+      // lax por padrão; `none` (com COOKIE_SECURE) quando o front está em outro domínio.
+      sameSite: this.config.get<'lax' | 'strict' | 'none'>('COOKIE_SAME_SITE') ?? 'lax',
       secure: this.config.get<boolean>('COOKIE_SECURE') ?? false,
       path: REFRESH_COOKIE_PATH,
       ...(domain ? { domain } : {}),
