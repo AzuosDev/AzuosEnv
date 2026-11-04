@@ -1,7 +1,8 @@
 # CONTEXTO-SESSAO — Azuos Env
-Etapa concluída: 11 · Próxima: 12 (Fase 3)
+Etapa concluída: 12 · Próxima: 13 (Fase 3)
 Fase 1 concluída: auth, workspaces, hierarquia, tarefas, colaboração, campos, views, inbox, tempo real e busca.
 Fase 2 concluída: tempo, timesheets, workload, dashboards (Etapa 10), automações e templates (Etapa 11).
+Fase 3 em andamento: Docs com páginas aninhadas (Etapa 12).
 ## Stack
 Node.js LTS, NestJS 12 (ESM-only), MongoDB Atlas, Mongoose 9, JWT access+refresh (rotação), IA Grok (xAI). Front: React + TanStack. Exportação xlsx com exceljs.
 Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @nestjs/event-emitter (EventEmitterModule.forRoot() global em AppModule).
@@ -105,6 +106,14 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - O snapshot de List não leva as views padrão (List e Board), que o ViewsListener recria sozinho na criação.
 - CollaborationModule passou a exportar ChecklistsService e CommentsService para as ações e os templates usarem sem duplicar regra.
 - activities é escrita só pelo ActivitiesListener, a partir dos eventos de tarefa e de comentário; falha ao gravar é logada e nunca derruba a requisição. Cada linha guarda taskId e listId, então o histórico da tarefa é um filtro direto e a view Activity usa as Lists visíveis.
+- Doc mora em um local (workspace|space|folder|list) e vale a permissão desse local (workspace = qualquer member); ver = view, criar/editar/salvar página = edit, excluir/restaurar, trocar private e compartilhar = full. Doc invisível responde 404 DOC_NOT_FOUND e página de Doc invisível 404 PAGE_NOT_FOUND. DocsAccessService centraliza isso e é reaproveitado por busca, favoritos e salas de socket (DocsDataModule evita dependência circular).
+- Doc fora do workspace também é uma view type=doc do local (config.options.docId): criar o Doc cria a view, renomear renomeia e a lixeira remove e recria.
+- Página guarda content (JSON do Tiptap) e contentText (texto puro, usado na busca); árvore por parentPageId com profundidade máxima 5 e ordem manual por fractional indexing entre os irmãos. Excluir a página leva as aninhadas e as versões delas.
+- PATCH de página exige version: divergência responde 409 PAGE_VERSION_CONFLICT e o sucesso incrementa a versão. Antes de gravar, o estado anterior vai para doc_page_versions, mas no máximo um snapshot a cada 5 min por página (restaurar sempre grava); mantém as 50 mais novas.
+- Comentário de página reaproveita a coleção comments com entityType=page e o novo campo anchor (trecho citado); emite page.commented em vez de comment.created para não gerar atividade/notificação de tarefa (que exigem taskId).
+- Link público: share { public, tokenHash }; token opaco de 32 bytes base64url devolvido uma única vez, guardado só como sha256 (select:false e fora do toJSON). GET /public/docs/:token é @Public() e somente leitura; token errado ou revogado responde 404.
+- Eventos page.created/updated/commented vão para as salas ws:{id} e doc:{id} (nova sala doc no RoomAccessService).
+- Busca global passa a ter o tipo page (índice de texto em contentText, português) restrito aos Docs visíveis; sem o índice, sobra só o casamento por título.
 ## Módulos
 - health (src/modules/health) — público
 - auth (src/modules/auth): auth.service/controller, refresh-tokens.service/module, strategies/jwt.strategy, guards/jwt-auth.guard, schemas/refresh-token
@@ -126,6 +135,7 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - time (src/modules/time): time-entries.service, timesheets.service, workload.service, clients.service, time.controller (TimerController, TimeEntriesController), timesheets.controller, workload.controller, time-data.module, time-fields.ts, time-events.ts, week.ts, schemas/time-entry
 - automations (src/modules/automations): automations.service/controller, automation-engine.service (motor), automation-actions.service, automation-runs.service, automations.listener, automations.scheduler (cron de datas + cron dinâmico), automation-hooks.controller (rota pública), templates.service/controller, automation-conditions.ts, automation-triggers.ts, automation-templating.ts, automation-context.ts (AsyncLocalStorage), automation-recipes.ts, automation-fields.ts, automation-events.ts, template-content.ts, template-offsets.ts, schemas/{automation,automation-run,template}
 - dashboards (src/modules/dashboards): dashboards.service/controller, card-data.service (aggregations), card-csv.ts, burn.ts, dashboard-cards.ts, schemas/dashboard
+- docs (src/modules/docs): docs.service/controller (DocsController, DocPagesController), doc-pages.service, page-comments.service, public-docs.controller (rota pública), docs-access.service, docs-data.module, docs-fields.ts, docs-events.ts, schemas/{doc,doc-page,doc-page-version}
 - common: filters/all-exceptions.filter, guards/http-throttler.guard, pagination/{cursor,pagination-query.dto}, pipes/parse-object-id.pipe, schemas/base-schema-options, decorators/{public,current-user}, utils/{duration,hash (sha256Hex),slug (slugify)}
 ## Coleções
 - users: name, email (único, minúsculo), passwordHash (argon2id, select:false e fora do toJSON), avatarUrl, timezone (America/Fortaleza), locale (pt-BR), theme (dark|light|system, padrão dark), lastLoginAt
@@ -161,6 +171,11 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - templates: workspaceId, type (space|folder|list|task|checklist|view), name, content (Mixed: snapshot sem ids, datas em offset de minutos), createdBy; índice (workspaceId, type, _id desc)
 - notifications ganhou o tipo automation
 - tasks ganhou trackedMinutes (soma denormalizada dos lançamentos de tempo)
+- docs: workspaceId, locationType (workspace|space|folder|list), locationId, title, icon, private, isWiki, share { public, tokenHash (select:false e fora do toJSON) }, createdBy, archivedAt, deletedAt; índices (workspaceId, locationType, locationId, _id desc), (workspaceId, deletedAt, _id desc) e (share.tokenHash)
+- doc_pages: workspaceId, docId, parentPageId, title, content (Mixed: JSON do Tiptap), contentText, mentionedTaskIds, position, version, updatedBy; índice (workspaceId, docId, parentPageId, position) e índice de texto page_text em contentText
+- doc_page_versions: workspaceId, docId, pageId, version, title, content, contentText, createdBy; índice (workspaceId, pageId, _id desc)
+- comments ganhou o campo anchor (trecho da página) e passa a usar entityType=page
+- favorites aceita entityType doc e recent_items aceita task|list|doc
 ## Endpoints
 - GET /api/v1/health (público) → { status: "ok", db: "up" | "down" }
 - POST /api/v1/auth/register (público, 5/min/IP) → 201 { user }; senha ≥ 8 com letra e número; e-mail duplicado → 409 EMAIL_IN_USE
@@ -240,14 +255,27 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - POST /api/v1/hooks/:automationId/:secret (público) -> { received: true }; alimenta webhookReceived e formSubmitted, o corpo vira payload e um taskId válido no corpo direciona as ações; secret errado -> 404 AUTOMATION_NOT_FOUND
 - POST (member+) /GET /api/v1/workspaces/:wsId/templates { type, name, sourceId } · GET ?type · GET /DELETE (member+) .../templates/:templateId
 - POST /api/v1/workspaces/:wsId/templates/:templateId/apply { targetType?: space|folder|list|task, targetId?, name?, startAt? } -> 201 com o recurso recriado (ids novos, datas relativas recalculadas)
+- POST/GET /api/v1/workspaces/:wsId/docs { locationType, locationId?, title, icon?, private?, isWiki? } · GET ?tab=recent|favorites|mine|all&locationType&locationId&limit&cursor
+- GET/PATCH ({ title?, icon?, private?, isWiki? })/DELETE /api/v1/workspaces/:wsId/docs/:docId · POST .../docs/:docId/{restore,archive,unarchive}
+- POST /api/v1/workspaces/:wsId/docs/:docId/share { public } → { doc, token, url } (token só nesta resposta) · GET /api/v1/public/docs/:token (público, somente leitura)
+- POST /api/v1/workspaces/:wsId/docs/:docId/pages { title, parentPageId?, content?, contentText?, mentionedTaskIds?, previousId?, nextId? } · GET .../docs/:docId/pages → { items } (ordem manual)
+- GET/PATCH ({ version (obrigatório), title?, content?, contentText?, mentionedTaskIds? })/DELETE /api/v1/workspaces/:wsId/pages/:pageId · POST .../pages/:pageId/move { parentPageId?, previousId?, nextId? }
+- POST/GET /api/v1/workspaces/:wsId/pages/:pageId/comments { bodyText, body?, anchor?, parentCommentId? } → { items: [{ comment, replies }], nextCursor }
+- GET /api/v1/workspaces/:wsId/pages/:pageId/versions?limit&cursor · POST .../pages/:pageId/versions/:versionId/restore
+- /search ganhou o tipo page e o WebSocket a sala doc (eventos page.created/updated/commented)
 - Swagger em /api/docs (fora de produção)
 ## Variáveis de ambiente
 NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, UPLOAD_DIR=./storage/uploads (LocalDiskStorage), SMTP_HOST (vazio = só log), SMTP_PORT=587, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
 ## Padrões aplicados
 - Prefixo global api/v1, helmet, cookie-parser, CORS com credentials, body limit 1 MB, shutdown hooks, trust proxy.
-- Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION. De tarefas: TASK_NOT_FOUND, TAG_NOT_FOUND, INVALID_STATUS, INVALID_ASSIGNEES, INVALID_WATCHERS, INVALID_TAGS, INVALID_TASK_PARENT, TASK_DEPTH_EXCEEDED, PRIMARY_LIST_IMMUTABLE. De inbox e lembretes: NOTIFICATION_NOT_FOUND, REMINDER_NOT_FOUND; sala de socket negada responde ack { code: 'FORBIDDEN_ROOM' }. De campos e views: CUSTOM_FIELD_NOT_FOUND, INVALID_CUSTOM_FIELD, INVALID_CUSTOM_FIELD_VALUE, CUSTOM_FIELD_REQUIRED, INVALID_FORMULA, INVALID_FIELD_FILTER, VIEW_NOT_FOUND, FORBIDDEN_VIEW, INVALID_VIEW_LOCATION. De busca, favoritos, lixeira e recorrência: FAVORITE_NOT_FOUND, INVALID_TRASH_ENTITY, INVALID_RECURRENCE. De automações e templates: AUTOMATION_NOT_FOUND, INVALID_AUTOMATION, INVALID_AUTOMATION_ACTION, TEMPLATE_NOT_FOUND, INVALID_TEMPLATE_SOURCE, INVALID_TEMPLATE_TARGET, TEMPLATE_TOO_LARGE.
+- Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION. De tarefas: TASK_NOT_FOUND, TAG_NOT_FOUND, INVALID_STATUS, INVALID_ASSIGNEES, INVALID_WATCHERS, INVALID_TAGS, INVALID_TASK_PARENT, TASK_DEPTH_EXCEEDED, PRIMARY_LIST_IMMUTABLE. De inbox e lembretes: NOTIFICATION_NOT_FOUND, REMINDER_NOT_FOUND; sala de socket negada responde ack { code: 'FORBIDDEN_ROOM' }. De campos e views: CUSTOM_FIELD_NOT_FOUND, INVALID_CUSTOM_FIELD, INVALID_CUSTOM_FIELD_VALUE, CUSTOM_FIELD_REQUIRED, INVALID_FORMULA, INVALID_FIELD_FILTER, VIEW_NOT_FOUND, FORBIDDEN_VIEW, INVALID_VIEW_LOCATION. De busca, favoritos, lixeira e recorrência: FAVORITE_NOT_FOUND, INVALID_TRASH_ENTITY, INVALID_RECURRENCE. De Docs: DOC_NOT_FOUND, PAGE_NOT_FOUND, INVALID_DOC_LOCATION, INVALID_PAGE_PARENT, PAGE_DEPTH_EXCEEDED, PAGE_VERSION_CONFLICT, PAGE_VERSION_NOT_FOUND. De automações e templates: AUTOMATION_NOT_FOUND, INVALID_AUTOMATION, INVALID_AUTOMATION_ACTION, TEMPLATE_NOT_FOUND, INVALID_TEMPLATE_SOURCE, INVALID_TEMPLATE_TARGET, TEMPLATE_TOO_LARGE.
 - Testes: `npm test` (unit) e `npm run test:e2e` (supertest + mongodb-memory-server). O mongod sobe uma vez em test/utils/global-setup.ts (env de teste em test-env.ts); `createTestApp()` em test/utils/e2e-app.ts dá app + clearDatabase() (e `{ listen: true }` abre porta real + baseUrl para o suite de socket); helpers de auth (registro, login, cookie, IP por teste) em test/utils/auth-client.ts.
 ## Pendências
+- Docs não entram na lixeira geral (/trash ainda é space|folder|list|task): o Doc tem DELETE e restore próprios.
+- Comentário de página não é editado, resolvido nem reagido pelas rotas /comments/:commentId (CommentsService continua só de tarefa) e não aparece em assigned-comments nem em /replies.
+- O hub carrega até 500 Docs e filtra permissão em memória; as abas recent e favorites não paginam (nextCursor null).
+- A busca de páginas usa o índice de texto só para o trecho e regex sem índice para o título; mentionedTaskIds não vira backlink na tarefa ainda.
+- Excluir a List/Folder/Space não exclui os Docs daquele local.
 - /tasks/query ordena e agrupa em memória com teto de 5000 documentos; migrar para aggregation quando o volume exigir.
 - O cron de datas varre até 2000 tarefas e os lembretes até 500 por ciclo, sem recorte por workspace; com volume, filtrar por índice e paginar.
 - O Socket.IO roda em memória (sem adapter Redis): escalar para mais de uma instância exige o adapter.

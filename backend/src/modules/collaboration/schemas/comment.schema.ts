@@ -39,6 +39,10 @@ export class Comment {
   @Prop({ type: String, default: '' })
   bodyText: string;
 
+  /** Excerpt of the Doc page the comment is anchored to; null outside pages. */
+  @Prop({ type: String, default: null })
+  anchor: string | null;
+
   /** Users mentioned in `body`, extracted on every write. */
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   mentions: Types.ObjectId[];

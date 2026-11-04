@@ -7,6 +7,15 @@ import {
   CommentUpdatedEvent,
 } from '../collaboration/collaboration-events';
 import {
+  PAGE_COMMENTED,
+  PAGE_CREATED,
+  PAGE_UPDATED,
+  PageCommentedEvent,
+  PageCreatedEvent,
+  PageEventBase,
+  PageUpdatedEvent,
+} from '../docs/docs-events';
+import {
   NOTIFICATION_CREATED,
   NotificationCreatedEvent,
 } from '../notifications/notification-events';
@@ -73,6 +82,28 @@ export class RealtimeListener {
     });
   }
 
+  @OnEvent(PAGE_CREATED)
+  onPageCreated(event: PageCreatedEvent): void {
+    this.gateway.emitToRooms(pageRooms(event), 'page.created', pagePayload(event));
+  }
+
+  @OnEvent(PAGE_UPDATED)
+  onPageUpdated(event: PageUpdatedEvent): void {
+    this.gateway.emitToRooms(pageRooms(event), 'page.updated', {
+      ...pagePayload(event),
+      changes: event.changes,
+    });
+  }
+
+  @OnEvent(PAGE_COMMENTED)
+  onPageCommented(event: PageCommentedEvent): void {
+    this.gateway.emitToRooms(pageRooms(event), 'page.commented', {
+      ...pagePayload(event),
+      commentId: String(event.commentId),
+      anchor: event.anchor,
+    });
+  }
+
   @OnEvent(NOTIFICATION_CREATED)
   onNotificationCreated(event: NotificationCreatedEvent): void {
     this.gateway.emitToRooms([userRoom(String(event.userId))], 'notification.new', {
@@ -102,6 +133,21 @@ function taskPayload(event: TaskEventBase): Record<string, unknown> {
     taskId: String(event.taskId),
     customId: event.customId,
     listId: String(event.listId),
+    actorId: String(event.actorId),
+  };
+}
+
+function pageRooms(event: PageEventBase): string[] {
+  return [roomName('ws', String(event.workspaceId)), roomName('doc', String(event.docId))];
+}
+
+function pagePayload(event: PageEventBase): Record<string, unknown> {
+  return {
+    workspaceId: String(event.workspaceId),
+    docId: String(event.docId),
+    pageId: String(event.pageId),
+    parentPageId: event.parentPageId ? String(event.parentPageId) : null,
+    version: event.version,
     actorId: String(event.actorId),
   };
 }

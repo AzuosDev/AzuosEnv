@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
+import { DocsAccessService } from '../docs/docs-access.service';
 import { HierarchyAccessService } from '../hierarchy/hierarchy-access.service';
 import {
   appendPosition,
@@ -45,6 +46,7 @@ export class FavoritesService {
     @InjectModel(Favorite.name) private readonly model: Model<Favorite>,
     private readonly access: HierarchyAccessService,
     private readonly taskAccess: TaskAccessService,
+    private readonly docs: DocsAccessService,
     private readonly recents: RecentsService,
   ) {}
 
@@ -214,6 +216,12 @@ export class FavoritesService {
         spaceId: String(list.spaceId),
         folderId: list.folderId ? String(list.folderId) : null,
       };
+    }
+
+    if (entityType === 'doc') {
+      const doc = await this.docs.requireDoc(ctx, entityId, 'view');
+
+      return { id: String(doc._id), name: doc.title };
     }
 
     const { task } = await this.taskAccess.requireTask(ctx, String(entityId), 'view');

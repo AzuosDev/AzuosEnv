@@ -1,4 +1,4 @@
-export const SEARCH_TYPES = ['task', 'list', 'space', 'folder', 'comment', 'user'] as const;
+export const SEARCH_TYPES = ['task', 'list', 'space', 'folder', 'comment', 'page', 'user'] as const;
 export type SearchType = (typeof SEARCH_TYPES)[number];
 
 /** Results returned per type. */

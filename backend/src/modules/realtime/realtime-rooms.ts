@@ -1,12 +1,12 @@
 /** Rooms a client can ask to join; `user:{id}` is joined on connect. */
-export const ROOM_KINDS = ['ws', 'list', 'task'] as const;
+export const ROOM_KINDS = ['ws', 'list', 'task', 'doc'] as const;
 export type RoomKind = (typeof ROOM_KINDS)[number];
 
 export interface RoomPayload {
   room?: unknown;
-  /** Id of the room: the workspace, the List or the task. */
+  /** Id of the room: the workspace, the List, the task or the Doc. */
   id?: unknown;
-  /** Workspace of the List or of the task; ignored when `room` is `ws`. */
+  /** Workspace of the resource; ignored when `room` is `ws`. */
   wsId?: unknown;
 }
 

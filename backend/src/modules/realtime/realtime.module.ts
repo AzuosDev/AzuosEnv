@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
+import { DocsDataModule } from '../docs/docs-data.module';
 import { HierarchyModule } from '../hierarchy/hierarchy.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { UsersModule } from '../users/users.module';
@@ -9,7 +10,14 @@ import { RealtimeListener } from './realtime.listener';
 import { RoomAccessService } from './room-access.service';
 
 @Module({
-  imports: [AuthModule, UsersModule, WorkspacesModule, HierarchyModule, TasksModule],
+  imports: [
+    AuthModule,
+    UsersModule,
+    WorkspacesModule,
+    HierarchyModule,
+    TasksModule,
+    DocsDataModule,
+  ],
   providers: [RoomAccessService, EventsGateway, RealtimeListener],
 })
 export class RealtimeModule {}

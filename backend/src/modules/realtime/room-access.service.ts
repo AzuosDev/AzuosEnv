@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Types } from 'mongoose';
+import { DocsAccessService } from '../docs/docs-access.service';
 import { HierarchyAccessService } from '../hierarchy/hierarchy-access.service';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import { AccessTokenPayload } from '../auth/strategies/jwt.strategy';
@@ -18,6 +19,7 @@ export class RoomAccessService {
     private readonly workspaces: WorkspacesService,
     private readonly hierarchy: HierarchyAccessService,
     private readonly taskAccess: TaskAccessService,
+    private readonly docs: DocsAccessService,
   ) {}
 
   /** Reads the access token of `auth.token` and answers the id of the user. */
@@ -66,6 +68,12 @@ export class RoomAccessService {
       const list = await this.hierarchy.requireList(ctx, new Types.ObjectId(id), 'view');
 
       return roomName('list', String(list._id));
+    }
+
+    if (kind === 'doc') {
+      const doc = await this.docs.requireDoc(ctx, new Types.ObjectId(id), 'view');
+
+      return roomName('doc', String(doc._id));
     }
 
     const { task } = await this.taskAccess.requireTask(ctx, id, 'view');

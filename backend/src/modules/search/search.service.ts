@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { escapeRegex } from '../../common/utils/regex';
 import { Comment, CommentDocument } from '../collaboration/schemas/comment.schema';
+import { DocsAccessService } from '../docs/docs-access.service';
+import { DocPage, DocPageDocument } from '../docs/schemas/doc-page.schema';
 import { HierarchyAccessService } from '../hierarchy/hierarchy-access.service';
 import { PermissionContext, PermissionService } from '../hierarchy/permission.service';
 import { Folder, FolderDocument } from '../hierarchy/schemas/folder.schema';
@@ -46,7 +48,9 @@ export class SearchService {
     @InjectModel(Task.name) private readonly tasks: Model<Task>,
     @InjectModel(Comment.name) private readonly comments: Model<Comment>,
     @InjectModel(Folder.name) private readonly folders: Model<Folder>,
+    @InjectModel(DocPage.name) private readonly pages: Model<DocPage>,
     private readonly access: HierarchyAccessService,
+    private readonly docs: DocsAccessService,
     private readonly permissions: PermissionService,
     private readonly members: MembersService,
     private readonly users: UsersService,
@@ -81,6 +85,10 @@ export class SearchService {
 
     if (types.includes('comment')) {
       results.comment = await this.searchComments(ctx, lists, q, limit);
+    }
+
+    if (types.includes('page')) {
+      results.page = await this.searchPages(ctx, q, limit);
     }
 
     if (types.includes('user')) {
@@ -228,6 +236,48 @@ export class SearchService {
       .map((comment) => commentHit(comment, byId.get(String(comment.entityId))!.customId));
   }
 
+  /**
+   * Pages of the Docs the requester can see: the text index of `contentText`
+   * first, then the partial match on the title.
+   */
+  private async searchPages(
+    ctx: PermissionContext,
+    q: string,
+    limit: number,
+  ): Promise<SearchHit[]> {
+    const docIds = await this.docs.visibleDocIds(ctx);
+
+    if (docIds.length === 0) {
+      return [];
+    }
+
+    const scope = { workspaceId: ctx.workspaceId, docId: { $in: docIds } };
+    const byText = await this.pageTextMatches(scope, q);
+    const byTitle = await this.pages
+      .find({ ...scope, title: containsRegex(q) })
+      .limit(MAX_SEARCH_SCAN)
+      .exec();
+
+    return dedupe([...byText, ...byTitle])
+      .slice(0, limit)
+      .map(pageHit);
+  }
+
+  /** Text index of the pages; a failure here only loses the stemmed hits. */
+  private async pageTextMatches(
+    scope: Record<string, unknown>,
+    q: string,
+  ): Promise<DocPageDocument[]> {
+    try {
+      return await this.pages
+        .find({ ...scope, $text: { $search: q } })
+        .limit(MAX_SEARCH_SCAN)
+        .exec();
+    } catch {
+      return [];
+    }
+  }
+
   private async searchUsers(
     ctx: PermissionContext,
     q: string,
@@ -341,6 +391,17 @@ function taskHit(task: TaskDocument): SearchHit {
     statusGroup: task.statusGroup,
     priority: task.priority,
     dueAt: task.dueAt ? task.dueAt.toISOString() : null,
+  };
+}
+
+function pageHit(page: DocPageDocument): SearchHit {
+  return {
+    type: 'page',
+    id: String(page._id),
+    name: page.title,
+    docId: String(page.docId),
+    parentPageId: page.parentPageId ? String(page.parentPageId) : null,
+    contentText: page.contentText.slice(0, 200),
   };
 }
 

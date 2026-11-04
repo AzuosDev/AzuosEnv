@@ -12,6 +12,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AutomationsModule } from './modules/automations/automations.module';
 import { CollaborationModule } from './modules/collaboration/collaboration.module';
 import { DashboardsModule } from './modules/dashboards/dashboards.module';
+import { DocsModule } from './modules/docs/docs.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { FieldsModule } from './modules/fields/fields.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -62,6 +63,7 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     TimeModule,
     DashboardsModule,
     AutomationsModule,
+    DocsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
