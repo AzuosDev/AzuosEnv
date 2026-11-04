@@ -1,8 +1,9 @@
 # CONTEXTO-SESSAO — Azuos Env
-Etapa concluída: 14 · Próxima: 15 (Fase 4)
+Etapa concluída: 15 · Próxima: 16 (Fase 4)
 Fase 1 concluída: auth, workspaces, hierarquia, tarefas, colaboração, campos, views, inbox, tempo real e busca.
 Fase 2 concluída: tempo, timesheets, workload, dashboards (Etapa 10), automações e templates (Etapa 11).
 Fase 3 concluída: Docs com páginas aninhadas (Etapa 12), Chat com canais, DMs e threads (Etapa 13), planner/calendário, metas, formulários públicos e sprints (Etapa 14).
+Fase 4 em andamento: IA com Grok (Etapa 15).
 ## Stack
 Node.js LTS, NestJS 12 (ESM-only), MongoDB Atlas, Mongoose 9, JWT access+refresh (rotação), IA Grok (xAI). Front: React + TanStack. Exportação xlsx com exceljs.
 Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @nestjs/event-emitter (EventEmitterModule.forRoot() global em AppModule).
@@ -141,6 +142,18 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - Sprint é uma List com sprintFolderId, startDate, endDate e sprintClosedAt; sprint_folders guarda o Folder da hierarquia, a duração e o início. A próxima sprint começa no dia seguinte ao fim da última.
 - Fechar a sprint move (TasksService.move) até 500 tarefas fora de done/closed para a próxima sprint, criando-a quando a fechada é a última.
 - Card de burndown/burnup aceita sprintId: recorta na List da sprint e, sem from/to, usa as datas do ciclo no fuso do workspace.
+- IA: AiProvider (interface + token AI_PROVIDER) escolhido no AiModule como o MailService — com XAI_API_KEY vira GrokProvider (API compatível com OpenAI da xAI: chat completions, tool calling e SSE, timeout de 60 s e 2 tentativas); sem a chave fica o StubAiProvider, que responde local e nunca toca a rede (é o provider de todo teste).
+- GROK_MODEL não tem valor fixo no código: o Joi só exige o nome do modelo quando XAI_API_KEY está preenchida.
+- O stub é roteirizável (script()): o e2e enfileira as respostas e dirige o tool calling sem o modelo real; sem roteiro ele ecoa o último prompt e devolve JSON válido quando o formato pedido é json_object.
+- POST /ai/chat responde SSE: cada bloco é um JSON { type: start | delta | tool | done | error }. Orçamento, rate limit e histórico são checados em AiChatService.start() antes do primeiro byte, então pedido bloqueado ainda responde JSON de erro.
+- As ferramentas (search_tasks, get_task, list_overdue, summarize_list, my_tasks) rodam no servidor com o PermissionContext do usuário, pelo TaskQueryService/TasksService: tarefa invisível não aparece e recurso negado volta como { error: CÓDIGO } para o modelo, sem derrubar a conversa. No máximo 3 rodadas de ferramenta por pergunta e a última chamada vai sem ferramentas.
+- Contexto sempre truncado: 20 mensagens de histórico, 4000 caracteres por mensagem, 6000 por resultado de ferramenta e 12000 no resumo.
+- Segredos nunca saem: ai-context.ts redige `chave: valor` de chave sensível, Bearer, JWT, chave com prefixo (sk-/xai-/ghp-) e hex longo; redactValue apaga o valor inteiro de chave sensível. Aplicado em todo texto que vai para o modelo.
+- tasks-from-text não cria nada: devolve a proposta validada pelo JSON schema de ai-task-proposal.ts (campo opcional inválido é descartado com aviso, tarefa sem nome é descartada). O confirm revalida pelo mesmo validador e cria pelo TasksService (customId, campos e eventos de graça). Proposta vazia responde 400 AI_INVALID_PROPOSAL.
+- Orçamento mensal por workspace: AiUsageService soma ai_usage do mês corrente (AI_MONTHLY_TOKEN_BUDGET, 0 = sem teto) e responde 429 AI_BUDGET_EXCEEDED; o rate limit por usuário (20/min) vive na memória do processo e responde 429 AI_RATE_LIMITED. Gravar o consumo nunca derruba a resposta.
+- ClickApp ai liga/desliga a IA: AiEnabledGuard roda depois do WorkspaceGuard e responde 403 AI_DISABLED (primeira vez que um ClickApp é aplicado).
+- Agente agendado: um CronJob por agente ativo no SchedulerRegistry (nome ai-agent:<id>), montado no onModuleInit e refeito a cada ai-agents.changed, igual ao gatilho schedule das automações. O cron é validado com CronTime na escrita (400 INVALID_AI_AGENT).
+- O agente roda como quem o criou (ctx role owner) e entrega em config.channelId (mensagem no canal) ou no Inbox de config.userIds (padrão: o criador), pelo novo tipo de notificação aiSummary. AiAgentRunnerService.run é público para o e2e rodar sem esperar o cron.
 
 ## Módulos
 - health (src/modules/health) — público
@@ -169,6 +182,7 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - goals (src/modules/goals): goals.service, goal-folders.service, targets.service, goals.listener, goals.controller (GoalFoldersController, GoalsController), goal-progress.ts, goals-fields.ts, schemas/{goal-folder,goal,target}
 - forms (src/modules/forms): forms.service, form-submissions.service, forms.controller, public-forms.controller (rotas públicas), form-conditions.ts, form-fields.ts, schemas/form
 - sprints (src/modules/sprints): sprints.service, sprints.controller (SprintFoldersController, SprintsController), sprint-fields.ts, schemas/sprint-folder
+- ai (src/modules/ai): ai.controller.ts (AiController, AiAgentsController), ai-chat.service (SSE + tool loop), ai-assist.service (resumo, tasks-from-text, write), ai-tools.service + ai-tools.ts, ai-usage.service (orçamento e rate limit), ai-agents.service, ai-agent-runner.service, ai-agents.scheduler (cron dinâmico), ai-provider.ts (AiProvider + AI_PROVIDER), grok.provider.ts, stub-ai.provider.ts, ai-context.ts (redação e truncagem), ai-task-proposal.ts (JSON schema + validador), ai-prompts.ts, ai-fields.ts, ai-events.ts, guards/ai-enabled.guard.ts, schemas/{ai-conversation,ai-usage,ai-agent}
 - common: filters/all-exceptions.filter, guards/http-throttler.guard, pagination/{cursor,pagination-query.dto}, pipes/parse-object-id.pipe, schemas/base-schema-options, decorators/{public,current-user}, utils/{duration,hash (sha256Hex),slug (slugify)}
 ## Coleções
 - users: name, email (único, minúsculo), passwordHash (argon2id, select:false e fora do toJSON), avatarUrl, timezone (America/Fortaleza), locale (pt-BR), theme (dark|light|system, padrão dark), lastLoginAt
@@ -221,6 +235,10 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - sprint_folders: workspaceId, spaceId, folderId (Folder da hierarquia), name, durationDays (14), startDate, createdBy, deletedAt; índice único (workspaceId, folderId)
 - lists ganhou sprintFolderId, startDate, endDate e sprintClosedAt (índice (workspaceId, sprintFolderId, startDate))
 - notifications ganhou o tipo formSubmitted
+- ai_conversations: workspaceId, userId, title, messages[{ role (system|user|assistant|tool), content, toolCalls[{ id, name, arguments }], toolCallId, at }], lastMessageAt; índice (workspaceId, userId, _id desc)
+- ai_usage: workspaceId, userId (null no agente), feature (chat|summarize|tasksFromText|write|agent), tokensIn, tokensOut, model; índices (workspaceId, createdAt desc) e (workspaceId, userId, createdAt desc)
+- ai_agents: workspaceId, name, type (dailySummary|overdueDigest|bugTriage), cron, config (Mixed: channelId, userIds, timezone), active, createdBy, lastRunAt; índices (workspaceId, _id desc) e (workspaceId, active, type)
+- notifications ganhou o tipo aiSummary (entityType workspace)
 ## Endpoints
 - GET /api/v1/health (público) → { status: "ok", db: "up" | "down" }
 - POST /api/v1/auth/register (público, 5/min/IP) → 201 { user }; senha ≥ 8 com letra e número; e-mail duplicado → 409 EMAIL_IN_USE
@@ -330,15 +348,33 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - POST /api/v1/workspaces/:wsId/sprint-folders/:sprintFolderId/sprints { name?, startDate? } → a List da próxima sprint
 - GET /api/v1/workspaces/:wsId/sprints/:sprintId · POST .../sprints/:sprintId/close (member) → { sprint, nextSprint, moved }
 - Card de dashboard aceita config.sprintId em burndown e burnup
+- POST /api/v1/workspaces/:wsId/ai/chat { message, conversationId? } → stream SSE de { type: start | delta | tool | done | error } (ferramentas rodadas no servidor com a permissão do usuário)
+- POST /api/v1/workspaces/:wsId/ai/summarize { entityType: task|thread|channel|doc, id, instruction? } → { entityType, id, summary }
+- POST /api/v1/workspaces/:wsId/ai/tasks-from-text { text, listId } → { listId, tasks, warnings } (não cria nada) · POST .../ai/tasks-from-text/confirm { listId, tasks } → { listId, created }
+- POST /api/v1/workspaces/:wsId/ai/write { action: improve|shorten|translate|fixGrammar, text } → { action, text }
+- GET /api/v1/workspaces/:wsId/ai/usage → { from, tokensIn, tokensOut, total, budget }
+- POST (admin) /GET /api/v1/workspaces/:wsId/ai/agents { name, type, cron, config?, active? } · GET /PATCH (admin) /DELETE (admin) .../ai/agents/:agentId
+- Toda rota de IA exige o ClickApp ai (403 AI_DISABLED), respeita o orçamento do mês (429 AI_BUDGET_EXCEEDED) e o rate limit por usuário (429 AI_RATE_LIMITED)
 - Swagger em /api/docs (fora de produção)
 ## Variáveis de ambiente
-NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, UPLOAD_DIR=./storage/uploads (LocalDiskStorage), SMTP_HOST (vazio = só log), SMTP_PORT=587, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, PUBLIC_FORM_ORIGINS (CORS dos formulários públicos), SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
+NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, UPLOAD_DIR=./storage/uploads (LocalDiskStorage), SMTP_HOST (vazio = só log), SMTP_PORT=587, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, PUBLIC_FORM_ORIGINS (CORS dos formulários públicos), SEED_NAME, SEED_EMAIL, SEED_PASSWORD, XAI_API_KEY (vazio = StubAiProvider), XAI_BASE_URL=https://api.x.ai/v1, GROK_MODEL (obrigatório quando há XAI_API_KEY), AI_MONTHLY_TOKEN_BUDGET=1000000 (0 = sem teto) (ver backend/.env.example)
 ## Padrões aplicados
 - Prefixo global api/v1, helmet, cookie-parser, CORS com credentials, body limit 1 MB, shutdown hooks, trust proxy.
 - Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION. De tarefas: TASK_NOT_FOUND, TAG_NOT_FOUND, INVALID_STATUS, INVALID_ASSIGNEES, INVALID_WATCHERS, INVALID_TAGS, INVALID_TASK_PARENT, TASK_DEPTH_EXCEEDED, PRIMARY_LIST_IMMUTABLE. De inbox e lembretes: NOTIFICATION_NOT_FOUND, REMINDER_NOT_FOUND; sala de socket negada responde ack { code: 'FORBIDDEN_ROOM' }. De campos e views: CUSTOM_FIELD_NOT_FOUND, INVALID_CUSTOM_FIELD, INVALID_CUSTOM_FIELD_VALUE, CUSTOM_FIELD_REQUIRED, INVALID_FORMULA, INVALID_FIELD_FILTER, VIEW_NOT_FOUND, FORBIDDEN_VIEW, INVALID_VIEW_LOCATION. De busca, favoritos, lixeira e recorrência: FAVORITE_NOT_FOUND, INVALID_TRASH_ENTITY, INVALID_RECURRENCE. De Docs: DOC_NOT_FOUND, PAGE_NOT_FOUND, INVALID_DOC_LOCATION, INVALID_PAGE_PARENT, PAGE_DEPTH_EXCEEDED, PAGE_VERSION_CONFLICT, PAGE_VERSION_NOT_FOUND. Do chat: CHANNEL_NOT_FOUND, MESSAGE_NOT_FOUND, FORBIDDEN_CHANNEL, FORBIDDEN_MESSAGE, CHANNEL_MEMBER_REQUIRED, INVALID_CHANNEL_LOCATION, INVALID_CHANNEL_MEMBERS, INVALID_CHANNEL_TYPE, INVALID_MESSAGE_PARENT. De automações e templates: AUTOMATION_NOT_FOUND, INVALID_AUTOMATION, INVALID_AUTOMATION_ACTION, TEMPLATE_NOT_FOUND, INVALID_TEMPLATE_SOURCE, INVALID_TEMPLATE_TARGET, TEMPLATE_TOO_LARGE.
 - Códigos do planner, metas, formulários e sprints: CALENDAR_EVENT_NOT_FOUND, INVALID_EVENT_RANGE, INVALID_DATE_RANGE, INVALID_ATTENDEES, GOAL_NOT_FOUND, GOAL_FOLDER_NOT_FOUND, TARGET_NOT_FOUND, INVALID_TARGET, INVALID_GOAL_OWNERS, FORM_NOT_FOUND, INVALID_FORM, INVALID_FORM_SUBMISSION, FORM_SUBMISSION_REJECTED, SPRINT_NOT_FOUND, SPRINT_FOLDER_NOT_FOUND, INVALID_SPRINT.
+- Códigos da IA: AI_DISABLED, AI_BUDGET_EXCEEDED, AI_RATE_LIMITED, AI_PROVIDER_ERROR, AI_INVALID_PROPOSAL, AI_CONVERSATION_NOT_FOUND, AI_AGENT_NOT_FOUND, INVALID_AI_AGENT.
 - Testes: `npm test` (unit) e `npm run test:e2e` (supertest + mongodb-memory-server). O mongod sobe uma vez em test/utils/global-setup.ts (env de teste em test-env.ts); `createTestApp()` em test/utils/e2e-app.ts dá app + clearDatabase() (e `{ listen: true }` abre porta real + baseUrl para o suite de socket); helpers de auth (registro, login, cookie, IP por teste) em test/utils/auth-client.ts.
 ## Pendências
+- A IA só tem chat, resumo, tasks-from-text, write e agentes: não escreve na tarefa (sem ferramenta de escrita), não indexa nada (sem RAG/embeddings) e não cita a fonte do que respondeu.
+- O histórico de conversa não tem endpoint: ai_conversations é lido só pelo próprio chat (sem listar, renomear nem excluir) e não entra na lixeira.
+- O rate limit da IA vive na memória do processo: com mais de uma instância cada nó conta o seu.
+- O orçamento é checado antes da chamada e gravado depois: uma chamada muito grande pode estourar o mês; não há alerta ao administrador nem teto por usuário.
+- ai_usage não tem TTL nem expurgo e não aparece em nenhum dashboard; o consumo do mês é uma aggregation por requisição, sem cache.
+- O stream não é cancelado quando o cliente desconecta (a resposta termina de ser gerada) e o SSE não tem heartbeat nem reconexão por Last-Event-ID.
+- GrokProvider só repete a tentativa antes do primeiro byte: falha no meio do stream chega ao cliente como evento error.
+- O agente roda como quem o criou e lê até 100 tarefas do workspace inteiro, sem recorte por local nem paginação; bugTriage só sugere a prioridade no texto, não escreve na tarefa.
+- O agente não guarda histórico de execução (só lastRunAt) e o cron dinâmico roda uma vez por instância, como o gatilho schedule das automações.
+- A redação de segredos é por padrão de texto: um segredo em prosa, sem chave nem formato conhecido, passa.
 - O calendário não sincroniza com nada: CalendarProvider só tem o stub, recurrence é guardada como texto (não expande ocorrências) e nada impede dois eventos sobrepostos.
 - O planner não recorta por fuso do usuário (o período é UTC) e lista até 200 tarefas por seção, sem paginar.
 - O bloco de tempo não é refeito quando a tarefa é movida, fechada ou excluída: o evento fica no calendário.

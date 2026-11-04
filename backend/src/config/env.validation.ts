@@ -24,6 +24,16 @@ export const envValidationSchema = Joi.object({
   SMTP_USER: Joi.string().allow('').default(''),
   SMTP_PASSWORD: Joi.string().allow('').default(''),
   SMTP_FROM: Joi.string().allow('').default('Azuos Env <no-reply@azuos.dev>'),
+  // Without XAI_API_KEY the AiProvider is the stub and no request leaves the process.
+  XAI_API_KEY: Joi.string().allow('').default(''),
+  XAI_BASE_URL: Joi.string().uri().default('https://api.x.ai/v1'),
+  // No model is hardcoded: with a key configured the model has to be named here.
+  GROK_MODEL: Joi.string()
+    .allow('')
+    .default('')
+    .when('XAI_API_KEY', { is: Joi.string().min(1), then: Joi.string().min(1).required() }),
+  // Tokens (in + out) one workspace may spend per calendar month; 0 = no ceiling.
+  AI_MONTHLY_TOKEN_BUDGET: Joi.number().integer().min(0).default(1_000_000),
 })
   .unknown(true)
   .options({ abortEarly: false });

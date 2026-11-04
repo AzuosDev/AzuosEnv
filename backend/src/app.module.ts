@@ -8,6 +8,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { HttpThrottlerGuard } from './common/guards/http-throttler.guard';
 import { envValidationSchema } from './config/env.validation';
+import { AiModule } from './modules/ai/ai.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AutomationsModule } from './modules/automations/automations.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
@@ -74,6 +75,7 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     GoalsModule,
     FormsModule,
     SprintsModule,
+    AiModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

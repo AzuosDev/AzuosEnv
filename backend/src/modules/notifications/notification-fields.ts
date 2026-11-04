@@ -13,6 +13,7 @@ export const NOTIFICATION_TYPES = [
   'chatMention',
   'chatMessage',
   'formSubmitted',
+  'aiSummary',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

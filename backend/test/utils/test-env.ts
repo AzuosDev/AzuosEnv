@@ -16,6 +16,10 @@ export const TEST_ENV: Record<string, string> = {
   COOKIE_SECURE: 'false',
   COOKIE_DOMAIN: '',
   UPLOAD_DIR: TEST_UPLOAD_DIR,
+  // No key: the AiProvider of the suite is always the stub.
+  XAI_API_KEY: '',
+  GROK_MODEL: 'grok-test',
+  AI_MONTHLY_TOKEN_BUDGET: '100000',
 };
 
 export const TEST_DB_NAME = 'azuos-env-test';
