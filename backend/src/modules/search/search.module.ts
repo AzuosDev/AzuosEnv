@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ChatDataModule } from '../chat/chat-data.module';
 import { CollaborationDataModule } from '../collaboration/collaboration-data.module';
 import { DocsDataModule } from '../docs/docs-data.module';
 import { HierarchyModule } from '../hierarchy/hierarchy.module';
@@ -13,6 +14,7 @@ import { SearchService } from './search.service';
     TasksDataModule,
     CollaborationDataModule,
     DocsDataModule,
+    ChatDataModule,
     HierarchyModule,
     WorkspacesModule,
     UsersModule,

@@ -1,8 +1,8 @@
 # CONTEXTO-SESSAO — Azuos Env
-Etapa concluída: 12 · Próxima: 13 (Fase 3)
+Etapa concluída: 13 · Próxima: 14 (Fase 3)
 Fase 1 concluída: auth, workspaces, hierarquia, tarefas, colaboração, campos, views, inbox, tempo real e busca.
 Fase 2 concluída: tempo, timesheets, workload, dashboards (Etapa 10), automações e templates (Etapa 11).
-Fase 3 em andamento: Docs com páginas aninhadas (Etapa 12).
+Fase 3 em andamento: Docs com páginas aninhadas (Etapa 12) e Chat com canais, DMs e threads (Etapa 13).
 ## Stack
 Node.js LTS, NestJS 12 (ESM-only), MongoDB Atlas, Mongoose 9, JWT access+refresh (rotação), IA Grok (xAI). Front: React + TanStack. Exportação xlsx com exceljs.
 Auth: @nestjs/jwt, @nestjs/passport, passport-jwt, argon2 (argon2id). Eventos: @nestjs/event-emitter (EventEmitterModule.forRoot() global em AppModule).
@@ -114,6 +114,18 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - Link público: share { public, tokenHash }; token opaco de 32 bytes base64url devolvido uma única vez, guardado só como sha256 (select:false e fora do toJSON). GET /public/docs/:token é @Public() e somente leitura; token errado ou revogado responde 404.
 - Eventos page.created/updated/commented vão para as salas ws:{id} e doc:{id} (nova sala doc no RoomAccessService).
 - Busca global passa a ter o tipo page (índice de texto em contentText, português) restrito aos Docs visíveis; sem o índice, sobra só o casamento por título.
+- Chat: canal mora em um local (workspace|space|folder|list) e vale a permissão desse local (workspace = qualquer member); ver = view, enviar/editar/reagir = comment, criar/renomear/membros = edit, arquivar = full. ChatAccessService centraliza isso e é reaproveitado pela busca e pelas salas de socket (ChatDataModule evita dependência circular).
+- Canal privado, dm e group são invisíveis fora de memberIds (404 CHANNEL_NOT_FOUND) e só aceitam escrita de quem participa (403 CHANNEL_MEMBER_REQUIRED). Só canal público aceita join (chat-rules.ts: isOpenChannel).
+- Somente quem criou o canal ou um admin renomeia, mexe nos membros e arquiva (403 FORBIDDEN_CHANNEL); dm não é renomeada, não recebe membros e não é abandonada (400 INVALID_CHANNEL_TYPE).
+- DM é única por par: memberIds vai ordenado (chat-rules.ts: dmMemberIds) e o get-or-create é um findOneAndUpdate com upsert sobre o array exato, então os dois lados caem no mesmo canal sem corrida. Não há índice único (índice multikey único proibiria dois canais com o mesmo participante).
+- Canal não tem lixeira: DELETE arquiva (archivedAt) e POST .../unarchive desarquiva; o histórico continua legível.
+- Mensagem é soft delete (deletedAt); só o autor edita (403 FORBIDDEN_MESSAGE) e autor ou admin excluem. Thread é achatada em um nível: parentMessageId aponta sempre para a raiz (400 INVALID_MESSAGE_PARENT fora do canal ou em resposta de resposta) e a raiz guarda replyCount/lastReplyAt denormalizados.
+- Menções saem do body do editor (extractMentions, reaproveitado da colaboração) e são filtradas por membro ativo; attachmentIds só mantém anexo existente no workspace (sem upload próprio de mensagem nesta etapa).
+- Não lidas: channel_reads guarda lastReadAt por (canal, usuário); POST .../read marca agora e GET /me/chat-activity conta as mensagens de outros autores criadas depois disso, por canal (até 100 canais).
+- Mensagem vira tarefa com POST /messages/:id/to-task { listId }: a permissão é a de criar na List de destino (404 LIST_NOT_FOUND se invisível) e a descrição da tarefa recebe o deep link APP_URL/chat/:channelId?message=:messageId.
+- Notificação de chat sai do NotificationsListener a partir de message.created, sem recarregar o canal (o evento leva channelType, channelName, memberIds, mentions e o preview): menção gera chatMention e DM gera chatMessage, sempre no bucket primary.
+- Nova sala de socket channel:{id} com a mesma permissão do HTTP; message.new/updated/deleted saem do RealtimeListener e typing é efêmero (handler do gateway relaia só para os outros clientes da sala, nada é gravado).
+- Busca global passa a ter o tipo message (índice de texto em bodyText, português) restrito aos canais visíveis.
 ## Módulos
 - health (src/modules/health) — público
 - auth (src/modules/auth): auth.service/controller, refresh-tokens.service/module, strategies/jwt.strategy, guards/jwt-auth.guard, schemas/refresh-token
@@ -135,6 +147,7 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - time (src/modules/time): time-entries.service, timesheets.service, workload.service, clients.service, time.controller (TimerController, TimeEntriesController), timesheets.controller, workload.controller, time-data.module, time-fields.ts, time-events.ts, week.ts, schemas/time-entry
 - automations (src/modules/automations): automations.service/controller, automation-engine.service (motor), automation-actions.service, automation-runs.service, automations.listener, automations.scheduler (cron de datas + cron dinâmico), automation-hooks.controller (rota pública), templates.service/controller, automation-conditions.ts, automation-triggers.ts, automation-templating.ts, automation-context.ts (AsyncLocalStorage), automation-recipes.ts, automation-fields.ts, automation-events.ts, template-content.ts, template-offsets.ts, schemas/{automation,automation-run,template}
 - dashboards (src/modules/dashboards): dashboards.service/controller, card-data.service (aggregations), card-csv.ts, burn.ts, dashboard-cards.ts, schemas/dashboard
+- chat (src/modules/chat): channels.service, messages.service, chat.controller (ChannelsController, MessagesController, ChatActivityController), chat-access.service, chat-data.module, chat-fields.ts, chat-events.ts, chat-rules.ts, schemas/{channel,message,channel-read}
 - docs (src/modules/docs): docs.service/controller (DocsController, DocPagesController), doc-pages.service, page-comments.service, public-docs.controller (rota pública), docs-access.service, docs-data.module, docs-fields.ts, docs-events.ts, schemas/{doc,doc-page,doc-page-version}
 - common: filters/all-exceptions.filter, guards/http-throttler.guard, pagination/{cursor,pagination-query.dto}, pipes/parse-object-id.pipe, schemas/base-schema-options, decorators/{public,current-user}, utils/{duration,hash (sha256Hex),slug (slugify)}
 ## Coleções
@@ -176,6 +189,10 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - doc_page_versions: workspaceId, docId, pageId, version, title, content, contentText, createdBy; índice (workspaceId, pageId, _id desc)
 - comments ganhou o campo anchor (trecho da página) e passa a usar entityType=page
 - favorites aceita entityType doc e recent_items aceita task|list|doc
+- channels: workspaceId, type (channel|dm|group), name, locationType (workspace|space|folder|list), locationId, private, memberIds, createdBy, archivedAt; índices (workspaceId, locationType, locationId, _id desc) e (workspaceId, type, memberIds)
+- messages: workspaceId, channelId, authorId, body (JSON do editor), bodyText, parentMessageId, replyCount, lastReplyAt, mentions, reactions[{ emoji, userIds }], attachmentIds, editedAt, deletedAt; índices (workspaceId, channelId, parentMessageId, _id desc), (workspaceId, channelId, createdAt desc) e índice de texto message_text em bodyText
+- channel_reads: workspaceId, channelId, userId, lastReadAt; índice único (channelId, userId)
+- notifications ganhou os tipos chatMention e chatMessage e o entityType message
 ## Endpoints
 - GET /api/v1/health (público) → { status: "ok", db: "up" | "down" }
 - POST /api/v1/auth/register (público, 5/min/IP) → 201 { user }; senha ≥ 8 com letra e número; e-mail duplicado → 409 EMAIL_IN_USE
@@ -263,14 +280,31 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - POST/GET /api/v1/workspaces/:wsId/pages/:pageId/comments { bodyText, body?, anchor?, parentCommentId? } → { items: [{ comment, replies }], nextCursor }
 - GET /api/v1/workspaces/:wsId/pages/:pageId/versions?limit&cursor · POST .../pages/:pageId/versions/:versionId/restore
 - /search ganhou o tipo page e o WebSocket a sala doc (eventos page.created/updated/commented)
+- POST/GET /api/v1/workspaces/:wsId/channels { type?: channel|group, name, locationType?, locationId?, private?, memberIds? } · GET ?locationType&locationId&includeArchived&limit&cursor
+- POST /api/v1/workspaces/:wsId/channels/dm { userId } → canal da conversa (único por par, criado se não existir)
+- GET/PATCH ({ name?, private? })/DELETE (arquiva) /api/v1/workspaces/:wsId/channels/:channelId · POST .../channels/:channelId/unarchive
+- POST /api/v1/workspaces/:wsId/channels/:channelId/{join,leave,read} · POST .../channels/:channelId/members { userIds } · DELETE .../channels/:channelId/members/:userId
+- POST/GET /api/v1/workspaces/:wsId/channels/:channelId/messages { bodyText, body?, parentMessageId?, attachmentIds? } · GET ?limit&cursor (raízes, mais novas primeiro)
+- PATCH/DELETE /api/v1/workspaces/:wsId/messages/:messageId · POST .../messages/:messageId/reactions { emoji } (alterna) · GET .../messages/:messageId/replies?limit&cursor (mais antigas primeiro)
+- POST /api/v1/workspaces/:wsId/messages/:messageId/to-task { listId } → { task, messageUrl }
+- GET /api/v1/workspaces/:wsId/me/chat-activity → { items: [{ channelId, type, name, unread, lastMessageAt, lastReadAt }], unread }
+- /search ganhou o tipo message e o WebSocket a sala channel (eventos message.new/updated/deleted e typing efêmero)
 - Swagger em /api/docs (fora de produção)
 ## Variáveis de ambiente
 NODE_ENV, PORT, MONGODB_URI, CORS_ORIGINS, APP_URL (links de convite), JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, JWT_ACCESS_TTL=15m, JWT_REFRESH_TTL=30d, COOKIE_SECURE, COOKIE_DOMAIN, UPLOAD_DIR=./storage/uploads (LocalDiskStorage), SMTP_HOST (vazio = só log), SMTP_PORT=587, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, SEED_NAME, SEED_EMAIL, SEED_PASSWORD (ver backend/.env.example)
 ## Padrões aplicados
 - Prefixo global api/v1, helmet, cookie-parser, CORS com credentials, body limit 1 MB, shutdown hooks, trust proxy.
-- Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION. De tarefas: TASK_NOT_FOUND, TAG_NOT_FOUND, INVALID_STATUS, INVALID_ASSIGNEES, INVALID_WATCHERS, INVALID_TAGS, INVALID_TASK_PARENT, TASK_DEPTH_EXCEEDED, PRIMARY_LIST_IMMUTABLE. De inbox e lembretes: NOTIFICATION_NOT_FOUND, REMINDER_NOT_FOUND; sala de socket negada responde ack { code: 'FORBIDDEN_ROOM' }. De campos e views: CUSTOM_FIELD_NOT_FOUND, INVALID_CUSTOM_FIELD, INVALID_CUSTOM_FIELD_VALUE, CUSTOM_FIELD_REQUIRED, INVALID_FORMULA, INVALID_FIELD_FILTER, VIEW_NOT_FOUND, FORBIDDEN_VIEW, INVALID_VIEW_LOCATION. De busca, favoritos, lixeira e recorrência: FAVORITE_NOT_FOUND, INVALID_TRASH_ENTITY, INVALID_RECURRENCE. De Docs: DOC_NOT_FOUND, PAGE_NOT_FOUND, INVALID_DOC_LOCATION, INVALID_PAGE_PARENT, PAGE_DEPTH_EXCEEDED, PAGE_VERSION_CONFLICT, PAGE_VERSION_NOT_FOUND. De automações e templates: AUTOMATION_NOT_FOUND, INVALID_AUTOMATION, INVALID_AUTOMATION_ACTION, TEMPLATE_NOT_FOUND, INVALID_TEMPLATE_SOURCE, INVALID_TEMPLATE_TARGET, TEMPLATE_TOO_LARGE.
+- Erros: { statusCode, code, message }. Códigos de auth: UNAUTHORIZED, INVALID_CREDENTIALS, INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED, REFRESH_TOKEN_EXPIRED, EMAIL_IN_USE, INVALID_PASSWORD, SESSION_NOT_FOUND. De workspace: WORKSPACE_NOT_FOUND, FORBIDDEN_ROLE, MEMBER_NOT_FOUND, OWNER_ROLE_IMMUTABLE, CANNOT_CHANGE_OWN_ROLE, CANNOT_DEACTIVATE_OWNER, CANNOT_DEACTIVATE_SELF, ALREADY_OWNER, ALREADY_MEMBER, INVITE_NOT_FOUND, INVITE_EXPIRED, INVITE_ALREADY_ACCEPTED, ACCOUNT_REQUIRED, TEAM_NOT_FOUND, INVALID_TEAM_MEMBERS, INVALID_CURSOR, INVALID_ID. Da hierarquia: SPACE_NOT_FOUND, FOLDER_NOT_FOUND, LIST_NOT_FOUND, STATUS_SET_NOT_FOUND, STATUS_SET_IN_USE, PERMISSION_NOT_FOUND, FORBIDDEN_RESOURCE, FOLDER_DEPTH_EXCEEDED, INVALID_FOLDER_PARENT, INVALID_STATUS_SET, INVALID_PRINCIPAL, INVALID_POSITION. De tarefas: TASK_NOT_FOUND, TAG_NOT_FOUND, INVALID_STATUS, INVALID_ASSIGNEES, INVALID_WATCHERS, INVALID_TAGS, INVALID_TASK_PARENT, TASK_DEPTH_EXCEEDED, PRIMARY_LIST_IMMUTABLE. De inbox e lembretes: NOTIFICATION_NOT_FOUND, REMINDER_NOT_FOUND; sala de socket negada responde ack { code: 'FORBIDDEN_ROOM' }. De campos e views: CUSTOM_FIELD_NOT_FOUND, INVALID_CUSTOM_FIELD, INVALID_CUSTOM_FIELD_VALUE, CUSTOM_FIELD_REQUIRED, INVALID_FORMULA, INVALID_FIELD_FILTER, VIEW_NOT_FOUND, FORBIDDEN_VIEW, INVALID_VIEW_LOCATION. De busca, favoritos, lixeira e recorrência: FAVORITE_NOT_FOUND, INVALID_TRASH_ENTITY, INVALID_RECURRENCE. De Docs: DOC_NOT_FOUND, PAGE_NOT_FOUND, INVALID_DOC_LOCATION, INVALID_PAGE_PARENT, PAGE_DEPTH_EXCEEDED, PAGE_VERSION_CONFLICT, PAGE_VERSION_NOT_FOUND. Do chat: CHANNEL_NOT_FOUND, MESSAGE_NOT_FOUND, FORBIDDEN_CHANNEL, FORBIDDEN_MESSAGE, CHANNEL_MEMBER_REQUIRED, INVALID_CHANNEL_LOCATION, INVALID_CHANNEL_MEMBERS, INVALID_CHANNEL_TYPE, INVALID_MESSAGE_PARENT. De automações e templates: AUTOMATION_NOT_FOUND, INVALID_AUTOMATION, INVALID_AUTOMATION_ACTION, TEMPLATE_NOT_FOUND, INVALID_TEMPLATE_SOURCE, INVALID_TEMPLATE_TARGET, TEMPLATE_TOO_LARGE.
 - Testes: `npm test` (unit) e `npm run test:e2e` (supertest + mongodb-memory-server). O mongod sobe uma vez em test/utils/global-setup.ts (env de teste em test-env.ts); `createTestApp()` em test/utils/e2e-app.ts dá app + clearDatabase() (e `{ listen: true }` abre porta real + baseUrl para o suite de socket); helpers de auth (registro, login, cookie, IP por teste) em test/utils/auth-client.ts.
 ## Pendências
+- Mensagem não tem upload próprio: attachmentIds só referencia anexo já existente (o Attachment continua com entityType task|comment).
+- Mensagem excluída ou canal arquivado não saem da busca por idade nem entram na lixeira geral; o canal não tem exclusão definitiva.
+- /me/chat-activity conta as não lidas canal por canal (até 100 canais, uma consulta por canal) e o canal não guarda lastMessageAt denormalizado.
+- A busca de mensagens carrega até 200 documentos por consulta e filtra os canais visíveis em memória.
+- O typing não tem estado nem timeout no servidor: é só relaiado para a sala.
+- Comentário de mensagem (comments com entityType=message) ainda não existe; a thread é a única forma de responder.
+- Excluir a List/Folder/Space não arquiva nem exclui os canais daquele local.
+- Não lidas e menções do chat não aparecem em activities nem na view Activity.
 - Docs não entram na lixeira geral (/trash ainda é space|folder|list|task): o Doc tem DELETE e restore próprios.
 - Comentário de página não é editado, resolvido nem reagido pelas rotas /comments/:commentId (CommentsService continua só de tarefa) e não aparece em assigned-comments nem em /replies.
 - O hub carrega até 500 Docs e filtra permissão em memória; as abas recent e favorites não paginam (nextCursor null).

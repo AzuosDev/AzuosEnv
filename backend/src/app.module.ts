@@ -10,6 +10,7 @@ import { HttpThrottlerGuard } from './common/guards/http-throttler.guard';
 import { envValidationSchema } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { AutomationsModule } from './modules/automations/automations.module';
+import { ChatModule } from './modules/chat/chat.module';
 import { CollaborationModule } from './modules/collaboration/collaboration.module';
 import { DashboardsModule } from './modules/dashboards/dashboards.module';
 import { DocsModule } from './modules/docs/docs.module';
@@ -64,6 +65,7 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     DashboardsModule,
     AutomationsModule,
     DocsModule,
+    ChatModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

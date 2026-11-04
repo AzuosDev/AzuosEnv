@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { escapeRegex } from '../../common/utils/regex';
+import { ChatAccessService } from '../chat/chat-access.service';
+import { Message, MessageDocument } from '../chat/schemas/message.schema';
 import { Comment, CommentDocument } from '../collaboration/schemas/comment.schema';
 import { DocsAccessService } from '../docs/docs-access.service';
 import { DocPage, DocPageDocument } from '../docs/schemas/doc-page.schema';
@@ -49,8 +51,10 @@ export class SearchService {
     @InjectModel(Comment.name) private readonly comments: Model<Comment>,
     @InjectModel(Folder.name) private readonly folders: Model<Folder>,
     @InjectModel(DocPage.name) private readonly pages: Model<DocPage>,
+    @InjectModel(Message.name) private readonly messages: Model<Message>,
     private readonly access: HierarchyAccessService,
     private readonly docs: DocsAccessService,
+    private readonly chat: ChatAccessService,
     private readonly permissions: PermissionService,
     private readonly members: MembersService,
     private readonly users: UsersService,
@@ -89,6 +93,10 @@ export class SearchService {
 
     if (types.includes('page')) {
       results.page = await this.searchPages(ctx, q, limit);
+    }
+
+    if (types.includes('message')) {
+      results.message = await this.searchMessages(ctx, q, limit);
     }
 
     if (types.includes('user')) {
@@ -263,6 +271,53 @@ export class SearchService {
       .map(pageHit);
   }
 
+  /**
+   * Messages of the channels the requester can see: the text index of `bodyText`
+   * first, then the partial match.
+   */
+  private async searchMessages(
+    ctx: PermissionContext,
+    q: string,
+    limit: number,
+  ): Promise<SearchHit[]> {
+    const channelIds = await this.chat.visibleChannelIds(ctx);
+
+    if (channelIds.length === 0) {
+      return [];
+    }
+
+    const scope = {
+      workspaceId: ctx.workspaceId,
+      channelId: { $in: channelIds },
+      deletedAt: null,
+    };
+    const byText = await this.messageTextMatches(scope, q);
+    const byBody = await this.messages
+      .find({ ...scope, bodyText: containsRegex(q) })
+      .sort({ _id: -1 })
+      .limit(MAX_SEARCH_SCAN)
+      .exec();
+
+    return dedupe([...byText, ...byBody])
+      .slice(0, limit)
+      .map(messageHit);
+  }
+
+  /** Text index of the messages; a failure here only loses the stemmed hits. */
+  private async messageTextMatches(
+    scope: Record<string, unknown>,
+    q: string,
+  ): Promise<MessageDocument[]> {
+    try {
+      return await this.messages
+        .find({ ...scope, $text: { $search: q } })
+        .limit(MAX_SEARCH_SCAN)
+        .exec();
+    } catch {
+      return [];
+    }
+  }
+
   /** Text index of the pages; a failure here only loses the stemmed hits. */
   private async pageTextMatches(
     scope: Record<string, unknown>,
@@ -402,6 +457,18 @@ function pageHit(page: DocPageDocument): SearchHit {
     docId: String(page.docId),
     parentPageId: page.parentPageId ? String(page.parentPageId) : null,
     contentText: page.contentText.slice(0, 200),
+  };
+}
+
+function messageHit(message: MessageDocument): SearchHit {
+  return {
+    type: 'message',
+    id: String(message._id),
+    name: message.bodyText.slice(0, 200),
+    bodyText: message.bodyText,
+    channelId: String(message.channelId),
+    parentMessageId: message.parentMessageId ? String(message.parentMessageId) : null,
+    authorId: String(message.authorId),
   };
 }
 

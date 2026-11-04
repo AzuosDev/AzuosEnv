@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
+import { ChatDataModule } from '../chat/chat-data.module';
 import { DocsDataModule } from '../docs/docs-data.module';
 import { HierarchyModule } from '../hierarchy/hierarchy.module';
 import { TasksModule } from '../tasks/tasks.module';
@@ -17,6 +18,7 @@ import { RoomAccessService } from './room-access.service';
     HierarchyModule,
     TasksModule,
     DocsDataModule,
+    ChatDataModule,
   ],
   providers: [RoomAccessService, EventsGateway, RealtimeListener],
 })

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { MESSAGE_CREATED, MessageCreatedEvent } from '../chat/chat-events';
 import {
   COMMENT_CREATED,
   COMMENT_UPDATED,
@@ -203,6 +204,63 @@ export class NotificationsListener {
       );
     }
   }
+
+  /**
+   * Chat: a mention always notifies and a direct message notifies the other side.
+   * The payload of the event carries everything, so the channel is not reloaded.
+   */
+  @OnEvent(MESSAGE_CREATED)
+  async onMessageCreated(event: MessageCreatedEvent): Promise<void> {
+    const data = {
+      channelId: String(event.channelId),
+      channelType: event.channelType,
+      channelName: event.channelName,
+      messageId: String(event.messageId),
+      preview: event.preview,
+    };
+    const mentioned = event.mentions.filter((userId) => String(userId) !== String(event.authorId));
+
+    if (mentioned.length > 0) {
+      await this.safeDeliver(() =>
+        this.notifications.deliver({
+          workspaceId: event.workspaceId,
+          type: 'chatMention',
+          entityType: 'message',
+          entityId: event.messageId,
+          actorId: event.authorId,
+          recipients: primary(mentioned),
+          data,
+          mail: chatMail('Você foi mencionado no chat', event),
+        }),
+      );
+    }
+
+    if (event.channelType !== 'dm') {
+      return;
+    }
+
+    const alreadyNotified = new Set(mentioned.map(String));
+    const others = event.memberIds.filter(
+      (userId) => String(userId) !== String(event.authorId) && !alreadyNotified.has(String(userId)),
+    );
+
+    if (others.length === 0) {
+      return;
+    }
+
+    await this.safeDeliver(() =>
+      this.notifications.deliver({
+        workspaceId: event.workspaceId,
+        type: 'chatMessage',
+        entityType: 'message',
+        entityId: event.messageId,
+        actorId: event.authorId,
+        recipients: primary(others),
+        data,
+        mail: chatMail('Nova mensagem direta', event),
+      }),
+    );
+  }
 }
 
 function primary(ids: Types.ObjectId[]): NotificationRecipient[] {
@@ -239,4 +297,10 @@ function taskData(task: TaskDocument): Record<string, unknown> {
 
 function taskMail(subject: string, task: TaskDocument): { subject: string; text: string } {
   return { subject: `${subject}: ${task.customId}`, text: `${task.customId} — ${task.name}` };
+}
+
+function chatMail(subject: string, event: MessageCreatedEvent): { subject: string; text: string } {
+  const where = event.channelType === 'dm' ? 'conversa direta' : `canal ${event.channelName}`;
+
+  return { subject, text: `${where}: ${event.preview}` };
 }

@@ -10,10 +10,18 @@ export const NOTIFICATION_TYPES = [
   'invited',
   'commentAssigned',
   'automation',
+  'chatMention',
+  'chatMessage',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
-export const NOTIFICATION_ENTITY_TYPES = ['task', 'comment', 'workspace', 'reminder'] as const;
+export const NOTIFICATION_ENTITY_TYPES = [
+  'task',
+  'comment',
+  'workspace',
+  'reminder',
+  'message',
+] as const;
 export type NotificationEntityType = (typeof NOTIFICATION_ENTITY_TYPES)[number];
 
 /** `primary` is what was aimed at the user; `other` is what reached them as a watcher. */

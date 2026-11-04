@@ -9,9 +9,10 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { RoomAccessService } from './room-access.service';
-import { RoomAck, RoomPayload, userRoom } from './realtime-rooms';
+import { RoomAck, RoomPayload, TypingPayload, userRoom } from './realtime-rooms';
 
 const TASK_ROOM_PREFIX = 'task:';
+const CHANNEL_ROOM_PREFIX = 'channel:';
 
 interface SocketData {
   userId: string;
@@ -87,6 +88,31 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
 
     return { left: room };
+  }
+
+  /**
+   * Ephemeral typing signal of a channel: it is only relayed to the other clients
+   * of the room, never stored.
+   */
+  @SubscribeMessage('typing')
+  async typing(client: Socket, payload: TypingPayload): Promise<RoomAck> {
+    const room = await this.resolve(client, payload);
+
+    if (typeof room !== 'string') {
+      return room;
+    }
+
+    if (!room.startsWith(CHANNEL_ROOM_PREFIX)) {
+      return { code: 'FORBIDDEN_ROOM' };
+    }
+
+    client.to(room).emit('typing', {
+      channelId: room.slice(CHANNEL_ROOM_PREFIX.length),
+      userId: dataOf(client).userId,
+      typing: payload?.typing !== false,
+    });
+
+    return { joined: room };
   }
 
   /** Pushes a domain event to every room that should see it. */

@@ -7,6 +7,15 @@ import {
   CommentUpdatedEvent,
 } from '../collaboration/collaboration-events';
 import {
+  MESSAGE_CREATED,
+  MESSAGE_DELETED,
+  MESSAGE_UPDATED,
+  MessageCreatedEvent,
+  MessageDeletedEvent,
+  MessageEventBase,
+  MessageUpdatedEvent,
+} from '../chat/chat-events';
+import {
   PAGE_COMMENTED,
   PAGE_CREATED,
   PAGE_UPDATED,
@@ -104,6 +113,24 @@ export class RealtimeListener {
     });
   }
 
+  @OnEvent(MESSAGE_CREATED)
+  onMessageCreated(event: MessageCreatedEvent): void {
+    this.gateway.emitToRooms(messageRooms(event), 'message.new', messagePayload(event));
+  }
+
+  @OnEvent(MESSAGE_UPDATED)
+  onMessageUpdated(event: MessageUpdatedEvent): void {
+    this.gateway.emitToRooms(messageRooms(event), 'message.updated', {
+      ...messagePayload(event),
+      changes: event.changes,
+    });
+  }
+
+  @OnEvent(MESSAGE_DELETED)
+  onMessageDeleted(event: MessageDeletedEvent): void {
+    this.gateway.emitToRooms(messageRooms(event), 'message.deleted', messagePayload(event));
+  }
+
   @OnEvent(NOTIFICATION_CREATED)
   onNotificationCreated(event: NotificationCreatedEvent): void {
     this.gateway.emitToRooms([userRoom(String(event.userId))], 'notification.new', {
@@ -149,6 +176,23 @@ function pagePayload(event: PageEventBase): Record<string, unknown> {
     parentPageId: event.parentPageId ? String(event.parentPageId) : null,
     version: event.version,
     actorId: String(event.actorId),
+  };
+}
+
+function messageRooms(event: MessageEventBase): string[] {
+  return [roomName('channel', String(event.channelId))];
+}
+
+function messagePayload(event: MessageEventBase): Record<string, unknown> {
+  return {
+    workspaceId: String(event.workspaceId),
+    channelId: String(event.channelId),
+    channelType: event.channelType,
+    messageId: String(event.messageId),
+    parentMessageId: event.parentMessageId ? String(event.parentMessageId) : null,
+    authorId: String(event.authorId),
+    mentions: event.mentions.map(String),
+    preview: event.preview,
   };
 }
 

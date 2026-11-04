@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Types } from 'mongoose';
+import { ChatAccessService } from '../chat/chat-access.service';
 import { DocsAccessService } from '../docs/docs-access.service';
 import { HierarchyAccessService } from '../hierarchy/hierarchy-access.service';
 import { permissionContextFrom } from '../hierarchy/permission.service';
@@ -20,6 +21,7 @@ export class RoomAccessService {
     private readonly hierarchy: HierarchyAccessService,
     private readonly taskAccess: TaskAccessService,
     private readonly docs: DocsAccessService,
+    private readonly chat: ChatAccessService,
   ) {}
 
   /** Reads the access token of `auth.token` and answers the id of the user. */
@@ -74,6 +76,12 @@ export class RoomAccessService {
       const doc = await this.docs.requireDoc(ctx, new Types.ObjectId(id), 'view');
 
       return roomName('doc', String(doc._id));
+    }
+
+    if (kind === 'channel') {
+      const channel = await this.chat.requireChannel(ctx, new Types.ObjectId(id), 'view');
+
+      return roomName('channel', String(channel._id));
     }
 
     const { task } = await this.taskAccess.requireTask(ctx, id, 'view');
