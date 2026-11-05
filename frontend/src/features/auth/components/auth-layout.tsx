@@ -26,7 +26,7 @@ export interface AuthLayoutProps {
   footer?: ReactNode;
 }
 
-/** Palco das telas públicas: .stage com .dot-grid e o cartão do formulário. */
+/** Palco das telas internas sem shell (onboarding): .stage com .dot-grid e o cartão. */
 export function AuthLayout({ title, description, children, footer }: AuthLayoutProps) {
   return (
     <main className="stage relative flex min-h-dvh w-full flex-col items-center justify-center overflow-hidden px-4 py-10">

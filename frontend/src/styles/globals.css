@@ -174,3 +174,24 @@
     animation-duration: 0.01ms !important;
   }
 }
+
+@layer components {
+  /* Entrada do painel de apresentação das telas de acesso. */
+  .auth-rise {
+    animation: auth-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes auth-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(6px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}

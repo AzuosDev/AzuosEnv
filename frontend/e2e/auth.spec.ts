@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { createInvite, expectNoHorizontalScroll, SEED_USER, uniqueEmail } from './helpers';
+import {
+  createInvite,
+  expectNoHorizontalScroll,
+  SEED_USER,
+  setTheme,
+  uniqueEmail,
+} from './helpers';
 
 const STRONG_PASSWORD = 'Azuos2026';
 
@@ -129,10 +135,31 @@ test.describe('convite', () => {
 });
 
 test.describe('responsivo', () => {
-  for (const path of ['/login', '/cadastro'] as const) {
-    test(`${path} não rola para os lados em 360, 768 e 1280`, async ({ page }) => {
-      await page.goto(path);
-      await expectNoHorizontalScroll(page);
-    });
+  const paths = ['/login', '/cadastro', '/convite/token-que-nao-existe'] as const;
+
+  for (const path of paths) {
+    for (const theme of ['dark', 'light'] as const) {
+      test(`${path} não rola para os lados em 360, 768 e 1280 (tema ${theme})`, async ({
+        page,
+      }) => {
+        await page.goto(path);
+        await setTheme(page, theme);
+        await page.reload();
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        await expectNoHorizontalScroll(page);
+      });
+    }
   }
+
+  test('o painel de apresentação só aparece a partir de 1024 px', async ({ page }) => {
+    await page.goto('/login');
+
+    const showcase = page.getByRole('region', { name: 'Recursos do Azuos Env' });
+
+    await page.setViewportSize({ width: 768, height: 900 });
+    await expect(showcase).toBeHidden();
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expect(showcase).toBeVisible();
+  });
 });

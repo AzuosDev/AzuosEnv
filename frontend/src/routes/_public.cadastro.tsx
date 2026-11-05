@@ -1,17 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { Lock, Mail, User } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { errorMessage } from '@/api/errors';
 import { queryKeys } from '@/api/keys';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { login, register as registerAccount } from '@/features/auth/api';
-import { AuthLayout } from '@/features/auth/components/auth-layout';
+import { AccessLayout } from '@/features/auth/components/access-layout';
 import { Field, FormAlert } from '@/features/auth/components/field';
+import { IconInput } from '@/features/auth/components/icon-input';
 import { PasswordField } from '@/features/auth/components/password-field';
 import { setSession } from '@/features/auth/session';
 import { emailField, nameField, newPasswordField, PASSWORD_MESSAGE } from '@/lib/validation';
@@ -50,20 +51,24 @@ function SignUpPage() {
   });
 
   return (
-    <AuthLayout
+    <AccessLayout
       title="Criar conta"
       description="Em seguida você cria ou entra em um workspace."
       footer={
         <>
-          Já tem conta? <Link to="/login">Entrar</Link>
+          Já tem conta?{' '}
+          <Link to="/login" className="font-semibold">
+            Entrar
+          </Link>
         </>
       }
     >
-      <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
+      <form className="space-y-4" onSubmit={submit} noValidate>
         {formError ? <FormAlert>{formError}</FormAlert> : null}
 
         <Field id="name" label="Nome completo" error={errors.name?.message}>
-          <Input
+          <IconInput
+            icon={User}
             id="name"
             autoComplete="name"
             autoFocus
@@ -75,7 +80,8 @@ function SignUpPage() {
         </Field>
 
         <Field id="email" label="E-mail" error={errors.email?.message}>
-          <Input
+          <IconInput
+            icon={Mail}
             id="email"
             type="email"
             autoComplete="email"
@@ -88,7 +94,9 @@ function SignUpPage() {
 
         <Field id="password" label="Senha" hint={PASSWORD_MESSAGE} error={errors.password?.message}>
           <PasswordField
+            icon={Lock}
             id="password"
+            placeholder="Crie uma senha"
             autoComplete="new-password"
             aria-invalid={Boolean(errors.password)}
             aria-describedby={errors.password ? 'password-error' : 'password-hint'}
@@ -96,11 +104,11 @@ function SignUpPage() {
           />
         </Field>
 
-        <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" size="lg" className="w-full rounded-full" disabled={isSubmitting}>
           {isSubmitting ? <Spinner label="Criando conta" /> : 'Criar conta'}
         </Button>
       </form>
-    </AuthLayout>
+    </AccessLayout>
   );
 }
 
