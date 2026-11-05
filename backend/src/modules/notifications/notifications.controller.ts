@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { AuthenticatedUser, CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CursorPage } from '../../common/pagination/cursor';
@@ -8,6 +9,7 @@ import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership, workspaceObjectId } from '../workspaces/workspace-context';
+import { InboxCountsDto } from './dto/inbox-counts.dto';
 import { InboxQueryDto, SnoozeNotificationDto } from './dto/inbox.dto';
 import { UpdateNotificationSettingsDto } from './dto/notification-settings.dto';
 import { NotificationPreferences } from './notification-fields';
@@ -18,6 +20,7 @@ import { Notification, NotificationDocument } from './schemas/notification.schem
 @ApiTags('inbox')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/inbox')
 export class InboxController {
   constructor(private readonly notifications: NotificationsService) {}
@@ -36,7 +39,10 @@ export class InboxController {
   }
 
   @Get('counts')
-  @ApiOkResponse({ description: 'Não lidas por aba, mais os totais de adiadas e limpas.' })
+  @ApiOkResponse({
+    type: InboxCountsDto,
+    description: 'Não lidas por aba, mais os totais de adiadas e limpas.',
+  })
   counts(@CurrentMembership() membership: RequestMembership): Promise<InboxCounts> {
     return this.notifications.counts(
       workspaceObjectId(membership),

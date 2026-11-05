@@ -1,4 +1,5 @@
-import { LogOut, MonitorSmartphone } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { LogOut, MonitorSmartphone, SlidersHorizontal, UserRound } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -11,8 +12,14 @@ import {
 import type { AuthUser } from '@/api/types';
 import { useLogout } from '../hooks/use-logout';
 
-/** Menu da conta: identifica o usuário e encerra a sessão. */
-export function UserMenu({ user }: { user: AuthUser }) {
+export interface UserMenuProps {
+  user: AuthUser;
+  /** Dentro de um workspace, o menu também leva a Perfil e Preferências. */
+  wsId?: string;
+}
+
+/** Menu da conta: identifica o usuário, leva às preferências e encerra a sessão. */
+export function UserMenu({ user, wsId }: UserMenuProps) {
   const logout = useLogout();
 
   return (
@@ -29,6 +36,23 @@ export function UserMenu({ user }: { user: AuthUser }) {
           <span className="block truncate text-[12px] text-muted">{user.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {wsId ? (
+          <>
+            <DropdownMenuItem asChild>
+              <Link to="/w/$wsId/perfil" params={{ wsId }} className="no-underline">
+                <UserRound className="h-4 w-4" aria-hidden="true" />
+                Perfil
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/w/$wsId/preferencias" params={{ wsId }} className="no-underline">
+                <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+                Preferências
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        ) : null}
         <DropdownMenuItem
           disabled={logout.isPending}
           onSelect={() => {

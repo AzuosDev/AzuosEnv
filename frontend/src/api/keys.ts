@@ -4,4 +4,6 @@ export const queryKeys = {
   me: () => ['me'] as const,
   workspaces: () => ['workspaces'] as const,
   workspace: (workspaceId: string) => ['workspaces', workspaceId] as const,
+  tree: (workspaceId: string) => ['workspaces', workspaceId, 'tree'] as const,
+  inboxCounts: (workspaceId: string) => ['workspaces', workspaceId, 'inbox', 'counts'] as const,
 } as const;

@@ -108,3 +108,12 @@ export async function setTheme(page: Page, theme: 'dark' | 'light'): Promise<voi
     window.localStorage.setItem('azuos-env:theme', value);
   }, theme);
 }
+
+/** Entra pela tela de login e espera a home do workspace. */
+export async function signIn(page: Page, user = SEED_USER): Promise<void> {
+  await page.goto('/login');
+  await page.getByLabel('E-mail').fill(user.email);
+  await page.getByLabel('Senha', { exact: true }).fill(user.password);
+  await page.getByRole('button', { name: 'Entrar' }).click();
+  await page.waitForURL(/\/w\/[0-9a-f]{24}/);
+}

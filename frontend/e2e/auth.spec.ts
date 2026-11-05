@@ -15,13 +15,13 @@ test.describe('sessão', () => {
     await page.getByRole('button', { name: 'Entrar' }).click();
 
     await expect(page).toHaveURL(/\/w\/[0-9a-f]{24}$/);
-    await expect(page.getByRole('heading', { name: 'Sessão ativa' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Azuos Dev' })).toBeVisible();
 
     const workspaceUrl = page.url();
 
     await page.reload();
     await expect(page).toHaveURL(workspaceUrl);
-    await expect(page.getByRole('heading', { name: 'Sessão ativa' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Azuos Dev' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Conta' }).click();
     await page.getByRole('menuitem', { name: 'Sair', exact: true }).click();
@@ -93,7 +93,7 @@ test.describe('cadastro e onboarding', () => {
     await page.getByRole('button', { name: 'Criar workspace' }).click();
 
     await expect(page).toHaveURL(/\/w\/[0-9a-f]{24}$/);
-    await expect(page.getByText('Teste Cadastro Env')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Teste Cadastro Env' })).toBeVisible();
   });
 });
 
@@ -116,7 +116,7 @@ test.describe('convite', () => {
     await page.getByRole('button', { name: 'Entrar' }).click();
 
     await expect(page).toHaveURL(/\/w\/[0-9a-f]{24}$/);
-    await expect(page.getByRole('heading', { name: 'Sessão ativa' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Azuos Dev' })).toBeVisible();
   });
 
   test('token inválido mostra o erro do backend', async ({ page }) => {

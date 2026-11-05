@@ -2717,10 +2717,28 @@
     "/api/v1/workspaces/{wsId}/tree": {
       "get": {
         "operationId": "TreeController_get",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Árvore da sidebar filtrada por permissão."
+            "description": "Árvore da sidebar filtrada por permissão.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceTreeDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -5539,6 +5557,16 @@
                 "cleared"
               ]
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -5583,10 +5611,28 @@
     "/api/v1/workspaces/{wsId}/inbox/counts": {
       "get": {
         "operationId": "InboxController_counts",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Não lidas por aba, mais os totais de adiadas e limpas."
+            "description": "Não lidas por aba, mais os totais de adiadas e limpas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxCountsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -5602,7 +5648,18 @@
     "/api/v1/workspaces/{wsId}/inbox/read-all": {
       "post": {
         "operationId": "InboxController_readAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "201": {
             "description": ""
@@ -5628,6 +5685,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -5664,6 +5731,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -5698,6 +5775,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -5743,6 +5830,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -13580,6 +13677,138 @@
           "level"
         ]
       },
+      "TreeListDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "uSolutionsPDV — Sprint 3"
+          },
+          "color": {
+            "type": "string",
+            "example": "#A78BFA"
+          },
+          "position": {
+            "type": "string",
+            "description": "Ordem manual (fractional indexing)."
+          },
+          "openTaskCount": {
+            "type": "number",
+            "description": "Tarefas abertas da List.",
+            "example": 8
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "position",
+          "openTaskCount"
+        ]
+      },
+      "TreeFolderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Cênio Construções"
+          },
+          "private": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "string",
+            "description": "Ordem manual (fractional indexing)."
+          },
+          "folders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreeFolderDto"
+            }
+          },
+          "lists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreeListDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "private",
+          "position",
+          "folders",
+          "lists"
+        ]
+      },
+      "TreeSpaceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Clientes"
+          },
+          "color": {
+            "type": "string",
+            "example": "#A78BFA"
+          },
+          "icon": {
+            "type": "string",
+            "example": "folder"
+          },
+          "private": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "string",
+            "description": "Ordem manual (fractional indexing)."
+          },
+          "folders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreeFolderDto"
+            }
+          },
+          "lists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreeListDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color",
+          "private",
+          "position",
+          "folders",
+          "lists"
+        ]
+      },
+      "WorkspaceTreeDto": {
+        "type": "object",
+        "properties": {
+          "spaces": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreeSpaceDto"
+            }
+          }
+        },
+        "required": [
+          "spaces"
+        ]
+      },
       "TaskCustomFieldDto": {
         "type": "object",
         "properties": {
@@ -15486,6 +15715,43 @@
           "clearedAt"
         ]
       },
+      "InboxCountsDto": {
+        "type": "object",
+        "properties": {
+          "primary": {
+            "type": "number",
+            "description": "Não lidas da aba principal.",
+            "example": 2
+          },
+          "other": {
+            "type": "number",
+            "description": "Não lidas da aba Outros.",
+            "example": 0
+          },
+          "later": {
+            "type": "number",
+            "description": "Total da aba Depois (adiadas).",
+            "example": 0
+          },
+          "cleared": {
+            "type": "number",
+            "description": "Total da aba Limpas.",
+            "example": 0
+          },
+          "unread": {
+            "type": "number",
+            "description": "Não lidas somando principal e Outros.",
+            "example": 2
+          }
+        },
+        "required": [
+          "primary",
+          "other",
+          "later",
+          "cleared",
+          "unread"
+        ]
+      },
       "SnoozeNotificationDto": {
         "type": "object",
         "properties": {
@@ -16483,6 +16749,7 @@
           "op": {
             "type": "string",
             "enum": [
+              "in",
               "eq",
               "contains",
               "gt",
@@ -16490,7 +16757,6 @@
               "isEmpty",
               "ne",
               "notContains",
-              "in",
               "nin",
               "isNotEmpty"
             ]

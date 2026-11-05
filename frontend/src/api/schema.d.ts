@@ -3803,6 +3803,47 @@ export interface components {
             level: "comment" | "view" | "edit" | "full";
             createdBy?: components["schemas"]["ObjectId"];
         };
+        TreeListDto: {
+            id: string;
+            /** @example uSolutionsPDV — Sprint 3 */
+            name: string;
+            /** @example #A78BFA */
+            color?: string;
+            /** @description Ordem manual (fractional indexing). */
+            position: string;
+            /**
+             * @description Tarefas abertas da List.
+             * @example 8
+             */
+            openTaskCount: number;
+        };
+        TreeFolderDto: {
+            id: string;
+            /** @example Cênio Construções */
+            name: string;
+            private: boolean;
+            /** @description Ordem manual (fractional indexing). */
+            position: string;
+            folders: components["schemas"]["TreeFolderDto"][];
+            lists: components["schemas"]["TreeListDto"][];
+        };
+        TreeSpaceDto: {
+            id: string;
+            /** @example Clientes */
+            name: string;
+            /** @example #A78BFA */
+            color: string;
+            /** @example folder */
+            icon?: string;
+            private: boolean;
+            /** @description Ordem manual (fractional indexing). */
+            position: string;
+            folders: components["schemas"]["TreeFolderDto"][];
+            lists: components["schemas"]["TreeListDto"][];
+        };
+        WorkspaceTreeDto: {
+            spaces: components["schemas"]["TreeSpaceDto"][];
+        };
         TaskCustomFieldDto: {
             fieldId: string;
             /** @description Valor conforme o tipo do campo; null limpa. */
@@ -4347,6 +4388,33 @@ export interface components {
             /** Format: date-time */
             clearedAt: string | null;
         };
+        InboxCountsDto: {
+            /**
+             * @description Não lidas da aba principal.
+             * @example 2
+             */
+            primary: number;
+            /**
+             * @description Não lidas da aba Outros.
+             * @example 0
+             */
+            other: number;
+            /**
+             * @description Total da aba Depois (adiadas).
+             * @example 0
+             */
+            later: number;
+            /**
+             * @description Total da aba Limpas.
+             * @example 0
+             */
+            cleared: number;
+            /**
+             * @description Não lidas somando principal e Outros.
+             * @example 2
+             */
+            unread: number;
+        };
         SnoozeNotificationDto: {
             /** @description Momento em que a notificação volta para a caixa de entrada. */
             until: string;
@@ -4656,7 +4724,7 @@ export interface components {
         AutomationCondition: {
             field: string;
             /** @enum {string} */
-            op: "eq" | "contains" | "gt" | "lt" | "isEmpty" | "ne" | "notContains" | "in" | "nin" | "isNotEmpty";
+            op: "in" | "eq" | "contains" | "gt" | "lt" | "isEmpty" | "ne" | "notContains" | "nin" | "isNotEmpty";
             value: Record<string, never>;
         };
         AutomationAction: {
@@ -7103,7 +7171,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -7113,7 +7184,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["WorkspaceTreeDto"];
+                };
             };
         };
     };
@@ -8589,7 +8662,10 @@ export interface operations {
                 tab?: "primary" | "other" | "later" | "cleared";
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -8613,7 +8689,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -8623,7 +8702,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["InboxCountsDto"];
+                };
             };
         };
     };
@@ -8631,7 +8712,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -8650,6 +8734,8 @@ export interface operations {
             header?: never;
             path: {
                 notificationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8671,6 +8757,8 @@ export interface operations {
             header?: never;
             path: {
                 notificationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8692,6 +8780,8 @@ export interface operations {
             header?: never;
             path: {
                 notificationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8717,6 +8807,8 @@ export interface operations {
             header?: never;
             path: {
                 notificationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
