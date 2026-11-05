@@ -44,3 +44,17 @@ Fonte da verdade do estado: docs/CONTEXTO-SESSAO.md. Modelo resumido: docs/SPEC.
 - Acessibilidade: button, a e input + label nativos; foco visível; aria-label em botão só com ícone; contraste AA nos dois temas.
 - Testes: Vitest + Testing Library para regras e componentes com lógica; Playwright só para fluxos e responsividade (poucos specs, reporter line).
 - Textos em português; datas, números e moeda em pt-BR, no fuso do usuário.
+
+## Design com Impeccable (obrigatório em toda etapa do front)
+- Toda tela ou componente visual novo é construído com a skill impeccable, seguindo PRODUCT.md e DESIGN.md (leia os dois só uma vez por sessão).
+- Prioridade quando houver conflito: tokens e padrões do CLAUDE.md e DESIGN.md > protótipo em docs/prototipo/ > sugestões da skill. Nunca trocar cores, fonte ou tema por conta própria.
+- Fluxo por etapa, nesta ordem e só nas telas da etapa:
+  1. /impeccable shape quando a tela for nova (planejar antes de codar).
+  2. Implementar.
+  3. /impeccable adapt nas telas da etapa (360, 768, 1024, 1280).
+  4. /impeccable audit nas telas da etapa; corrigir só os itens de prioridade alta.
+  5. /impeccable polish como passe final.
+- Comandos de estilo (bolder, quieter, colorize, animate, delight, overdrive) só quando o prompt pedir.
+- Economia de tokens: não rodar critique nem audit no app inteiro; não gerar variantes (generate, live) sem pedido; relatório da skill resumido em no máximo 5 linhas na resposta final.
+- Componentes repetidos em 3 ou mais telas: /impeccable extract para levar ao design system.
+- A validação da etapa (typecheck, lint, test, test:e2e e o teste de rolagem horizontal) continua obrigatória depois do polish.
