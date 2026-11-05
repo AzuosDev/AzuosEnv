@@ -28,6 +28,7 @@ import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { WorkspaceDocument } from '../workspaces/schemas/workspace.schema';
 import { BulkTasksDto, TaskQueryDto } from './dto/task-query.dto';
+import { TaskDetailDto } from './dto/task-detail.dto';
 import { BulkResultDto, TaskQueryResultDto } from './dto/task-result.dto';
 import {
   CreateTaskDto,
@@ -97,7 +98,7 @@ export class TasksController {
   @ApiOkResponse({
     description:
       'Tarefa por id ou customId, com resumo de subtarefas, checklists, dependências e contagens.',
-    type: Task,
+    type: TaskDetailDto,
   })
   get(
     @CurrentMembership() membership: RequestMembership,
@@ -161,6 +162,26 @@ export class TasksController {
       idOrCustomId,
       String(listId),
     );
+  }
+
+  @Post(':idOrCustomId/archive')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: 'Tarefa arquivada, com as subtarefas diretas.', type: Task })
+  archive(
+    @CurrentMembership() membership: RequestMembership,
+    @Param('idOrCustomId') idOrCustomId: string,
+  ): Promise<TaskDocument> {
+    return this.tasks.archive(permissionContextFrom(membership), idOrCustomId);
+  }
+
+  @Post(':idOrCustomId/unarchive')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: 'Tarefa desarquivada, com as subtarefas diretas.', type: Task })
+  unarchive(
+    @CurrentMembership() membership: RequestMembership,
+    @Param('idOrCustomId') idOrCustomId: string,
+  ): Promise<TaskDocument> {
+    return this.tasks.unarchive(permissionContextFrom(membership), idOrCustomId);
   }
 
   @Post(':idOrCustomId/restore')

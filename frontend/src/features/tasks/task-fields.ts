@@ -1,6 +1,12 @@
 import { format, isToday, isTomorrow, isYesterday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import type { StatusGroup, TaskPriority, UpdateTaskInput, ViewGroupBy } from '@/api/types';
+import type {
+  StatusGroup,
+  TaskPriority,
+  TaskType,
+  UpdateTaskInput,
+  ViewGroupBy,
+} from '@/api/types';
 import type { StatusTone } from '@/components/ui/status-pill';
 import { toneFromColor } from '@/lib/colors';
 
@@ -17,6 +23,69 @@ export const PRIORITY_OPTIONS = PRIORITY_ORDER.map((value) => ({
   value,
   label: PRIORITY_LABEL[value],
 }));
+
+export const TASK_TYPE_ORDER: TaskType[] = ['task', 'bug', 'milestone', 'meeting'];
+
+export const TASK_TYPE_LABEL: Record<TaskType, string> = {
+  task: 'Tarefa',
+  bug: 'Bug',
+  milestone: 'Marco',
+  meeting: 'Reunião',
+};
+
+export const TASK_TYPE_OPTIONS = TASK_TYPE_ORDER.map((value) => ({
+  value,
+  label: TASK_TYPE_LABEL[value],
+}));
+
+/**
+ * Hora que o app grava quando a data é só o dia. Meio-dia local evita que o
+ * fuso jogue a data para o dia anterior ou seguinte.
+ */
+export const DAY_ONLY_TIME = '12:00';
+
+/** Quebra o ISO nos dois campos do formulário, no fuso do navegador. */
+export function toDayTime(iso: string | null): { day: string; time: string } {
+  if (!iso) {
+    return { day: '', time: '' };
+  }
+
+  const date = new Date(iso);
+
+  if (Number.isNaN(date.getTime())) {
+    return { day: '', time: '' };
+  }
+
+  return { day: format(date, 'yyyy-MM-dd'), time: format(date, 'HH:mm') };
+}
+
+/** Junta dia e hora num ISO UTC; dia vazio apaga a data. */
+export function fromDayTime(day: string, time?: string): string | null {
+  if (day === '') {
+    return null;
+  }
+
+  const date = new Date(`${day}T${time && time !== '' ? time : DAY_ONLY_TIME}:00`);
+
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+/** Data longa com a hora só quando a tarefa usa hora. */
+export function formatDateField(iso: string | null, hasTime: boolean): string {
+  if (!iso) {
+    return 'Vazio';
+  }
+
+  const date = new Date(iso);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Vazio';
+  }
+
+  return format(date, hasTime ? "d 'de' MMM 'de' yyyy, HH:mm" : "d 'de' MMM 'de' yyyy", {
+    locale: ptBR,
+  });
+}
 
 /** Grupo "sem responsável" e prioridades vazias que a API devolve por chave. */
 export const UNASSIGNED_KEY = 'unassigned';

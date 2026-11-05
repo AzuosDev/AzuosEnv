@@ -949,6 +949,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{wsId}/tasks/{idOrCustomId}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TasksController_archive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/tasks/{idOrCustomId}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TasksController_unarchive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{wsId}/tasks/{idOrCustomId}/restore": {
         parameters: {
             query?: never;
@@ -3983,6 +4015,10 @@ export interface components {
             createNew: boolean;
         };
         Task: {
+            /** @description JSON do editor de texto rico; null quando não há descrição. */
+            description: {
+                [key: string]: unknown;
+            } | null;
             workspaceId: components["schemas"]["ObjectId"];
             listId: components["schemas"]["ObjectId"];
             /** @description Primary list plus the secondary ones; every query filters by this field. */
@@ -3990,7 +4026,6 @@ export interface components {
             parentTaskId: components["schemas"]["ObjectId"] | null;
             customId: string;
             name: string;
-            description: Record<string, never>;
             descriptionText: string;
             statusId: components["schemas"]["ObjectId"];
             /**
@@ -4033,6 +4068,10 @@ export interface components {
             value?: Record<string, never>;
         };
         TaskListItemDto: {
+            /** @description JSON do editor de texto rico; null quando não há descrição. */
+            description: {
+                [key: string]: unknown;
+            } | null;
             /** @description Quantas subtarefas diretas a tarefa tem. */
             subtaskCount: number;
             /** @description Quantas dessas subtarefas estão concluídas ou fechadas. */
@@ -4044,7 +4083,6 @@ export interface components {
             parentTaskId: components["schemas"]["ObjectId"] | null;
             customId: string;
             name: string;
-            description: Record<string, never>;
             descriptionText: string;
             statusId: components["schemas"]["ObjectId"];
             /**
@@ -4125,6 +4163,123 @@ export interface components {
             /** @description Quantas tarefas foram alteradas. */
             updated: number;
             skipped: components["schemas"]["BulkSkippedDto"][];
+        };
+        ProgressDto: {
+            /** @description Total de itens. */
+            total: number;
+            /** @description Itens concluídos. */
+            done: number;
+        };
+        ChecklistItem: {
+            /** @description Id do item da checklist. */
+            id: string;
+            text: string;
+            done: boolean;
+            assigneeId: components["schemas"]["ObjectId"] | null;
+            position: string;
+            parentItemId: components["schemas"]["ObjectId"] | null;
+        };
+        Checklist: {
+            workspaceId: components["schemas"]["ObjectId"];
+            taskId: components["schemas"]["ObjectId"];
+            name: string;
+            position: string;
+            items: components["schemas"]["ChecklistItem"][];
+        };
+        TaskDependency: {
+            workspaceId: components["schemas"]["ObjectId"];
+            taskId: components["schemas"]["ObjectId"];
+            dependsOnId: components["schemas"]["ObjectId"];
+            /** @enum {string} */
+            type: "waiting_on" | "blocking" | "linked";
+            createdBy: components["schemas"]["ObjectId"];
+        };
+        CustomFieldOption: {
+            id: string;
+            name: string;
+            color?: string;
+        };
+        CustomFieldConfig: {
+            options?: components["schemas"]["CustomFieldOption"][];
+            currency?: string;
+            /** @description Decimal places of number and currency. */
+            precision?: number;
+            /** @description Expression of a formula field, over numeric fields. */
+            expression?: string;
+            /** @description Target List of a relationship field. */
+            relationshipListId?: components["schemas"]["ObjectId"];
+        };
+        CustomField: {
+            workspaceId: components["schemas"]["ObjectId"];
+            /** @enum {string} */
+            scope: "list" | "space" | "folder";
+            scopeId: components["schemas"]["ObjectId"];
+            name: string;
+            /** @enum {string} */
+            type: "number" | "email" | "date" | "text" | "url" | "longText" | "currency" | "dropdown" | "labels" | "checkbox" | "people" | "phone" | "rating" | "progress" | "formula" | "files" | "relationship" | "location";
+            config: components["schemas"]["CustomFieldConfig"];
+            required: boolean;
+            position: string;
+        };
+        TaskDetailDto: {
+            /** @description JSON do editor de texto rico; null quando não há descrição. */
+            description: {
+                [key: string]: unknown;
+            } | null;
+            /** @description Subtarefas diretas. */
+            subtasks: components["schemas"]["ProgressDto"];
+            /** @description Checklists da tarefa, em ordem manual. */
+            checklists: components["schemas"]["Checklist"][];
+            /** @description Itens somados de todas as checklists. */
+            checklistItems: components["schemas"]["ProgressDto"];
+            /** @description Dependências nos dois sentidos. */
+            dependencies: components["schemas"]["TaskDependency"][];
+            /** @description Quantos anexos a tarefa tem. */
+            attachmentCount: number;
+            /** @description Quantos comentários não excluídos a tarefa tem. */
+            commentCount: number;
+            /** @description Campos personalizados válidos na List. */
+            fields: components["schemas"]["CustomField"][];
+            workspaceId: components["schemas"]["ObjectId"];
+            listId: components["schemas"]["ObjectId"];
+            /** @description Primary list plus the secondary ones; every query filters by this field. */
+            listIds: components["schemas"]["ObjectId"][];
+            parentTaskId: components["schemas"]["ObjectId"] | null;
+            customId: string;
+            name: string;
+            descriptionText: string;
+            statusId: components["schemas"]["ObjectId"];
+            /**
+             * @description Denormalized group of `statusId`, kept in sync with the status set.
+             * @enum {string}
+             */
+            statusGroup: "active" | "done" | "notStarted" | "closed";
+            /** @enum {string|null} */
+            priority: "urgent" | "high" | "normal" | "low" | null;
+            assigneeIds: components["schemas"]["ObjectId"][];
+            watcherIds: components["schemas"]["ObjectId"][];
+            tagIds: components["schemas"]["ObjectId"][];
+            /** Format: date-time */
+            startAt: string | null;
+            /** Format: date-time */
+            dueAt: string | null;
+            dueHasTime: boolean;
+            estimateMinutes: number | null;
+            points: number | null;
+            /** @description Denormalized sum of the time entries of the task, in minutes. */
+            trackedMinutes: number;
+            /** @enum {string} */
+            type: "task" | "bug" | "milestone" | "meeting";
+            customFields: components["schemas"]["TaskCustomFieldValue"][];
+            recurrence: components["schemas"]["TaskRecurrence"] | null;
+            position: string;
+            /** Format: date-time */
+            closedAt: string | null;
+            createdBy: components["schemas"]["ObjectId"];
+            /** Format: date-time */
+            archivedAt: string | null;
+            /** Format: date-time */
+            deletedAt: string | null;
         };
         UpdateTaskDto: {
             /** @example Corrigir fechamento de caixa */
@@ -4221,33 +4376,6 @@ export interface components {
             /** @default false */
             required: boolean;
         };
-        CustomFieldOption: {
-            id: string;
-            name: string;
-            color?: string;
-        };
-        CustomFieldConfig: {
-            options?: components["schemas"]["CustomFieldOption"][];
-            currency?: string;
-            /** @description Decimal places of number and currency. */
-            precision?: number;
-            /** @description Expression of a formula field, over numeric fields. */
-            expression?: string;
-            /** @description Target List of a relationship field. */
-            relationshipListId?: components["schemas"]["ObjectId"];
-        };
-        CustomField: {
-            workspaceId: components["schemas"]["ObjectId"];
-            /** @enum {string} */
-            scope: "list" | "space" | "folder";
-            scopeId: components["schemas"]["ObjectId"];
-            name: string;
-            /** @enum {string} */
-            type: "number" | "email" | "date" | "text" | "url" | "longText" | "currency" | "dropdown" | "labels" | "checkbox" | "people" | "phone" | "rating" | "progress" | "formula" | "files" | "relationship" | "location";
-            config: components["schemas"]["CustomFieldConfig"];
-            required: boolean;
-            position: string;
-        };
         UpdateCustomFieldDto: {
             /** @example Tipo */
             name?: string;
@@ -4258,21 +4386,6 @@ export interface components {
         CreateChecklistDto: {
             /** @example Critérios de aceite */
             name: string;
-        };
-        ChecklistItem: {
-            _id: components["schemas"]["ObjectId"];
-            text: string;
-            done: boolean;
-            assigneeId: components["schemas"]["ObjectId"] | null;
-            position: string;
-            parentItemId: components["schemas"]["ObjectId"] | null;
-        };
-        Checklist: {
-            workspaceId: components["schemas"]["ObjectId"];
-            taskId: components["schemas"]["ObjectId"];
-            name: string;
-            position: string;
-            items: components["schemas"]["ChecklistItem"][];
         };
         UpdateChecklistDto: {
             name?: string;
@@ -4365,14 +4478,6 @@ export interface components {
             dependsOnId: string;
             /** @enum {string} */
             type: "waiting_on" | "blocking" | "linked";
-        };
-        TaskDependency: {
-            workspaceId: components["schemas"]["ObjectId"];
-            taskId: components["schemas"]["ObjectId"];
-            dependsOnId: components["schemas"]["ObjectId"];
-            /** @enum {string} */
-            type: "waiting_on" | "blocking" | "linked";
-            createdBy: components["schemas"]["ObjectId"];
         };
         ActivityChange: {
             field: string;
@@ -4689,6 +4794,16 @@ export interface components {
             /** @enum {string} */
             approvalStatus: "draft" | "submitted" | "approved" | "rejected";
             approvedBy: components["schemas"]["ObjectId"] | null;
+        };
+        TimerResultDto: {
+            /** @description Cronômetro iniciado. */
+            entry: components["schemas"]["TimeEntry"];
+            /** @description Cronômetro anterior, que este start parou; null quando não havia nenhum. */
+            stopped: components["schemas"]["TimeEntry"] | null;
+        };
+        TimerStateDto: {
+            /** @description Lançamento em andamento do usuário; null quando não há cronômetro. */
+            entry: components["schemas"]["TimeEntry"] | null;
         };
         CreateTimeEntryDto: {
             taskId: string;
@@ -7647,7 +7762,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Task"];
+                    "application/json": components["schemas"]["TaskDetailDto"];
                 };
             };
         };
@@ -7807,6 +7922,54 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Tarefa removida da List secundária. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Task"];
+                };
+            };
+        };
+    };
+    TasksController_archive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tarefa arquivada, com as subtarefas diretas. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Task"];
+                };
+            };
+        };
+    };
+    TasksController_unarchive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tarefa desarquivada, com as subtarefas diretas. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -8121,6 +8284,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8143,6 +8308,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8169,6 +8336,8 @@ export interface operations {
             header?: never;
             path: {
                 checklistId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8179,7 +8348,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -8189,6 +8360,8 @@ export interface operations {
             header?: never;
             path: {
                 checklistId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8215,6 +8388,8 @@ export interface operations {
             header?: never;
             path: {
                 checklistId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8241,6 +8416,8 @@ export interface operations {
             header?: never;
             path: {
                 checklistId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8268,6 +8445,8 @@ export interface operations {
             path: {
                 checklistId: components["schemas"]["ObjectId"];
                 itemId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8291,6 +8470,8 @@ export interface operations {
             path: {
                 checklistId: components["schemas"]["ObjectId"];
                 itemId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8318,6 +8499,8 @@ export interface operations {
             path: {
                 checklistId: components["schemas"]["ObjectId"];
                 itemId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -9627,7 +9810,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -9641,7 +9827,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TimerResultDto"];
+                };
             };
         };
     };
@@ -9649,7 +9837,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -9669,7 +9860,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -9679,7 +9873,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TimerStateDto"];
+                };
             };
         };
     };
@@ -9698,7 +9894,10 @@ export interface operations {
                 to?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -9722,7 +9921,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -9748,6 +9950,8 @@ export interface operations {
             header?: never;
             path: {
                 entryId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -9758,7 +9962,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -9768,6 +9974,8 @@ export interface operations {
             header?: never;
             path: {
                 entryId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };

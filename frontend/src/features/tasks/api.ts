@@ -5,11 +5,13 @@ import { queryKeys } from '@/api/keys';
 import type {
   BulkChanges,
   BulkResult,
+  CreateTagInput,
   CreateTaskInput,
   EffectiveStatuses,
   MoveTaskInput,
   Tag,
   Task,
+  TaskDetail,
   TaskQueryParams,
   TaskQueryResult,
   UpdateTaskInput,
@@ -85,8 +87,72 @@ export function taskQuery(wsId: string, idOrCustomId: string) {
         await api.GET('/api/v1/workspaces/{wsId}/tasks/{idOrCustomId}', {
           params: { path: { wsId, idOrCustomId } },
         }),
-      ) as Task,
+      ) as TaskDetail,
+    staleTime: 15_000,
   });
+}
+
+/** Subtarefas diretas, em ordem manual. Uma página de 100 cobre o painel. */
+export function subtasksQuery(wsId: string, idOrCustomId: string) {
+  return queryOptions({
+    queryKey: queryKeys.subtasks(wsId, idOrCustomId),
+    queryFn: async (): Promise<Task[]> =>
+      unwrap(
+        await api.GET('/api/v1/workspaces/{wsId}/tasks/{idOrCustomId}/subtasks', {
+          params: { path: { wsId, idOrCustomId }, query: { limit: 100 } },
+        }),
+      ).items as Task[],
+    staleTime: 15_000,
+  });
+}
+
+export async function archiveTask(wsId: string, idOrCustomId: string): Promise<void> {
+  unwrap(
+    await api.POST('/api/v1/workspaces/{wsId}/tasks/{idOrCustomId}/archive', {
+      params: { path: { wsId, idOrCustomId } },
+    }),
+  );
+}
+
+export async function unarchiveTask(wsId: string, idOrCustomId: string): Promise<void> {
+  unwrap(
+    await api.POST('/api/v1/workspaces/{wsId}/tasks/{idOrCustomId}/unarchive', {
+      params: { path: { wsId, idOrCustomId } },
+    }),
+  );
+}
+
+/** Adiciona a tarefa a outra List, sem trocar a principal. */
+export async function addTaskToList(
+  wsId: string,
+  idOrCustomId: string,
+  listId: string,
+): Promise<void> {
+  unwrap(
+    await api.POST('/api/v1/workspaces/{wsId}/tasks/{idOrCustomId}/lists', {
+      params: { path: { wsId, idOrCustomId } },
+      body: { listId },
+    }),
+  );
+}
+
+export async function removeTaskFromList(
+  wsId: string,
+  idOrCustomId: string,
+  listId: string,
+): Promise<void> {
+  unwrap(
+    await api.DELETE('/api/v1/workspaces/{wsId}/tasks/{idOrCustomId}/lists/{listId}', {
+      params: { path: { wsId, idOrCustomId, listId } },
+    }),
+  );
+}
+
+/** Cria a tag no Space da tarefa; é o caminho de "criar na hora". */
+export async function createTag(wsId: string, body: CreateTagInput): Promise<Tag> {
+  return unwrap(
+    await api.POST('/api/v1/workspaces/{wsId}/tags', { params: { path: { wsId } }, body }),
+  ) as Tag;
 }
 
 export async function createTask(

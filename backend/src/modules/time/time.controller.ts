@@ -12,7 +12,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -26,19 +28,21 @@ import {
   TimeEntryQueryDto,
   UpdateTimeEntryDto,
 } from './dto/time-entry.dto';
+import { TimerResultDto, TimerStateDto } from './dto/timer-state.dto';
 import { TimeEntry, TimeEntryDocument } from './schemas/time-entry.schema';
 import { TimeEntriesService, TimerResult } from './time-entries.service';
 
 @ApiTags('time')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/time/timer')
 export class TimerController {
   constructor(private readonly entries: TimeEntriesService) {}
 
   @Post('start')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Cronômetro iniciado; o anterior é parado.' })
+  @ApiOkResponse({ description: 'Cronômetro iniciado; o anterior é parado.', type: TimerResultDto })
   start(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: StartTimerDto,
@@ -54,7 +58,10 @@ export class TimerController {
   }
 
   @Get('current')
-  @ApiOkResponse({ description: 'Cronômetro em andamento do usuário, se houver.' })
+  @ApiOkResponse({
+    description: 'Cronômetro em andamento do usuário, se houver.',
+    type: TimerStateDto,
+  })
   async current(
     @CurrentMembership() membership: RequestMembership,
   ): Promise<{ entry: TimeEntryDocument | null }> {
@@ -65,6 +72,7 @@ export class TimerController {
 @ApiTags('time')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/time/entries')
 export class TimeEntriesController {
   constructor(private readonly entries: TimeEntriesService) {}
@@ -98,7 +106,7 @@ export class TimeEntriesController {
   }
 
   @Delete(':entryId')
-  @ApiOkResponse({ description: 'Lançamento removido.' })
+  @ApiOkResponse({ description: 'Lançamento removido.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('entryId', ParseObjectIdPipe) entryId: Types.ObjectId,

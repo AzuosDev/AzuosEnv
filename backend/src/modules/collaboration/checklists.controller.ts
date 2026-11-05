@@ -12,7 +12,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { ReorderDto } from '../hierarchy/dto/reorder.dto';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
@@ -30,6 +32,7 @@ import { Checklist, ChecklistDocument } from './schemas/checklist.schema';
 @ApiTags('checklists')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/tasks/:idOrCustomId/checklists')
 export class TaskChecklistsController {
   constructor(private readonly checklists: ChecklistsService) {}
@@ -57,6 +60,7 @@ export class TaskChecklistsController {
 @ApiTags('checklists')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/checklists')
 export class ChecklistsController {
   constructor(private readonly checklists: ChecklistsService) {}
@@ -84,7 +88,7 @@ export class ChecklistsController {
 
   @Delete(':checklistId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Checklist removida.' })
+  @ApiOkResponse({ description: 'Checklist removida.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('checklistId', ParseObjectIdPipe) checklistId: Types.ObjectId,

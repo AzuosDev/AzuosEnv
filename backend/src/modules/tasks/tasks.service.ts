@@ -323,6 +323,49 @@ export class TasksService {
     return paginateByPosition(docs, query);
   }
 
+  /** Archive; the direct subtasks follow the parent out of the views. */
+  async archive(ctx: PermissionContext, idOrCustomId: string): Promise<TaskDocument> {
+    const { task } = await this.taskAccess.requireTask(ctx, idOrCustomId, 'edit');
+
+    if (task.archivedAt) {
+      return task;
+    }
+
+    const archivedAt = new Date();
+    const changes: TaskChanges = {};
+
+    this.apply(task, changes, 'archivedAt', archivedAt);
+    await this.model
+      .updateMany(
+        { workspaceId: ctx.workspaceId, parentTaskId: task._id, deletedAt: null, archivedAt: null },
+        { $set: { archivedAt } },
+      )
+      .exec();
+
+    return this.saveWithChanges(ctx, task, changes);
+  }
+
+  async unarchive(ctx: PermissionContext, idOrCustomId: string): Promise<TaskDocument> {
+    const { task } = await this.taskAccess.requireTask(ctx, idOrCustomId, 'edit');
+    const archivedAt = task.archivedAt;
+
+    if (!archivedAt) {
+      return task;
+    }
+
+    const changes: TaskChanges = {};
+
+    this.apply(task, changes, 'archivedAt', null);
+    await this.model
+      .updateMany(
+        { workspaceId: ctx.workspaceId, parentTaskId: task._id, deletedAt: null, archivedAt },
+        { $set: { archivedAt: null } },
+      )
+      .exec();
+
+    return this.saveWithChanges(ctx, task, changes);
+  }
+
   /** Soft delete; descendant subtasks go to the trash with the same date. */
   async remove(ctx: PermissionContext, idOrCustomId: string): Promise<void> {
     const { task } = await this.taskAccess.requireTask(ctx, idOrCustomId, 'full');

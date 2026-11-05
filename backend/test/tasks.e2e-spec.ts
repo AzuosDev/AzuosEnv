@@ -361,6 +361,73 @@ describe('Tarefas', () => {
 
       expect(restored.body.deletedAt).toBeNull();
     });
+
+    it('arquiva e desarquiva a tarefa com as subtarefas diretas', async () => {
+      const { owner, workspace, list } = await setup();
+      const parent = await createdTask(workspace, owner, list);
+      const child = await createdTask(workspace, owner, list, {
+        name: 'Subtarefa',
+        parentTaskId: parent.id,
+      });
+
+      const archived = await withAuth(
+        http().post(`/api/v1/workspaces/${workspace.id}/tasks/${parent.id}/archive`),
+        owner,
+      ).expect(200);
+
+      expect(archived.body.archivedAt).not.toBeNull();
+
+      const archivedChild = await withAuth(
+        http().get(`/api/v1/workspaces/${workspace.id}/tasks/${child.id}`),
+        owner,
+      ).expect(200);
+
+      expect(archivedChild.body.archivedAt).not.toBeNull();
+
+      const query = await withAuth(
+        http().get(`/api/v1/workspaces/${workspace.id}/tasks/query`).query({ groupBy: 'none' }),
+        owner,
+      ).expect(200);
+
+      expect((query.body.items as { id: string }[]).map((item) => item.id)).not.toContain(
+        parent.id,
+      );
+
+      await withAuth(
+        http().post(`/api/v1/workspaces/${workspace.id}/tasks/${parent.id}/unarchive`),
+        owner,
+      ).expect(200);
+
+      const back = await withAuth(
+        http().get(`/api/v1/workspaces/${workspace.id}/tasks/${child.id}`),
+        owner,
+      ).expect(200);
+
+      expect(back.body.archivedAt).toBeNull();
+    });
+
+    it('guest com permissão de view não arquiva a tarefa', async () => {
+      const { owner, workspace, list } = await setup();
+      const task = await createdTask(workspace, owner, list);
+      const guest = await addMember(workspace, owner, 'guest');
+
+      await withAuth(http().post(`/api/v1/workspaces/${workspace.id}/permissions`), owner)
+        .send({
+          resourceType: 'list',
+          resourceId: list.id,
+          principalType: 'user',
+          principalId: guest.userId,
+          level: 'view',
+        })
+        .expect(201);
+
+      const forbidden = await withAuth(
+        http().post(`/api/v1/workspaces/${workspace.id}/tasks/${task.id}/archive`),
+        guest.session,
+      ).expect(403);
+
+      expect(forbidden.body.code).toBe('FORBIDDEN_RESOURCE');
+    });
   });
 
   describe('subtarefas', () => {

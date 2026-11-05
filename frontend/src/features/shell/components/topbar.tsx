@@ -49,7 +49,7 @@ export function Topbar({ wsId, user, onOpenMenu }: TopbarProps) {
       </Button>
 
       <SearchPalette />
-      <TimerSlot />
+      <TimerSlot wsId={wsId} />
 
       <div className="flex-1" />
 

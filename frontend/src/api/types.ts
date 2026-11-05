@@ -112,6 +112,38 @@ export type TaskQueryResult = Omit<
   'items' | 'groups'
 > & { items?: Task[]; groups?: TaskGroup[] };
 
+/** Tarefa do GET /tasks/:idOrCustomId: tudo que o painel abre de uma vez. */
+export type TaskDetail = Doc<components['schemas']['TaskDetailDto']>;
+export type TaskProgress = components['schemas']['ProgressDto'];
+export type CustomField = Doc<components['schemas']['CustomField']>;
+export type SecondaryListInput = components['schemas']['SecondaryListDto'];
+export type CreateTagInput = components['schemas']['CreateTagDto'];
+
+/** JSON do editor de texto rico; null quando a descrição está vazia. */
+export type TaskDescription = TaskDetail['description'];
+
+/* Checklists ------------------------------------------------------------ */
+
+export type Checklist = Doc<components['schemas']['Checklist']>;
+export type ChecklistItem = components['schemas']['ChecklistItem'] & { id: string };
+export type CreateChecklistInput = components['schemas']['CreateChecklistDto'];
+export type UpdateChecklistInput = components['schemas']['UpdateChecklistDto'];
+export type CreateChecklistItemInput = components['schemas']['CreateChecklistItemDto'];
+export type UpdateChecklistItemInput = components['schemas']['UpdateChecklistItemDto'];
+
+/* Tempo ----------------------------------------------------------------- */
+
+export type TimeEntry = Doc<components['schemas']['TimeEntry']>;
+export type TimerState = Omit<components['schemas']['TimerStateDto'], 'entry'> & {
+  entry: TimeEntry | null;
+};
+export type TimerResult = Omit<components['schemas']['TimerResultDto'], 'entry' | 'stopped'> & {
+  entry: TimeEntry;
+  stopped: TimeEntry | null;
+};
+export type CreateTimeEntryInput = components['schemas']['CreateTimeEntryDto'];
+export type UpdateTimeEntryInput = components['schemas']['UpdateTimeEntryDto'];
+
 /* Views ----------------------------------------------------------------- */
 
 export type View = Doc<components['schemas']['View']>;

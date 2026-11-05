@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import { STATUS_GROUPS, StatusGroup } from '../../hierarchy/status-templates';
@@ -63,6 +64,12 @@ export class Task {
   @Prop({ required: true, trim: true })
   name: string;
 
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: true,
+    nullable: true,
+    description: 'JSON do editor de texto rico; null quando não há descrição.',
+  })
   @Prop({ type: Object, default: null })
   description: TaskDescription;
 

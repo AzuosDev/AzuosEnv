@@ -1,11 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 
 /** Items live inside the checklist and are addressed by their own id. */
 @Schema({ _id: true, ...baseSchemaOptions, timestamps: false })
 export class ChecklistItem {
+  @ApiHideProperty()
   _id: Types.ObjectId;
+
+  /** Só para o contrato: o toJSON manda `id`, nunca `_id`. */
+  @ApiProperty({ required: true, description: 'Id do item da checklist.' })
+  id?: string;
 
   @Prop({ required: true, trim: true })
   text: string;

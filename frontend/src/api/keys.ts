@@ -33,4 +33,9 @@ export const queryKeys = {
     ['workspaces', workspaceId, 'tasks', params] as const,
   task: (workspaceId: string, idOrCustomId: string) =>
     ['workspaces', workspaceId, 'tasks', 'detail', idOrCustomId] as const,
+  subtasks: (workspaceId: string, idOrCustomId: string) =>
+    ['workspaces', workspaceId, 'tasks', 'detail', idOrCustomId, 'subtasks'] as const,
+  timeEntries: (workspaceId: string, taskId: string) =>
+    ['workspaces', workspaceId, 'time', 'entries', taskId] as const,
+  timer: (workspaceId: string) => ['workspaces', workspaceId, 'time', 'timer'] as const,
 } as const;
