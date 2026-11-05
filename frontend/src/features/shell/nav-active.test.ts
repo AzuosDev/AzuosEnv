@@ -16,9 +16,10 @@ describe('activeNavId', () => {
     expect(activeNavId(`/w/${WS}/automacoes`, WS)).toBe('automacoes');
   });
 
-  it('Perfil e Preferências acendem Configurações', () => {
-    expect(activeNavId(`/w/${WS}/perfil`, WS)).toBe('configuracoes');
-    expect(activeNavId(`/w/${WS}/preferencias`, WS)).toBe('configuracoes');
+  it('as abas da configuração acendem Configurações', () => {
+    expect(activeNavId(`/w/${WS}/configuracoes`, WS)).toBe('configuracoes');
+    expect(activeNavId(`/w/${WS}/configuracoes/perfil`, WS)).toBe('configuracoes');
+    expect(activeNavId(`/w/${WS}/configuracoes/pessoas`, WS)).toBe('configuracoes');
   });
 
   it('fora do workspace ou em rota desconhecida ninguém acende', () => {

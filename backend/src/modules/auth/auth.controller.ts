@@ -24,6 +24,7 @@ import { AuthService, SessionSummary } from './auth.service';
 import { AuthResponseDto, AuthUserDto, RegisteredUserDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { SessionDto } from './dto/session.dto';
 import { RefreshTokensService, RequestContext } from './refresh-tokens.service';
 
 const CREDENTIALS_THROTTLE = { default: { limit: 5, ttl: 60_000 } };
@@ -125,7 +126,7 @@ export class AuthController {
 
   @ApiBearerAuth()
   @Get('sessions')
-  @ApiOkResponse({ description: 'Sessões ativas do usuário.' })
+  @ApiOkResponse({ description: 'Sessões ativas do usuário.', type: SessionDto, isArray: true })
   sessions(@CurrentUser('id') userId: string, @Req() request: Request): Promise<SessionSummary[]> {
     return this.authService.listSessions(userId, this.refreshTokenOf(request));
   }

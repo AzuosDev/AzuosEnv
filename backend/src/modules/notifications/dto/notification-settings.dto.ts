@@ -114,3 +114,60 @@ export class UpdateNotificationSettingsDto {
   @Type(() => NotificationTypeSettingsDto)
   types: NotificationTypeSettingsDto;
 }
+
+/** Canais resolvidos de um tipo: o GET sempre devolve os dois. */
+export class NotificationChannelsStateDto {
+  @ApiProperty()
+  inbox: boolean;
+
+  @ApiProperty()
+  email: boolean;
+}
+
+/** Preferências completas: um par de canais para cada tipo de notificação. */
+export class NotificationPreferencesDto implements Record<
+  NotificationType,
+  NotificationChannelsStateDto
+> {
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  assigned: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  mentioned: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  commented: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  statusChanged: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  dueSoon: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  overdue: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  reminder: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  invited: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  commentAssigned: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  automation: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  chatMention: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  chatMessage: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  formSubmitted: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  aiSummary: NotificationChannelsStateDto;
+}

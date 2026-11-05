@@ -1,5 +1,13 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { ensureSession } from '@/features/auth/session';
+import { ensureSession, useSession } from '@/features/auth/session';
+import { useServerTheme } from '@/features/settings/hooks/use-server-theme';
+
+function AppGroup() {
+  // O tema salvo na conta vence o localStorage a cada sessão restaurada.
+  useServerTheme(useSession());
+
+  return <Outlet />;
+}
 
 /** Grupo protegido: sem sessão, vai para /login guardando o destino. */
 export const Route = createFileRoute('/_app')({
@@ -12,5 +20,5 @@ export const Route = createFileRoute('/_app')({
 
     return { user };
   },
-  component: Outlet,
+  component: AppGroup,
 });

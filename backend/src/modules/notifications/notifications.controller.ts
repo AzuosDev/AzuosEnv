@@ -11,7 +11,10 @@ import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership, workspaceObjectId } from '../workspaces/workspace-context';
 import { InboxCountsDto } from './dto/inbox-counts.dto';
 import { InboxQueryDto, SnoozeNotificationDto } from './dto/inbox.dto';
-import { UpdateNotificationSettingsDto } from './dto/notification-settings.dto';
+import {
+  NotificationPreferencesDto,
+  UpdateNotificationSettingsDto,
+} from './dto/notification-settings.dto';
 import { NotificationPreferences } from './notification-fields';
 import { NotificationSettingsService } from './notification-settings.service';
 import { InboxCounts, NotificationsService } from './notifications.service';
@@ -118,12 +121,19 @@ export class NotificationSettingsController {
   constructor(private readonly settings: NotificationSettingsService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Canais por tipo de notificação.' })
+  @ApiOkResponse({
+    description: 'Canais por tipo de notificação.',
+    type: NotificationPreferencesDto,
+  })
   get(@CurrentUser() user: AuthenticatedUser): Promise<NotificationPreferences> {
     return this.settings.get(new Types.ObjectId(user.id));
   }
 
   @Patch()
+  @ApiOkResponse({
+    description: 'Preferências atualizadas.',
+    type: NotificationPreferencesDto,
+  })
   update(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: UpdateNotificationSettingsDto,

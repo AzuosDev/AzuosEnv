@@ -39,13 +39,17 @@ export function UserMenu({ user, wsId }: UserMenuProps) {
         {wsId ? (
           <>
             <DropdownMenuItem asChild>
-              <Link to="/w/$wsId/perfil" params={{ wsId }} className="no-underline">
+              <Link to="/w/$wsId/configuracoes/perfil" params={{ wsId }} className="no-underline">
                 <UserRound className="h-4 w-4" aria-hidden="true" />
                 Perfil
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/w/$wsId/preferencias" params={{ wsId }} className="no-underline">
+              <Link
+                to="/w/$wsId/configuracoes/preferencias"
+                params={{ wsId }}
+                className="no-underline"
+              >
                 <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
                 Preferências
               </Link>

@@ -2,6 +2,7 @@ import {
   expect,
   request as playwrightRequest,
   type APIRequestContext,
+  type BrowserContext,
   type Page,
 } from '@playwright/test';
 
@@ -45,8 +46,15 @@ interface CreatedInviteBody {
   token: string;
 }
 
+export type InviteRole = 'admin' | 'member' | 'limited' | 'guest';
+
+export interface Credentials {
+  email: string;
+  password: string;
+}
+
 /** Convida um e-mail para o workspace do seed e devolve o token do convite. */
-export async function createInvite(email: string): Promise<string> {
+export async function createInvite(email: string, role: InviteRole = 'member'): Promise<string> {
   const api = await apiContext();
 
   try {
@@ -65,12 +73,95 @@ export async function createInvite(email: string): Promise<string> {
 
     const invite = await api.post(`${API_URL}/workspaces/${workspace?.id ?? ''}/invites`, {
       headers,
-      data: { email, role: 'member' },
+      data: { email, role },
     });
 
     expect(invite.ok(), 'criação do convite').toBeTruthy();
 
     return ((await invite.json()) as CreatedInviteBody).token;
+  } finally {
+    await api.dispose();
+  }
+}
+
+/**
+ * Conta nova já dentro do workspace do seed, montada direto pela API: cada
+ * chamada sai de um IP novo, então o limite de 5 logins por minuto do navegador
+ * continua livre para o que o teste precisa fazer na tela.
+ */
+export async function createWorkspaceMember(
+  prefix: string,
+  role: InviteRole = 'member',
+): Promise<Credentials> {
+  const credentials: Credentials = { email: uniqueEmail(prefix), password: 'Azuos2026' };
+  const api = await apiContext();
+
+  try {
+    const registered = await api.post(`${API_URL}/auth/register`, {
+      data: { name: `Pessoa ${prefix}`, ...credentials },
+    });
+
+    expect(registered.ok(), 'cadastro da conta de apoio').toBeTruthy();
+  } finally {
+    await api.dispose();
+  }
+
+  const token = await createInvite(credentials.email, role);
+  const accept = await apiContext();
+
+  try {
+    const accepted = await accept.post(`${API_URL}/invites/accept`, { data: { token } });
+
+    expect(accepted.ok(), 'aceite do convite pela API').toBeTruthy();
+  } finally {
+    await accept.dispose();
+  }
+
+  return credentials;
+}
+
+/**
+ * Abre a sessão pela API e injeta o cookie de refresh no contexto: o app faz o
+ * refresh silencioso e entra sem gastar o limite de logins do IP do navegador.
+ */
+export async function signInContext(
+  context: BrowserContext,
+  user: Credentials = SEED_USER,
+): Promise<void> {
+  const api = await apiContext();
+
+  try {
+    const session = await api.post(`${API_URL}/auth/login`, { data: user });
+
+    expect(session.ok(), `login de ${user.email} na API`).toBeTruthy();
+
+    const { cookies } = await api.storageState();
+
+    await context.addCookies(cookies);
+  } finally {
+    await api.dispose();
+  }
+}
+
+/** Id do workspace do seed, para abrir uma rota direto. */
+export async function seedWorkspaceId(): Promise<string> {
+  const api = await apiContext();
+
+  try {
+    const session = await api.post(`${API_URL}/auth/login`, { data: SEED_USER });
+
+    expect(session.ok(), 'login do seed na API').toBeTruthy();
+
+    const { accessToken } = (await session.json()) as SessionBody;
+    const workspaces = await api.get(`${API_URL}/workspaces`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const { items } = (await workspaces.json()) as WorkspacesBody;
+    const workspace = items[0];
+
+    expect(workspace, 'workspace do seed').toBeTruthy();
+
+    return workspace?.id ?? '';
   } finally {
     await api.dispose();
   }

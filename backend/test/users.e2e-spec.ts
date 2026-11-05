@@ -44,6 +44,37 @@ describe('Users', () => {
       });
     });
 
+    it('removes the avatar with an empty avatarUrl', async () => {
+      const session = await createSession(ctx);
+      const headers = { Authorization: `Bearer ${session.accessToken}` };
+
+      await http()
+        .patch('/api/v1/users/me')
+        .set(headers)
+        .send({ avatarUrl: 'https://cdn.azuos.dev/avatars/felipe.png' })
+        .expect(200);
+
+      const response = await http()
+        .patch('/api/v1/users/me')
+        .set(headers)
+        .send({ avatarUrl: '' })
+        .expect(200);
+
+      expect(response.body.avatarUrl).toBeUndefined();
+    });
+
+    it('rejects an invalid avatar url', async () => {
+      const session = await createSession(ctx);
+
+      const response = await http()
+        .patch('/api/v1/users/me')
+        .set('Authorization', `Bearer ${session.accessToken}`)
+        .send({ avatarUrl: 'nao-e-url' })
+        .expect(400);
+
+      expect(response.body.code).toBe('VALIDATION_ERROR');
+    });
+
     it('rejects an unknown theme', async () => {
       const session = await createSession(ctx);
 

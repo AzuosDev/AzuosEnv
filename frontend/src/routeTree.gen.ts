@@ -29,11 +29,17 @@ import { Route as AppWWsIdIaRouteImport } from './routes/_app.w.$wsId.ia'
 import { Route as AppWWsIdInboxRouteImport } from './routes/_app.w.$wsId.inbox'
 import { Route as AppWWsIdMetasRouteImport } from './routes/_app.w.$wsId.metas'
 import { Route as AppWWsIdMinhasTarefasRouteImport } from './routes/_app.w.$wsId.minhas-tarefas'
-import { Route as AppWWsIdPerfilRouteImport } from './routes/_app.w.$wsId.perfil'
 import { Route as AppWWsIdPlannerRouteImport } from './routes/_app.w.$wsId.planner'
-import { Route as AppWWsIdPreferenciasRouteImport } from './routes/_app.w.$wsId.preferencias'
 import { Route as AppWWsIdTimesheetsRouteImport } from './routes/_app.w.$wsId.timesheets'
 import { Route as AppWWsIdWhiteboardsRouteImport } from './routes/_app.w.$wsId.whiteboards'
+import { Route as AppWWsIdConfiguracoesIndexRouteImport } from './routes/_app.w.$wsId.configuracoes.index'
+import { Route as AppWWsIdConfiguracoesEquipesRouteImport } from './routes/_app.w.$wsId.configuracoes.equipes'
+import { Route as AppWWsIdConfiguracoesNotificacoesRouteImport } from './routes/_app.w.$wsId.configuracoes.notificacoes'
+import { Route as AppWWsIdConfiguracoesPerfilRouteImport } from './routes/_app.w.$wsId.configuracoes.perfil'
+import { Route as AppWWsIdConfiguracoesPessoasRouteImport } from './routes/_app.w.$wsId.configuracoes.pessoas'
+import { Route as AppWWsIdConfiguracoesPreferenciasRouteImport } from './routes/_app.w.$wsId.configuracoes.preferencias'
+import { Route as AppWWsIdConfiguracoesSegurancaRouteImport } from './routes/_app.w.$wsId.configuracoes.seguranca'
+import { Route as AppWWsIdConfiguracoesWorkspaceRouteImport } from './routes/_app.w.$wsId.configuracoes.workspace'
 import { Route as AppWWsIdFFolderIdRouteImport } from './routes/_app.w.$wsId.f.$folderId'
 import { Route as AppWWsIdLListIdRouteImport } from './routes/_app.w.$wsId.l.$listId'
 import { Route as AppWWsIdSSpaceIdRouteImport } from './routes/_app.w.$wsId.s.$spaceId'
@@ -136,19 +142,9 @@ const AppWWsIdMinhasTarefasRoute = AppWWsIdMinhasTarefasRouteImport.update({
   path: '/minhas-tarefas',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
-const AppWWsIdPerfilRoute = AppWWsIdPerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => AppWWsIdRoute,
-} as any)
 const AppWWsIdPlannerRoute = AppWWsIdPlannerRouteImport.update({
   id: '/planner',
   path: '/planner',
-  getParentRoute: () => AppWWsIdRoute,
-} as any)
-const AppWWsIdPreferenciasRoute = AppWWsIdPreferenciasRouteImport.update({
-  id: '/preferencias',
-  path: '/preferencias',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
 const AppWWsIdTimesheetsRoute = AppWWsIdTimesheetsRouteImport.update({
@@ -161,6 +157,54 @@ const AppWWsIdWhiteboardsRoute = AppWWsIdWhiteboardsRouteImport.update({
   path: '/whiteboards',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
+const AppWWsIdConfiguracoesIndexRoute =
+  AppWWsIdConfiguracoesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AppWWsIdConfiguracoesRoute,
+  } as any)
+const AppWWsIdConfiguracoesEquipesRoute =
+  AppWWsIdConfiguracoesEquipesRouteImport.update({
+    id: '/equipes',
+    path: '/equipes',
+    getParentRoute: () => AppWWsIdConfiguracoesRoute,
+  } as any)
+const AppWWsIdConfiguracoesNotificacoesRoute =
+  AppWWsIdConfiguracoesNotificacoesRouteImport.update({
+    id: '/notificacoes',
+    path: '/notificacoes',
+    getParentRoute: () => AppWWsIdConfiguracoesRoute,
+  } as any)
+const AppWWsIdConfiguracoesPerfilRoute =
+  AppWWsIdConfiguracoesPerfilRouteImport.update({
+    id: '/perfil',
+    path: '/perfil',
+    getParentRoute: () => AppWWsIdConfiguracoesRoute,
+  } as any)
+const AppWWsIdConfiguracoesPessoasRoute =
+  AppWWsIdConfiguracoesPessoasRouteImport.update({
+    id: '/pessoas',
+    path: '/pessoas',
+    getParentRoute: () => AppWWsIdConfiguracoesRoute,
+  } as any)
+const AppWWsIdConfiguracoesPreferenciasRoute =
+  AppWWsIdConfiguracoesPreferenciasRouteImport.update({
+    id: '/preferencias',
+    path: '/preferencias',
+    getParentRoute: () => AppWWsIdConfiguracoesRoute,
+  } as any)
+const AppWWsIdConfiguracoesSegurancaRoute =
+  AppWWsIdConfiguracoesSegurancaRouteImport.update({
+    id: '/seguranca',
+    path: '/seguranca',
+    getParentRoute: () => AppWWsIdConfiguracoesRoute,
+  } as any)
+const AppWWsIdConfiguracoesWorkspaceRoute =
+  AppWWsIdConfiguracoesWorkspaceRouteImport.update({
+    id: '/workspace',
+    path: '/workspace',
+    getParentRoute: () => AppWWsIdConfiguracoesRoute,
+  } as any)
 const AppWWsIdFFolderIdRoute = AppWWsIdFFolderIdRouteImport.update({
   id: '/f/$folderId',
   path: '/f/$folderId',
@@ -188,22 +232,28 @@ export interface FileRoutesByFullPath {
   '/w/$wsId': typeof AppWWsIdRouteWithChildren
   '/w/$wsId/automacoes': typeof AppWWsIdAutomacoesRoute
   '/w/$wsId/chat': typeof AppWWsIdChatRoute
-  '/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesRoute
+  '/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesRouteWithChildren
   '/w/$wsId/dashboards': typeof AppWWsIdDashboardsRoute
   '/w/$wsId/docs': typeof AppWWsIdDocsRoute
   '/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/w/$wsId/inbox': typeof AppWWsIdInboxRoute
   '/w/$wsId/metas': typeof AppWWsIdMetasRoute
   '/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
-  '/w/$wsId/perfil': typeof AppWWsIdPerfilRoute
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
-  '/w/$wsId/preferencias': typeof AppWWsIdPreferenciasRoute
   '/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
   '/w/$wsId/whiteboards': typeof AppWWsIdWhiteboardsRoute
   '/w/$wsId/': typeof AppWWsIdIndexRoute
+  '/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
+  '/w/$wsId/configuracoes/notificacoes': typeof AppWWsIdConfiguracoesNotificacoesRoute
+  '/w/$wsId/configuracoes/perfil': typeof AppWWsIdConfiguracoesPerfilRoute
+  '/w/$wsId/configuracoes/pessoas': typeof AppWWsIdConfiguracoesPessoasRoute
+  '/w/$wsId/configuracoes/preferencias': typeof AppWWsIdConfiguracoesPreferenciasRoute
+  '/w/$wsId/configuracoes/seguranca': typeof AppWWsIdConfiguracoesSegurancaRoute
+  '/w/$wsId/configuracoes/workspace': typeof AppWWsIdConfiguracoesWorkspaceRoute
   '/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
   '/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
+  '/w/$wsId/configuracoes/': typeof AppWWsIdConfiguracoesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -215,22 +265,27 @@ export interface FileRoutesByTo {
   '/convite/$token': typeof ConviteTokenRoute
   '/w/$wsId/automacoes': typeof AppWWsIdAutomacoesRoute
   '/w/$wsId/chat': typeof AppWWsIdChatRoute
-  '/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesRoute
   '/w/$wsId/dashboards': typeof AppWWsIdDashboardsRoute
   '/w/$wsId/docs': typeof AppWWsIdDocsRoute
   '/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/w/$wsId/inbox': typeof AppWWsIdInboxRoute
   '/w/$wsId/metas': typeof AppWWsIdMetasRoute
   '/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
-  '/w/$wsId/perfil': typeof AppWWsIdPerfilRoute
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
-  '/w/$wsId/preferencias': typeof AppWWsIdPreferenciasRoute
   '/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
   '/w/$wsId/whiteboards': typeof AppWWsIdWhiteboardsRoute
   '/w/$wsId': typeof AppWWsIdIndexRoute
+  '/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
+  '/w/$wsId/configuracoes/notificacoes': typeof AppWWsIdConfiguracoesNotificacoesRoute
+  '/w/$wsId/configuracoes/perfil': typeof AppWWsIdConfiguracoesPerfilRoute
+  '/w/$wsId/configuracoes/pessoas': typeof AppWWsIdConfiguracoesPessoasRoute
+  '/w/$wsId/configuracoes/preferencias': typeof AppWWsIdConfiguracoesPreferenciasRoute
+  '/w/$wsId/configuracoes/seguranca': typeof AppWWsIdConfiguracoesSegurancaRoute
+  '/w/$wsId/configuracoes/workspace': typeof AppWWsIdConfiguracoesWorkspaceRoute
   '/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
   '/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
+  '/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -246,22 +301,28 @@ export interface FileRoutesById {
   '/_app/w/$wsId': typeof AppWWsIdRouteWithChildren
   '/_app/w/$wsId/automacoes': typeof AppWWsIdAutomacoesRoute
   '/_app/w/$wsId/chat': typeof AppWWsIdChatRoute
-  '/_app/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesRoute
+  '/_app/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesRouteWithChildren
   '/_app/w/$wsId/dashboards': typeof AppWWsIdDashboardsRoute
   '/_app/w/$wsId/docs': typeof AppWWsIdDocsRoute
   '/_app/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/_app/w/$wsId/inbox': typeof AppWWsIdInboxRoute
   '/_app/w/$wsId/metas': typeof AppWWsIdMetasRoute
   '/_app/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
-  '/_app/w/$wsId/perfil': typeof AppWWsIdPerfilRoute
   '/_app/w/$wsId/planner': typeof AppWWsIdPlannerRoute
-  '/_app/w/$wsId/preferencias': typeof AppWWsIdPreferenciasRoute
   '/_app/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
   '/_app/w/$wsId/whiteboards': typeof AppWWsIdWhiteboardsRoute
   '/_app/w/$wsId/': typeof AppWWsIdIndexRoute
+  '/_app/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
+  '/_app/w/$wsId/configuracoes/notificacoes': typeof AppWWsIdConfiguracoesNotificacoesRoute
+  '/_app/w/$wsId/configuracoes/perfil': typeof AppWWsIdConfiguracoesPerfilRoute
+  '/_app/w/$wsId/configuracoes/pessoas': typeof AppWWsIdConfiguracoesPessoasRoute
+  '/_app/w/$wsId/configuracoes/preferencias': typeof AppWWsIdConfiguracoesPreferenciasRoute
+  '/_app/w/$wsId/configuracoes/seguranca': typeof AppWWsIdConfiguracoesSegurancaRoute
+  '/_app/w/$wsId/configuracoes/workspace': typeof AppWWsIdConfiguracoesWorkspaceRoute
   '/_app/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/_app/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
   '/_app/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
+  '/_app/w/$wsId/configuracoes/': typeof AppWWsIdConfiguracoesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -283,15 +344,21 @@ export interface FileRouteTypes {
     | '/w/$wsId/inbox'
     | '/w/$wsId/metas'
     | '/w/$wsId/minhas-tarefas'
-    | '/w/$wsId/perfil'
     | '/w/$wsId/planner'
-    | '/w/$wsId/preferencias'
     | '/w/$wsId/timesheets'
     | '/w/$wsId/whiteboards'
     | '/w/$wsId/'
+    | '/w/$wsId/configuracoes/equipes'
+    | '/w/$wsId/configuracoes/notificacoes'
+    | '/w/$wsId/configuracoes/perfil'
+    | '/w/$wsId/configuracoes/pessoas'
+    | '/w/$wsId/configuracoes/preferencias'
+    | '/w/$wsId/configuracoes/seguranca'
+    | '/w/$wsId/configuracoes/workspace'
     | '/w/$wsId/f/$folderId'
     | '/w/$wsId/l/$listId'
     | '/w/$wsId/s/$spaceId'
+    | '/w/$wsId/configuracoes/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -303,22 +370,27 @@ export interface FileRouteTypes {
     | '/convite/$token'
     | '/w/$wsId/automacoes'
     | '/w/$wsId/chat'
-    | '/w/$wsId/configuracoes'
     | '/w/$wsId/dashboards'
     | '/w/$wsId/docs'
     | '/w/$wsId/ia'
     | '/w/$wsId/inbox'
     | '/w/$wsId/metas'
     | '/w/$wsId/minhas-tarefas'
-    | '/w/$wsId/perfil'
     | '/w/$wsId/planner'
-    | '/w/$wsId/preferencias'
     | '/w/$wsId/timesheets'
     | '/w/$wsId/whiteboards'
     | '/w/$wsId'
+    | '/w/$wsId/configuracoes/equipes'
+    | '/w/$wsId/configuracoes/notificacoes'
+    | '/w/$wsId/configuracoes/perfil'
+    | '/w/$wsId/configuracoes/pessoas'
+    | '/w/$wsId/configuracoes/preferencias'
+    | '/w/$wsId/configuracoes/seguranca'
+    | '/w/$wsId/configuracoes/workspace'
     | '/w/$wsId/f/$folderId'
     | '/w/$wsId/l/$listId'
     | '/w/$wsId/s/$spaceId'
+    | '/w/$wsId/configuracoes'
   id:
     | '__root__'
     | '/'
@@ -340,15 +412,21 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/inbox'
     | '/_app/w/$wsId/metas'
     | '/_app/w/$wsId/minhas-tarefas'
-    | '/_app/w/$wsId/perfil'
     | '/_app/w/$wsId/planner'
-    | '/_app/w/$wsId/preferencias'
     | '/_app/w/$wsId/timesheets'
     | '/_app/w/$wsId/whiteboards'
     | '/_app/w/$wsId/'
+    | '/_app/w/$wsId/configuracoes/equipes'
+    | '/_app/w/$wsId/configuracoes/notificacoes'
+    | '/_app/w/$wsId/configuracoes/perfil'
+    | '/_app/w/$wsId/configuracoes/pessoas'
+    | '/_app/w/$wsId/configuracoes/preferencias'
+    | '/_app/w/$wsId/configuracoes/seguranca'
+    | '/_app/w/$wsId/configuracoes/workspace'
     | '/_app/w/$wsId/f/$folderId'
     | '/_app/w/$wsId/l/$listId'
     | '/_app/w/$wsId/s/$spaceId'
+    | '/_app/w/$wsId/configuracoes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -501,25 +579,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWWsIdMinhasTarefasRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
-    '/_app/w/$wsId/perfil': {
-      id: '/_app/w/$wsId/perfil'
-      path: '/perfil'
-      fullPath: '/w/$wsId/perfil'
-      preLoaderRoute: typeof AppWWsIdPerfilRouteImport
-      parentRoute: typeof AppWWsIdRoute
-    }
     '/_app/w/$wsId/planner': {
       id: '/_app/w/$wsId/planner'
       path: '/planner'
       fullPath: '/w/$wsId/planner'
       preLoaderRoute: typeof AppWWsIdPlannerRouteImport
-      parentRoute: typeof AppWWsIdRoute
-    }
-    '/_app/w/$wsId/preferencias': {
-      id: '/_app/w/$wsId/preferencias'
-      path: '/preferencias'
-      fullPath: '/w/$wsId/preferencias'
-      preLoaderRoute: typeof AppWWsIdPreferenciasRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
     '/_app/w/$wsId/timesheets': {
@@ -535,6 +599,62 @@ declare module '@tanstack/react-router' {
       fullPath: '/w/$wsId/whiteboards'
       preLoaderRoute: typeof AppWWsIdWhiteboardsRouteImport
       parentRoute: typeof AppWWsIdRoute
+    }
+    '/_app/w/$wsId/configuracoes/': {
+      id: '/_app/w/$wsId/configuracoes/'
+      path: '/'
+      fullPath: '/w/$wsId/configuracoes/'
+      preLoaderRoute: typeof AppWWsIdConfiguracoesIndexRouteImport
+      parentRoute: typeof AppWWsIdConfiguracoesRoute
+    }
+    '/_app/w/$wsId/configuracoes/equipes': {
+      id: '/_app/w/$wsId/configuracoes/equipes'
+      path: '/equipes'
+      fullPath: '/w/$wsId/configuracoes/equipes'
+      preLoaderRoute: typeof AppWWsIdConfiguracoesEquipesRouteImport
+      parentRoute: typeof AppWWsIdConfiguracoesRoute
+    }
+    '/_app/w/$wsId/configuracoes/notificacoes': {
+      id: '/_app/w/$wsId/configuracoes/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/w/$wsId/configuracoes/notificacoes'
+      preLoaderRoute: typeof AppWWsIdConfiguracoesNotificacoesRouteImport
+      parentRoute: typeof AppWWsIdConfiguracoesRoute
+    }
+    '/_app/w/$wsId/configuracoes/perfil': {
+      id: '/_app/w/$wsId/configuracoes/perfil'
+      path: '/perfil'
+      fullPath: '/w/$wsId/configuracoes/perfil'
+      preLoaderRoute: typeof AppWWsIdConfiguracoesPerfilRouteImport
+      parentRoute: typeof AppWWsIdConfiguracoesRoute
+    }
+    '/_app/w/$wsId/configuracoes/pessoas': {
+      id: '/_app/w/$wsId/configuracoes/pessoas'
+      path: '/pessoas'
+      fullPath: '/w/$wsId/configuracoes/pessoas'
+      preLoaderRoute: typeof AppWWsIdConfiguracoesPessoasRouteImport
+      parentRoute: typeof AppWWsIdConfiguracoesRoute
+    }
+    '/_app/w/$wsId/configuracoes/preferencias': {
+      id: '/_app/w/$wsId/configuracoes/preferencias'
+      path: '/preferencias'
+      fullPath: '/w/$wsId/configuracoes/preferencias'
+      preLoaderRoute: typeof AppWWsIdConfiguracoesPreferenciasRouteImport
+      parentRoute: typeof AppWWsIdConfiguracoesRoute
+    }
+    '/_app/w/$wsId/configuracoes/seguranca': {
+      id: '/_app/w/$wsId/configuracoes/seguranca'
+      path: '/seguranca'
+      fullPath: '/w/$wsId/configuracoes/seguranca'
+      preLoaderRoute: typeof AppWWsIdConfiguracoesSegurancaRouteImport
+      parentRoute: typeof AppWWsIdConfiguracoesRoute
+    }
+    '/_app/w/$wsId/configuracoes/workspace': {
+      id: '/_app/w/$wsId/configuracoes/workspace'
+      path: '/workspace'
+      fullPath: '/w/$wsId/configuracoes/workspace'
+      preLoaderRoute: typeof AppWWsIdConfiguracoesWorkspaceRouteImport
+      parentRoute: typeof AppWWsIdConfiguracoesRoute
     }
     '/_app/w/$wsId/f/$folderId': {
       id: '/_app/w/$wsId/f/$folderId'
@@ -560,19 +680,46 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppWWsIdConfiguracoesRouteChildren {
+  AppWWsIdConfiguracoesEquipesRoute: typeof AppWWsIdConfiguracoesEquipesRoute
+  AppWWsIdConfiguracoesNotificacoesRoute: typeof AppWWsIdConfiguracoesNotificacoesRoute
+  AppWWsIdConfiguracoesPerfilRoute: typeof AppWWsIdConfiguracoesPerfilRoute
+  AppWWsIdConfiguracoesPessoasRoute: typeof AppWWsIdConfiguracoesPessoasRoute
+  AppWWsIdConfiguracoesPreferenciasRoute: typeof AppWWsIdConfiguracoesPreferenciasRoute
+  AppWWsIdConfiguracoesSegurancaRoute: typeof AppWWsIdConfiguracoesSegurancaRoute
+  AppWWsIdConfiguracoesWorkspaceRoute: typeof AppWWsIdConfiguracoesWorkspaceRoute
+  AppWWsIdConfiguracoesIndexRoute: typeof AppWWsIdConfiguracoesIndexRoute
+}
+
+const AppWWsIdConfiguracoesRouteChildren: AppWWsIdConfiguracoesRouteChildren = {
+  AppWWsIdConfiguracoesEquipesRoute: AppWWsIdConfiguracoesEquipesRoute,
+  AppWWsIdConfiguracoesNotificacoesRoute:
+    AppWWsIdConfiguracoesNotificacoesRoute,
+  AppWWsIdConfiguracoesPerfilRoute: AppWWsIdConfiguracoesPerfilRoute,
+  AppWWsIdConfiguracoesPessoasRoute: AppWWsIdConfiguracoesPessoasRoute,
+  AppWWsIdConfiguracoesPreferenciasRoute:
+    AppWWsIdConfiguracoesPreferenciasRoute,
+  AppWWsIdConfiguracoesSegurancaRoute: AppWWsIdConfiguracoesSegurancaRoute,
+  AppWWsIdConfiguracoesWorkspaceRoute: AppWWsIdConfiguracoesWorkspaceRoute,
+  AppWWsIdConfiguracoesIndexRoute: AppWWsIdConfiguracoesIndexRoute,
+}
+
+const AppWWsIdConfiguracoesRouteWithChildren =
+  AppWWsIdConfiguracoesRoute._addFileChildren(
+    AppWWsIdConfiguracoesRouteChildren,
+  )
+
 interface AppWWsIdRouteChildren {
   AppWWsIdAutomacoesRoute: typeof AppWWsIdAutomacoesRoute
   AppWWsIdChatRoute: typeof AppWWsIdChatRoute
-  AppWWsIdConfiguracoesRoute: typeof AppWWsIdConfiguracoesRoute
+  AppWWsIdConfiguracoesRoute: typeof AppWWsIdConfiguracoesRouteWithChildren
   AppWWsIdDashboardsRoute: typeof AppWWsIdDashboardsRoute
   AppWWsIdDocsRoute: typeof AppWWsIdDocsRoute
   AppWWsIdIaRoute: typeof AppWWsIdIaRoute
   AppWWsIdInboxRoute: typeof AppWWsIdInboxRoute
   AppWWsIdMetasRoute: typeof AppWWsIdMetasRoute
   AppWWsIdMinhasTarefasRoute: typeof AppWWsIdMinhasTarefasRoute
-  AppWWsIdPerfilRoute: typeof AppWWsIdPerfilRoute
   AppWWsIdPlannerRoute: typeof AppWWsIdPlannerRoute
-  AppWWsIdPreferenciasRoute: typeof AppWWsIdPreferenciasRoute
   AppWWsIdTimesheetsRoute: typeof AppWWsIdTimesheetsRoute
   AppWWsIdWhiteboardsRoute: typeof AppWWsIdWhiteboardsRoute
   AppWWsIdIndexRoute: typeof AppWWsIdIndexRoute
@@ -584,16 +731,14 @@ interface AppWWsIdRouteChildren {
 const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
   AppWWsIdAutomacoesRoute: AppWWsIdAutomacoesRoute,
   AppWWsIdChatRoute: AppWWsIdChatRoute,
-  AppWWsIdConfiguracoesRoute: AppWWsIdConfiguracoesRoute,
+  AppWWsIdConfiguracoesRoute: AppWWsIdConfiguracoesRouteWithChildren,
   AppWWsIdDashboardsRoute: AppWWsIdDashboardsRoute,
   AppWWsIdDocsRoute: AppWWsIdDocsRoute,
   AppWWsIdIaRoute: AppWWsIdIaRoute,
   AppWWsIdInboxRoute: AppWWsIdInboxRoute,
   AppWWsIdMetasRoute: AppWWsIdMetasRoute,
   AppWWsIdMinhasTarefasRoute: AppWWsIdMinhasTarefasRoute,
-  AppWWsIdPerfilRoute: AppWWsIdPerfilRoute,
   AppWWsIdPlannerRoute: AppWWsIdPlannerRoute,
-  AppWWsIdPreferenciasRoute: AppWWsIdPreferenciasRoute,
   AppWWsIdTimesheetsRoute: AppWWsIdTimesheetsRoute,
   AppWWsIdWhiteboardsRoute: AppWWsIdWhiteboardsRoute,
   AppWWsIdIndexRoute: AppWWsIdIndexRoute,

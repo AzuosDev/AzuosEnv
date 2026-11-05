@@ -202,10 +202,28 @@
     "/api/v1/workspaces/{wsId}": {
       "get": {
         "operationId": "WorkspacesController_get",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Workspace e papel do usuário."
+            "description": "Workspace e papel do usuário.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceWithRoleDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -219,7 +237,18 @@
       },
       "patch": {
         "operationId": "WorkspacesController_update",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -253,10 +282,28 @@
       },
       "delete": {
         "operationId": "WorkspacesController_remove",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Workspace enviado para a lixeira."
+            "description": "Workspace enviado para a lixeira.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -272,7 +319,18 @@
     "/api/v1/workspaces/{wsId}/transfer-ownership": {
       "post": {
         "operationId": "WorkspacesController_transferOwnership",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -328,6 +386,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -345,7 +413,7 @@
                     "items": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/WorkspaceMember"
+                        "$ref": "#/components/schemas/WorkspaceMemberWithUserDto"
                       }
                     },
                     "nextCursor": {
@@ -379,6 +447,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -425,6 +503,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -452,7 +540,18 @@
     "/api/v1/workspaces/{wsId}/invites": {
       "post": {
         "operationId": "InvitesController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -465,7 +564,14 @@
         },
         "responses": {
           "201": {
-            "description": "Convite criado; o link é enviado por e-mail."
+            "description": "Convite criado; o link é enviado por e-mail.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedInviteDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -498,6 +604,16 @@
             "description": "Cursor retornado em nextCursor.",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -550,6 +666,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -609,7 +735,18 @@
     "/api/v1/workspaces/{wsId}/teams": {
       "post": {
         "operationId": "TeamsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -663,6 +800,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -715,6 +862,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -758,11 +915,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Equipe removida."
+            "description": "Equipe removida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1010,7 +1184,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Sessões ativas do usuário."
+            "description": "Sessões ativas do usuário.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessionDto"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -5871,7 +6055,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Canais por tipo de notificação."
+            "description": "Canais por tipo de notificação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationPreferencesDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -5898,11 +6089,11 @@
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "Preferências atualizadas.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/NotificationPreferencesDto"
                 }
               }
             }
@@ -12405,6 +12596,28 @@
           "settings"
         ]
       },
+      "WorkspaceWithRoleDto": {
+        "type": "object",
+        "properties": {
+          "workspace": {
+            "$ref": "#/components/schemas/Workspace"
+          },
+          "role": {
+            "enum": [
+              "owner",
+              "admin",
+              "member",
+              "limited",
+              "guest"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspace",
+          "role"
+        ]
+      },
       "ClickAppsDto": {
         "type": "object",
         "properties": {
@@ -12487,6 +12700,18 @@
           }
         }
       },
+      "SuccessDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
       "TransferOwnershipDto": {
         "type": "object",
         "properties": {
@@ -12545,6 +12770,89 @@
           "capacityPerDay"
         ]
       },
+      "MemberUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Felipe Souza"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "felipe@azuos.dev"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "America/Fortaleza"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email"
+        ]
+      },
+      "WorkspaceMemberWithUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/MemberUserDto"
+          },
+          "role": {
+            "enum": [
+              "owner",
+              "admin",
+              "member",
+              "limited",
+              "guest"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "invited",
+              "deactivated"
+            ],
+            "type": "string"
+          },
+          "capacityPerDay": {
+            "type": "number",
+            "example": 8
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "userId",
+          "role",
+          "status",
+          "capacityPerDay",
+          "createdAt"
+        ]
+      },
       "UpdateMemberRoleDto": {
         "type": "object",
         "properties": {
@@ -12596,13 +12904,13 @@
             "type": "string"
           },
           "role": {
-            "type": "string",
             "enum": [
               "admin",
               "member",
               "limited",
               "guest"
-            ]
+            ],
+            "type": "string"
           },
           "tokenHash": {
             "type": "string"
@@ -12627,16 +12935,25 @@
           "expiresAt"
         ]
       },
-      "SuccessDto": {
+      "CreatedInviteDto": {
         "type": "object",
         "properties": {
-          "success": {
-            "type": "boolean",
-            "example": true
+          "invite": {
+            "$ref": "#/components/schemas/Invite"
+          },
+          "token": {
+            "type": "string",
+            "description": "Token do convite; não é guardado em texto puro."
+          },
+          "acceptUrl": {
+            "type": "string",
+            "description": "Link enviado por e-mail ao convidado."
           }
         },
         "required": [
-          "success"
+          "invite",
+          "token",
+          "acceptUrl"
         ]
       },
       "AcceptInviteDto": {
@@ -12781,6 +13098,7 @@
             "type": "string",
             "maxLength": 2048,
             "format": "uri",
+            "description": "URL da imagem; string vazia remove o avatar e volta às iniciais.",
             "example": "https://cdn.azuos.dev/avatars/felipe.png"
           },
           "timezone": {
@@ -12954,6 +13272,40 @@
         "required": [
           "accessToken",
           "user"
+        ]
+      },
+      "SessionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id da sessão; usado para encerrá-la."
+          },
+          "userAgent": {
+            "type": "string",
+            "description": "User agent de quem abriu a sessão."
+          },
+          "ip": {
+            "type": "string",
+            "description": "IP de origem registrado no login."
+          },
+          "current": {
+            "type": "boolean",
+            "description": "true na sessão que está fazendo a chamada."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "current",
+          "expiresAt"
         ]
       },
       "CreateApiKeyDto": {
@@ -15762,6 +16114,84 @@
         },
         "required": [
           "until"
+        ]
+      },
+      "NotificationChannelsStateDto": {
+        "type": "object",
+        "properties": {
+          "inbox": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "inbox",
+          "email"
+        ]
+      },
+      "NotificationPreferencesDto": {
+        "type": "object",
+        "properties": {
+          "assigned": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "mentioned": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "commented": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "statusChanged": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "dueSoon": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "overdue": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "reminder": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "invited": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "commentAssigned": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "automation": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "chatMention": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "chatMessage": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "formSubmitted": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "aiSummary": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          }
+        },
+        "required": [
+          "assigned",
+          "mentioned",
+          "commented",
+          "statusChanged",
+          "dueSoon",
+          "overdue",
+          "reminder",
+          "invited",
+          "commentAssigned",
+          "automation",
+          "chatMention",
+          "chatMessage",
+          "formSubmitted",
+          "aiSummary"
         ]
       },
       "NotificationChannelsDto": {

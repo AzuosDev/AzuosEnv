@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
@@ -19,7 +20,7 @@ import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
 import { Audit } from '../audit/audit.decorator';
 import { CurrentMembership } from './decorators/workspace-context.decorator';
 import { Roles } from './decorators/roles.decorator';
-import { UpdateMemberRoleDto } from './dto/member.dto';
+import { UpdateMemberRoleDto, WorkspaceMemberWithUserDto } from './dto/member.dto';
 import { WorkspaceGuard } from './guards/workspace.guard';
 import { MembersService } from './members.service';
 import { WorkspaceMember, WorkspaceMemberDocument } from './schemas/workspace-member.schema';
@@ -28,12 +29,13 @@ import { RequestMembership, workspaceObjectId } from './workspace-context';
 @ApiTags('workspace-members')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/members')
 export class MembersController {
   constructor(private readonly members: MembersService) {}
 
   @Get()
-  @ApiPagedResponse(WorkspaceMember, 'Membros do workspace.')
+  @ApiPagedResponse(WorkspaceMemberWithUserDto, 'Membros do workspace.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: PaginationQueryDto,

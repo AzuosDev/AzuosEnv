@@ -3388,6 +3388,11 @@ export interface components {
             /** Format: date-time */
             deletedAt?: string;
         };
+        WorkspaceWithRoleDto: {
+            workspace: components["schemas"]["Workspace"];
+            /** @enum {string} */
+            role: "owner" | "admin" | "member" | "limited" | "guest";
+        };
         ClickAppsDto: {
             priority?: boolean;
             tags?: boolean;
@@ -3426,6 +3431,10 @@ export interface components {
             timezone?: string;
             settings?: components["schemas"]["WorkspaceSettingsDto"];
         };
+        SuccessDto: {
+            /** @example true */
+            success: boolean;
+        };
         TransferOwnershipDto: {
             /** @description Usuário que receberá a posse; deve ser membro ativo. */
             userId: string;
@@ -3441,6 +3450,35 @@ export interface components {
             invitedBy?: components["schemas"]["ObjectId"];
             /** Format: date-time */
             joinedAt?: string;
+        };
+        MemberUserDto: {
+            id: string;
+            /** @example Felipe Souza */
+            name: string;
+            /**
+             * Format: email
+             * @example felipe@azuos.dev
+             */
+            email: string;
+            /** Format: uri */
+            avatarUrl?: string;
+            /** @example America/Fortaleza */
+            timezone?: string;
+        };
+        WorkspaceMemberWithUserDto: {
+            id: string;
+            workspaceId: string;
+            userId: components["schemas"]["MemberUserDto"];
+            /** @enum {string} */
+            role: "owner" | "admin" | "member" | "limited" | "guest";
+            /** @enum {string} */
+            status: "active" | "invited" | "deactivated";
+            /** @example 8 */
+            capacityPerDay: number;
+            /** Format: date-time */
+            joinedAt?: string;
+            /** Format: date-time */
+            createdAt: string;
         };
         UpdateMemberRoleDto: {
             /** @enum {string} */
@@ -3467,9 +3505,12 @@ export interface components {
             acceptedAt?: string;
             invitedBy?: components["schemas"]["ObjectId"];
         };
-        SuccessDto: {
-            /** @example true */
-            success: boolean;
+        CreatedInviteDto: {
+            invite: components["schemas"]["Invite"];
+            /** @description Token do convite; não é guardado em texto puro. */
+            token: string;
+            /** @description Link enviado por e-mail ao convidado. */
+            acceptUrl: string;
         };
         AcceptInviteDto: {
             /** @description Token recebido no convite. */
@@ -3514,6 +3555,7 @@ export interface components {
             name?: string;
             /**
              * Format: uri
+             * @description URL da imagem; string vazia remove o avatar e volta às iniciais.
              * @example https://cdn.azuos.dev/avatars/felipe.png
              */
             avatarUrl?: string;
@@ -3583,6 +3625,20 @@ export interface components {
             /** @description Access token; o front guarda apenas em memória. */
             accessToken: string;
             user: components["schemas"]["AuthUserDto"];
+        };
+        SessionDto: {
+            /** @description Id da sessão; usado para encerrá-la. */
+            id: string;
+            /** @description User agent de quem abriu a sessão. */
+            userAgent?: string;
+            /** @description IP de origem registrado no login. */
+            ip?: string;
+            /** @description true na sessão que está fazendo a chamada. */
+            current: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            expiresAt: string;
         };
         CreateApiKeyDto: {
             /** @example Integração do site */
@@ -4418,6 +4474,26 @@ export interface components {
         SnoozeNotificationDto: {
             /** @description Momento em que a notificação volta para a caixa de entrada. */
             until: string;
+        };
+        NotificationChannelsStateDto: {
+            inbox: boolean;
+            email: boolean;
+        };
+        NotificationPreferencesDto: {
+            assigned: components["schemas"]["NotificationChannelsStateDto"];
+            mentioned: components["schemas"]["NotificationChannelsStateDto"];
+            commented: components["schemas"]["NotificationChannelsStateDto"];
+            statusChanged: components["schemas"]["NotificationChannelsStateDto"];
+            dueSoon: components["schemas"]["NotificationChannelsStateDto"];
+            overdue: components["schemas"]["NotificationChannelsStateDto"];
+            reminder: components["schemas"]["NotificationChannelsStateDto"];
+            invited: components["schemas"]["NotificationChannelsStateDto"];
+            commentAssigned: components["schemas"]["NotificationChannelsStateDto"];
+            automation: components["schemas"]["NotificationChannelsStateDto"];
+            chatMention: components["schemas"]["NotificationChannelsStateDto"];
+            chatMessage: components["schemas"]["NotificationChannelsStateDto"];
+            formSubmitted: components["schemas"]["NotificationChannelsStateDto"];
+            aiSummary: components["schemas"]["NotificationChannelsStateDto"];
         };
         NotificationChannelsDto: {
             inbox?: boolean;
@@ -5615,7 +5691,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -5625,7 +5704,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["WorkspaceWithRoleDto"];
+                };
             };
         };
     };
@@ -5633,7 +5714,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -5643,7 +5727,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -5651,7 +5737,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -5675,7 +5764,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -5703,7 +5795,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -5715,7 +5810,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        items: components["schemas"]["WorkspaceMember"][];
+                        items: components["schemas"]["WorkspaceMemberWithUserDto"][];
                         /** @description Cursor da próxima página; null na última. */
                         nextCursor: string | null;
                     };
@@ -5729,6 +5824,8 @@ export interface operations {
             header?: never;
             path: {
                 memberId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -5755,6 +5852,8 @@ export interface operations {
             header?: never;
             path: {
                 memberId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -5779,7 +5878,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -5803,7 +5905,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -5817,7 +5922,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CreatedInviteDto"];
+                };
             };
         };
     };
@@ -5827,6 +5934,8 @@ export interface operations {
             header?: never;
             path: {
                 inviteId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -5875,7 +5984,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -5899,7 +6011,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -5925,6 +6040,8 @@ export interface operations {
             header?: never;
             path: {
                 teamId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -5935,7 +6052,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -5945,6 +6064,8 @@ export interface operations {
             header?: never;
             path: {
                 teamId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6155,7 +6276,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SessionDto"][];
+                };
             };
         };
     };
@@ -8838,7 +8961,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferencesDto"];
+                };
             };
         };
     };
@@ -8855,12 +8980,13 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Preferências atualizadas. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["NotificationPreferencesDto"];
                 };
             };
         };

@@ -18,8 +18,6 @@ const SEGMENT_TO_NAV: Record<string, string> = {
   whiteboards: 'whiteboards',
   ia: 'ia',
   configuracoes: 'configuracoes',
-  perfil: 'configuracoes',
-  preferencias: 'configuracoes',
 };
 
 const SEGMENT_TO_KIND: Record<string, TreeNodeKind> = {

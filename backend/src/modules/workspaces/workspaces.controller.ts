@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
@@ -21,6 +23,7 @@ import { Roles } from './decorators/roles.decorator';
 import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { TransferOwnershipDto } from './dto/member.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
+import { WorkspaceWithRoleDto } from './dto/workspace-detail.dto';
 import { WorkspaceGuard } from './guards/workspace.guard';
 import { WorkspaceMember, WorkspaceMemberDocument } from './schemas/workspace-member.schema';
 import { Workspace, WorkspaceDocument } from './schemas/workspace.schema';
@@ -53,7 +56,8 @@ export class WorkspacesController {
 
   @Get(':wsId')
   @UseGuards(WorkspaceGuard)
-  @ApiOkResponse({ description: 'Workspace e papel do usuário.' })
+  @ApiWorkspaceParam()
+  @ApiOkResponse({ description: 'Workspace e papel do usuário.', type: WorkspaceWithRoleDto })
   get(
     @CurrentWorkspace() workspace: WorkspaceDocument,
     @CurrentMembership() membership: RequestMembership,
@@ -65,6 +69,7 @@ export class WorkspacesController {
   @Audit('workspace.updated', 'workspace')
   @UseGuards(WorkspaceGuard)
   @Roles('admin')
+  @ApiWorkspaceParam()
   @ApiOkResponse({ description: 'Workspace atualizado.', type: Workspace })
   update(
     @CurrentWorkspace() workspace: WorkspaceDocument,
@@ -78,7 +83,8 @@ export class WorkspacesController {
   @UseGuards(WorkspaceGuard)
   @Roles('owner')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Workspace enviado para a lixeira.' })
+  @ApiWorkspaceParam()
+  @ApiOkResponse({ description: 'Workspace enviado para a lixeira.', type: SuccessDto })
   async remove(@CurrentWorkspace() workspace: WorkspaceDocument): Promise<{ success: true }> {
     await this.workspaces.softDelete(workspace);
 
@@ -90,6 +96,7 @@ export class WorkspacesController {
   @UseGuards(WorkspaceGuard)
   @Roles('owner')
   @HttpCode(HttpStatus.OK)
+  @ApiWorkspaceParam()
   @ApiOkResponse({
     description: 'Posse transferida; o antigo owner fica como admin.',
     type: WorkspaceMember,

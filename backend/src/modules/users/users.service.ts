@@ -150,6 +150,11 @@ export class UsersService {
       Object.fromEntries(Object.entries(dto).filter(([, value]) => value !== undefined)),
     );
 
+    // An empty avatarUrl removes the picture: the initials take over again.
+    if (dto.avatarUrl === '') {
+      user.avatarUrl = undefined;
+    }
+
     return user.save();
   }
 

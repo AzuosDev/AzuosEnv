@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsIn, IsOptional, IsString, Length, Matches, MaxLength } from 'class-validator';
 import { PASSWORD_PATTERN, PASSWORD_RULE_MESSAGE } from '../../auth/dto/password.rule';
+import { Invite } from '../schemas/invite.schema';
 import { WorkspaceMember } from '../schemas/workspace-member.schema';
 import { ASSIGNABLE_ROLES, AssignableRole } from '../workspace-roles';
 
@@ -62,4 +63,16 @@ export class AcceptedInviteDto {
 
   @ApiProperty({ description: 'true quando a conta foi criada no aceite.' })
   accountCreated: boolean;
+}
+
+/** Convite recém-criado; o token aparece só nesta resposta. */
+export class CreatedInviteDto {
+  @ApiProperty({ type: Invite })
+  invite: Invite;
+
+  @ApiProperty({ description: 'Token do convite; não é guardado em texto puro.' })
+  token: string;
+
+  @ApiProperty({ description: 'Link enviado por e-mail ao convidado.' })
+  acceptUrl: string;
 }
