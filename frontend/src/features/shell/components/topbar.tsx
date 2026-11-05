@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import type { AuthUser } from '@/api/types';
 import { UserMenu } from '@/features/auth/components/user-menu';
 import { useSocket } from '@/features/realtime/socket';
+import { NewTaskButton } from '@/features/tasks/components/new-task-dialog';
 import { SearchPalette } from './search-palette';
 import { TimerSlot } from './timer-slot';
 
@@ -52,6 +53,7 @@ export function Topbar({ wsId, user, onOpenMenu }: TopbarProps) {
 
       <div className="flex-1" />
 
+      <NewTaskButton wsId={wsId} />
       <ConnectionBadge />
       <ThemeToggle className="hidden md:inline-flex" />
       {user ? <UserMenu user={user} wsId={wsId} /> : null}

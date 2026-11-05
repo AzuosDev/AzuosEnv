@@ -12,7 +12,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CursorPage } from '../../common/pagination/cursor';
@@ -26,6 +28,7 @@ import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { WorkspaceDocument } from '../workspaces/schemas/workspace.schema';
 import { BulkTasksDto, TaskQueryDto } from './dto/task-query.dto';
+import { BulkResultDto, TaskQueryResultDto } from './dto/task-result.dto';
 import {
   CreateTaskDto,
   MoveTaskDto,
@@ -40,6 +43,7 @@ import { BulkResult, TaskDetail, TasksService } from './tasks.service';
 @ApiTags('tasks')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/lists/:listId/tasks')
 export class ListTasksController {
   constructor(private readonly tasks: TasksService) {}
@@ -59,6 +63,7 @@ export class ListTasksController {
 @ApiTags('tasks')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/tasks')
 export class TasksController {
   constructor(
@@ -67,7 +72,10 @@ export class TasksController {
   ) {}
 
   @Get('query')
-  @ApiOkResponse({ description: 'Consulta das views (List, Board, Calendar, Table, Gantt).' })
+  @ApiOkResponse({
+    description: 'Consulta das views (List, Board, Calendar, Table, Gantt).',
+    type: TaskQueryResultDto,
+  })
   query(
     @CurrentMembership() membership: RequestMembership,
     @CurrentUser('timezone') timezone: string,
@@ -77,7 +85,7 @@ export class TasksController {
   }
 
   @Patch('bulk')
-  @ApiOkResponse({ description: 'Alteração em lote.' })
+  @ApiOkResponse({ description: 'Alteração em lote.', type: BulkResultDto })
   bulk(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: BulkTasksDto,
@@ -89,6 +97,7 @@ export class TasksController {
   @ApiOkResponse({
     description:
       'Tarefa por id ou customId, com resumo de subtarefas, checklists, dependências e contagens.',
+    type: Task,
   })
   get(
     @CurrentMembership() membership: RequestMembership,
@@ -166,7 +175,7 @@ export class TasksController {
 
   @Delete(':idOrCustomId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Tarefa enviada para a lixeira.' })
+  @ApiOkResponse({ description: 'Tarefa enviada para a lixeira.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -180,6 +189,7 @@ export class TasksController {
 @ApiTags('tasks')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/my-tasks')
 export class MyTasksController {
   constructor(private readonly queries: TaskQueryService) {}

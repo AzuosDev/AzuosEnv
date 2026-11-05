@@ -1,6 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { CursorPage } from '../../common/pagination/cursor';
 import { HierarchyAccessService } from '../hierarchy/hierarchy-access.service';
 import { PermissionContext } from '../hierarchy/permission.service';
 import { TaskQueryDto } from '../tasks/dto/task-query.dto';
@@ -206,15 +205,13 @@ export class AiToolsService {
     };
   }
 
-  /** The query service answers a page when nothing is grouped. */
-  private async page(
+  /** The query service answers a page of documents when nothing is grouped. */
+  private page(
     ctx: PermissionContext,
-    timeZone: string,
+    _timeZone: string,
     query: Partial<TaskQueryDto>,
   ): Promise<TaskDocument[]> {
-    const result = await this.queries.query(ctx, query as TaskQueryDto, timeZone);
-
-    return (result as CursorPage<TaskDocument>).items ?? [];
+    return this.queries.pageDocuments(ctx, query as TaskQueryDto);
   }
 
   private summary(task: TaskDocument): TaskSummary {

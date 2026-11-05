@@ -12,7 +12,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -28,6 +30,7 @@ import { TagsService } from './tags.service';
 @ApiTags('tags')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/tags')
 export class TagsController {
   constructor(private readonly tags: TagsService) {}
@@ -63,7 +66,7 @@ export class TagsController {
 
   @Delete(':tagId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Tag removida.' })
+  @ApiOkResponse({ description: 'Tag removida.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('tagId', ParseObjectIdPipe) tagId: Types.ObjectId,

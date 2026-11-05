@@ -45,6 +45,7 @@ import { Route as AppWWsIdConfiguracoesWorkspaceRouteImport } from './routes/_ap
 import { Route as AppWWsIdFFolderIdRouteImport } from './routes/_app.w.$wsId.f.$folderId'
 import { Route as AppWWsIdLListIdRouteImport } from './routes/_app.w.$wsId.l.$listId'
 import { Route as AppWWsIdSSpaceIdRouteImport } from './routes/_app.w.$wsId.s.$spaceId'
+import { Route as AppWWsIdTCustomIdRouteImport } from './routes/_app.w.$wsId.t.$customId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -232,6 +233,11 @@ const AppWWsIdSSpaceIdRoute = AppWWsIdSSpaceIdRouteImport.update({
   path: '/s/$spaceId',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
+const AppWWsIdTCustomIdRoute = AppWWsIdTCustomIdRouteImport.update({
+  id: '/t/$customId',
+  path: '/t/$customId',
+  getParentRoute: () => AppWWsIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -267,6 +273,7 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
   '/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
+  '/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
   '/w/$wsId/configuracoes/': typeof AppWWsIdConfiguracoesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
   '/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
+  '/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
   '/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesIndexRoute
 }
 export interface FileRoutesById {
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/_app/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/_app/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
   '/_app/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
+  '/_app/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
   '/_app/w/$wsId/configuracoes/': typeof AppWWsIdConfiguracoesIndexRoute
 }
 export interface FileRouteTypes {
@@ -378,6 +387,7 @@ export interface FileRouteTypes {
     | '/w/$wsId/f/$folderId'
     | '/w/$wsId/l/$listId'
     | '/w/$wsId/s/$spaceId'
+    | '/w/$wsId/t/$customId'
     | '/w/$wsId/configuracoes/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -412,6 +422,7 @@ export interface FileRouteTypes {
     | '/w/$wsId/f/$folderId'
     | '/w/$wsId/l/$listId'
     | '/w/$wsId/s/$spaceId'
+    | '/w/$wsId/t/$customId'
     | '/w/$wsId/configuracoes'
   id:
     | '__root__'
@@ -450,6 +461,7 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/f/$folderId'
     | '/_app/w/$wsId/l/$listId'
     | '/_app/w/$wsId/s/$spaceId'
+    | '/_app/w/$wsId/t/$customId'
     | '/_app/w/$wsId/configuracoes/'
   fileRoutesById: FileRoutesById
 }
@@ -715,6 +727,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWWsIdSSpaceIdRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
+    '/_app/w/$wsId/t/$customId': {
+      id: '/_app/w/$wsId/t/$customId'
+      path: '/t/$customId'
+      fullPath: '/w/$wsId/t/$customId'
+      preLoaderRoute: typeof AppWWsIdTCustomIdRouteImport
+      parentRoute: typeof AppWWsIdRoute
+    }
   }
 }
 
@@ -766,6 +785,7 @@ interface AppWWsIdRouteChildren {
   AppWWsIdFFolderIdRoute: typeof AppWWsIdFFolderIdRoute
   AppWWsIdLListIdRoute: typeof AppWWsIdLListIdRoute
   AppWWsIdSSpaceIdRoute: typeof AppWWsIdSSpaceIdRoute
+  AppWWsIdTCustomIdRoute: typeof AppWWsIdTCustomIdRoute
 }
 
 const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
@@ -787,6 +807,7 @@ const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
   AppWWsIdFFolderIdRoute: AppWWsIdFFolderIdRoute,
   AppWWsIdLListIdRoute: AppWWsIdLListIdRoute,
   AppWWsIdSSpaceIdRoute: AppWWsIdSSpaceIdRoute,
+  AppWWsIdTCustomIdRoute: AppWWsIdTCustomIdRoute,
 }
 
 const AppWWsIdRouteWithChildren = AppWWsIdRoute._addFileChildren(

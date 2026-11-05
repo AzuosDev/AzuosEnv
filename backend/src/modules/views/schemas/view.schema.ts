@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
+import { ViewConfigDto } from '../dto/view.dto';
 import { VIEW_LOCATION_TYPES, VIEW_TYPES, ViewLocationType, ViewType } from '../view-types';
 
 /**
@@ -27,6 +29,7 @@ export class View {
   @Prop({ required: true, trim: true })
   name: string;
 
+  @ApiProperty({ type: ViewConfigDto })
   @Prop({ type: MongooseSchema.Types.Mixed, default: () => ({}) })
   config: ViewConfig;
 

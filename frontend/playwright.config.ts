@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const FRONT_PORT = 5173;
+const FRONT_PORT = Number(process.env.E2E_FRONT_PORT ?? 5173);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 3100);
 
 export default defineConfig({
@@ -21,12 +21,17 @@ export default defineConfig({
       cwd: '../backend',
       url: `http://localhost:${API_PORT}/api/v1/health`,
       reuseExistingServer: !process.env.CI,
+      env: {
+        E2E_PORT: String(API_PORT),
+        CORS_ORIGINS: `http://localhost:${FRONT_PORT},http://localhost:4173`,
+        APP_URL: `http://localhost:${FRONT_PORT}`,
+      },
       timeout: 240_000,
       stdout: 'ignore',
       stderr: 'pipe',
     },
     {
-      command: 'npm run dev',
+      command: `npm run dev -- --port ${String(FRONT_PORT)} --strictPort`,
       url: `http://localhost:${FRONT_PORT}`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,

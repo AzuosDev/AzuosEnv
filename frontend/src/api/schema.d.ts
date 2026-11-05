@@ -3933,11 +3933,8 @@ export interface components {
             rrule: string;
             /** @enum {string} */
             mode: "onComplete" | "onSchedule";
-            /**
-             * @description false reabre a própria tarefa.
-             * @default true
-             */
-            createNew: boolean;
+            /** @description Padrão true; false reabre a própria tarefa. */
+            createNew?: boolean;
         };
         CreateTaskDto: {
             /** @example Corrigir fechamento de caixa */
@@ -3959,15 +3956,15 @@ export interface components {
             startAt?: string | null;
             /** @description UTC ISO 8601. */
             dueAt?: string | null;
-            /** @default false */
-            dueHasTime: boolean;
+            /** @description Padrão false: o prazo é só o dia. */
+            dueHasTime?: boolean;
             estimateMinutes?: number | null;
             points?: number | null;
             /**
-             * @default task
+             * @description Padrão task.
              * @enum {string}
              */
-            type: "task" | "bug" | "milestone" | "meeting";
+            type?: "task" | "bug" | "milestone" | "meeting";
             customFields?: components["schemas"]["TaskCustomFieldDto"][];
             /** @description null remove a recorrência. */
             recurrence?: components["schemas"]["TaskRecurrenceDto"] | null;
@@ -4035,6 +4032,70 @@ export interface components {
             /** @description Valor comparado; dispensável em isEmpty. */
             value?: Record<string, never>;
         };
+        TaskListItemDto: {
+            /** @description Quantas subtarefas diretas a tarefa tem. */
+            subtaskCount: number;
+            /** @description Quantas dessas subtarefas estão concluídas ou fechadas. */
+            subtaskDoneCount: number;
+            workspaceId: components["schemas"]["ObjectId"];
+            listId: components["schemas"]["ObjectId"];
+            /** @description Primary list plus the secondary ones; every query filters by this field. */
+            listIds: components["schemas"]["ObjectId"][];
+            parentTaskId: components["schemas"]["ObjectId"] | null;
+            customId: string;
+            name: string;
+            description: Record<string, never>;
+            descriptionText: string;
+            statusId: components["schemas"]["ObjectId"];
+            /**
+             * @description Denormalized group of `statusId`, kept in sync with the status set.
+             * @enum {string}
+             */
+            statusGroup: "active" | "done" | "notStarted" | "closed";
+            /** @enum {string|null} */
+            priority: "urgent" | "high" | "normal" | "low" | null;
+            assigneeIds: components["schemas"]["ObjectId"][];
+            watcherIds: components["schemas"]["ObjectId"][];
+            tagIds: components["schemas"]["ObjectId"][];
+            /** Format: date-time */
+            startAt: string | null;
+            /** Format: date-time */
+            dueAt: string | null;
+            dueHasTime: boolean;
+            estimateMinutes: number | null;
+            points: number | null;
+            /** @description Denormalized sum of the time entries of the task, in minutes. */
+            trackedMinutes: number;
+            /** @enum {string} */
+            type: "task" | "bug" | "milestone" | "meeting";
+            customFields: components["schemas"]["TaskCustomFieldValue"][];
+            recurrence: components["schemas"]["TaskRecurrence"] | null;
+            position: string;
+            /** Format: date-time */
+            closedAt: string | null;
+            createdBy: components["schemas"]["ObjectId"];
+            /** Format: date-time */
+            archivedAt: string | null;
+            /** Format: date-time */
+            deletedAt: string | null;
+        };
+        TaskGroupDto: {
+            /** @description Chave do grupo: statusId, id do responsável, prioridade ou bucket de prazo. */
+            key: string;
+            /** @description Rótulo do grupo, já em português. */
+            label: string;
+            items: components["schemas"]["TaskListItemDto"][];
+            /** @description Cursor do próximo lote deste grupo; null quando acabou. */
+            nextCursor: string | null;
+        };
+        TaskQueryResultDto: {
+            /** @description Página plana; só com groupBy = none. */
+            items?: components["schemas"]["TaskListItemDto"][];
+            /** @description Cursor da próxima página; null na última. */
+            nextCursor?: string | null;
+            /** @description Grupos; só com groupBy ≠ none. */
+            groups?: components["schemas"]["TaskGroupDto"][];
+        };
         BulkChangesDto: {
             statusId?: string;
             /** @enum {string|null} */
@@ -4054,6 +4115,16 @@ export interface components {
         BulkTasksDto: {
             ids?: string[];
             changes?: components["schemas"]["BulkChangesDto"];
+        };
+        BulkSkippedDto: {
+            id: string;
+            /** @description Código do motivo, como TASK_NOT_FOUND ou FORBIDDEN. */
+            code: string;
+        };
+        BulkResultDto: {
+            /** @description Quantas tarefas foram alteradas. */
+            updated: number;
+            skipped: components["schemas"]["BulkSkippedDto"][];
         };
         UpdateTaskDto: {
             /** @example Corrigir fechamento de caixa */
@@ -4075,15 +4146,15 @@ export interface components {
             startAt?: string | null;
             /** @description UTC ISO 8601. */
             dueAt?: string | null;
-            /** @default false */
-            dueHasTime: boolean;
+            /** @description Padrão false: o prazo é só o dia. */
+            dueHasTime?: boolean;
             estimateMinutes?: number | null;
             points?: number | null;
             /**
-             * @default task
+             * @description Padrão task.
              * @enum {string}
              */
-            type: "task" | "bug" | "milestone" | "meeting";
+            type?: "task" | "bug" | "milestone" | "meeting";
             customFields?: components["schemas"]["TaskCustomFieldDto"][];
             /** @description null remove a recorrência. */
             recurrence?: components["schemas"]["TaskRecurrenceDto"] | null;
@@ -4338,10 +4409,10 @@ export interface components {
             startFrom?: string;
             /** @description UTC ISO 8601. */
             startTo?: string;
-            /** @default false */
-            includeSubtasks: boolean;
-            /** @default false */
-            includeClosed: boolean;
+            /** @description Padrão false: só as tarefas de primeiro nível. */
+            includeSubtasks?: boolean;
+            /** @description Padrão false: esconde concluídas e fechadas. */
+            includeClosed?: boolean;
             /** @description Busca por nome ou customId. */
             q?: string;
             /** @description JSON na query: [{"fieldId":"...","op":"eq","value":"..."}]. */
@@ -4352,8 +4423,8 @@ export interface components {
             key: string;
             /** @description Largura em pixels. */
             width?: number;
-            /** @default true */
-            visible: boolean;
+            /** @description Padrão true. */
+            visible?: boolean;
         };
         ViewConfigDto: {
             filters?: components["schemas"]["TaskFiltersDto"];
@@ -4366,10 +4437,10 @@ export interface components {
             /** @description Campo personalizado usado quando sortBy = field. */
             sortFieldId?: string;
             columns?: components["schemas"]["ViewColumnDto"][];
-            /** @default false */
-            showSubtasks: boolean;
-            /** @default false */
-            showClosed: boolean;
+            /** @description Padrão false. */
+            showSubtasks?: boolean;
+            /** @description Padrão false. */
+            showClosed?: boolean;
             /** @description Opções específicas do tipo de view. */
             options?: {
                 [key: string]: unknown;
@@ -4385,22 +4456,19 @@ export interface components {
             /** @example Sprint atual */
             name: string;
             config?: components["schemas"]["ViewConfigDto"];
-            /**
-             * @description Visível apenas para o dono.
-             * @default false
-             */
-            private: boolean;
-            /**
-             * @description Só o dono edita.
-             * @default false
-             */
-            protected: boolean;
-            /** @default false */
-            isDefault: boolean;
-            /** @default false */
-            pinned: boolean;
+            /** @description Visível apenas para o dono; padrão false. */
+            private?: boolean;
+            /** @description Só o dono edita; padrão false. */
+            protected?: boolean;
+            /** @description Padrão false. */
+            isDefault?: boolean;
+            /** @description Padrão false. */
+            pinned?: boolean;
         };
         View: {
+            config: {
+                [key: string]: unknown;
+            } & components["schemas"]["ViewConfigDto"];
             workspaceId: components["schemas"]["ObjectId"];
             /** @enum {string} */
             locationType: "list" | "space" | "folder" | "everything";
@@ -4409,9 +4477,6 @@ export interface components {
             /** @enum {string} */
             type: "map" | "team" | "list" | "doc" | "chat" | "activity" | "board" | "calendar" | "table" | "gantt" | "timeline" | "workload" | "form" | "whiteboard" | "embed" | "dashboard" | "mindmap";
             name: string;
-            config: {
-                [key: string]: unknown;
-            };
             /** @description Visible only to `ownerId`. */
             private: boolean;
             ownerId: components["schemas"]["ObjectId"];
@@ -4425,20 +4490,14 @@ export interface components {
             /** @example Sprint atual */
             name?: string;
             config?: components["schemas"]["ViewConfigDto"];
-            /**
-             * @description Visível apenas para o dono.
-             * @default false
-             */
-            private: boolean;
-            /**
-             * @description Só o dono edita.
-             * @default false
-             */
-            protected: boolean;
-            /** @default false */
-            isDefault: boolean;
-            /** @default false */
-            pinned: boolean;
+            /** @description Visível apenas para o dono; padrão false. */
+            private?: boolean;
+            /** @description Só o dono edita; padrão false. */
+            protected?: boolean;
+            /** @description Padrão false. */
+            isDefault?: boolean;
+            /** @description Padrão false. */
+            pinned?: boolean;
         };
         Notification: {
             workspaceId: components["schemas"]["ObjectId"];
@@ -7463,6 +7522,8 @@ export interface operations {
             header?: never;
             path: {
                 listId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7501,7 +7562,9 @@ export interface operations {
                 startFrom?: string;
                 /** @description UTC ISO 8601. */
                 startTo?: string;
+                /** @description Padrão false: só as tarefas de primeiro nível. */
                 includeSubtasks?: boolean;
+                /** @description Padrão false: esconde concluídas e fechadas. */
                 includeClosed?: boolean;
                 /** @description Busca por nome ou customId. */
                 q?: string;
@@ -7519,7 +7582,10 @@ export interface operations {
                 sortFieldId?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -7529,7 +7595,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TaskQueryResultDto"];
+                };
             };
         };
     };
@@ -7537,7 +7605,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -7551,7 +7622,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BulkResultDto"];
+                };
             };
         };
     };
@@ -7561,6 +7634,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7571,7 +7646,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["Task"];
+                };
             };
         };
     };
@@ -7581,6 +7658,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7591,7 +7670,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -7601,6 +7682,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7631,6 +7714,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7657,6 +7742,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7683,6 +7770,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7710,6 +7799,8 @@ export interface operations {
             path: {
                 idOrCustomId: string;
                 listId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7732,6 +7823,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7752,7 +7845,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -7775,7 +7871,10 @@ export interface operations {
                 spaceId?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -7799,7 +7898,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -7825,6 +7927,8 @@ export interface operations {
             header?: never;
             path: {
                 tagId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7835,7 +7939,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -7845,6 +7951,8 @@ export interface operations {
             header?: never;
             path: {
                 tagId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8738,7 +8846,10 @@ export interface operations {
                 locationId?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -8762,7 +8873,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -8788,6 +8902,8 @@ export interface operations {
             header?: never;
             path: {
                 viewId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8810,6 +8926,8 @@ export interface operations {
             header?: never;
             path: {
                 viewId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8820,7 +8938,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -8830,6 +8950,8 @@ export interface operations {
             header?: never;
             path: {
                 viewId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8858,6 +8980,8 @@ export interface operations {
             header?: never;
             path: {
                 viewId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8878,6 +9002,8 @@ export interface operations {
             header?: never;
             path: {
                 viewId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8900,6 +9026,8 @@ export interface operations {
             header?: never;
             path: {
                 viewId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };

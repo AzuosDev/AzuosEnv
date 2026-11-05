@@ -46,7 +46,7 @@ export class ViewColumnDto {
   @Max(1000)
   width?: number;
 
-  @ApiPropertyOptional({ default: true })
+  @ApiPropertyOptional({ description: 'Padrão true.' })
   @IsOptional()
   @IsBoolean()
   visible?: boolean;
@@ -88,12 +88,12 @@ export class ViewConfigDto {
   @Type(() => ViewColumnDto)
   columns?: ViewColumnDto[];
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Padrão false.' })
   @IsOptional()
   @IsBoolean()
   showSubtasks?: boolean;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Padrão false.' })
   @IsOptional()
   @IsBoolean()
   showClosed?: boolean;
@@ -130,22 +130,22 @@ export class CreateViewDto {
   @Type(() => ViewConfigDto)
   config?: ViewConfigDto;
 
-  @ApiPropertyOptional({ description: 'Visível apenas para o dono.', default: false })
+  @ApiPropertyOptional({ description: 'Visível apenas para o dono; padrão false.' })
   @IsOptional()
   @IsBoolean()
   private?: boolean;
 
-  @ApiPropertyOptional({ description: 'Só o dono edita.', default: false })
+  @ApiPropertyOptional({ description: 'Só o dono edita; padrão false.' })
   @IsOptional()
   @IsBoolean()
   protected?: boolean;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Padrão false.' })
   @IsOptional()
   @IsBoolean()
   isDefault?: boolean;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Padrão false.' })
   @IsOptional()
   @IsBoolean()
   pinned?: boolean;

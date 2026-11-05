@@ -36,10 +36,30 @@ const MAX_QUERY_SCAN = 5000;
 
 const UNASSIGNED = 'unassigned';
 
-export interface TaskGroup {
+interface DocumentGroup {
   key: string;
   label: string;
   items: TaskDocument[];
+  nextCursor: string | null;
+}
+
+interface DocumentGroups {
+  groups: DocumentGroup[];
+}
+
+/** Resumo de subtarefas que a Lista e o Quadro mostram em cada linha. */
+export interface SubtaskSummary {
+  subtaskCount: number;
+  subtaskDoneCount: number;
+}
+
+/** Tarefa serializada com o resumo de subtarefas. */
+export type TaskListItem = Record<string, unknown> & SubtaskSummary;
+
+export interface TaskGroup {
+  key: string;
+  label: string;
+  items: TaskListItem[];
   nextCursor: string | null;
 }
 
@@ -47,7 +67,7 @@ export interface GroupedTasks {
   groups: TaskGroup[];
 }
 
-export type TaskQueryResult = CursorPage<TaskDocument> | GroupedTasks;
+export type TaskQueryResult = CursorPage<TaskListItem> | GroupedTasks;
 
 export interface MyTasksResult {
   timezone: string;
@@ -88,10 +108,41 @@ export class TaskQueryService {
     const sorted = await this.sorted(ctx, query);
 
     if (groupBy === 'none') {
-      return this.page(sorted, limit, cursor);
+      const page = this.page(sorted, limit, cursor);
+      const summaries = await this.subtaskSummaries(ctx, page.items);
+
+      return {
+        items: page.items.map((task) => serialize(task, summaries)),
+        nextCursor: page.nextCursor,
+      };
     }
 
-    return this.group(ctx, sorted, { groupBy, limit, cursor, timeZone });
+    const grouped = await this.group(ctx, sorted, { groupBy, limit, cursor, timeZone });
+    const summaries = await this.subtaskSummaries(
+      ctx,
+      grouped.groups.flatMap((group) => group.items),
+    );
+
+    return {
+      groups: grouped.groups.map((group) => ({
+        ...group,
+        items: group.items.map((task) => serialize(task, summaries)),
+      })),
+    };
+  }
+
+  /**
+   * Página de documentos da consulta, para quem precisa da tarefa inteira em vez
+   * do JSON das views (ferramentas da IA).
+   */
+  async pageDocuments(ctx: PermissionContext, query: TaskQueryDto): Promise<TaskDocument[]> {
+    const sorted = await this.sorted(ctx, query);
+
+    return this.page(
+      sorted,
+      query.limit ?? DEFAULT_PAGE_SIZE,
+      query.cursor ? this.decode(query.cursor) : null,
+    ).items;
   }
 
   /** Every task of the query, in order and without paging; used by the export. */
@@ -267,6 +318,42 @@ export class TaskQueryService {
     };
   }
 
+  /** Quantas subtarefas cada tarefa da página tem e quantas já fecharam. */
+  private async subtaskSummaries(
+    ctx: PermissionContext,
+    tasks: TaskDocument[],
+  ): Promise<Map<string, SubtaskSummary>> {
+    const parentIds = tasks.map((task) => task._id);
+
+    if (parentIds.length === 0) {
+      return new Map();
+    }
+
+    const rows = await this.model
+      .aggregate<{ _id: Types.ObjectId; total: number; done: number }>([
+        {
+          $match: {
+            workspaceId: ctx.workspaceId,
+            parentTaskId: { $in: parentIds },
+            deletedAt: null,
+            archivedAt: null,
+          },
+        },
+        {
+          $group: {
+            _id: '$parentTaskId',
+            total: { $sum: 1 },
+            done: { $sum: { $cond: [{ $in: ['$statusGroup', ['done', 'closed']] }, 1, 0] } },
+          },
+        },
+      ])
+      .exec();
+
+    return new Map(
+      rows.map((row) => [String(row._id), { subtaskCount: row.total, subtaskDoneCount: row.done }]),
+    );
+  }
+
   private async group(
     ctx: PermissionContext,
     sorted: SortedTask[],
@@ -276,7 +363,7 @@ export class TaskQueryService {
       cursor: QueryCursor | null;
       timeZone: string;
     },
-  ): Promise<GroupedTasks> {
+  ): Promise<DocumentGroups> {
     const window = dayWindow(new Date(), safeTimeZone(options.timeZone));
     const buckets = new Map<string, SortedTask[]>();
 
@@ -404,6 +491,16 @@ export class TaskQueryService {
 interface GroupMeta {
   label: string;
   order: number;
+}
+
+const NO_SUBTASKS: SubtaskSummary = { subtaskCount: 0, subtaskDoneCount: 0 };
+
+/** Tarefa em JSON com o resumo de subtarefas ao lado. */
+function serialize(task: TaskDocument, summaries: Map<string, SubtaskSummary>): TaskListItem {
+  return {
+    ...(task.toJSON() as unknown as Record<string, unknown>),
+    ...(summaries.get(String(task._id)) ?? NO_SUBTASKS),
+  };
 }
 
 function compareMeta(meta: Map<string, GroupMeta>, a: string, b: string): number {

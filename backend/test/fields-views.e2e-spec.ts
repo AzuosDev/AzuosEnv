@@ -538,7 +538,7 @@ describe('Campos personalizados, views e exportação', () => {
         locationId: space.id,
       });
 
-      expect(ofSpace.items.map((view) => view.name)).toEqual(['List', 'Board']);
+      expect(ofSpace.items.map((view) => view.name)).toEqual(['Lista', 'Quadro']);
     });
 
     it('cria, atualiza, duplica, reordena e exclui', async () => {

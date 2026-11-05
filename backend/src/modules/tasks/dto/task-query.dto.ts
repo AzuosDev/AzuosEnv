@@ -147,12 +147,12 @@ export class TaskFiltersDto {
   @IsDateString()
   startTo?: string;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Padrão false: só as tarefas de primeiro nível.' })
   @IsOptional()
   @IsBoolean()
   includeSubtasks?: boolean;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Padrão false: esconde concluídas e fechadas.' })
   @IsOptional()
   @IsBoolean()
   includeClosed?: boolean;

@@ -23,4 +23,14 @@ export const queryKeys = {
     ['workspaces', workspaceId, 'permissions', resourceType, resourceId] as const,
   archived: (workspaceId: string) => ['workspaces', workspaceId, 'archived'] as const,
   trash: (workspaceId: string) => ['workspaces', workspaceId, 'trash'] as const,
+  listStatuses: (workspaceId: string, listId: string) =>
+    ['workspaces', workspaceId, 'lists', listId, 'statuses'] as const,
+  tags: (workspaceId: string, spaceId?: string) =>
+    ['workspaces', workspaceId, 'tags', spaceId ?? 'all'] as const,
+  views: (workspaceId: string, locationType: string, locationId: string) =>
+    ['workspaces', workspaceId, 'views', locationType, locationId] as const,
+  tasks: (workspaceId: string, params: Record<string, unknown>) =>
+    ['workspaces', workspaceId, 'tasks', params] as const,
+  task: (workspaceId: string, idOrCustomId: string) =>
+    ['workspaces', workspaceId, 'tasks', 'detail', idOrCustomId] as const,
 } as const;

@@ -13,7 +13,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Response } from 'express';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
@@ -31,6 +33,7 @@ import { ViewsService } from './views.service';
 @ApiTags('views')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/views')
 export class ViewsController {
   constructor(
@@ -119,7 +122,7 @@ export class ViewsController {
 
   @Delete(':viewId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'View excluída.' })
+  @ApiOkResponse({ description: 'View excluída.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('viewId', ParseObjectIdPipe) viewId: Types.ObjectId,

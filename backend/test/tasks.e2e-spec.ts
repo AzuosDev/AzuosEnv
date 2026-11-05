@@ -633,6 +633,33 @@ describe('Tarefas', () => {
       expect(ids(inSpace.body)).toEqual(expect.arrayContaining([parent.id, elsewhere.id]));
     });
 
+    it('conta as subtarefas de cada tarefa da consulta', async () => {
+      const { owner, workspace, list, statuses } = await setup();
+      const done = statuses.find((status) => status.group === 'done');
+      const parent = await createdTask(workspace, owner, list);
+
+      await createdTask(workspace, owner, list, { name: 'Subtarefa 1', parentTaskId: parent.id });
+      await createdTask(workspace, owner, list, {
+        name: 'Subtarefa 2',
+        parentTaskId: parent.id,
+        statusId: done?.id,
+      });
+
+      const alone = await createdTask(workspace, owner, list, { name: 'Sem subtarefa' });
+      const page = await queryTasks(workspace, owner, {
+        location: 'list',
+        locationId: list.id,
+      }).expect(200);
+      const items = (page.body as QueryPage).items;
+      const withChildren = items.find((item) => item.id === parent.id);
+
+      expect(withChildren).toMatchObject({ subtaskCount: 2, subtaskDoneCount: 1 });
+      expect(items.find((item) => item.id === alone.id)).toMatchObject({
+        subtaskCount: 0,
+        subtaskDoneCount: 0,
+      });
+    });
+
     it('agrupa por status, prioridade, responsável e data', async () => {
       const { owner, workspace, list, statuses } = await setup();
       const member = await addMember(workspace, owner, 'member');

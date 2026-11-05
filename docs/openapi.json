@@ -3373,6 +3373,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -3527,8 +3537,8 @@
             "name": "includeSubtasks",
             "required": false,
             "in": "query",
+            "description": "Padrão false: só as tarefas de primeiro nível.",
             "schema": {
-              "default": false,
               "type": "boolean"
             }
           },
@@ -3536,8 +3546,8 @@
             "name": "includeClosed",
             "required": false,
             "in": "query",
+            "description": "Padrão false: esconde concluídas e fechadas.",
             "schema": {
-              "default": false,
               "type": "boolean"
             }
           },
@@ -3650,11 +3660,28 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Consulta das views (List, Board, Calendar, Table, Gantt)."
+            "description": "Consulta das views (List, Board, Calendar, Table, Gantt).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskQueryResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -3670,7 +3697,18 @@
     "/api/v1/workspaces/{wsId}/tasks/bulk": {
       "patch": {
         "operationId": "TasksController_bulk",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -3683,7 +3721,14 @@
         },
         "responses": {
           "200": {
-            "description": "Alteração em lote."
+            "description": "Alteração em lote.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -3707,11 +3752,28 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Tarefa por id ou customId, com resumo de subtarefas, checklists, dependências e contagens."
+            "description": "Tarefa por id ou customId, com resumo de subtarefas, checklists, dependências e contagens.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -3732,6 +3794,16 @@
             "in": "path",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -3776,11 +3848,28 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Tarefa enviada para a lixeira."
+            "description": "Tarefa enviada para a lixeira.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -3823,6 +3912,16 @@
             "description": "Cursor retornado em nextCursor.",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -3876,6 +3975,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -3920,6 +4029,16 @@
             "in": "path",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -3974,6 +4093,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -4009,6 +4138,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -4036,7 +4175,18 @@
     "/api/v1/workspaces/{wsId}/my-tasks": {
       "get": {
         "operationId": "MyTasksController_myTasks",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Minhas tarefas por seção, no fuso do usuário."
@@ -4055,7 +4205,18 @@
     "/api/v1/workspaces/{wsId}/tags": {
       "post": {
         "operationId": "TagsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -4117,6 +4278,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -4169,6 +4340,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -4212,11 +4393,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Tag removida."
+            "description": "Tag removida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -5788,7 +5986,18 @@
     "/api/v1/workspaces/{wsId}/views": {
       "post": {
         "operationId": "ViewsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -5864,6 +6073,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -5916,6 +6135,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -5948,6 +6177,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -5992,11 +6231,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "View excluída."
+            "description": "View excluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -6033,6 +6289,16 @@
                 "xlsx"
               ]
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -6060,6 +6326,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -6095,6 +6371,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -14793,8 +15079,7 @@
           },
           "createNew": {
             "type": "boolean",
-            "default": true,
-            "description": "false reabre a própria tarefa."
+            "description": "Padrão true; false reabre a própria tarefa."
           }
         },
         "required": [
@@ -14867,7 +15152,7 @@
           },
           "dueHasTime": {
             "type": "boolean",
-            "default": false
+            "description": "Padrão false: o prazo é só o dia."
           },
           "estimateMinutes": {
             "type": "number",
@@ -14889,7 +15174,7 @@
               "meeting"
             ],
             "type": "string",
-            "default": "task"
+            "description": "Padrão task."
           },
           "customFields": {
             "maxItems": 50,
@@ -15163,6 +15448,250 @@
           "op"
         ]
       },
+      "TaskListItemDto": {
+        "type": "object",
+        "properties": {
+          "subtaskCount": {
+            "type": "number",
+            "description": "Quantas subtarefas diretas a tarefa tem."
+          },
+          "subtaskDoneCount": {
+            "type": "number",
+            "description": "Quantas dessas subtarefas estão concluídas ou fechadas."
+          },
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "listId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "listIds": {
+            "description": "Primary list plus the secondary ones; every query filters by this field.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "parentTaskId": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          },
+          "customId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "object"
+          },
+          "descriptionText": {
+            "type": "string"
+          },
+          "statusId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "statusGroup": {
+            "description": "Denormalized group of `statusId`, kept in sync with the status set.",
+            "enum": [
+              "active",
+              "done",
+              "notStarted",
+              "closed"
+            ],
+            "type": "string"
+          },
+          "priority": {
+            "nullable": true,
+            "enum": [
+              "urgent",
+              "high",
+              "normal",
+              "low"
+            ],
+            "type": "string"
+          },
+          "assigneeIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "watcherIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "tagIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "startAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "dueAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "dueHasTime": {
+            "type": "boolean"
+          },
+          "estimateMinutes": {
+            "type": "number",
+            "nullable": true
+          },
+          "points": {
+            "type": "number",
+            "nullable": true
+          },
+          "trackedMinutes": {
+            "type": "number",
+            "description": "Denormalized sum of the time entries of the task, in minutes."
+          },
+          "type": {
+            "enum": [
+              "task",
+              "bug",
+              "milestone",
+              "meeting"
+            ],
+            "type": "string"
+          },
+          "customFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskCustomFieldValue"
+            }
+          },
+          "recurrence": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskRecurrence"
+              }
+            ]
+          },
+          "position": {
+            "type": "string"
+          },
+          "closedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "archivedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "subtaskCount",
+          "subtaskDoneCount",
+          "workspaceId",
+          "listId",
+          "listIds",
+          "parentTaskId",
+          "customId",
+          "name",
+          "description",
+          "descriptionText",
+          "statusId",
+          "statusGroup",
+          "priority",
+          "assigneeIds",
+          "watcherIds",
+          "tagIds",
+          "startAt",
+          "dueAt",
+          "dueHasTime",
+          "estimateMinutes",
+          "points",
+          "trackedMinutes",
+          "type",
+          "customFields",
+          "recurrence",
+          "position",
+          "closedAt",
+          "createdBy",
+          "archivedAt",
+          "deletedAt"
+        ]
+      },
+      "TaskGroupDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Chave do grupo: statusId, id do responsável, prioridade ou bucket de prazo."
+          },
+          "label": {
+            "type": "string",
+            "description": "Rótulo do grupo, já em português."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskListItemDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor do próximo lote deste grupo; null quando acabou."
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "items",
+          "nextCursor"
+        ]
+      },
+      "TaskQueryResultDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Página plana; só com groupBy = none.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskListItemDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor da próxima página; null na última."
+          },
+          "groups": {
+            "description": "Grupos; só com groupBy ≠ none.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskGroupDto"
+            }
+          }
+        }
+      },
       "BulkChangesDto": {
         "type": "object",
         "properties": {
@@ -15230,6 +15759,41 @@
           }
         }
       },
+      "BulkSkippedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "description": "Código do motivo, como TASK_NOT_FOUND ou FORBIDDEN."
+          }
+        },
+        "required": [
+          "id",
+          "code"
+        ]
+      },
+      "BulkResultDto": {
+        "type": "object",
+        "properties": {
+          "updated": {
+            "type": "number",
+            "description": "Quantas tarefas foram alteradas."
+          },
+          "skipped": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BulkSkippedDto"
+            }
+          }
+        },
+        "required": [
+          "updated",
+          "skipped"
+        ]
+      },
       "UpdateTaskDto": {
         "type": "object",
         "properties": {
@@ -15295,7 +15859,7 @@
           },
           "dueHasTime": {
             "type": "boolean",
-            "default": false
+            "description": "Padrão false: o prazo é só o dia."
           },
           "estimateMinutes": {
             "type": "number",
@@ -15317,7 +15881,7 @@
               "meeting"
             ],
             "type": "string",
-            "default": "task"
+            "description": "Padrão task."
           },
           "customFields": {
             "maxItems": 50,
@@ -16264,11 +16828,11 @@
           },
           "includeSubtasks": {
             "type": "boolean",
-            "default": false
+            "description": "Padrão false: só as tarefas de primeiro nível."
           },
           "includeClosed": {
             "type": "boolean",
-            "default": false
+            "description": "Padrão false: esconde concluídas e fechadas."
           },
           "q": {
             "type": "string",
@@ -16303,7 +16867,7 @@
           },
           "visible": {
             "type": "boolean",
-            "default": true
+            "description": "Padrão true."
           }
         },
         "required": [
@@ -16360,11 +16924,11 @@
           },
           "showSubtasks": {
             "type": "boolean",
-            "default": false
+            "description": "Padrão false."
           },
           "showClosed": {
             "type": "boolean",
-            "default": false
+            "description": "Padrão false."
           },
           "options": {
             "type": "object",
@@ -16422,21 +16986,19 @@
           },
           "private": {
             "type": "boolean",
-            "description": "Visível apenas para o dono.",
-            "default": false
+            "description": "Visível apenas para o dono; padrão false."
           },
           "protected": {
             "type": "boolean",
-            "description": "Só o dono edita.",
-            "default": false
+            "description": "Só o dono edita; padrão false."
           },
           "isDefault": {
             "type": "boolean",
-            "default": false
+            "description": "Padrão false."
           },
           "pinned": {
             "type": "boolean",
-            "default": false
+            "description": "Padrão false."
           }
         },
         "required": [
@@ -16448,6 +17010,14 @@
       "View": {
         "type": "object",
         "properties": {
+          "config": {
+            "additionalProperties": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ViewConfigDto"
+              }
+            ]
+          },
           "workspaceId": {
             "$ref": "#/components/schemas/ObjectId"
           },
@@ -16495,10 +17065,6 @@
           "name": {
             "type": "string"
           },
-          "config": {
-            "type": "object",
-            "additionalProperties": true
-          },
           "private": {
             "type": "boolean",
             "description": "Visible only to `ownerId`."
@@ -16521,12 +17087,12 @@
           }
         },
         "required": [
+          "config",
           "workspaceId",
           "locationType",
           "locationId",
           "type",
           "name",
-          "config",
           "private",
           "ownerId",
           "protected",
@@ -16549,21 +17115,19 @@
           },
           "private": {
             "type": "boolean",
-            "description": "Visível apenas para o dono.",
-            "default": false
+            "description": "Visível apenas para o dono; padrão false."
           },
           "protected": {
             "type": "boolean",
-            "description": "Só o dono edita.",
-            "default": false
+            "description": "Só o dono edita; padrão false."
           },
           "isDefault": {
             "type": "boolean",
-            "default": false
+            "description": "Padrão false."
           },
           "pinned": {
             "type": "boolean",
-            "default": false
+            "description": "Padrão false."
           }
         }
       },

@@ -1,4 +1,4 @@
-import type { components } from './schema';
+import type { components, paths } from './schema';
 
 /**
  * Convenção da API: toda resposta de documento também traz id, createdAt e
@@ -74,6 +74,7 @@ export type StatusInput = components['schemas']['StatusDto'];
 export type CreateStatusSetInput = components['schemas']['CreateStatusSetDto'];
 export type UpdateStatusSetInput = components['schemas']['UpdateStatusSetDto'];
 export type EffectiveStatuses = components['schemas']['EffectiveStatusesDto'];
+export type EffectiveStatus = components['schemas']['EffectiveStatusDto'];
 export type StatusSource = EffectiveStatuses['source'];
 
 export type Permission = Doc<components['schemas']['Permission']>;
@@ -84,3 +85,41 @@ export type PrincipalType = ShareInput['principalType'];
 
 export type TrashItem = components['schemas']['TrashItemDto'];
 export type TrashEntityType = TrashItem['entityType'];
+
+/* Tarefas --------------------------------------------------------------- */
+
+export type Task = Doc<components['schemas']['TaskListItemDto']>;
+export type TaskPriority = NonNullable<Task['priority']>;
+export type TaskType = Task['type'];
+export type CreateTaskInput = components['schemas']['CreateTaskDto'];
+export type UpdateTaskInput = components['schemas']['UpdateTaskDto'];
+export type MoveTaskInput = components['schemas']['MoveTaskDto'];
+export type BulkTasksInput = components['schemas']['BulkTasksDto'];
+export type BulkChanges = components['schemas']['BulkChangesDto'];
+export type BulkResult = components['schemas']['BulkResultDto'];
+export type Tag = Doc<components['schemas']['Tag']>;
+
+/** Parâmetros aceitos por GET /tasks/query, direto do contrato. */
+export type TaskQueryParams = NonNullable<
+  paths['/api/v1/workspaces/{wsId}/tasks/query']['get']['parameters']['query']
+>;
+
+/** Grupo da consulta com as tarefas já no formato de documento. */
+export type TaskGroup = Omit<components['schemas']['TaskGroupDto'], 'items'> & { items: Task[] };
+
+export type TaskQueryResult = Omit<
+  components['schemas']['TaskQueryResultDto'],
+  'items' | 'groups'
+> & { items?: Task[]; groups?: TaskGroup[] };
+
+/* Views ----------------------------------------------------------------- */
+
+export type View = Doc<components['schemas']['View']>;
+export type ViewType = View['type'];
+export type ViewLocationType = View['locationType'];
+export type ViewConfig = components['schemas']['ViewConfigDto'];
+export type TaskFilters = NonNullable<ViewConfig['filters']>;
+export type ViewGroupBy = NonNullable<ViewConfig['groupBy']>;
+export type ViewSortBy = NonNullable<ViewConfig['sortBy']>;
+export type CreateViewInput = components['schemas']['CreateViewDto'];
+export type UpdateViewInput = components['schemas']['UpdateViewDto'];

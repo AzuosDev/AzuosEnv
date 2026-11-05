@@ -36,7 +36,7 @@ export class TaskRecurrenceDto {
   @IsEnum(RECURRENCE_MODES)
   mode: RecurrenceMode;
 
-  @ApiPropertyOptional({ default: true, description: 'false reabre a própria tarefa.' })
+  @ApiPropertyOptional({ description: 'Padrão true; false reabre a própria tarefa.' })
   @IsOptional()
   @IsBoolean()
   createNew?: boolean;
@@ -97,7 +97,7 @@ export class CreateTaskDto {
   @IsDateString()
   dueAt?: string | null;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Padrão false: o prazo é só o dia.' })
   @IsOptional()
   @IsBoolean()
   dueHasTime?: boolean;
@@ -116,7 +116,7 @@ export class CreateTaskDto {
   @Max(1000)
   points?: number | null;
 
-  @ApiPropertyOptional({ enum: TASK_TYPES, default: 'task' })
+  @ApiPropertyOptional({ enum: TASK_TYPES, description: 'Padrão task.' })
   @IsOptional()
   @IsEnum(TASK_TYPES)
   type?: TaskType;

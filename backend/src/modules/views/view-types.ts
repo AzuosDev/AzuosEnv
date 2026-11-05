@@ -24,8 +24,8 @@ export type ViewType = (typeof VIEW_TYPES)[number];
 
 /** Views created with every Space, Folder and List. */
 export const DEFAULT_VIEWS: { type: ViewType; name: string; isDefault: boolean }[] = [
-  { type: 'list', name: 'List', isDefault: true },
-  { type: 'board', name: 'Board', isDefault: false },
+  { type: 'list', name: 'Lista', isDefault: true },
+  { type: 'board', name: 'Quadro', isDefault: false },
 ];
 
 export const EXPORT_FORMATS = ['csv', 'xlsx'] as const;
