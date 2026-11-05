@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import { STATUS_GROUPS, StatusGroup } from '../status-templates';
@@ -6,7 +7,12 @@ import { STATUS_GROUPS, StatusGroup } from '../status-templates';
 /** Statuses are referenced by id by the tasks, so they follow the same `id` shape. */
 @Schema({ _id: true, ...baseSchemaOptions, timestamps: false })
 export class Status {
+  @ApiHideProperty()
   _id: Types.ObjectId;
+
+  /** Só para o contrato: o toJSON manda `id`, nunca `_id`. */
+  @ApiProperty({ required: true, description: 'Id do status.' })
+  id?: string;
 
   @Prop({ required: true, trim: true })
   name: string;

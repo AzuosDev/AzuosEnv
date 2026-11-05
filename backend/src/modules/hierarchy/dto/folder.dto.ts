@@ -17,7 +17,7 @@ export class CreateFolderDto {
   @Length(1, 80)
   name: string;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Folder privado: só aparece para quem for convidado.' })
   @IsOptional()
   @IsBoolean()
   private?: boolean;

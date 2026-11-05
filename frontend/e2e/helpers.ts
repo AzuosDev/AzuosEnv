@@ -208,3 +208,52 @@ export async function signIn(page: Page, user = SEED_USER): Promise<void> {
   await page.getByRole('button', { name: 'Entrar' }).click();
   await page.waitForURL(/\/w\/[0-9a-f]{24}/);
 }
+
+export interface AdminApi {
+  api: APIRequestContext;
+  headers: Record<string, string>;
+  wsId: string;
+  dispose: () => Promise<void>;
+}
+
+/** Sessão da API como a conta do seed, para montar cenários antes da tela. */
+export async function adminApi(): Promise<AdminApi> {
+  const api = await apiContext();
+  const session = await api.post(`${API_URL}/auth/login`, { data: SEED_USER });
+
+  expect(session.ok(), 'login do seed na API').toBeTruthy();
+
+  const { accessToken } = (await session.json()) as SessionBody;
+  const headers = { Authorization: `Bearer ${accessToken}` };
+  const workspaces = await api.get(`${API_URL}/workspaces`, { headers });
+  const { items } = (await workspaces.json()) as WorkspacesBody;
+
+  expect(items[0], 'workspace do seed').toBeTruthy();
+
+  return {
+    api,
+    headers,
+    wsId: items[0]?.id ?? '',
+    dispose: () => api.dispose(),
+  };
+}
+
+interface CreatedBody {
+  id: string;
+}
+
+/** POST na API do workspace devolvendo o id do que foi criado. */
+export async function createResource(
+  session: AdminApi,
+  path: string,
+  data: Record<string, unknown>,
+): Promise<string> {
+  const response = await session.api.post(`${API_URL}/workspaces/${session.wsId}/${path}`, {
+    headers: session.headers,
+    data,
+  });
+
+  expect(response.ok(), `criação de ${path}`).toBeTruthy();
+
+  return ((await response.json()) as CreatedBody).id;
+}

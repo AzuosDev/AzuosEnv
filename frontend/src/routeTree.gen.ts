@@ -20,6 +20,7 @@ import { Route as PublicLoginRouteImport } from './routes/_public.login'
 import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
 import { Route as AppWWsIdRouteImport } from './routes/_app.w.$wsId'
 import { Route as AppWWsIdIndexRouteImport } from './routes/_app.w.$wsId.index'
+import { Route as AppWWsIdArquivadosRouteImport } from './routes/_app.w.$wsId.arquivados'
 import { Route as AppWWsIdAutomacoesRouteImport } from './routes/_app.w.$wsId.automacoes'
 import { Route as AppWWsIdChatRouteImport } from './routes/_app.w.$wsId.chat'
 import { Route as AppWWsIdConfiguracoesRouteImport } from './routes/_app.w.$wsId.configuracoes'
@@ -27,6 +28,7 @@ import { Route as AppWWsIdDashboardsRouteImport } from './routes/_app.w.$wsId.da
 import { Route as AppWWsIdDocsRouteImport } from './routes/_app.w.$wsId.docs'
 import { Route as AppWWsIdIaRouteImport } from './routes/_app.w.$wsId.ia'
 import { Route as AppWWsIdInboxRouteImport } from './routes/_app.w.$wsId.inbox'
+import { Route as AppWWsIdLixeiraRouteImport } from './routes/_app.w.$wsId.lixeira'
 import { Route as AppWWsIdMetasRouteImport } from './routes/_app.w.$wsId.metas'
 import { Route as AppWWsIdMinhasTarefasRouteImport } from './routes/_app.w.$wsId.minhas-tarefas'
 import { Route as AppWWsIdPlannerRouteImport } from './routes/_app.w.$wsId.planner'
@@ -97,6 +99,11 @@ const AppWWsIdIndexRoute = AppWWsIdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
+const AppWWsIdArquivadosRoute = AppWWsIdArquivadosRouteImport.update({
+  id: '/arquivados',
+  path: '/arquivados',
+  getParentRoute: () => AppWWsIdRoute,
+} as any)
 const AppWWsIdAutomacoesRoute = AppWWsIdAutomacoesRouteImport.update({
   id: '/automacoes',
   path: '/automacoes',
@@ -130,6 +137,11 @@ const AppWWsIdIaRoute = AppWWsIdIaRouteImport.update({
 const AppWWsIdInboxRoute = AppWWsIdInboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
+  getParentRoute: () => AppWWsIdRoute,
+} as any)
+const AppWWsIdLixeiraRoute = AppWWsIdLixeiraRouteImport.update({
+  id: '/lixeira',
+  path: '/lixeira',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
 const AppWWsIdMetasRoute = AppWWsIdMetasRouteImport.update({
@@ -230,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof PublicLoginRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/w/$wsId': typeof AppWWsIdRouteWithChildren
+  '/w/$wsId/arquivados': typeof AppWWsIdArquivadosRoute
   '/w/$wsId/automacoes': typeof AppWWsIdAutomacoesRoute
   '/w/$wsId/chat': typeof AppWWsIdChatRoute
   '/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesRouteWithChildren
@@ -237,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/docs': typeof AppWWsIdDocsRoute
   '/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/w/$wsId/inbox': typeof AppWWsIdInboxRoute
+  '/w/$wsId/lixeira': typeof AppWWsIdLixeiraRoute
   '/w/$wsId/metas': typeof AppWWsIdMetasRoute
   '/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
@@ -263,12 +277,14 @@ export interface FileRoutesByTo {
   '/cadastro': typeof PublicCadastroRoute
   '/login': typeof PublicLoginRoute
   '/convite/$token': typeof ConviteTokenRoute
+  '/w/$wsId/arquivados': typeof AppWWsIdArquivadosRoute
   '/w/$wsId/automacoes': typeof AppWWsIdAutomacoesRoute
   '/w/$wsId/chat': typeof AppWWsIdChatRoute
   '/w/$wsId/dashboards': typeof AppWWsIdDashboardsRoute
   '/w/$wsId/docs': typeof AppWWsIdDocsRoute
   '/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/w/$wsId/inbox': typeof AppWWsIdInboxRoute
+  '/w/$wsId/lixeira': typeof AppWWsIdLixeiraRoute
   '/w/$wsId/metas': typeof AppWWsIdMetasRoute
   '/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
@@ -299,6 +315,7 @@ export interface FileRoutesById {
   '/_public/login': typeof PublicLoginRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/_app/w/$wsId': typeof AppWWsIdRouteWithChildren
+  '/_app/w/$wsId/arquivados': typeof AppWWsIdArquivadosRoute
   '/_app/w/$wsId/automacoes': typeof AppWWsIdAutomacoesRoute
   '/_app/w/$wsId/chat': typeof AppWWsIdChatRoute
   '/_app/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesRouteWithChildren
@@ -306,6 +323,7 @@ export interface FileRoutesById {
   '/_app/w/$wsId/docs': typeof AppWWsIdDocsRoute
   '/_app/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/_app/w/$wsId/inbox': typeof AppWWsIdInboxRoute
+  '/_app/w/$wsId/lixeira': typeof AppWWsIdLixeiraRoute
   '/_app/w/$wsId/metas': typeof AppWWsIdMetasRoute
   '/_app/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
   '/_app/w/$wsId/planner': typeof AppWWsIdPlannerRoute
@@ -335,6 +353,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/convite/$token'
     | '/w/$wsId'
+    | '/w/$wsId/arquivados'
     | '/w/$wsId/automacoes'
     | '/w/$wsId/chat'
     | '/w/$wsId/configuracoes'
@@ -342,6 +361,7 @@ export interface FileRouteTypes {
     | '/w/$wsId/docs'
     | '/w/$wsId/ia'
     | '/w/$wsId/inbox'
+    | '/w/$wsId/lixeira'
     | '/w/$wsId/metas'
     | '/w/$wsId/minhas-tarefas'
     | '/w/$wsId/planner'
@@ -368,12 +388,14 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/login'
     | '/convite/$token'
+    | '/w/$wsId/arquivados'
     | '/w/$wsId/automacoes'
     | '/w/$wsId/chat'
     | '/w/$wsId/dashboards'
     | '/w/$wsId/docs'
     | '/w/$wsId/ia'
     | '/w/$wsId/inbox'
+    | '/w/$wsId/lixeira'
     | '/w/$wsId/metas'
     | '/w/$wsId/minhas-tarefas'
     | '/w/$wsId/planner'
@@ -403,6 +425,7 @@ export interface FileRouteTypes {
     | '/_public/login'
     | '/convite/$token'
     | '/_app/w/$wsId'
+    | '/_app/w/$wsId/arquivados'
     | '/_app/w/$wsId/automacoes'
     | '/_app/w/$wsId/chat'
     | '/_app/w/$wsId/configuracoes'
@@ -410,6 +433,7 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/docs'
     | '/_app/w/$wsId/ia'
     | '/_app/w/$wsId/inbox'
+    | '/_app/w/$wsId/lixeira'
     | '/_app/w/$wsId/metas'
     | '/_app/w/$wsId/minhas-tarefas'
     | '/_app/w/$wsId/planner'
@@ -516,6 +540,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWWsIdIndexRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
+    '/_app/w/$wsId/arquivados': {
+      id: '/_app/w/$wsId/arquivados'
+      path: '/arquivados'
+      fullPath: '/w/$wsId/arquivados'
+      preLoaderRoute: typeof AppWWsIdArquivadosRouteImport
+      parentRoute: typeof AppWWsIdRoute
+    }
     '/_app/w/$wsId/automacoes': {
       id: '/_app/w/$wsId/automacoes'
       path: '/automacoes'
@@ -563,6 +594,13 @@ declare module '@tanstack/react-router' {
       path: '/inbox'
       fullPath: '/w/$wsId/inbox'
       preLoaderRoute: typeof AppWWsIdInboxRouteImport
+      parentRoute: typeof AppWWsIdRoute
+    }
+    '/_app/w/$wsId/lixeira': {
+      id: '/_app/w/$wsId/lixeira'
+      path: '/lixeira'
+      fullPath: '/w/$wsId/lixeira'
+      preLoaderRoute: typeof AppWWsIdLixeiraRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
     '/_app/w/$wsId/metas': {
@@ -710,6 +748,7 @@ const AppWWsIdConfiguracoesRouteWithChildren =
   )
 
 interface AppWWsIdRouteChildren {
+  AppWWsIdArquivadosRoute: typeof AppWWsIdArquivadosRoute
   AppWWsIdAutomacoesRoute: typeof AppWWsIdAutomacoesRoute
   AppWWsIdChatRoute: typeof AppWWsIdChatRoute
   AppWWsIdConfiguracoesRoute: typeof AppWWsIdConfiguracoesRouteWithChildren
@@ -717,6 +756,7 @@ interface AppWWsIdRouteChildren {
   AppWWsIdDocsRoute: typeof AppWWsIdDocsRoute
   AppWWsIdIaRoute: typeof AppWWsIdIaRoute
   AppWWsIdInboxRoute: typeof AppWWsIdInboxRoute
+  AppWWsIdLixeiraRoute: typeof AppWWsIdLixeiraRoute
   AppWWsIdMetasRoute: typeof AppWWsIdMetasRoute
   AppWWsIdMinhasTarefasRoute: typeof AppWWsIdMinhasTarefasRoute
   AppWWsIdPlannerRoute: typeof AppWWsIdPlannerRoute
@@ -729,6 +769,7 @@ interface AppWWsIdRouteChildren {
 }
 
 const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
+  AppWWsIdArquivadosRoute: AppWWsIdArquivadosRoute,
   AppWWsIdAutomacoesRoute: AppWWsIdAutomacoesRoute,
   AppWWsIdChatRoute: AppWWsIdChatRoute,
   AppWWsIdConfiguracoesRoute: AppWWsIdConfiguracoesRouteWithChildren,
@@ -736,6 +777,7 @@ const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
   AppWWsIdDocsRoute: AppWWsIdDocsRoute,
   AppWWsIdIaRoute: AppWWsIdIaRoute,
   AppWWsIdInboxRoute: AppWWsIdInboxRoute,
+  AppWWsIdLixeiraRoute: AppWWsIdLixeiraRoute,
   AppWWsIdMetasRoute: AppWWsIdMetasRoute,
   AppWWsIdMinhasTarefasRoute: AppWWsIdMinhasTarefasRoute,
   AppWWsIdPlannerRoute: AppWWsIdPlannerRoute,

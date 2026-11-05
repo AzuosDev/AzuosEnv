@@ -11,4 +11,16 @@ export const queryKeys = {
   members: (workspaceId: string) => ['workspaces', workspaceId, 'members'] as const,
   invites: (workspaceId: string) => ['workspaces', workspaceId, 'invites'] as const,
   teams: (workspaceId: string) => ['workspaces', workspaceId, 'teams'] as const,
+  space: (workspaceId: string, spaceId: string) =>
+    ['workspaces', workspaceId, 'spaces', spaceId] as const,
+  folder: (workspaceId: string, folderId: string) =>
+    ['workspaces', workspaceId, 'folders', folderId] as const,
+  list: (workspaceId: string, listId: string) =>
+    ['workspaces', workspaceId, 'lists', listId] as const,
+  statusSet: (workspaceId: string, statusSetId: string) =>
+    ['workspaces', workspaceId, 'status-sets', statusSetId] as const,
+  permissions: (workspaceId: string, resourceType: string, resourceId: string) =>
+    ['workspaces', workspaceId, 'permissions', resourceType, resourceId] as const,
+  archived: (workspaceId: string) => ['workspaces', workspaceId, 'archived'] as const,
+  trash: (workspaceId: string) => ['workspaces', workspaceId, 'trash'] as const,
 } as const;

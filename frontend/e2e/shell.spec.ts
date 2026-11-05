@@ -81,7 +81,7 @@ test('no celular a sidebar vira drawer e fecha ao navegar', async () => {
   await page.getByRole('button', { name: 'Abrir navegação' }).click();
   await expect(drawer).toBeVisible();
 
-  const comercial = drawer.getByRole('button', { name: /Comercial$/ });
+  const comercial = drawer.getByRole('button', { name: /^(Expandir|Recolher) Comercial$/ });
 
   if ((await comercial.getAttribute('aria-expanded')) !== 'true') {
     await comercial.click();

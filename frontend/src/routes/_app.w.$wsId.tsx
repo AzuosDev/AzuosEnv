@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
+import { HierarchyProvider } from '@/features/hierarchy/components/hierarchy-provider';
 import { SocketProvider } from '@/features/realtime/socket';
 import { AppShell } from '@/features/shell/components/app-shell';
 import { workspacesQuery } from '@/features/workspaces/api';
@@ -10,9 +11,11 @@ function WorkspaceLayout() {
 
   return (
     <SocketProvider wsId={wsId}>
-      <AppShell wsId={wsId} workspaces={workspaces}>
-        <Outlet />
-      </AppShell>
+      <HierarchyProvider wsId={wsId}>
+        <AppShell wsId={wsId} workspaces={workspaces}>
+          <Outlet />
+        </AppShell>
+      </HierarchyProvider>
     </SocketProvider>
   );
 }

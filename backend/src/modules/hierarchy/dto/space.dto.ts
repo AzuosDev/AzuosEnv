@@ -77,7 +77,7 @@ export class CreateSpaceDto {
   @Length(1, 40)
   icon?: string;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Space privado: só aparece para quem for convidado.' })
   @IsOptional()
   @IsBoolean()
   private?: boolean;

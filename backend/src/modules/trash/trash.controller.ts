@@ -15,12 +15,16 @@ import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
+import { SuccessDto } from '../../common/dto/api-error.dto';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Audit } from '../audit/audit.decorator';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import { Roles } from '../workspaces/decorators/roles.decorator';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
+import { RestoredEntityDto, TrashItemDto } from './dto/trash-item.dto';
 import { TRASH_ENTITY_TYPES, TrashEntityType } from './trash-fields';
 import { RestoredEntity, TrashItem, TrashService } from './trash.service';
 
@@ -38,12 +42,13 @@ function requireEntityType(value: string): TrashEntityType {
 @ApiTags('trash')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/trash')
 export class TrashController {
   constructor(private readonly trash: TrashService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Itens excluídos nos últimos 30 dias.' })
+  @ApiPagedResponse(TrashItemDto, 'Itens excluídos nos últimos 30 dias.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: PaginationQueryDto,
@@ -53,7 +58,7 @@ export class TrashController {
 
   @Post(':entityType/:entityId/restore')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Item restaurado da lixeira.' })
+  @ApiOkResponse({ description: 'Item restaurado da lixeira.', type: RestoredEntityDto })
   restore(
     @CurrentMembership() membership: RequestMembership,
     @Param('entityType') entityType: string,
@@ -69,7 +74,10 @@ export class TrashController {
   @Delete(':entityType/:entityId')
   @Audit('resource.purged', 'resource', 'entityId')
   @Roles('admin')
-  @ApiOkResponse({ description: 'Item apagado de vez, com tudo que ele contém.' })
+  @ApiOkResponse({
+    description: 'Item apagado de vez, com tudo que ele contém.',
+    type: SuccessDto,
+  })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('entityType') entityType: string,
@@ -88,12 +96,13 @@ export class TrashController {
 @ApiTags('trash')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/archived')
 export class ArchivedController {
   constructor(private readonly trash: TrashService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Spaces, Folders, Lists e tarefas arquivadas.' })
+  @ApiPagedResponse(TrashItemDto, 'Spaces, Folders, Lists e tarefas arquivadas.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: PaginationQueryDto,

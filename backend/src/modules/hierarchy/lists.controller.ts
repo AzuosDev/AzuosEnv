@@ -13,12 +13,15 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
+import { EffectiveStatusesDto } from './dto/effective-statuses.dto';
 import { CreateListDto, ListQueryDto, MoveListDto, UpdateListDto } from './dto/list.dto';
 import { ReorderDto } from './dto/reorder.dto';
 import { ListsService } from './lists.service';
@@ -29,6 +32,7 @@ import { EffectiveStatuses } from './status-sets.service';
 @ApiTags('lists')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/lists')
 export class ListsController {
   constructor(private readonly lists: ListsService) {}
@@ -61,7 +65,10 @@ export class ListsController {
   }
 
   @Get(':listId/statuses')
-  @ApiOkResponse({ description: 'Statuses efetivos da List (list > folder > space).' })
+  @ApiOkResponse({
+    description: 'Statuses efetivos da List (list > folder > space).',
+    type: EffectiveStatusesDto,
+  })
   statuses(
     @CurrentMembership() membership: RequestMembership,
     @Param('listId', ParseObjectIdPipe) listId: Types.ObjectId,
@@ -133,7 +140,7 @@ export class ListsController {
 
   @Delete(':listId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'List enviada para a lixeira.' })
+  @ApiOkResponse({ description: 'List enviada para a lixeira.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('listId', ParseObjectIdPipe) listId: Types.ObjectId,

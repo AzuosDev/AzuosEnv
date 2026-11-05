@@ -13,6 +13,8 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -28,6 +30,7 @@ import { Folder, FolderDocument } from './schemas/folder.schema';
 @ApiTags('folders')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/folders')
 export class FoldersController {
   constructor(private readonly folders: FoldersService) {}
@@ -123,7 +126,7 @@ export class FoldersController {
 
   @Delete(':folderId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Folder enviado para a lixeira.' })
+  @ApiOkResponse({ description: 'Folder enviado para a lixeira.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('folderId', ParseObjectIdPipe) folderId: Types.ObjectId,

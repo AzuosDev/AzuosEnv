@@ -13,6 +13,8 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -29,6 +31,7 @@ import { SpacesService } from './spaces.service';
 @ApiTags('spaces')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/spaces')
 export class SpacesController {
   constructor(private readonly spaces: SpacesService) {}
@@ -114,7 +117,7 @@ export class SpacesController {
 
   @Delete(':spaceId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Space enviado para a lixeira.' })
+  @ApiOkResponse({ description: 'Space enviado para a lixeira.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('spaceId', ParseObjectIdPipe) spaceId: Types.ObjectId,

@@ -12,7 +12,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
@@ -24,6 +26,7 @@ import { SharingService } from './sharing.service';
 @ApiTags('permissions')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/permissions')
 export class SharingController {
   constructor(private readonly sharing: SharingService) {}
@@ -48,7 +51,7 @@ export class SharingController {
 
   @Delete(':permissionId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Compartilhamento removido.' })
+  @ApiOkResponse({ description: 'Compartilhamento removido.', type: SuccessDto })
   async unshare(
     @CurrentMembership() membership: RequestMembership,
     @Param('permissionId', ParseObjectIdPipe) permissionId: Types.ObjectId,

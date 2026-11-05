@@ -1,5 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { EmptyState } from '@/components/ui/empty-state';
+import { NodeMenu } from '@/features/hierarchy/components/node-menu';
+import { refFromLocation } from '@/features/hierarchy/node-ref';
 import { treeQuery } from '../api';
 import { crumbsOf, findLocation, type TreeNodeKind } from '../tree-path';
 import { PageHeader } from './page-header';
@@ -46,6 +48,7 @@ export function LocationPage({ wsId, kind, id }: LocationPageProps) {
         wsId={wsId}
         title={location.name}
         crumbs={crumbsOf(location)}
+        actions={<NodeMenu node={refFromLocation(location)} />}
         {...(open === null
           ? {}
           : { description: `${String(open)} ${open === 1 ? 'tarefa aberta' : 'tarefas abertas'}` })}

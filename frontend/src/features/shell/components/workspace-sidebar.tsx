@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { CircleCheckBig, Inbox } from 'lucide-react';
+import { Archive, CircleCheckBig, Inbox, Plus, Trash2 } from 'lucide-react';
 import type { Workspace } from '@/api/types';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useHierarchy } from '@/features/hierarchy/components/hierarchy-provider';
 import { cn } from '@/lib/utils';
 import { inboxCountsQuery, treeQuery } from '../api';
 import { useExpanded } from '../hooks/use-expanded';
@@ -26,6 +28,7 @@ const homeRow =
 
 /** Sidebar do workspace: troca de workspace, Início e a árvore do /tree. */
 export function WorkspaceSidebar({ wsId, workspaces, active, onNavigate }: WorkspaceSidebarProps) {
+  const { open } = useHierarchy();
   const tree = useQuery(treeQuery(wsId));
   const counts = useQuery(inboxCountsQuery(wsId));
   const unread = counts.data?.unread ?? 0;
@@ -63,7 +66,20 @@ export function WorkspaceSidebar({ wsId, workspaces, active, onNavigate }: Works
       </nav>
 
       <nav aria-label="Spaces" className="flex min-w-0 flex-col">
-        <span className={sectionLabel}>Spaces</span>
+        <div className="flex items-center justify-between">
+          <span className={sectionLabel}>Spaces</span>
+          <Button
+            variant="nav"
+            size="icon"
+            aria-label="Novo Space"
+            className="h-9 w-9"
+            onClick={() => {
+              open({ type: 'createSpace' });
+            }}
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        </div>
 
         {tree.isPending ? (
           <div className="flex flex-col gap-2 px-2 py-1">
@@ -81,7 +97,17 @@ export function WorkspaceSidebar({ wsId, workspaces, active, onNavigate }: Works
           <EmptyState
             className="min-h-32 p-4"
             title="Nenhum Space ainda"
-            description="Os Spaces do workspace aparecem aqui."
+            description="Crie o primeiro Space para organizar Folders e Lists."
+            action={
+              <Button
+                size="sm"
+                onClick={() => {
+                  open({ type: 'createSpace' });
+                }}
+              >
+                Novo Space
+              </Button>
+            }
           />
         ) : null}
 
@@ -94,6 +120,17 @@ export function WorkspaceSidebar({ wsId, workspaces, active, onNavigate }: Works
             {...(onNavigate ? { onNavigate } : {})}
           />
         ) : null}
+      </nav>
+
+      <nav aria-label="Guardados" className="mt-auto flex flex-col border-t border-line pt-2">
+        <Link to="/w/$wsId/arquivados" params={{ wsId }} onClick={onNavigate} className={homeRow}>
+          <Archive className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1 truncate">Arquivados</span>
+        </Link>
+        <Link to="/w/$wsId/lixeira" params={{ wsId }} onClick={onNavigate} className={homeRow}>
+          <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1 truncate">Lixeira</span>
+        </Link>
       </nav>
     </div>
   );

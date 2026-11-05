@@ -3670,8 +3670,8 @@ export interface components {
             color?: string;
             /** @example users */
             icon?: string;
-            /** @default false */
-            private: boolean;
+            /** @description Space privado: só aparece para quem for convidado. */
+            private?: boolean;
             /** @description Conjunto de statuses existente. */
             statusSetId?: string;
             /**
@@ -3702,8 +3702,8 @@ export interface components {
             color?: string;
             /** @example users */
             icon?: string;
-            /** @default false */
-            private: boolean;
+            /** @description Space privado: só aparece para quem for convidado. */
+            private?: boolean;
             /** @description Conjunto de statuses existente. */
             statusSetId?: string;
             clickApps?: components["schemas"]["ClickAppsOverrideDto"];
@@ -3720,8 +3720,8 @@ export interface components {
             parentFolderId?: string | null;
             /** @example Cênio Construções */
             name: string;
-            /** @default false */
-            private: boolean;
+            /** @description Folder privado: só aparece para quem for convidado. */
+            private?: boolean;
             statusSetId?: string | null;
         };
         Folder: {
@@ -3740,8 +3740,8 @@ export interface components {
         UpdateFolderDto: {
             /** @example Cênio Construções */
             name?: string;
-            /** @default false */
-            private: boolean;
+            /** @description Folder privado: só aparece para quem for convidado. */
+            private?: boolean;
             statusSetId?: string | null;
         };
         MoveFolderDto: {
@@ -3788,6 +3788,28 @@ export interface components {
             /** Format: date-time */
             deletedAt: string | null;
         };
+        EffectiveStatusDto: {
+            id: string;
+            /** @example Em andamento */
+            name: string;
+            /** @example #2563EB */
+            color: string;
+            /** @enum {string} */
+            group: "notStarted" | "active" | "done" | "closed";
+            /** @description Ordem do status dentro do conjunto. */
+            position: number;
+        };
+        EffectiveStatusesDto: {
+            statusSetId: string;
+            /** @example Dev Azuos */
+            name: string;
+            /**
+             * @description De onde vêm os statuses.
+             * @enum {string}
+             */
+            source: "list" | "folder" | "space";
+            statuses: components["schemas"]["EffectiveStatusDto"][];
+        };
         UpdateListDto: {
             /** @example uSolutionsPDV — Sprint 3 */
             name?: string;
@@ -3818,7 +3840,8 @@ export interface components {
             statuses: components["schemas"]["StatusDto"][];
         };
         Status: {
-            _id: components["schemas"]["ObjectId"];
+            /** @description Id do status. */
+            id: string;
             name: string;
             color: string;
             /** @enum {string} */
@@ -4560,6 +4583,29 @@ export interface components {
             /** @enum {string} */
             entityType: "space" | "folder" | "list" | "task" | "doc";
             entityId: string;
+        };
+        TrashItemDto: {
+            /** @enum {string} */
+            entityType: "space" | "folder" | "list" | "task";
+            id: string;
+            /** @example uSolutionsPDV — Sprint 3 */
+            name: string;
+            /**
+             * Format: date-time
+             * @description deletedAt na lixeira, archivedAt no arquivo.
+             */
+            at: string;
+            /** @example AZD-142 */
+            customId?: string;
+            spaceId?: string;
+            folderId?: string | null;
+            parentFolderId?: string | null;
+            listId?: string;
+            parentTaskId?: string | null;
+        };
+        RestoredEntityDto: {
+            id: string;
+            name: string;
         };
         StartTimerDto: {
             /** @description Tarefa cronometrada. */
@@ -6397,7 +6443,10 @@ export interface operations {
                 includeArchived?: boolean;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -6421,7 +6470,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -6447,6 +6499,8 @@ export interface operations {
             header?: never;
             path: {
                 spaceId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6469,6 +6523,8 @@ export interface operations {
             header?: never;
             path: {
                 spaceId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6479,7 +6535,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -6489,6 +6547,8 @@ export interface operations {
             header?: never;
             path: {
                 spaceId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6515,6 +6575,8 @@ export interface operations {
             header?: never;
             path: {
                 spaceId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6541,6 +6603,8 @@ export interface operations {
             header?: never;
             path: {
                 spaceId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6563,6 +6627,8 @@ export interface operations {
             header?: never;
             path: {
                 spaceId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6585,6 +6651,8 @@ export interface operations {
             header?: never;
             path: {
                 spaceId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6612,7 +6680,10 @@ export interface operations {
                 includeArchived?: boolean;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -6636,7 +6707,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -6662,6 +6736,8 @@ export interface operations {
             header?: never;
             path: {
                 folderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6684,6 +6760,8 @@ export interface operations {
             header?: never;
             path: {
                 folderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6694,7 +6772,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -6704,6 +6784,8 @@ export interface operations {
             header?: never;
             path: {
                 folderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6730,6 +6812,8 @@ export interface operations {
             header?: never;
             path: {
                 folderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6756,6 +6840,8 @@ export interface operations {
             header?: never;
             path: {
                 folderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6782,6 +6868,8 @@ export interface operations {
             header?: never;
             path: {
                 folderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6804,6 +6892,8 @@ export interface operations {
             header?: never;
             path: {
                 folderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6826,6 +6916,8 @@ export interface operations {
             header?: never;
             path: {
                 folderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6853,7 +6945,10 @@ export interface operations {
                 includeArchived?: boolean;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -6877,7 +6972,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -6903,6 +7001,8 @@ export interface operations {
             header?: never;
             path: {
                 listId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6925,6 +7025,8 @@ export interface operations {
             header?: never;
             path: {
                 listId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6935,7 +7037,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -6945,6 +7049,8 @@ export interface operations {
             header?: never;
             path: {
                 listId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6971,6 +7077,8 @@ export interface operations {
             header?: never;
             path: {
                 listId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -6981,7 +7089,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["EffectiveStatusesDto"];
+                };
             };
         };
     };
@@ -6991,6 +7101,8 @@ export interface operations {
             header?: never;
             path: {
                 listId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7017,6 +7129,8 @@ export interface operations {
             header?: never;
             path: {
                 listId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7043,6 +7157,8 @@ export interface operations {
             header?: never;
             path: {
                 listId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7065,6 +7181,8 @@ export interface operations {
             header?: never;
             path: {
                 listId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7087,6 +7205,8 @@ export interface operations {
             header?: never;
             path: {
                 listId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7111,7 +7231,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -7135,7 +7258,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -7161,6 +7287,8 @@ export interface operations {
             header?: never;
             path: {
                 statusSetId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7183,6 +7311,8 @@ export interface operations {
             header?: never;
             path: {
                 statusSetId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7193,7 +7323,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -7203,6 +7335,8 @@ export interface operations {
             header?: never;
             path: {
                 statusSetId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7230,7 +7364,10 @@ export interface operations {
                 resourceId: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -7250,7 +7387,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -7276,6 +7416,8 @@ export interface operations {
             header?: never;
             path: {
                 permissionId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -7286,7 +7428,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -9247,7 +9391,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -9257,7 +9404,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["TrashItemDto"][];
+                        /** @description Cursor da próxima página; null na última. */
+                        nextCursor: string | null;
+                    };
+                };
             };
         };
     };
@@ -9268,6 +9421,8 @@ export interface operations {
             path: {
                 entityType: string;
                 entityId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -9278,7 +9433,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["RestoredEntityDto"];
+                };
             };
         };
     };
@@ -9289,6 +9446,8 @@ export interface operations {
             path: {
                 entityType: string;
                 entityId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -9299,7 +9458,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -9311,7 +9472,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -9321,7 +9485,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["TrashItemDto"][];
+                        /** @description Cursor da próxima página; null na última. */
+                        nextCursor: string | null;
+                    };
+                };
             };
         };
     };

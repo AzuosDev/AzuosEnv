@@ -13,6 +13,8 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
@@ -28,6 +30,7 @@ import { StatusSetsService } from './status-sets.service';
 @ApiTags('status-sets')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/status-sets')
 export class StatusSetsController {
   constructor(private readonly statusSets: StatusSetsService) {}
@@ -74,7 +77,7 @@ export class StatusSetsController {
   @Delete(':statusSetId')
   @Roles('admin')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Conjunto de statuses removido.' })
+  @ApiOkResponse({ description: 'Conjunto de statuses removido.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('statusSetId', ParseObjectIdPipe) statusSetId: Types.ObjectId,

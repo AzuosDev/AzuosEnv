@@ -50,3 +50,37 @@ export type UpdateTeamInput = components['schemas']['UpdateTeamDto'];
 export type UpdateNotificationSettingsInput =
   components['schemas']['UpdateNotificationSettingsDto'];
 export type UserTheme = NonNullable<UpdateProfileInput['theme']>;
+
+/* Hierarquia: Spaces, Folders, Lists, statuses e compartilhamento ------- */
+
+export type Space = Doc<components['schemas']['Space']>;
+export type Folder = Doc<components['schemas']['Folder']>;
+export type ListNode = Doc<components['schemas']['List']>;
+export type CreateSpaceInput = components['schemas']['CreateSpaceDto'];
+export type UpdateSpaceInput = components['schemas']['UpdateSpaceDto'];
+export type CreateFolderInput = components['schemas']['CreateFolderDto'];
+export type UpdateFolderInput = components['schemas']['UpdateFolderDto'];
+export type MoveFolderInput = components['schemas']['MoveFolderDto'];
+export type CreateListInput = components['schemas']['CreateListDto'];
+export type UpdateListInput = components['schemas']['UpdateListDto'];
+export type MoveListInput = components['schemas']['MoveListDto'];
+export type ReorderInput = components['schemas']['ReorderDto'];
+export type StatusTemplate = NonNullable<CreateSpaceInput['statusTemplate']>;
+
+export type Status = components['schemas']['Status'];
+export type StatusGroup = Status['group'];
+export type StatusSet = Doc<components['schemas']['StatusSet']>;
+export type StatusInput = components['schemas']['StatusDto'];
+export type CreateStatusSetInput = components['schemas']['CreateStatusSetDto'];
+export type UpdateStatusSetInput = components['schemas']['UpdateStatusSetDto'];
+export type EffectiveStatuses = components['schemas']['EffectiveStatusesDto'];
+export type StatusSource = EffectiveStatuses['source'];
+
+export type Permission = Doc<components['schemas']['Permission']>;
+export type ShareInput = components['schemas']['ShareDto'];
+export type PermissionLevel = ShareInput['level'];
+export type ShareableResourceType = ShareInput['resourceType'];
+export type PrincipalType = ShareInput['principalType'];
+
+export type TrashItem = components['schemas']['TrashItemDto'];
+export type TrashEntityType = TrashItem['entityType'];
