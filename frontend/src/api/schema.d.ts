@@ -4354,8 +4354,8 @@ export interface components {
         };
         CustomFieldConfigDto: {
             options?: components["schemas"]["CustomFieldOptionDto"][];
-            /** @default BRL */
-            currency: string;
+            /** @description Código ISO da moeda; padrão BRL. */
+            currency?: string;
             /** @description Casas decimais de number e currency. */
             precision?: number;
             /** @description Expressão da fórmula, ex.: {Horas} * {Valor hora}. */
@@ -4373,15 +4373,15 @@ export interface components {
             /** @enum {string} */
             type: "text" | "longText" | "number" | "currency" | "date" | "dropdown" | "labels" | "checkbox" | "people" | "email" | "phone" | "url" | "rating" | "progress" | "formula" | "files" | "relationship" | "location";
             config?: components["schemas"]["CustomFieldConfigDto"];
-            /** @default false */
-            required: boolean;
+            /** @description Padrão false. */
+            required?: boolean;
         };
         UpdateCustomFieldDto: {
             /** @example Tipo */
             name?: string;
             config?: components["schemas"]["CustomFieldConfigDto"];
-            /** @default false */
-            required: boolean;
+            /** @description Padrão false. */
+            required?: boolean;
         };
         CreateChecklistDto: {
             /** @example Critérios de aceite */
@@ -4421,13 +4421,16 @@ export interface components {
             userIds: components["schemas"]["ObjectId"][];
         };
         Comment: {
+            /** @description JSON do editor de texto rico; null quando o comentário é só texto. */
+            body: {
+                [key: string]: unknown;
+            } | null;
             workspaceId: components["schemas"]["ObjectId"];
             /** @enum {string} */
             entityType: "message" | "task" | "page";
             entityId: components["schemas"]["ObjectId"];
             /** @description Root comment of the thread; null on the root itself. */
             parentCommentId: components["schemas"]["ObjectId"] | null;
-            body: Record<string, never>;
             bodyText: string;
             /** @description Excerpt of the Doc page the comment is anchored to; null outside pages. */
             anchor: string | null;
@@ -4443,6 +4446,12 @@ export interface components {
             createdBy: components["schemas"]["ObjectId"];
             /** Format: date-time */
             deletedAt: string | null;
+        };
+        CommentThreadDto: {
+            /** @description Comentário raiz da thread. */
+            comment: components["schemas"]["Comment"];
+            /** @description Respostas, da mais antiga para a mais recente. */
+            replies: components["schemas"]["Comment"][];
         };
         UpdateCommentDto: {
             body?: {
@@ -8144,7 +8153,10 @@ export interface operations {
                 scopeId: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -8164,7 +8176,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -8190,6 +8205,8 @@ export interface operations {
             header?: never;
             path: {
                 fieldId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8212,6 +8229,8 @@ export interface operations {
             header?: never;
             path: {
                 fieldId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8222,7 +8241,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -8232,6 +8253,8 @@ export interface operations {
             header?: never;
             path: {
                 fieldId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8258,6 +8281,8 @@ export interface operations {
             header?: never;
             path: {
                 fieldId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8531,6 +8556,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8541,7 +8568,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["CommentThreadDto"][];
+                        /** @description Cursor da próxima página; null na última. */
+                        nextCursor: string | null;
+                    };
+                };
             };
         };
     };
@@ -8551,6 +8584,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8577,6 +8612,8 @@ export interface operations {
             header?: never;
             path: {
                 commentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8587,7 +8624,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -8597,6 +8636,8 @@ export interface operations {
             header?: never;
             path: {
                 commentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8623,6 +8664,8 @@ export interface operations {
             header?: never;
             path: {
                 commentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8649,6 +8692,8 @@ export interface operations {
             header?: never;
             path: {
                 commentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8675,6 +8720,8 @@ export interface operations {
             header?: never;
             path: {
                 commentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8697,6 +8744,8 @@ export interface operations {
             header?: never;
             path: {
                 commentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8722,7 +8771,10 @@ export interface operations {
                 status?: "open" | "resolved";
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -8750,7 +8802,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -8776,6 +8831,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8798,6 +8855,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8827,6 +8886,8 @@ export interface operations {
             header?: never;
             path: {
                 commentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8856,6 +8917,8 @@ export interface operations {
             header?: never;
             path: {
                 attachmentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8876,6 +8939,8 @@ export interface operations {
             header?: never;
             path: {
                 attachmentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8886,7 +8951,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -8896,6 +8963,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8918,6 +8987,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8944,6 +9015,8 @@ export interface operations {
             header?: never;
             path: {
                 dependencyId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8954,7 +9027,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -8968,6 +9043,8 @@ export interface operations {
             header?: never;
             path: {
                 idOrCustomId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -8999,7 +9076,10 @@ export interface operations {
                 locationId?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;

@@ -21,7 +21,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
@@ -52,6 +54,7 @@ const UploadBody = (): MethodDecorator =>
 
 @ApiTags('attachments')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/tasks/:idOrCustomId/attachments')
 export class TaskAttachmentsController {
@@ -82,6 +85,7 @@ export class TaskAttachmentsController {
 
 @ApiTags('attachments')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/comments/:commentId/attachments')
 export class CommentAttachmentsController {
@@ -103,6 +107,7 @@ export class CommentAttachmentsController {
 
 @ApiTags('attachments')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/attachments')
 export class AttachmentsController {
@@ -128,7 +133,7 @@ export class AttachmentsController {
 
   @Delete(':attachmentId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Anexo excluído definitivamente.' })
+  @ApiOkResponse({ description: 'Anexo excluído definitivamente.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('attachmentId', ParseObjectIdPipe) attachmentId: Types.ObjectId,

@@ -1,4 +1,4 @@
-import type { EffectiveStatus, ViewGroupBy, WorkspaceMemberItem } from '@/api/types';
+import type { CustomField, EffectiveStatus, ViewGroupBy, WorkspaceMemberItem } from '@/api/types';
 import type { useTaskActions } from '../hooks/use-task-actions';
 import type { TaskGroupState } from '../task-model';
 
@@ -11,6 +11,8 @@ export interface ViewSurfaceProps {
   listId: string;
   statuses: EffectiveStatus[];
   members: WorkspaceMemberItem[];
+  /** Campos personalizados escolhidos como coluna da Lista. */
+  fieldColumns: CustomField[];
   groups: TaskGroupState[];
   groupBy: ViewGroupBy;
   actions: ReturnType<typeof useTaskActions>;

@@ -193,10 +193,13 @@ test('a descrição salva sozinha e mostra "Salvo"', async () => {
 test('a barra de formatação liga o negrito da descrição', async () => {
   await openPanel();
 
-  await page.getByRole('textbox', { name: 'Descrição da tarefa' }).click();
-  await page.getByRole('button', { name: 'Negrito' }).click();
+  // Cada editor tem a barra com o próprio nome: a do comentário também existe.
+  const toolbar = page.getByRole('toolbar', { name: 'Formatação: Descrição da tarefa' });
 
-  await expect(page.getByRole('button', { name: 'Negrito' })).toHaveAttribute(
+  await page.getByRole('textbox', { name: 'Descrição da tarefa' }).click();
+  await toolbar.getByRole('button', { name: 'Negrito' }).click();
+
+  await expect(toolbar.getByRole('button', { name: 'Negrito' })).toHaveAttribute(
     'aria-pressed',
     'true',
   );

@@ -12,7 +12,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
@@ -25,6 +27,7 @@ import { CommentThread, CommentsService } from './comments.service';
 import {
   AssignCommentDto,
   AssignedCommentsQueryDto,
+  CommentThreadDto,
   CreateCommentDto,
   ReactionDto,
   UpdateCommentDto,
@@ -33,6 +36,7 @@ import { Comment, CommentDocument } from './schemas/comment.schema';
 
 @ApiTags('comments')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/tasks/:idOrCustomId/comments')
 export class TaskCommentsController {
@@ -49,7 +53,7 @@ export class TaskCommentsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Threads da tarefa: comentário raiz e respostas.' })
+  @ApiPagedResponse(CommentThreadDto, 'Threads da tarefa: comentário raiz e respostas.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Param('idOrCustomId') idOrCustomId: string,
@@ -61,6 +65,7 @@ export class TaskCommentsController {
 
 @ApiTags('comments')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/comments')
 export class CommentsController {
@@ -120,7 +125,7 @@ export class CommentsController {
 
   @Delete(':commentId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Comentário removido.' })
+  @ApiOkResponse({ description: 'Comentário removido.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('commentId', ParseObjectIdPipe) commentId: Types.ObjectId,
@@ -133,6 +138,7 @@ export class CommentsController {
 
 @ApiTags('comments')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId')
 export class CommentInboxController {

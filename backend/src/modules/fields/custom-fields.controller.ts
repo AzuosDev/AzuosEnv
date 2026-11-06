@@ -13,7 +13,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { ReorderDto } from '../hierarchy/dto/reorder.dto';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
@@ -29,6 +31,7 @@ import { CustomField, CustomFieldDocument } from './schemas/custom-field.schema'
 
 @ApiTags('custom-fields')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/custom-fields')
 export class CustomFieldsController {
@@ -88,7 +91,7 @@ export class CustomFieldsController {
 
   @Delete(':fieldId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Campo excluído, com os valores das tarefas.' })
+  @ApiOkResponse({ description: 'Campo excluído, com os valores das tarefas.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('fieldId', ParseObjectIdPipe) fieldId: Types.ObjectId,

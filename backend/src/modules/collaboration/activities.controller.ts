@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
 import { permissionContextFrom } from '../hierarchy/permission.service';
@@ -13,6 +14,7 @@ import { Activity, ActivityDocument } from './schemas/activity.schema';
 
 @ApiTags('activity')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/tasks/:idOrCustomId/activity')
 export class TaskActivityController {
@@ -31,6 +33,7 @@ export class TaskActivityController {
 
 @ApiTags('activity')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/activity')
 export class ActivityController {

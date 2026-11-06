@@ -1,5 +1,11 @@
-import { ArrowUpDown, Group, Search, User } from 'lucide-react';
-import type { EffectiveStatus, Tag, ViewConfig, WorkspaceMemberItem } from '@/api/types';
+import { ArrowUpDown, Columns3, Group, Search, User } from 'lucide-react';
+import type {
+  CustomField,
+  EffectiveStatus,
+  Tag,
+  ViewConfig,
+  WorkspaceMemberItem,
+} from '@/api/types';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,6 +14,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  MAX_FIELD_COLUMNS,
+  isFieldColumnVisible,
+  toggleFieldColumn,
+} from '@/features/tasks/field-values';
 import { cn } from '@/lib/utils';
 import { GROUP_BY_LABEL, GROUP_BY_OPTIONS, SORT_BY_LABEL, SORT_BY_OPTIONS } from '../view-kinds';
 import { FilterPopover } from './filter-popover';
@@ -22,6 +35,8 @@ export interface ViewToolbarProps {
   statuses: EffectiveStatus[];
   members: WorkspaceMemberItem[];
   tags: Tag[];
+  /** Campos personalizados da List: viram coluna e filtro. */
+  fields: CustomField[];
 }
 
 const LOCKED = 'View protegida: só o dono altera a configuração.';
@@ -36,6 +51,7 @@ export function ViewToolbar({
   statuses,
   members,
   tags,
+  fields,
 }: ViewToolbarProps) {
   const disabled = !canEdit;
   const groupBy = config.groupBy ?? 'status';
@@ -72,7 +88,49 @@ export function ViewToolbar({
         statuses={statuses}
         members={members}
         tags={tags}
+        fields={fields}
       />
+
+      {fields.length > 0 ? (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="sm" disabled={disabled} title={disabled ? LOCKED : ''}>
+              <Columns3 className="h-4 w-4" aria-hidden="true" />
+              Colunas
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="max-h-[60dvh] w-72 overflow-y-auto">
+            <fieldset className="flex flex-col gap-1">
+              <legend className="pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                Colunas de campo
+              </legend>
+
+              {fields.map((field) => {
+                const visible = isFieldColumnVisible(config, field.id);
+
+                return (
+                  <label
+                    key={field.id}
+                    className="flex min-h-11 items-center gap-2 text-[13px] text-body md:min-h-9"
+                  >
+                    <Checkbox
+                      checked={visible}
+                      onCheckedChange={() => {
+                        update((current) => toggleFieldColumn(current, field.id));
+                      }}
+                    />
+                    <span className="min-w-0 truncate">{field.name}</span>
+                  </label>
+                );
+              })}
+
+              <p className="pt-1 text-[12px] text-muted">
+                Até {String(MAX_FIELD_COLUMNS)} colunas por vez, a partir de 768 px.
+              </p>
+            </fieldset>
+          </PopoverContent>
+        </Popover>
+      ) : null}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

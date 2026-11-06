@@ -7,6 +7,16 @@ import type { components, paths } from './schema';
  */
 export type Doc<T> = T & { id: string; createdAt: string; updatedAt: string };
 
+/**
+ * O Swagger descreve valor livre (campo personalizado, linha do histórico) como
+ * objeto vazio. O contrato aceita qualquer JSON ali, então as chaves listadas
+ * voltam a ser `unknown` sem que nenhum tipo da API seja reescrito à mão.
+ */
+type FreeJson<T, K extends keyof T> = Omit<T, K> & { [P in K]: unknown };
+
+/** Igual ao FreeJson, para as chaves que o contrato declara opcionais. */
+type FreeJsonOptional<T, K extends keyof T> = Omit<T, K> & { [P in K]?: unknown };
+
 export type AuthUser = components['schemas']['AuthUserDto'];
 export type AuthSession = components['schemas']['AuthResponseDto'];
 export type ApiErrorBody = components['schemas']['ApiErrorDto'];
@@ -88,7 +98,11 @@ export type TrashEntityType = TrashItem['entityType'];
 
 /* Tarefas --------------------------------------------------------------- */
 
-export type Task = Doc<components['schemas']['TaskListItemDto']>;
+export type Task = Doc<
+  Omit<components['schemas']['TaskListItemDto'], 'customFields'> & {
+    customFields: TaskFieldValue[];
+  }
+>;
 export type TaskPriority = NonNullable<Task['priority']>;
 export type TaskType = Task['type'];
 export type CreateTaskInput = components['schemas']['CreateTaskDto'];
@@ -99,10 +113,14 @@ export type BulkChanges = components['schemas']['BulkChangesDto'];
 export type BulkResult = components['schemas']['BulkResultDto'];
 export type Tag = Doc<components['schemas']['Tag']>;
 
-/** Parâmetros aceitos por GET /tasks/query, direto do contrato. */
-export type TaskQueryParams = NonNullable<
-  paths['/api/v1/workspaces/{wsId}/tasks/query']['get']['parameters']['query']
->;
+/**
+ * Parâmetros aceitos por GET /tasks/query, direto do contrato. Só os filtros de
+ * campo personalizado trocam de tipo: eles viajam como JSON na query string.
+ */
+export type TaskQueryParams = Omit<
+  NonNullable<paths['/api/v1/workspaces/{wsId}/tasks/query']['get']['parameters']['query']>,
+  'fieldFilters'
+> & { fieldFilters?: FieldFilter[] };
 
 /** Grupo da consulta com as tarefas já no formato de documento. */
 export type TaskGroup = Omit<components['schemas']['TaskGroupDto'], 'items'> & { items: Task[] };
@@ -113,7 +131,12 @@ export type TaskQueryResult = Omit<
 > & { items?: Task[]; groups?: TaskGroup[] };
 
 /** Tarefa do GET /tasks/:idOrCustomId: tudo que o painel abre de uma vez. */
-export type TaskDetail = Doc<components['schemas']['TaskDetailDto']>;
+export type TaskDetail = Doc<
+  Omit<components['schemas']['TaskDetailDto'], 'customFields' | 'fields'> & {
+    customFields: TaskFieldValue[];
+    fields: CustomField[];
+  }
+>;
 export type TaskProgress = components['schemas']['ProgressDto'];
 export type CustomField = Doc<components['schemas']['CustomField']>;
 export type SecondaryListInput = components['schemas']['SecondaryListDto'];
@@ -144,14 +167,69 @@ export type TimerResult = Omit<components['schemas']['TimerResultDto'], 'entry' 
 export type CreateTimeEntryInput = components['schemas']['CreateTimeEntryDto'];
 export type UpdateTimeEntryInput = components['schemas']['UpdateTimeEntryDto'];
 
+/* Colaboração: comentários, anexos, dependências e histórico ------------- */
+
+export type Comment = Doc<components['schemas']['Comment']>;
+export type CommentReaction = components['schemas']['CommentReaction'];
+export type CreateCommentInput = components['schemas']['CreateCommentDto'];
+export type UpdateCommentInput = components['schemas']['UpdateCommentDto'];
+
+/** Comentário raiz com as respostas dele, como GET /tasks/:id/comments devolve. */
+export type CommentThread = Omit<
+  components['schemas']['CommentThreadDto'],
+  'comment' | 'replies'
+> & { comment: Comment; replies: Comment[] };
+
+export type Attachment = Doc<components['schemas']['Attachment']>;
+
+export type TaskDependency = Doc<components['schemas']['TaskDependency']>;
+export type DependencyType = TaskDependency['type'];
+export type CreateDependencyInput = components['schemas']['CreateDependencyDto'];
+
+export type ActivityChange = FreeJson<components['schemas']['ActivityChange'], 'from' | 'to'>;
+export type Activity = Doc<
+  Omit<components['schemas']['Activity'], 'changes'> & { changes: ActivityChange[] }
+>;
+export type ActivityAction = Activity['action'];
+
+/* Campos personalizados -------------------------------------------------- */
+
+export type CustomFieldType = CustomField['type'];
+export type CustomFieldScope = CustomField['scope'];
+export type CustomFieldConfig = components['schemas']['CustomFieldConfig'];
+export type CustomFieldOption = components['schemas']['CustomFieldOption'];
+export type CreateCustomFieldInput = components['schemas']['CreateCustomFieldDto'];
+export type UpdateCustomFieldInput = components['schemas']['UpdateCustomFieldDto'];
+
+/** Valor de um campo na tarefa, como a API devolve (fórmula já calculada). */
+export type TaskFieldValue = FreeJson<components['schemas']['TaskCustomFieldValue'], 'value'>;
+
+/** Valor de um campo no corpo de escrita da tarefa. */
+export type TaskFieldInput = FreeJsonOptional<components['schemas']['TaskCustomFieldDto'], 'value'>;
+
+export type FieldFilter = FreeJsonOptional<components['schemas']['FieldFilterDto'], 'value'>;
+export type FieldFilterOp = FieldFilter['op'];
+
+/* Recorrência ------------------------------------------------------------ */
+
+export type TaskRecurrence = components['schemas']['TaskRecurrence'];
+export type TaskRecurrenceInput = components['schemas']['TaskRecurrenceDto'];
+export type RecurrenceMode = TaskRecurrence['mode'];
+
 /* Views ----------------------------------------------------------------- */
 
 export type View = Doc<components['schemas']['View']>;
 export type ViewType = View['type'];
 export type ViewLocationType = View['locationType'];
-export type ViewConfig = components['schemas']['ViewConfigDto'];
-export type TaskFilters = NonNullable<ViewConfig['filters']>;
+export type ViewConfig = Omit<components['schemas']['ViewConfigDto'], 'filters'> & {
+  filters?: TaskFilters;
+};
+export type TaskFilters = Omit<
+  NonNullable<components['schemas']['ViewConfigDto']['filters']>,
+  'fieldFilters'
+> & { fieldFilters?: FieldFilter[] };
 export type ViewGroupBy = NonNullable<ViewConfig['groupBy']>;
 export type ViewSortBy = NonNullable<ViewConfig['sortBy']>;
 export type CreateViewInput = components['schemas']['CreateViewDto'];
 export type UpdateViewInput = components['schemas']['UpdateViewDto'];
+export type ViewColumn = components['schemas']['ViewColumnDto'];

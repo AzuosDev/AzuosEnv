@@ -2,6 +2,7 @@ import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import { unwrap } from '@/api/errors';
 import { queryKeys } from '@/api/keys';
+import type { paths } from '@/api/schema';
 import type {
   BulkChanges,
   BulkResult,
@@ -16,6 +17,11 @@ import type {
   TaskQueryResult,
   UpdateTaskInput,
 } from '@/api/types';
+
+/** Query de GET /tasks/query como o cliente gerado a declara. */
+type GeneratedTaskQuery = NonNullable<
+  paths['/api/v1/workspaces/{wsId}/tasks/query']['get']['parameters']['query']
+>;
 
 /** Statuses efetivos da List (list > folder > space). */
 export function listStatusesQuery(wsId: string, listId: string) {
@@ -54,9 +60,19 @@ export async function queryTasks(
   params: TaskQueryParams,
   cursor?: string,
 ): Promise<TaskQueryResult> {
+  const { fieldFilters, ...rest } = params;
+  const query = {
+    ...rest,
+    ...(cursor ? { cursor } : {}),
+    // O contrato pede o filtro de campo como JSON na query string.
+    ...(fieldFilters && fieldFilters.length > 0
+      ? { fieldFilters: JSON.stringify(fieldFilters) }
+      : {}),
+  };
+
   return unwrap(
     await api.GET('/api/v1/workspaces/{wsId}/tasks/query', {
-      params: { path: { wsId }, query: { ...params, ...(cursor ? { cursor } : {}) } },
+      params: { path: { wsId }, query: query as GeneratedTaskQuery },
     }),
   ) as TaskQueryResult;
 }

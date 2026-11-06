@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import { COMMENT_ENTITY_TYPES, CommentEntityType } from '../collaboration-fields';
@@ -33,6 +34,12 @@ export class Comment {
   @Prop({ type: Types.ObjectId, ref: 'Comment', default: null, index: true })
   parentCommentId: Types.ObjectId | null;
 
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: true,
+    nullable: true,
+    description: 'JSON do editor de texto rico; null quando o comentário é só texto.',
+  })
   @Prop({ type: Object, default: null })
   body: CommentBody;
 

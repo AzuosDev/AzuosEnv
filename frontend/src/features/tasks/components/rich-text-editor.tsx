@@ -86,6 +86,8 @@ export interface RichTextEditorProps {
   onChange: (doc: JSONContent, text: string) => void;
   'aria-label': string;
   className?: string;
+  /** Falso esconde a barra de formatação (editor compacto de resposta). */
+  showToolbar?: boolean;
 }
 
 const toolbarButton =
@@ -104,6 +106,7 @@ export function RichTextEditor({
   onChange,
   'aria-label': ariaLabel,
   className,
+  showToolbar = true,
 }: RichTextEditorProps) {
   const notify = useRef(onChange);
   const people = useRef(searchPeople);
@@ -234,8 +237,12 @@ export function RichTextEditor({
 
   return (
     <div className="flex flex-col gap-2">
-      {editable ? (
-        <div role="toolbar" aria-label="Formatação da descrição" className="flex flex-wrap gap-0.5">
+      {editable && showToolbar ? (
+        <div
+          role="toolbar"
+          aria-label={`Formatação: ${ariaLabel}`}
+          className="flex flex-wrap gap-0.5"
+        >
           {marks.map((mark) => {
             const Icon = mark.icon;
 

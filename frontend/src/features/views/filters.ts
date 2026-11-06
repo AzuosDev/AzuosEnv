@@ -1,4 +1,10 @@
-import type { TaskFilters, TaskQueryParams, ViewConfig, ViewGroupBy } from '@/api/types';
+import type {
+  FieldFilter,
+  TaskFilters,
+  TaskQueryParams,
+  ViewConfig,
+  ViewGroupBy,
+} from '@/api/types';
 
 /** Quantas tarefas cada lote da consulta traz. */
 export const PAGE_SIZE = 50;
@@ -16,11 +22,29 @@ function list(values: string[] | undefined): string[] | undefined {
   return values && values.length > 0 ? values : undefined;
 }
 
+/** Só os filtros de campo que já têm valor; isEmpty dispensa valor. */
+export function usableFieldFilters(filters: FieldFilter[] | undefined): FieldFilter[] {
+  return (filters ?? []).filter(
+    (filter) => filter.op === 'isEmpty' || (filter.value !== undefined && filter.value !== ''),
+  );
+}
+
 /** Remove o que está vazio para a query string não carregar parâmetro inútil. */
 function clean(params: TaskQueryParams): TaskQueryParams {
   return Object.fromEntries(
     Object.entries(params).filter(([, value]) => value !== undefined && value !== ''),
   ) as TaskQueryParams;
+}
+
+/** Troca ou tira o filtro de um campo personalizado na lista de filtros. */
+export function setFieldFilter(
+  filters: FieldFilter[] | undefined,
+  filter: FieldFilter | null,
+  fieldId: string,
+): FieldFilter[] {
+  const rest = (filters ?? []).filter((item) => item.fieldId !== fieldId);
+
+  return filter ? [...rest, filter] : rest;
 }
 
 /**
@@ -30,6 +54,7 @@ function clean(params: TaskQueryParams): TaskQueryParams {
 export function toQueryParams(config: ViewConfig, context: QueryContext): TaskQueryParams {
   const filters: TaskFilters = config.filters ?? {};
   const search = context.search?.trim() ?? '';
+  const usable = usableFieldFilters(filters.fieldFilters);
 
   return clean({
     location: context.location,
@@ -44,6 +69,7 @@ export function toQueryParams(config: ViewConfig, context: QueryContext): TaskQu
     me: filters.me === true ? true : undefined,
     dueFrom: filters.dueFrom,
     dueTo: filters.dueTo,
+    fieldFilters: usable.length > 0 ? usable : undefined,
     includeSubtasks: config.showSubtasks === true ? true : undefined,
     includeClosed: config.showClosed === true ? true : undefined,
     q: search === '' ? filters.q : search,
@@ -62,7 +88,8 @@ export function activeFilterCount(filters: TaskFilters | undefined): number {
   return (
     groups.filter((group) => (group?.length ?? 0) > 0).length +
     dates.filter((date) => Boolean(date)).length +
-    (filters.me === true ? 1 : 0)
+    (filters.me === true ? 1 : 0) +
+    usableFieldFilters(filters.fieldFilters).length
   );
 }
 

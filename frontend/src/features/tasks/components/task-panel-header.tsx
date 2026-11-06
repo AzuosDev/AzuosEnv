@@ -17,7 +17,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import type { EffectiveStatus, TaskDetail } from '@/api/types';
+import type { EffectiveStatus, TaskDetail, WorkspaceMemberItem } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -31,6 +31,7 @@ import { toast } from '@/components/ui/toast';
 import type { TreeCrumb } from '@/features/shell/tree-path';
 import { PANEL_MODE_LABEL, type PanelMode } from '../panel-mode';
 import { statusTone } from '../task-fields';
+import { PresenceAvatars } from './presence-avatars';
 import { StatusPicker } from './task-pickers';
 
 export interface TaskPanelHeaderProps {
@@ -38,6 +39,10 @@ export interface TaskPanelHeaderProps {
   task: TaskDetail;
   statuses: EffectiveStatus[];
   crumbs: TreeCrumb[];
+  members: WorkspaceMemberItem[];
+  /** Quem está vendo a tarefa agora, pela presença do socket. */
+  viewers: string[];
+  currentUserId: string | undefined;
   /** Null abaixo de 1024: lá o painel é sempre tela cheia. */
   mode: PanelMode | null;
   following: boolean;
@@ -80,6 +85,9 @@ export function TaskPanelHeader({
   task,
   statuses,
   crumbs,
+  members,
+  viewers,
+  currentUserId,
   mode,
   following,
   onMode,
@@ -166,6 +174,8 @@ export function TaskPanelHeader({
             <Copy className="h-3 w-3" aria-hidden="true" />
           </button>
         </nav>
+
+        <PresenceAvatars userIds={viewers} members={members} currentUserId={currentUserId} />
 
         {mode !== null ? (
           <div

@@ -5,6 +5,7 @@ import {
   clearFilters,
   dayToIso,
   isoToDay,
+  setFieldFilter,
   toQueryParams,
   toggleValue,
 } from './filters';
@@ -123,5 +124,60 @@ describe('datas do filtro', () => {
     expect(isoToDay(iso)).toBe('2026-11-05');
     expect(dayToIso('05/11/2026', 'start')).toBeUndefined();
     expect(isoToDay(undefined)).toBe('');
+  });
+});
+
+describe('filtros de campo personalizado', () => {
+  it('leva só os filtros com valor para a consulta', () => {
+    const config: ViewConfig = {
+      filters: {
+        fieldFilters: [
+          { fieldId: 'f1', op: 'eq', value: 'o1' },
+          { fieldId: 'f2', op: 'contains', value: '' },
+          { fieldId: 'f3', op: 'isEmpty', value: true },
+        ],
+      },
+    };
+
+    expect(toQueryParams(config, context).fieldFilters).toEqual([
+      { fieldId: 'f1', op: 'eq', value: 'o1' },
+      { fieldId: 'f3', op: 'isEmpty', value: true },
+    ]);
+  });
+
+  it('não manda o parâmetro quando nenhum filtro está pronto', () => {
+    const config: ViewConfig = {
+      filters: { fieldFilters: [{ fieldId: 'f1', op: 'eq' }] },
+    };
+
+    expect(toQueryParams(config, context).fieldFilters).toBeUndefined();
+  });
+
+  it('conta cada filtro de campo no selo do botão', () => {
+    expect(
+      activeFilterCount({
+        statusIds: ['s1'],
+        fieldFilters: [
+          { fieldId: 'f1', op: 'eq', value: 'o1' },
+          { fieldId: 'f2', op: 'eq' },
+        ],
+      }),
+    ).toBe(2);
+  });
+
+  it('troca o filtro do campo sem duplicar e tira com null', () => {
+    const first = setFieldFilter(undefined, { fieldId: 'f1', op: 'eq', value: 'a' }, 'f1');
+    const second = setFieldFilter(first, { fieldId: 'f1', op: 'contains', value: 'b' }, 'f1');
+
+    expect(second).toEqual([{ fieldId: 'f1', op: 'contains', value: 'b' }]);
+    expect(setFieldFilter(second, null, 'f1')).toEqual([]);
+  });
+
+  it('limpar filtros tira os de campo e guarda a busca', () => {
+    const config: ViewConfig = {
+      filters: { q: 'caixa', fieldFilters: [{ fieldId: 'f1', op: 'eq', value: 'a' }] },
+    };
+
+    expect(clearFilters(config).filters).toEqual({ q: 'caixa' });
   });
 });

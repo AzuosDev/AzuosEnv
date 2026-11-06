@@ -35,6 +35,16 @@ export const queryKeys = {
     ['workspaces', workspaceId, 'tasks', 'detail', idOrCustomId] as const,
   subtasks: (workspaceId: string, idOrCustomId: string) =>
     ['workspaces', workspaceId, 'tasks', 'detail', idOrCustomId, 'subtasks'] as const,
+  comments: (workspaceId: string, idOrCustomId: string) =>
+    ['workspaces', workspaceId, 'tasks', 'detail', idOrCustomId, 'comments'] as const,
+  taskActivity: (workspaceId: string, idOrCustomId: string) =>
+    ['workspaces', workspaceId, 'tasks', 'detail', idOrCustomId, 'activity'] as const,
+  attachments: (workspaceId: string, idOrCustomId: string) =>
+    ['workspaces', workspaceId, 'tasks', 'detail', idOrCustomId, 'attachments'] as const,
+  dependencies: (workspaceId: string, idOrCustomId: string) =>
+    ['workspaces', workspaceId, 'tasks', 'detail', idOrCustomId, 'dependencies'] as const,
+  customFields: (workspaceId: string, scope: string, scopeId: string) =>
+    ['workspaces', workspaceId, 'custom-fields', scope, scopeId] as const,
   timeEntries: (workspaceId: string, taskId: string) =>
     ['workspaces', workspaceId, 'time', 'entries', taskId] as const,
   timer: (workspaceId: string) => ['workspaces', workspaceId, 'time', 'timer'] as const,

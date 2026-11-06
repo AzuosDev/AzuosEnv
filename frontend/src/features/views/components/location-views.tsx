@@ -1,13 +1,15 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { queryKeys } from '@/api/keys';
-import type { EffectiveStatus, ViewLocationType, WorkspaceRole } from '@/api/types';
+import type { CustomField, EffectiveStatus, ViewLocationType, WorkspaceRole } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { useSession } from '@/features/auth/session';
 import { membersQuery } from '@/features/settings/api';
 import { listStatusesQuery, tagsQuery, tasksInfiniteQuery } from '@/features/tasks/api';
+import { fieldColumnsOf } from '@/features/tasks/field-values';
+import { customFieldsQuery } from '@/features/tasks/fields-api';
 import { BoardView } from '@/features/tasks/components/board-view';
 import { BulkBar } from '@/features/tasks/components/bulk-bar';
 import { ListView } from '@/features/tasks/components/list-view';
@@ -36,6 +38,7 @@ const SEARCH_DEBOUNCE_MS = 350;
 
 /** Listas vazias estáveis: trocar de identidade a cada render refaria a consulta. */
 const NO_STATUSES: EffectiveStatus[] = [];
+const NO_FIELDS: CustomField[] = [];
 
 /**
  * Views salvas do local com a toolbar e a view aberta (Lista ou Quadro). É quem
@@ -47,6 +50,7 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
   const statuses = useQuery(listStatusesQuery(wsId, listId));
   const members = useQuery(membersQuery(wsId));
   const tags = useQuery(tagsQuery(wsId, spaceId));
+  const fields = useQuery(customFieldsQuery(wsId, 'list', listId));
   const viewActions = useViewActions({ wsId, locationType, locationId: listId });
 
   const items = views.data ?? [];
@@ -89,6 +93,8 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
     enabled: type !== null,
   });
   const statusList = statuses.data?.statuses ?? NO_STATUSES;
+  const fieldList = fields.data ?? NO_FIELDS;
+  const fieldColumns = useMemo(() => fieldColumnsOf(config, fieldList), [config, fieldList]);
   const groups = useMemo(() => {
     const merged = mergePages(tasks.data?.pages ?? []);
 
@@ -106,6 +112,7 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
     listId,
     statuses: statusList,
     members: members.data ?? [],
+    fieldColumns,
     groups,
     groupBy,
     actions,
@@ -168,6 +175,7 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
           statuses={surface.statuses}
           members={surface.members}
           tags={tags.data ?? []}
+          fields={fieldList}
         />
       ) : null}
 

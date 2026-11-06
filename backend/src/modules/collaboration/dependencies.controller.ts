@@ -11,7 +11,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
@@ -22,6 +24,7 @@ import { TaskDependency, TaskDependencyDocument } from './schemas/task-dependenc
 
 @ApiTags('dependencies')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/tasks/:idOrCustomId/dependencies')
 export class TaskDependenciesController {
@@ -52,6 +55,7 @@ export class TaskDependenciesController {
 
 @ApiTags('dependencies')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/dependencies')
 export class DependenciesController {
@@ -59,7 +63,7 @@ export class DependenciesController {
 
   @Delete(':dependencyId')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Dependência removida.' })
+  @ApiOkResponse({ description: 'Dependência removida.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('dependencyId', ParseObjectIdPipe) dependencyId: Types.ObjectId,

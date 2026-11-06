@@ -7,8 +7,15 @@ import type {
   ReorderInput,
   UpdateViewInput,
   View,
+  ViewConfig,
   ViewLocationType,
 } from '@/api/types';
+
+/**
+ * Corpo do PATCH com a config da view. O contrato tipa o valor do filtro de
+ * campo personalizado como objeto vazio, então a conversão fica só aqui.
+ */
+type UpdateViewBody = Omit<UpdateViewInput, 'config'> & { config?: ViewConfig };
 
 /** Views salvas do local, na ordem manual. */
 export function viewsQuery(wsId: string, locationType: ViewLocationType, locationId: string) {
@@ -33,12 +40,12 @@ export async function createView(wsId: string, body: CreateViewInput): Promise<V
 export async function updateView(
   wsId: string,
   viewId: string,
-  body: UpdateViewInput,
+  body: UpdateViewBody,
 ): Promise<View> {
   return unwrap(
     await api.PATCH('/api/v1/workspaces/{wsId}/views/{viewId}', {
       params: { path: { wsId, viewId } },
-      body,
+      body: body as UpdateViewInput,
     }),
   ) as View;
 }

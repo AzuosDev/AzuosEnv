@@ -15,14 +15,16 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable } from '@dnd-
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Link } from '@tanstack/react-router';
 import { ChevronDown, ChevronRight, GripVertical } from 'lucide-react';
-import { useRef, useState } from 'react';
-import type { Task } from '@/api/types';
+import { useEffect, useRef, useState } from 'react';
+import type { CustomField, Task } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PriorityFlag } from '@/components/ui/priority-flag';
 import { Spinner } from '@/components/ui/spinner';
 import { StatusPill } from '@/components/ui/status-pill';
 import { cn } from '@/lib/utils';
+import { fieldValueOf, formatFieldValue } from '../field-values';
+import { listLayout, type ListLayout } from '../list-layout';
 import { DUE_TONE_CLASS, dueTone, formatDue, formatDueLong, statusTone } from '../task-fields';
 import { groupDropId, type TaskGroupState } from '../task-model';
 import { AssigneeStack } from './assignee-stack';
@@ -45,8 +47,53 @@ const ROW_SIZE: Record<Row['kind'], number> = {
   more: 44,
 };
 
-const GRID =
-  'grid grid-cols-[28px_minmax(0,1fr)_72px] items-center gap-2 px-2 md:grid-cols-[28px_minmax(0,1fr)_132px_96px_112px] md:gap-3 md:px-3';
+/** A grade do cabeçalho e das linhas; as faixas vêm do layout do container. */
+const GRID = 'grid items-center gap-2 px-2 md:gap-3 md:px-3';
+
+/** Grade estreita: caixa de seleção, nome e prazo. */
+const NARROW_GRID = 'grid-cols-[28px_minmax(0,1fr)_72px]';
+
+/** Largura do elemento, observada de verdade, para a grade acompanhar. */
+function useWidth(ref: { current: HTMLElement | null }): number {
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    const element = ref.current;
+
+    if (!element) {
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      setWidth(entries[0]?.contentRect.width ?? 0);
+    });
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [ref]);
+
+  return width;
+}
+
+/** Valor do campo na linha da tarefa, em texto. */
+function FieldCells({ task, fields }: { task: Task; fields: CustomField[] }) {
+  return (
+    <>
+      {fields.map((field) => {
+        const text = formatFieldValue(field, fieldValueOf(task.customFields, field.id));
+
+        return (
+          <span key={field.id} title={text} className="min-w-0 truncate text-[12.5px] text-body">
+            {text === '' ? <span className="text-muted">—</span> : text}
+          </span>
+        );
+      })}
+    </>
+  );
+}
 
 /** A colisão por ponteiro é a que acerta; o teclado cai no centro mais próximo. */
 const collision: CollisionDetection = (args) => {
@@ -129,10 +176,12 @@ function TaskRow({
   task,
   surface,
   selected,
+  layout,
 }: {
   task: Task;
   surface: ViewSurfaceProps;
   selected: boolean;
+  layout: ListLayout;
 }) {
   const sortable = useSortable({
     id: task.id,
@@ -148,8 +197,10 @@ function TaskRow({
   return (
     <div
       ref={sortable.setNodeRef}
+      style={layout.style}
       className={cn(
         GRID,
+        !layout.wide && NARROW_GRID,
         'min-h-12 border-b border-line/60',
         selected && 'bg-scene/40',
         sortable.isOver && !sortable.isDragging && 'ring-1 ring-accent',
@@ -221,6 +272,8 @@ function TaskRow({
         </Link>
       </div>
 
+      <FieldCells task={task} fields={layout.fields} />
+
       <AssigneesPicker
         members={surface.members}
         value={task.assigneeIds}
@@ -235,7 +288,10 @@ function TaskRow({
       >
         <button
           type="button"
-          className="hidden h-9 items-center justify-start rounded-lg px-1 hover:bg-surface-2 md:flex"
+          className={cn(
+            'h-9 items-center justify-start rounded-lg px-1 hover:bg-surface-2',
+            layout.wide ? 'flex' : 'hidden',
+          )}
           aria-label={`Responsáveis de ${task.name}`}
         >
           <AssigneeStack ids={task.assigneeIds} members={surface.members} />
@@ -275,7 +331,10 @@ function TaskRow({
       >
         <button
           type="button"
-          className="hidden h-9 items-center gap-1.5 rounded-lg px-1 hover:bg-surface-2 md:flex"
+          className={cn(
+            'h-9 items-center gap-1.5 rounded-lg px-1 hover:bg-surface-2',
+            layout.wide ? 'flex' : 'hidden',
+          )}
           aria-label={`Prioridade de ${task.name}`}
         >
           <PriorityFlag priority={task.priority} withLabel />
@@ -288,6 +347,7 @@ function TaskRow({
 /** View Lista: grupos recolhíveis, edição por popover e arrasto para reordenar. */
 export function ListView(surface: ViewSurfaceProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const layout = listLayout(useWidth(scrollRef), surface.fieldColumns);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [dragging, setDragging] = useState<Task | null>(null);
   const grouped = surface.groupBy !== 'none';
@@ -373,16 +433,27 @@ export function ListView(surface: ViewSurfaceProps) {
 
                   {row.kind === 'columns' ? (
                     <div
+                      style={layout.style}
                       className={cn(
                         GRID,
+                        !layout.wide && NARROW_GRID,
                         'border-b border-line pb-1.5 text-[11.5px] uppercase tracking-[0.06em] text-muted',
                       )}
                     >
-                      <span className="sr-only">Seleção</span>
-                      <span>Tarefa</span>
-                      <span className="hidden md:block">Responsáveis</span>
-                      <span className="text-right md:text-left">Prazo</span>
-                      <span className="hidden md:block">Prioridade</span>
+                      <span>
+                        <span className="sr-only">Seleção</span>
+                      </span>
+                      <span className="min-w-0 truncate">Tarefa</span>
+                      {layout.fields.map((field) => (
+                        <span key={field.id} className="min-w-0 truncate">
+                          {field.name}
+                        </span>
+                      ))}
+                      {layout.wide ? <span className="min-w-0 truncate">Responsáveis</span> : null}
+                      <span className={cn('min-w-0 truncate', !layout.wide && 'text-right')}>
+                        Prazo
+                      </span>
+                      {layout.wide ? <span className="min-w-0 truncate">Prioridade</span> : null}
                     </div>
                   ) : null}
 
@@ -390,6 +461,7 @@ export function ListView(surface: ViewSurfaceProps) {
                     <TaskRow
                       task={row.task}
                       surface={surface}
+                      layout={layout}
                       selected={surface.selected.has(row.task.id)}
                     />
                   ) : null}

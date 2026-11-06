@@ -233,3 +233,61 @@ export function DuePicker({
     </Picker>
   );
 }
+
+/** Uma pessoa só, com a opção de deixar sem ninguém. */
+export function PersonPicker({
+  members,
+  value,
+  onSelect,
+  children,
+  disabled,
+  align,
+  emptyLabel = 'Ninguém',
+}: PickerProps & {
+  members: WorkspaceMemberItem[];
+  value: string | null;
+  onSelect: (userId: string | null) => void;
+  emptyLabel?: string;
+}) {
+  return (
+    <Picker
+      disabled={disabled}
+      align={align}
+      content={
+        <div className="flex flex-col gap-0.5">
+          <button
+            type="button"
+            className={itemClass}
+            onClick={() => {
+              onSelect(null);
+            }}
+          >
+            <X className="h-4 w-4 text-muted" aria-hidden="true" />
+            {emptyLabel}
+            {value === null ? (
+              <Check className="ml-auto h-4 w-4 text-accent" aria-hidden="true" />
+            ) : null}
+          </button>
+          {members.map((member) => (
+            <button
+              key={member.id}
+              type="button"
+              className={itemClass}
+              onClick={() => {
+                onSelect(member.userId.id);
+              }}
+            >
+              <Avatar name={member.userId.name} src={member.userId.avatarUrl} className="h-6 w-6" />
+              <span className="truncate">{member.userId.name}</span>
+              {member.userId.id === value ? (
+                <Check className="ml-auto h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+              ) : null}
+            </button>
+          ))}
+        </div>
+      }
+    >
+      {children}
+    </Picker>
+  );
+}

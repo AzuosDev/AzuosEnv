@@ -54,7 +54,7 @@ export class CustomFieldConfigDto {
   @Type(() => CustomFieldOptionDto)
   options?: CustomFieldOptionDto[];
 
-  @ApiPropertyOptional({ default: 'BRL' })
+  @ApiPropertyOptional({ description: 'Código ISO da moeda; padrão BRL.' })
   @IsOptional()
   @IsString()
   @Length(3, 3)
@@ -104,7 +104,7 @@ export class CreateCustomFieldDto {
   @Type(() => CustomFieldConfigDto)
   config?: CustomFieldConfigDto;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Padrão false.' })
   @IsOptional()
   @IsBoolean()
   required?: boolean;

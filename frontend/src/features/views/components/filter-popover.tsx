@@ -1,5 +1,5 @@
 import { Filter } from 'lucide-react';
-import type { EffectiveStatus, Tag, TaskPriority, ViewConfig } from '@/api/types';
+import type { CustomField, EffectiveStatus, Tag, TaskPriority, ViewConfig } from '@/api/types';
 import type { WorkspaceMemberItem } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { StatusPill } from '@/components/ui/status-pill';
 import { PRIORITY_OPTIONS, statusTone } from '@/features/tasks/task-fields';
 import { activeFilterCount, clearFilters, dayToIso, isoToDay, toggleValue } from '../filters';
+import { FieldFilterRows } from './field-filter-rows';
 
 export interface FilterPopoverProps {
   config: ViewConfig;
@@ -15,6 +16,8 @@ export interface FilterPopoverProps {
   statuses: EffectiveStatus[];
   members: WorkspaceMemberItem[];
   tags: Tag[];
+  /** Campos personalizados válidos na List aberta. */
+  fields: CustomField[];
 }
 
 const rowClass = 'flex min-h-11 items-center gap-2 text-[13px] text-body md:min-h-9';
@@ -27,6 +30,7 @@ export function FilterPopover({
   statuses,
   members,
   tags,
+  fields,
 }: FilterPopoverProps) {
   const filters = config.filters ?? {};
   const count = activeFilterCount(filters);
@@ -140,6 +144,14 @@ export function FilterPopover({
               ))}
             </fieldset>
           ) : null}
+
+          <FieldFilterRows
+            fields={fields}
+            filters={filters}
+            onChange={(fieldFilters) => {
+              patchFilters((current) => ({ ...current, fieldFilters }));
+            }}
+          />
 
           <div className="flex flex-col gap-2">
             <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">

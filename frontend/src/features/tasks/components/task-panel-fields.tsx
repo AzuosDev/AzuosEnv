@@ -1,6 +1,12 @@
 import { CalendarClock, CalendarPlus, Hash, Timer } from 'lucide-react';
 import { useId, useState, type ReactNode } from 'react';
-import type { TaskDetail, TaskPriority, TaskType, WorkspaceMemberItem } from '@/api/types';
+import type {
+  TaskDetail,
+  TaskPriority,
+  TaskRecurrenceInput,
+  TaskType,
+  WorkspaceMemberItem,
+} from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -10,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { TASK_TYPE_OPTIONS, formatDateField, fromDayTime, toDayTime } from '../task-fields';
 import { durationInput, formatMinutes, parseDuration } from '../time-fields';
 import { AssigneeStack } from './assignee-stack';
+import { RecurrenceField } from './recurrence-field';
 import { TagPicker } from './tag-picker';
 import { AssigneesPicker, PriorityPicker } from './task-pickers';
 
@@ -19,6 +26,8 @@ export interface TaskPanelFieldsProps {
   task: TaskDetail;
   members: WorkspaceMemberItem[];
   onPatch: (body: Partial<TaskDetail>) => void;
+  /** A recorrência vai por caminho próprio: o corpo dela é o DTO da API. */
+  onRecurrence: (recurrence: TaskRecurrenceInput | null) => void;
 }
 
 const triggerClass =
@@ -180,7 +189,14 @@ function NumberField({
  * Campos da tarefa: responsáveis, prioridade, datas, estimativa, pontos, tags
  * e tipo. Cada escolha grava na hora; não existe botão de salvar.
  */
-export function TaskPanelFields({ wsId, spaceId, task, members, onPatch }: TaskPanelFieldsProps) {
+export function TaskPanelFields({
+  wsId,
+  spaceId,
+  task,
+  members,
+  onPatch,
+  onRecurrence,
+}: TaskPanelFieldsProps) {
   const typeId = useId();
 
   return (
@@ -315,6 +331,10 @@ export function TaskPanelFields({ wsId, spaceId, task, members, onPatch }: TaskP
             </option>
           ))}
         </SelectNative>
+      </Row>
+
+      <Row label="Recorrência">
+        <RecurrenceField value={task.recurrence} disabled={false} onChange={onRecurrence} />
       </Row>
 
       <Row label="Tempo">

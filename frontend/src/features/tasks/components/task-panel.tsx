@@ -8,7 +8,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/toast';
 import { useSession } from '@/features/auth/session';
 import { ConfirmDialog } from '@/features/settings/components/confirm-dialog';
-import { membersQuery } from '@/features/settings/api';
+import { membersQuery, workspaceQuery } from '@/features/settings/api';
+import { canAdmin } from '@/features/settings/roles';
 import { treeQuery } from '@/features/shell/api';
 import { crumbsOf, findLocation } from '@/features/shell/tree-path';
 import {
@@ -24,11 +25,18 @@ import {
   deleteTask,
   listStatusesQuery,
   moveTask,
+  tagsQuery,
   taskQuery,
 } from '../api';
+import { fieldValuesBody, withFieldValue } from '../field-values';
 import type { PanelMode } from '../panel-mode';
 import { useTaskDetailActions } from '../hooks/use-task-detail';
+import { useTaskRealtime } from '../hooks/use-task-realtime';
+import { ActivitySection } from './activity-section';
+import { AttachmentsSection } from './attachments-section';
 import { ChecklistsSection } from './checklists-section';
+import { CustomFieldsSection } from './custom-fields-section';
+import { DependenciesSection } from './dependencies-section';
 import { ListPicker } from './list-picker';
 import { SubtasksSection } from './subtasks-section';
 import { TaskDescription } from './task-description';
@@ -65,6 +73,14 @@ export function TaskPanel({ wsId, customId, mode, onMode, onClose }: TaskPanelPr
     enabled: Boolean(task?.listId),
   });
   const actions = useTaskDetailActions(wsId, customId);
+  const workspace = useQuery(workspaceQuery(wsId));
+  const tags = useQuery(tagsQuery(wsId));
+  const viewers = useTaskRealtime({
+    wsId,
+    taskId: task?.id,
+    customId,
+    currentUserId: user?.id,
+  });
 
   const [name, setName] = useState('');
   const [action, setAction] = useState<PendingAction>(null);
@@ -161,8 +177,13 @@ export function TaskPanel({ wsId, customId, mode, onMode, onClose }: TaskPanelPr
   const people = members.data ?? [];
   const statusList = statuses.data?.statuses ?? [];
   const following = user ? task.watcherIds.includes(user.id) : false;
+  const role = workspace.data?.role ?? 'guest';
+  // Editar é dos papéis internos; comentar é de todos, inclusive do convidado.
+  const canWrite = role !== 'guest';
+  const canCreateField = canAdmin(role) || role === 'member';
 
-  const patch = (body: Partial<TaskDetail>): void => {
+  // Campo personalizado tem caminho próprio: o corpo dele é parcial por campo.
+  const patch = (body: Omit<Partial<TaskDetail>, 'customFields'>): void => {
     void actions.patch(body, body);
   };
 
@@ -188,6 +209,9 @@ export function TaskPanel({ wsId, customId, mode, onMode, onClose }: TaskPanelPr
         task={task}
         statuses={statusList}
         crumbs={crumbs}
+        members={people}
+        viewers={viewers}
+        currentUserId={user?.id}
         mode={mode}
         following={following}
         onMode={onMode}
@@ -218,7 +242,7 @@ export function TaskPanel({ wsId, customId, mode, onMode, onClose }: TaskPanelPr
         onClose={onClose}
       />
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 md:px-4">
+      <div data-panel-scroll className="min-h-0 flex-1 overflow-y-auto px-3 py-4 md:px-4">
         <div className="mx-auto flex max-w-3xl flex-col gap-6">
           <div className="flex flex-col gap-1">
             <label htmlFor="task-name" className="sr-only">
@@ -240,6 +264,12 @@ export function TaskPanel({ wsId, customId, mode, onMode, onClose }: TaskPanelPr
             task={task}
             members={people}
             onPatch={patch}
+            onRecurrence={(recurrence) => {
+              void actions.patch(
+                { recurrence },
+                { recurrence: recurrence ? { createNew: true, ...recurrence } : null },
+              );
+            }}
           />
 
           <TaskDescription
@@ -274,6 +304,53 @@ export function TaskPanel({ wsId, customId, mode, onMode, onClose }: TaskPanelPr
             members={people}
             currentUserId={user?.id ?? null}
             onChanged={actions.refresh}
+          />
+
+          <CustomFieldsSection
+            wsId={wsId}
+            listId={task.listId}
+            task={task}
+            members={people}
+            canWrite={canWrite}
+            canCreateField={canCreateField}
+            onPatch={(changes) => {
+              // O PATCH é parcial, mas o cache precisa da lista inteira.
+              const merged = changes.reduce(
+                (values, change) => withFieldValue(values, change.fieldId, change.value),
+                task.customFields,
+              );
+
+              void actions.patch(
+                { customFields: fieldValuesBody(changes) },
+                { customFields: merged },
+              );
+            }}
+          />
+
+          <DependenciesSection
+            wsId={wsId}
+            taskId={task.id}
+            customId={task.customId}
+            canWrite={canWrite}
+          />
+
+          <AttachmentsSection
+            wsId={wsId}
+            customId={task.customId}
+            members={people}
+            canWrite={canWrite}
+            onChanged={actions.refresh}
+          />
+
+          <ActivitySection
+            wsId={wsId}
+            customId={task.customId}
+            members={people}
+            statuses={statusList}
+            tags={tags.data ?? []}
+            currentUserId={user?.id}
+            role={role}
+            canWrite
           />
         </div>
       </div>
