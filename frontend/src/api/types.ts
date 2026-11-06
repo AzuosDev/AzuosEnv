@@ -216,6 +216,15 @@ export type TaskRecurrence = components['schemas']['TaskRecurrence'];
 export type TaskRecurrenceInput = components['schemas']['TaskRecurrenceDto'];
 export type RecurrenceMode = TaskRecurrence['mode'];
 
+/* Workload --------------------------------------------------------------- */
+
+export type WorkloadResult = components['schemas']['WorkloadResultDto'];
+export type WorkloadMember = components['schemas']['WorkloadMemberDto'];
+export type WorkloadMetric = WorkloadResult['metric'];
+
+/** Escopo das consultas por local (tarefas, workload e feed de atividade). */
+export type TaskLocation = NonNullable<TaskQueryParams['location']>;
+
 /* Views ----------------------------------------------------------------- */
 
 export type View = Doc<components['schemas']['View']>;

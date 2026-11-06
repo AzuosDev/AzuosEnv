@@ -115,6 +115,34 @@ export class TaskAccessService {
     return (await this.access.visibleLists(ctx)).map((list) => list._id);
   }
 
+  /**
+   * Of the given ids, the ones the requester can really see. Used by the bulk
+   * reads that start from a list of tasks already on screen.
+   */
+  async visibleTaskIds(ctx: PermissionContext, ids: Types.ObjectId[]): Promise<Types.ObjectId[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const listIds = await this.visibleListIds(ctx);
+
+    if (listIds.length === 0) {
+      return [];
+    }
+
+    const tasks = await this.tasks
+      .find({
+        _id: { $in: ids },
+        workspaceId: ctx.workspaceId,
+        listIds: { $in: listIds },
+        deletedAt: null,
+      })
+      .select('_id')
+      .exec();
+
+    return tasks.map((task) => task._id);
+  }
+
   /** The List of the task; an invisible List makes the task invisible too. */
   private async loadList(ctx: PermissionContext, task: TaskDocument): Promise<ListDocument> {
     try {

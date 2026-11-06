@@ -779,6 +779,58 @@ describe('Colaboração na tarefa', () => {
       expect(after.body).toEqual([]);
     });
 
+    it('lista em lote as dependências entre as tarefas pedidas', async () => {
+      const { owner, workspace, list, task } = await setup();
+      const second = await createTask(workspace, owner, list, 'Segunda');
+      const outside = await createTask(workspace, owner, list, 'Fora do recorte');
+
+      await dependOn(workspace, owner, task, {
+        dependsOnId: second.id,
+        type: 'waiting_on',
+      }).expect(201);
+
+      await dependOn(workspace, owner, task, {
+        dependsOnId: outside.id,
+        type: 'waiting_on',
+      }).expect(201);
+
+      const url = `/api/v1/workspaces/${workspace.id}/dependencies`;
+      const inRange = await withAuth(
+        http()
+          .get(url)
+          .query({ taskIds: `${task.id},${second.id}` }),
+        owner,
+      ).expect(200);
+
+      const edges = inRange.body as DependencyBody[];
+
+      expect(edges).toHaveLength(1);
+      expect(edges[0]?.dependsOnId).toBe(second.id);
+
+      await withAuth(http().get(url).query({ taskIds: 'nao-e-id' }), owner).expect(400);
+
+      const guest = await addMember(workspace, owner, 'guest');
+      const denied = await withAuth(
+        http()
+          .get(url)
+          .query({ taskIds: `${task.id},${second.id}` }),
+        guest.session,
+      ).expect(200);
+
+      expect(denied.body).toEqual([]);
+
+      await share(workspace, owner, list.id, guest.userId, 'view').expect(201);
+
+      const shared = await withAuth(
+        http()
+          .get(url)
+          .query({ taskIds: `${task.id},${second.id}` }),
+        guest.session,
+      ).expect(200);
+
+      expect(shared.body).toHaveLength(1);
+    });
+
     it('rejeita a auto-referência e o ciclo', async () => {
       const { owner, workspace, list, task } = await setup();
       const second = await createTask(workspace, owner, list, 'Segunda');

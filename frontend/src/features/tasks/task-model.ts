@@ -73,6 +73,11 @@ export function fillStatusGroups(
   return [...ordered, ...extra];
 }
 
+/** Tarefas de todos os grupos numa lista só, na ordem em que aparecem. */
+export function flattenGroups(groups: TaskGroupState[]): Task[] {
+  return groups.flatMap((group) => group.items);
+}
+
 export function countTasks(groups: TaskGroupState[]): number {
   return groups.reduce((total, group) => total + group.items.length, 0);
 }

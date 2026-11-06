@@ -48,4 +48,10 @@ export const queryKeys = {
   timeEntries: (workspaceId: string, taskId: string) =>
     ['workspaces', workspaceId, 'time', 'entries', taskId] as const,
   timer: (workspaceId: string) => ['workspaces', workspaceId, 'time', 'timer'] as const,
+  workload: (workspaceId: string, params: Record<string, unknown>) =>
+    ['workspaces', workspaceId, 'workload', params] as const,
+  activityFeed: (workspaceId: string, params: Record<string, unknown>) =>
+    ['workspaces', workspaceId, 'activity', params] as const,
+  taskDependencies: (workspaceId: string, taskIds: string[]) =>
+    ['workspaces', workspaceId, 'dependencies', taskIds.join(',')] as const,
 } as const;

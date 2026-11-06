@@ -1,5 +1,6 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import {
   CurrentMembership,
@@ -8,19 +9,23 @@ import {
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { WorkspaceDocument } from '../workspaces/schemas/workspace.schema';
 import { RequestMembership } from '../workspaces/workspace-context';
-import { WorkloadQueryDto } from './dto/workload.dto';
+import { WorkloadQueryDto, WorkloadResultDto } from './dto/workload.dto';
 import { timezoneOf } from './timesheets.controller';
 import { WorkloadResult, WorkloadService } from './workload.service';
 
 @ApiTags('workload')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/workload')
 export class WorkloadController {
   constructor(private readonly workload: WorkloadService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Valor por pessoa e dia, com a capacidade de cada membro.' })
+  @ApiOkResponse({
+    description: 'Valor por pessoa e dia, com a capacidade de cada membro.',
+    type: WorkloadResultDto,
+  })
   get(
     @CurrentMembership() membership: RequestMembership,
     @CurrentWorkspace() workspace: WorkspaceDocument,

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,6 +8,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -19,7 +21,11 @@ import { CurrentMembership } from '../workspaces/decorators/workspace-context.de
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
 import { DependenciesService } from './dependencies.service';
-import { CreateDependencyDto } from './dto/dependency.dto';
+import {
+  CreateDependencyDto,
+  DependenciesQueryDto,
+  MAX_DEPENDENCY_TASK_IDS,
+} from './dto/dependency.dto';
 import { TaskDependency, TaskDependencyDocument } from './schemas/task-dependency.schema';
 
 @ApiTags('dependencies')
@@ -60,6 +66,27 @@ export class TaskDependenciesController {
 @Controller('workspaces/:wsId/dependencies')
 export class DependenciesController {
   constructor(private readonly dependencies: DependenciesService) {}
+
+  @Get()
+  @ApiOkResponse({
+    description: 'Dependências entre as tarefas pedidas; o Gantt desenha as setas com isso.',
+    type: [TaskDependency],
+  })
+  listMany(
+    @CurrentMembership() membership: RequestMembership,
+    @Query() query: DependenciesQueryDto,
+  ): Promise<TaskDependencyDocument[]> {
+    const ids = [...new Set(query.taskIds.split(','))];
+
+    if (ids.length > MAX_DEPENDENCY_TASK_IDS) {
+      throw new BadRequestException({
+        code: 'TOO_MANY_TASKS',
+        message: `Peça no máximo ${String(MAX_DEPENDENCY_TASK_IDS)} tarefas por vez.`,
+      });
+    }
+
+    return this.dependencies.listMany(permissionContextFrom(membership), ids);
+  }
 
   @Delete(':dependencyId')
   @HttpCode(HttpStatus.OK)

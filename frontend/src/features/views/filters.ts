@@ -16,6 +16,8 @@ export interface QueryContext {
   /** Busca da toolbar; vence o `q` guardado na view. */
   search?: string;
   groupBy: ViewGroupBy;
+  /** Tamanho do lote; cada tipo de view pede o seu. */
+  limit?: number;
 }
 
 function list(values: string[] | undefined): string[] | undefined {
@@ -61,7 +63,7 @@ export function toQueryParams(config: ViewConfig, context: QueryContext): TaskQu
     locationId: context.locationId,
     groupBy: context.groupBy,
     sortBy: config.sortBy ?? 'position',
-    limit: PAGE_SIZE,
+    limit: context.limit ?? PAGE_SIZE,
     statusIds: list(filters.statusIds),
     assigneeIds: list(filters.assigneeIds),
     priority: list(filters.priority) as TaskQueryParams['priority'],

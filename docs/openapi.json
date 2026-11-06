@@ -6258,6 +6258,57 @@
         ]
       }
     },
+    "/api/v1/workspaces/{wsId}/dependencies": {
+      "get": {
+        "operationId": "DependenciesController_listMany",
+        "parameters": [
+          {
+            "name": "taskIds",
+            "required": true,
+            "in": "query",
+            "description": "Ids das tarefas separados por vírgula (até 300).",
+            "schema": {
+              "pattern": "^[0-9a-fA-F]{24}(,[0-9a-fA-F]{24})*$",
+              "example": "6711f0a1b2c3d4e5f6a7b8c9,6711f0a1b2c3d4e5f6a7b8ca",
+              "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dependências entre as tarefas pedidas; o Gantt desenha as setas com isso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaskDependency"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "dependencies"
+        ]
+      }
+    },
     "/api/v1/workspaces/{wsId}/dependencies/{dependencyId}": {
       "delete": {
         "operationId": "DependenciesController_remove",
@@ -8637,11 +8688,28 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Valor por pessoa e dia, com a capacidade de cada membro."
+            "description": "Valor por pessoa e dia, com a capacidade de cada membro.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkloadResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -18726,6 +18794,91 @@
         "required": [
           "userId",
           "weekStart"
+        ]
+      },
+      "WorkloadMemberDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "capacityPerDay": {
+            "type": "number",
+            "description": "Capacidade diária do membro na métrica escolhida."
+          },
+          "capacity": {
+            "type": "number",
+            "description": "Capacidade somada do recorte (capacityPerDay × dias)."
+          },
+          "total": {
+            "type": "number",
+            "description": "Valor somado do recorte."
+          },
+          "byDay": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Valor por dia (YYYY-MM-DD) do recorte; todo dia do recorte vem preenchido."
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "capacityPerDay",
+          "capacity",
+          "total",
+          "byDay"
+        ]
+      },
+      "WorkloadResultDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Primeiro dia do recorte (YYYY-MM-DD)."
+          },
+          "to": {
+            "type": "string",
+            "description": "Último dia do recorte (YYYY-MM-DD)."
+          },
+          "metric": {
+            "enum": [
+              "tasks",
+              "hours",
+              "points"
+            ],
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Fuso do workspace usado para fechar cada dia."
+          },
+          "days": {
+            "description": "Dias do recorte, em ordem.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "members": {
+            "description": "Membros ativos do workspace.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkloadMemberDto"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "metric",
+          "timezone",
+          "days",
+          "members"
         ]
       },
       "CardConfigDto": {

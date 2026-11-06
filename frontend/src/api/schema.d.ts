@@ -1397,6 +1397,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{wsId}/dependencies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DependenciesController_listMany"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{wsId}/dependencies/{dependencyId}": {
         parameters: {
             query?: never;
@@ -4838,6 +4854,34 @@ export interface components {
         ReviewTimesheetDto: {
             userId: string;
             weekStart: string;
+        };
+        WorkloadMemberDto: {
+            userId: string;
+            name: string;
+            /** @description Capacidade diária do membro na métrica escolhida. */
+            capacityPerDay: number;
+            /** @description Capacidade somada do recorte (capacityPerDay × dias). */
+            capacity: number;
+            /** @description Valor somado do recorte. */
+            total: number;
+            /** @description Valor por dia (YYYY-MM-DD) do recorte; todo dia do recorte vem preenchido. */
+            byDay: {
+                [key: string]: number;
+            };
+        };
+        WorkloadResultDto: {
+            /** @description Primeiro dia do recorte (YYYY-MM-DD). */
+            from: string;
+            /** @description Último dia do recorte (YYYY-MM-DD). */
+            to: string;
+            /** @enum {string} */
+            metric: "tasks" | "hours" | "points";
+            /** @description Fuso do workspace usado para fechar cada dia. */
+            timezone: string;
+            /** @description Dias do recorte, em ordem. */
+            days: string[];
+            /** @description Membros ativos do workspace. */
+            members: components["schemas"]["WorkloadMemberDto"][];
         };
         CardConfigDto: {
             /** @enum {string} */
@@ -9009,6 +9053,32 @@ export interface operations {
             };
         };
     };
+    DependenciesController_listMany: {
+        parameters: {
+            query: {
+                /** @description Ids das tarefas separados por vírgula (até 300). */
+                taskIds: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dependências entre as tarefas pedidas; o Gantt desenha as setas com isso. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskDependency"][];
+                };
+            };
+        };
+    };
     DependenciesController_remove: {
         parameters: {
             query?: never;
@@ -10221,7 +10291,10 @@ export interface operations {
                 locationId?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -10231,7 +10304,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["WorkloadResultDto"];
+                };
             };
         };
     };

@@ -4,6 +4,7 @@ import type {
   EffectiveStatus,
   Tag,
   ViewConfig,
+  ViewGroupBy,
   WorkspaceMemberItem,
 } from '@/api/types';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,15 @@ import {
   toggleFieldColumn,
 } from '@/features/tasks/field-values';
 import { cn } from '@/lib/utils';
-import { GROUP_BY_LABEL, GROUP_BY_OPTIONS, SORT_BY_LABEL, SORT_BY_OPTIONS } from '../view-kinds';
+import {
+  FIXED_GROUP_BY,
+  GROUP_BY_LABEL,
+  GROUP_BY_OPTIONS,
+  SORT_BY_LABEL,
+  SORT_BY_OPTIONS,
+  usesFieldColumns,
+  type SupportedViewType,
+} from '../view-kinds';
 import { FilterPopover } from './filter-popover';
 
 export interface ViewToolbarProps {
@@ -37,6 +46,10 @@ export interface ViewToolbarProps {
   tags: Tag[];
   /** Campos personalizados da List: viram coluna e filtro. */
   fields: CustomField[];
+  /** Tipo da view aberta: define o que a toolbar oferece. */
+  type: SupportedViewType;
+  /** Agrupamento que a view está usando de fato. */
+  groupBy: ViewGroupBy;
 }
 
 const LOCKED = 'View protegida: só o dono altera a configuração.';
@@ -52,9 +65,10 @@ export function ViewToolbar({
   members,
   tags,
   fields,
+  type,
+  groupBy,
 }: ViewToolbarProps) {
   const disabled = !canEdit;
-  const groupBy = config.groupBy ?? 'status';
   const sortBy = config.sortBy ?? 'position';
   const me = config.filters?.me === true;
 
@@ -91,7 +105,7 @@ export function ViewToolbar({
         fields={fields}
       />
 
-      {fields.length > 0 ? (
+      {fields.length > 0 && usesFieldColumns(type) ? (
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="sm" disabled={disabled} title={disabled ? LOCKED : ''}>
@@ -132,27 +146,29 @@ export function ViewToolbar({
         </Popover>
       ) : null}
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" disabled={disabled} title={disabled ? LOCKED : ''}>
-            <Group className="h-4 w-4" aria-hidden="true" />
-            Agrupar: {GROUP_BY_LABEL[groupBy]}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuLabel>Agrupar por</DropdownMenuLabel>
-          {GROUP_BY_OPTIONS.map((option) => (
-            <DropdownMenuItem
-              key={option.value}
-              onSelect={() => {
-                update((current) => ({ ...current, groupBy: option.value }));
-              }}
-            >
-              {option.label}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {FIXED_GROUP_BY[type] === undefined ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" disabled={disabled} title={disabled ? LOCKED : ''}>
+              <Group className="h-4 w-4" aria-hidden="true" />
+              Agrupar: {GROUP_BY_LABEL[groupBy]}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Agrupar por</DropdownMenuLabel>
+            {GROUP_BY_OPTIONS.map((option) => (
+              <DropdownMenuItem
+                key={option.value}
+                onSelect={() => {
+                  update((current) => ({ ...current, groupBy: option.value }));
+                }}
+              >
+                {option.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : null}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

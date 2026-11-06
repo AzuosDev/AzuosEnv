@@ -20,14 +20,27 @@ import { fillStatusGroups, mergePages, planTaskDrop } from '@/features/tasks/tas
 import { toQueryParams } from '../filters';
 import { useViewActions } from '../hooks/use-view-actions';
 import { useViewConfig } from '../hooks/use-view-config';
-import { isSupportedViewType } from '../view-kinds';
+import {
+  groupByOf,
+  isSupportedViewType,
+  pageSizeOf,
+  usesSelection,
+  usesTasks,
+} from '../view-kinds';
 import { viewsQuery } from '../api';
+import { ActivityView } from './activity-view';
+import { CalendarView } from './calendar-view';
+import { GanttView } from './gantt-view';
+import { TableView } from './table-view';
+import { TeamView } from './team-view';
+import { TimelineView } from './timeline-view';
 import { ViewsBar } from './views-bar';
 import { ViewToolbar } from './view-toolbar';
+import { WorkloadView } from './workload-view';
 
 export interface LocationViewsProps {
   wsId: string;
-  /** Local das views; na F6 é sempre a List aberta. */
+  /** Local das views; na F9 é sempre a List aberta. */
   locationType: ViewLocationType;
   listId: string;
   spaceId: string;
@@ -40,9 +53,12 @@ const SEARCH_DEBOUNCE_MS = 350;
 const NO_STATUSES: EffectiveStatus[] = [];
 const NO_FIELDS: CustomField[] = [];
 
+/** Views em que o estado vazio substitui o desenho da view. */
+const EMPTY_STATE_TYPES = ['list', 'board', 'table'];
+
 /**
- * Views salvas do local com a toolbar e a view aberta (Lista ou Quadro). É quem
- * monta a consulta a partir da config e distribui dados e ações para as views.
+ * Views salvas do local com a toolbar e a view aberta. É quem monta a consulta a
+ * partir da config e distribui dados e ações para a view do tipo escolhido.
  */
 export function LocationViews({ wsId, locationType, listId, spaceId, role }: LocationViewsProps) {
   const user = useSession();
@@ -80,17 +96,23 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
   }, [search]);
 
   const type = active && isSupportedViewType(active.type) ? active.type : null;
-  const groupBy = config.groupBy ?? 'status';
+  const groupBy = type ? groupByOf(type, config.groupBy) : 'status';
   const params = useMemo(
     () =>
-      toQueryParams(config, { location: 'list', locationId: listId, search: debounced, groupBy }),
-    [config, debounced, groupBy, listId],
+      toQueryParams(config, {
+        location: 'list',
+        locationId: listId,
+        search: debounced,
+        groupBy,
+        limit: type ? pageSizeOf(type) : undefined,
+      }),
+    [config, debounced, groupBy, listId, type],
   );
   const queryKey = queryKeys.tasks(wsId, params);
   const wanted = useRef<string | undefined>(undefined);
   const tasks = useInfiniteQuery({
     ...tasksInfiniteQuery(wsId, params, () => wanted.current),
-    enabled: type !== null,
+    enabled: type !== null && usesTasks(type),
   });
   const statusList = statuses.data?.statuses ?? NO_STATUSES;
   const fieldList = fields.data ?? NO_FIELDS;
@@ -110,8 +132,17 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
   const surface: ViewSurfaceProps = {
     wsId,
     listId,
+    location: 'list',
+    locationId: listId,
+    type: type ?? 'list',
+    config,
+    updateConfig: update,
+    canEditConfig: canEdit,
+    viewId: active?.id ?? null,
     statuses: statusList,
     members: members.data ?? [],
+    fields: fieldList,
+    tags: tags.data ?? [],
     fieldColumns,
     groups,
     groupBy,
@@ -153,7 +184,10 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
     );
   }
 
+  const reads = type !== null && usesTasks(type);
   const empty = groups.every((group) => group.items.length === 0);
+  const showEmptyState = reads && empty && EMPTY_STATE_TYPES.includes(type ?? '');
+  const ready = reads && !tasks.isPending && !showEmptyState;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -165,7 +199,8 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
         userId={user?.id}
       />
 
-      {active ? (
+      {/* A Activity não lê o /tasks/query: busca, filtros e ordem não valem lá. */}
+      {active && type !== null && usesTasks(type) ? (
         <ViewToolbar
           config={config}
           update={update}
@@ -174,8 +209,10 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
           onSearch={setSearch}
           statuses={surface.statuses}
           members={surface.members}
-          tags={tags.data ?? []}
+          tags={surface.tags}
           fields={fieldList}
+          type={type}
+          groupBy={groupBy}
         />
       ) : null}
 
@@ -183,18 +220,18 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
         <div className="px-4 pb-8 md:px-6">
           <EmptyState
             title="Essa view chega em outra etapa"
-            description="Por enquanto o local abre em Lista e Quadro; Calendário, Tabela, Gantt e Workload vêm depois."
+            description="Formulário, Doc, Chat, Whiteboard, Dashboard, Mind Map, Embed e Mapa vêm nos módulos seguintes."
           />
         </div>
       ) : null}
 
-      {type !== null && tasks.isPending ? (
+      {reads && tasks.isPending ? (
         <div className="px-4 py-8 md:px-6">
           <Spinner label="Carregando as tarefas" />
         </div>
       ) : null}
 
-      {type !== null && !tasks.isPending && empty ? (
+      {showEmptyState && !tasks.isPending ? (
         <div className="px-4 pb-8 md:px-6">
           <EmptyState
             title="Nenhuma tarefa por aqui"
@@ -204,10 +241,17 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
         </div>
       ) : null}
 
-      {type === 'list' && !tasks.isPending && !empty ? <ListView {...surface} /> : null}
-      {type === 'board' && !tasks.isPending && !empty ? <BoardView {...surface} /> : null}
+      {type === 'list' && ready ? <ListView {...surface} /> : null}
+      {type === 'board' && ready ? <BoardView {...surface} /> : null}
+      {type === 'calendar' && ready ? <CalendarView {...surface} /> : null}
+      {type === 'table' && ready ? <TableView {...surface} /> : null}
+      {type === 'gantt' && ready ? <GanttView {...surface} /> : null}
+      {type === 'timeline' && ready ? <TimelineView {...surface} /> : null}
+      {type === 'workload' && ready ? <WorkloadView {...surface} /> : null}
+      {type === 'team' && ready ? <TeamView {...surface} /> : null}
+      {type === 'activity' ? <ActivityView {...surface} /> : null}
 
-      {tasks.isError ? (
+      {reads && tasks.isError ? (
         <div className="px-4 pb-8 md:px-6">
           <EmptyState
             title="Não deu para carregar as tarefas"
@@ -225,12 +269,14 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
         </div>
       ) : null}
 
-      <BulkBar
-        surface={surface}
-        onClear={() => {
-          setSelected(new Set());
-        }}
-      />
+      {type !== null && usesSelection(type) ? (
+        <BulkBar
+          surface={surface}
+          onClear={() => {
+            setSelected(new Set());
+          }}
+        />
+      ) : null}
     </div>
   );
 }

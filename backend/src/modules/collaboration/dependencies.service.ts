@@ -76,6 +76,31 @@ export class DependenciesService {
       .exec();
   }
 
+  /**
+   * Edges between the given tasks, for the Gantt. Only tasks the requester can
+   * see enter, and only edges whose two ends are in that set come back: the
+   * caller draws arrows, never discovers a task it has no access to.
+   */
+  async listMany(ctx: PermissionContext, taskIds: string[]): Promise<TaskDependencyDocument[]> {
+    const ids = await this.taskAccess.visibleTaskIds(
+      ctx,
+      taskIds.map((id) => new Types.ObjectId(id)),
+    );
+
+    if (ids.length === 0) {
+      return [];
+    }
+
+    return this.model
+      .find({
+        workspaceId: ctx.workspaceId,
+        taskId: { $in: ids },
+        dependsOnId: { $in: ids },
+      })
+      .sort({ _id: 1 })
+      .exec();
+  }
+
   async remove(ctx: PermissionContext, dependencyId: Types.ObjectId): Promise<void> {
     const dependency = await this.model
       .findOne({ _id: dependencyId, workspaceId: ctx.workspaceId })
