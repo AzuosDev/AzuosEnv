@@ -355,7 +355,7 @@ async function seedCollaboration(
       entityId: sangria._id,
       actorId: null,
       recipients: [{ userId: ctx.userId, bucket: 'primary' }],
-      data: { taskName: sangria.name, customId: sangria.customId },
+      data: { name: sangria.name, customId: sangria.customId },
     });
     await notifications.deliver({
       workspaceId: workspace._id,
@@ -364,7 +364,7 @@ async function seedCollaboration(
       entityId: tef._id,
       actorId: null,
       recipients: [{ userId: ctx.userId, bucket: 'primary' }],
-      data: { taskName: tef.name, customId: tef.customId, dueAt: tef.dueAt },
+      data: { name: tef.name, customId: tef.customId, dueAt: tef.dueAt },
     });
   }
 

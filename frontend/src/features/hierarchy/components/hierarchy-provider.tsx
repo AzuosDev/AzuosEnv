@@ -24,6 +24,8 @@ export type HierarchyDialog =
 
 export interface HierarchyActions {
   open: (dialog: HierarchyDialog) => void;
+  /** Workspace do provider; os menus da árvore precisam dele. */
+  wsId: string;
 }
 
 const HierarchyContext = createContext<HierarchyActions | null>(null);
@@ -54,7 +56,7 @@ export function HierarchyProvider({ wsId, children }: { wsId: string; children: 
     setDialog(null);
   }, []);
 
-  const actions = useMemo<HierarchyActions>(() => ({ open: setDialog }), []);
+  const actions = useMemo<HierarchyActions>(() => ({ open: setDialog, wsId }), [wsId]);
 
   /** Sai da rota do item quando ele deixa a árvore. */
   const leaveIfOpen = (node: FlatNode): void => {

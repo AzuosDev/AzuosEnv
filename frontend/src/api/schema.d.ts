@@ -4341,6 +4341,26 @@ export interface components {
         SecondaryListDto: {
             listId: string;
         };
+        MyTasksSectionsDto: {
+            /** @description Prazo já passou. */
+            overdue: components["schemas"]["Task"][];
+            /** @description Prazo é hoje. */
+            today: components["schemas"]["Task"][];
+            /** @description Prazo nos próximos sete dias. */
+            next7: components["schemas"]["Task"][];
+            /** @description Prazo depois dos próximos sete dias. */
+            later: components["schemas"]["Task"][];
+            /** @description Tarefa sem prazo. */
+            noDate: components["schemas"]["Task"][];
+        };
+        MyTasksResultDto: {
+            /**
+             * @description Fuso usado para montar as seções.
+             * @example America/Sao_Paulo
+             */
+            timezone: string;
+            sections: components["schemas"]["MyTasksSectionsDto"];
+        };
         CreateTagDto: {
             spaceId: string;
             /** @example backend */
@@ -4683,6 +4703,13 @@ export interface components {
              */
             unread: number;
         };
+        ReadAllResultDto: {
+            /**
+             * @description Quantas notificações saíram de não lidas.
+             * @example 7
+             */
+            updated: number;
+        };
         SnoozeNotificationDto: {
             /** @description Momento em que a notificação volta para a caixa de entrada. */
             until: string;
@@ -4768,10 +4795,143 @@ export interface components {
             /** @description true conclui o lembrete; false reabre. */
             done?: boolean;
         };
+        SearchTaskHitDto: {
+            /** @enum {string} */
+            type: "task" | "list" | "space" | "folder" | "comment" | "page" | "message" | "user";
+            id: string;
+            /** @description Nome do item; no comentário e na mensagem é o texto. */
+            name: string;
+            /** @example AZD-142 */
+            customId: string;
+            listId: string;
+            /** @example active */
+            statusGroup: string;
+            /** @example high */
+            priority: string | null;
+            /** Format: date-time */
+            dueAt: string | null;
+        };
+        SearchListHitDto: {
+            /** @enum {string} */
+            type: "task" | "list" | "space" | "folder" | "comment" | "page" | "message" | "user";
+            id: string;
+            /** @description Nome do item; no comentário e na mensagem é o texto. */
+            name: string;
+            spaceId: string;
+            folderId: string | null;
+        };
+        SearchSpaceHitDto: {
+            /** @enum {string} */
+            type: "task" | "list" | "space" | "folder" | "comment" | "page" | "message" | "user";
+            id: string;
+            /** @description Nome do item; no comentário e na mensagem é o texto. */
+            name: string;
+            /** @example #6E56CF */
+            color: string;
+            icon: string | null;
+        };
+        SearchFolderHitDto: {
+            /** @enum {string} */
+            type: "task" | "list" | "space" | "folder" | "comment" | "page" | "message" | "user";
+            id: string;
+            /** @description Nome do item; no comentário e na mensagem é o texto. */
+            name: string;
+            spaceId: string;
+            parentFolderId: string | null;
+        };
+        SearchCommentHitDto: {
+            /** @enum {string} */
+            type: "task" | "list" | "space" | "folder" | "comment" | "page" | "message" | "user";
+            id: string;
+            /** @description Nome do item; no comentário e na mensagem é o texto. */
+            name: string;
+            bodyText: string;
+            taskId: string;
+            /** @example AZD-142 */
+            customId: string;
+            createdBy: string;
+        };
+        SearchPageHitDto: {
+            /** @enum {string} */
+            type: "task" | "list" | "space" | "folder" | "comment" | "page" | "message" | "user";
+            id: string;
+            /** @description Nome do item; no comentário e na mensagem é o texto. */
+            name: string;
+            docId: string;
+            parentPageId: string | null;
+            /** @description Primeiros 200 caracteres do conteúdo. */
+            contentText: string;
+        };
+        SearchMessageHitDto: {
+            /** @enum {string} */
+            type: "task" | "list" | "space" | "folder" | "comment" | "page" | "message" | "user";
+            id: string;
+            /** @description Nome do item; no comentário e na mensagem é o texto. */
+            name: string;
+            bodyText: string;
+            channelId: string;
+            parentMessageId: string | null;
+            authorId: string;
+        };
+        SearchUserHitDto: {
+            /** @enum {string} */
+            type: "task" | "list" | "space" | "folder" | "comment" | "page" | "message" | "user";
+            id: string;
+            /** @description Nome do item; no comentário e na mensagem é o texto. */
+            name: string;
+            email: string;
+            avatarUrl: string | null;
+        };
+        SearchResultsDto: {
+            task?: components["schemas"]["SearchTaskHitDto"][];
+            list?: components["schemas"]["SearchListHitDto"][];
+            space?: components["schemas"]["SearchSpaceHitDto"][];
+            folder?: components["schemas"]["SearchFolderHitDto"][];
+            comment?: components["schemas"]["SearchCommentHitDto"][];
+            page?: components["schemas"]["SearchPageHitDto"][];
+            message?: components["schemas"]["SearchMessageHitDto"][];
+            user?: components["schemas"]["SearchUserHitDto"][];
+        };
+        SearchResultDto: {
+            /** @description Termo buscado, já sem espaços nas pontas. */
+            q: string;
+            /** @description Tipos considerados na busca. */
+            types: ("task" | "list" | "space" | "folder" | "comment" | "page" | "message" | "user")[];
+            results: components["schemas"]["SearchResultsDto"];
+        };
         CreateFavoriteDto: {
             /** @enum {string} */
             entityType: "space" | "folder" | "list" | "task" | "doc";
             entityId: string;
+        };
+        FavoriteEntityDto: {
+            id: string;
+            name: string;
+            /** @example AZD-142 */
+            customId?: string;
+            spaceId?: string;
+            folderId?: string | null;
+            listId?: string;
+        };
+        FavoriteItemDto: {
+            id: string;
+            /** @enum {string} */
+            entityType: "space" | "folder" | "list" | "task" | "doc";
+            entityId: string;
+            /** @description Ordem manual (fractional indexing). */
+            position: string;
+            entity: components["schemas"]["FavoriteEntityDto"] | null;
+        };
+        RecentItemDto: {
+            /** @enum {string} */
+            entityType: "task" | "list" | "doc";
+            entityId: string;
+            /** Format: date-time */
+            openedAt: string;
+            entity: components["schemas"]["FavoriteEntityDto"];
+        };
+        RecentItemsDto: {
+            items: components["schemas"]["RecentItemDto"][];
         };
         TrashItemDto: {
             /** @enum {string} */
@@ -8074,7 +8234,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MyTasksResultDto"];
+                };
             };
         };
     };
@@ -9448,11 +9610,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            201: {
+            /** @description Quantas notificações foram marcadas. */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReadAllResultDto"];
+                };
             };
         };
     };
@@ -9469,12 +9634,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            201: {
+            /** @description Notificação marcada como lida. */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["Notification"];
                 };
             };
         };
@@ -9492,12 +9658,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            201: {
+            /** @description Notificação marcada como não lida. */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["Notification"];
                 };
             };
         };
@@ -9519,12 +9686,13 @@ export interface operations {
             };
         };
         responses: {
-            201: {
+            /** @description Notificação adiada até a data pedida. */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["Notification"];
                 };
             };
         };
@@ -9542,12 +9710,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            201: {
+            /** @description Notificação limpa da caixa de entrada. */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["Notification"];
                 };
             };
         };
@@ -9605,7 +9774,10 @@ export interface operations {
                 status?: "pending" | "done";
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -9629,7 +9801,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -9655,17 +9830,20 @@ export interface operations {
             header?: never;
             path: {
                 reminderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
+            /** @description Um lembrete do usuário. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["Reminder"];
                 };
             };
         };
@@ -9676,16 +9854,21 @@ export interface operations {
             header?: never;
             path: {
                 reminderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
+            /** @description Lembrete removido. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -9695,6 +9878,8 @@ export interface operations {
             header?: never;
             path: {
                 reminderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -9704,12 +9889,13 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Lembrete atualizado. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["Reminder"];
                 };
             };
         };
@@ -9724,7 +9910,10 @@ export interface operations {
                 limit?: number;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -9734,7 +9923,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SearchResultDto"];
+                };
             };
         };
     };
@@ -9746,7 +9937,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -9756,7 +9950,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["FavoriteItemDto"][];
+                        /** @description Cursor da próxima página; null na última. */
+                        nextCursor: string | null;
+                    };
+                };
             };
         };
     };
@@ -9764,7 +9964,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -9778,7 +9981,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FavoriteItemDto"];
+                };
             };
         };
     };
@@ -9788,6 +9993,8 @@ export interface operations {
             header?: never;
             path: {
                 favoriteId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -9802,7 +10009,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FavoriteItemDto"];
+                };
             };
         };
     };
@@ -9812,6 +10021,8 @@ export interface operations {
             header?: never;
             path: {
                 favoriteId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -9822,7 +10033,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -9830,17 +10043,22 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Últimas tarefas e Lists abertas pelo usuário. */
+            /** @description Últimas tarefas, Lists e Docs abertas pelo usuário. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["RecentItemsDto"];
+                };
             };
         };
     };

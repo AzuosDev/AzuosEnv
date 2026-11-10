@@ -15,3 +15,9 @@ export class SnoozeNotificationDto {
   @IsDateString()
   until: string;
 }
+
+/** Resultado de POST /inbox/read-all. */
+export class ReadAllResultDto {
+  @ApiProperty({ description: 'Quantas notificações saíram de não lidas.', example: 7 })
+  updated: number;
+}

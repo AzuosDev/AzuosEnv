@@ -54,4 +54,16 @@ export const queryKeys = {
     ['workspaces', workspaceId, 'activity', params] as const,
   taskDependencies: (workspaceId: string, taskIds: string[]) =>
     ['workspaces', workspaceId, 'dependencies', taskIds.join(',')] as const,
+  inbox: (workspaceId: string, tab: string) =>
+    ['workspaces', workspaceId, 'inbox', 'list', tab] as const,
+  replies: (workspaceId: string) => ['workspaces', workspaceId, 'replies'] as const,
+  assignedComments: (workspaceId: string, status: string) =>
+    ['workspaces', workspaceId, 'assigned-comments', status] as const,
+  reminders: (workspaceId: string, status: string) =>
+    ['workspaces', workspaceId, 'reminders', status] as const,
+  myTasks: (workspaceId: string) => ['workspaces', workspaceId, 'my-tasks'] as const,
+  favorites: (workspaceId: string) => ['workspaces', workspaceId, 'favorites'] as const,
+  recent: (workspaceId: string) => ['workspaces', workspaceId, 'recent'] as const,
+  search: (workspaceId: string, term: string) =>
+    ['workspaces', workspaceId, 'search', term] as const,
 } as const;

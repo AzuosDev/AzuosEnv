@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import type { AuthUser } from '@/api/types';
 import { UserMenu } from '@/features/auth/components/user-menu';
 import { useSocket } from '@/features/realtime/socket';
+import { CommandPalette } from '@/features/search/components/command-palette';
 import { NewTaskButton } from '@/features/tasks/components/new-task-dialog';
-import { SearchPalette } from './search-palette';
 import { TimerSlot } from './timer-slot';
 
 export interface TopbarProps {
@@ -48,7 +48,7 @@ export function Topbar({ wsId, user, onOpenMenu }: TopbarProps) {
         <Menu className="h-5 w-5" aria-hidden="true" />
       </Button>
 
-      <SearchPalette />
+      <CommandPalette wsId={wsId} />
       <TimerSlot wsId={wsId} />
 
       <div className="flex-1" />

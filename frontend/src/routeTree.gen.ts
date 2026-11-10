@@ -33,6 +33,7 @@ import { Route as AppWWsIdMetasRouteImport } from './routes/_app.w.$wsId.metas'
 import { Route as AppWWsIdMinhasTarefasRouteImport } from './routes/_app.w.$wsId.minhas-tarefas'
 import { Route as AppWWsIdPlannerRouteImport } from './routes/_app.w.$wsId.planner'
 import { Route as AppWWsIdTimesheetsRouteImport } from './routes/_app.w.$wsId.timesheets'
+import { Route as AppWWsIdTudoRouteImport } from './routes/_app.w.$wsId.tudo'
 import { Route as AppWWsIdWhiteboardsRouteImport } from './routes/_app.w.$wsId.whiteboards'
 import { Route as AppWWsIdConfiguracoesIndexRouteImport } from './routes/_app.w.$wsId.configuracoes.index'
 import { Route as AppWWsIdConfiguracoesEquipesRouteImport } from './routes/_app.w.$wsId.configuracoes.equipes'
@@ -165,6 +166,11 @@ const AppWWsIdTimesheetsRoute = AppWWsIdTimesheetsRouteImport.update({
   path: '/timesheets',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
+const AppWWsIdTudoRoute = AppWWsIdTudoRouteImport.update({
+  id: '/tudo',
+  path: '/tudo',
+  getParentRoute: () => AppWWsIdRoute,
+} as any)
 const AppWWsIdWhiteboardsRoute = AppWWsIdWhiteboardsRouteImport.update({
   id: '/whiteboards',
   path: '/whiteboards',
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
+  '/w/$wsId/tudo': typeof AppWWsIdTudoRoute
   '/w/$wsId/whiteboards': typeof AppWWsIdWhiteboardsRoute
   '/w/$wsId/': typeof AppWWsIdIndexRoute
   '/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
@@ -296,6 +303,7 @@ export interface FileRoutesByTo {
   '/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
+  '/w/$wsId/tudo': typeof AppWWsIdTudoRoute
   '/w/$wsId/whiteboards': typeof AppWWsIdWhiteboardsRoute
   '/w/$wsId': typeof AppWWsIdIndexRoute
   '/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
@@ -336,6 +344,7 @@ export interface FileRoutesById {
   '/_app/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
   '/_app/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/_app/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
+  '/_app/w/$wsId/tudo': typeof AppWWsIdTudoRoute
   '/_app/w/$wsId/whiteboards': typeof AppWWsIdWhiteboardsRoute
   '/_app/w/$wsId/': typeof AppWWsIdIndexRoute
   '/_app/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
@@ -375,6 +384,7 @@ export interface FileRouteTypes {
     | '/w/$wsId/minhas-tarefas'
     | '/w/$wsId/planner'
     | '/w/$wsId/timesheets'
+    | '/w/$wsId/tudo'
     | '/w/$wsId/whiteboards'
     | '/w/$wsId/'
     | '/w/$wsId/configuracoes/equipes'
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/w/$wsId/minhas-tarefas'
     | '/w/$wsId/planner'
     | '/w/$wsId/timesheets'
+    | '/w/$wsId/tudo'
     | '/w/$wsId/whiteboards'
     | '/w/$wsId'
     | '/w/$wsId/configuracoes/equipes'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/minhas-tarefas'
     | '/_app/w/$wsId/planner'
     | '/_app/w/$wsId/timesheets'
+    | '/_app/w/$wsId/tudo'
     | '/_app/w/$wsId/whiteboards'
     | '/_app/w/$wsId/'
     | '/_app/w/$wsId/configuracoes/equipes'
@@ -643,6 +655,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWWsIdTimesheetsRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
+    '/_app/w/$wsId/tudo': {
+      id: '/_app/w/$wsId/tudo'
+      path: '/tudo'
+      fullPath: '/w/$wsId/tudo'
+      preLoaderRoute: typeof AppWWsIdTudoRouteImport
+      parentRoute: typeof AppWWsIdRoute
+    }
     '/_app/w/$wsId/whiteboards': {
       id: '/_app/w/$wsId/whiteboards'
       path: '/whiteboards'
@@ -780,6 +799,7 @@ interface AppWWsIdRouteChildren {
   AppWWsIdMinhasTarefasRoute: typeof AppWWsIdMinhasTarefasRoute
   AppWWsIdPlannerRoute: typeof AppWWsIdPlannerRoute
   AppWWsIdTimesheetsRoute: typeof AppWWsIdTimesheetsRoute
+  AppWWsIdTudoRoute: typeof AppWWsIdTudoRoute
   AppWWsIdWhiteboardsRoute: typeof AppWWsIdWhiteboardsRoute
   AppWWsIdIndexRoute: typeof AppWWsIdIndexRoute
   AppWWsIdFFolderIdRoute: typeof AppWWsIdFFolderIdRoute
@@ -802,6 +822,7 @@ const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
   AppWWsIdMinhasTarefasRoute: AppWWsIdMinhasTarefasRoute,
   AppWWsIdPlannerRoute: AppWWsIdPlannerRoute,
   AppWWsIdTimesheetsRoute: AppWWsIdTimesheetsRoute,
+  AppWWsIdTudoRoute: AppWWsIdTudoRoute,
   AppWWsIdWhiteboardsRoute: AppWWsIdWhiteboardsRoute,
   AppWWsIdIndexRoute: AppWWsIdIndexRoute,
   AppWWsIdFFolderIdRoute: AppWWsIdFFolderIdRoute,

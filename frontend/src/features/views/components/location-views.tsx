@@ -40,8 +40,9 @@ import { WorkloadView } from './workload-view';
 
 export interface LocationViewsProps {
   wsId: string;
-  /** Local das views; na F9 é sempre a List aberta. */
+  /** Local das views: a List aberta ou o workspace inteiro (`everything`). */
   locationType: ViewLocationType;
+  /** List do local; vazio em `everything`, onde a tarefa nova escolhe a List. */
   listId: string;
   spaceId: string;
   role: WorkspaceRole;
@@ -63,16 +64,21 @@ const EMPTY_STATE_TYPES = ['list', 'board', 'table'];
 export function LocationViews({ wsId, locationType, listId, spaceId, role }: LocationViewsProps) {
   const user = useSession();
   const views = useQuery(viewsQuery(wsId, locationType, listId));
-  const statuses = useQuery(listStatusesQuery(wsId, listId));
+  const statuses = useQuery({ ...listStatusesQuery(wsId, listId), enabled: listId !== '' });
   const members = useQuery(membersQuery(wsId));
   const tags = useQuery(tagsQuery(wsId, spaceId));
-  const fields = useQuery(customFieldsQuery(wsId, 'list', listId));
+  const fields = useQuery({
+    ...customFieldsQuery(wsId, 'list', listId),
+    enabled: listId !== '',
+  });
   const viewActions = useViewActions({ wsId, locationType, locationId: listId });
 
   const items = views.data ?? [];
   const [pickedId, setPickedId] = useState<string | null>(null);
   const fallback = items.find((view) => view.isDefault) ?? items[0] ?? null;
   const active = items.find((view) => view.id === pickedId) ?? fallback;
+  /** Local sem nenhuma view salva (é o caso de `everything`) abre na Lista. */
+  const virtual = !views.isPending && items.length === 0;
   const { config, update, canEdit } = useViewConfig({
     wsId,
     view: active,
@@ -95,18 +101,18 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
     };
   }, [search]);
 
-  const type = active && isSupportedViewType(active.type) ? active.type : null;
+  const type = active && isSupportedViewType(active.type) ? active.type : virtual ? 'list' : null;
   const groupBy = type ? groupByOf(type, config.groupBy) : 'status';
   const params = useMemo(
     () =>
       toQueryParams(config, {
-        location: 'list',
+        location: locationType === 'list' ? 'list' : 'everything',
         locationId: listId,
         search: debounced,
         groupBy,
         limit: type ? pageSizeOf(type) : undefined,
       }),
-    [config, debounced, groupBy, listId, type],
+    [config, debounced, groupBy, listId, locationType, type],
   );
   const queryKey = queryKeys.tasks(wsId, params);
   const wanted = useRef<string | undefined>(undefined);
@@ -132,7 +138,7 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
   const surface: ViewSurfaceProps = {
     wsId,
     listId,
-    location: 'list',
+    location: locationType === 'list' ? 'list' : 'everything',
     locationId: listId,
     type: type ?? 'list',
     config,
@@ -200,7 +206,7 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
       />
 
       {/* A Activity não lê o /tasks/query: busca, filtros e ordem não valem lá. */}
-      {active && type !== null && usesTasks(type) ? (
+      {(active ?? virtual) && type !== null && usesTasks(type) ? (
         <ViewToolbar
           config={config}
           update={update}
@@ -235,8 +241,16 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
         <div className="px-4 pb-8 md:px-6">
           <EmptyState
             title="Nenhuma tarefa por aqui"
-            description="Crie a primeira tarefa desta List ou tire algum filtro da view."
-            action={<QuickAdd groupKey={null} surface={surface} label="+ Criar primeira tarefa" />}
+            description={
+              locationType === 'list'
+                ? 'Crie a primeira tarefa desta List ou tire algum filtro da view.'
+                : 'Nenhuma tarefa do workspace passa por este recorte. Tire algum filtro da view.'
+            }
+            action={
+              locationType === 'list' ? (
+                <QuickAdd groupKey={null} surface={surface} label="+ Criar primeira tarefa" />
+              ) : undefined
+            }
           />
         </div>
       ) : null}

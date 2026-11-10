@@ -10,7 +10,7 @@ import { CurrentMembership } from '../workspaces/decorators/workspace-context.de
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership, workspaceObjectId } from '../workspaces/workspace-context';
 import { InboxCountsDto } from './dto/inbox-counts.dto';
-import { InboxQueryDto, SnoozeNotificationDto } from './dto/inbox.dto';
+import { InboxQueryDto, ReadAllResultDto, SnoozeNotificationDto } from './dto/inbox.dto';
 import {
   NotificationPreferencesDto,
   UpdateNotificationSettingsDto,
@@ -54,6 +54,7 @@ export class InboxController {
   }
 
   @Post('read-all')
+  @ApiOkResponse({ type: ReadAllResultDto, description: 'Quantas notificações foram marcadas.' })
   readAll(@CurrentMembership() membership: RequestMembership): Promise<{ updated: number }> {
     return this.notifications.markAllRead(
       workspaceObjectId(membership),
@@ -62,6 +63,7 @@ export class InboxController {
   }
 
   @Post(':notificationId/read')
+  @ApiOkResponse({ type: Notification, description: 'Notificação marcada como lida.' })
   read(
     @CurrentMembership() membership: RequestMembership,
     @Param('notificationId', ParseObjectIdPipe) notificationId: Types.ObjectId,
@@ -75,6 +77,7 @@ export class InboxController {
   }
 
   @Post(':notificationId/unread')
+  @ApiOkResponse({ type: Notification, description: 'Notificação marcada como não lida.' })
   unread(
     @CurrentMembership() membership: RequestMembership,
     @Param('notificationId', ParseObjectIdPipe) notificationId: Types.ObjectId,
@@ -88,6 +91,7 @@ export class InboxController {
   }
 
   @Post(':notificationId/snooze')
+  @ApiOkResponse({ type: Notification, description: 'Notificação adiada até a data pedida.' })
   snooze(
     @CurrentMembership() membership: RequestMembership,
     @Param('notificationId', ParseObjectIdPipe) notificationId: Types.ObjectId,
@@ -102,6 +106,7 @@ export class InboxController {
   }
 
   @Post(':notificationId/clear')
+  @ApiOkResponse({ type: Notification, description: 'Notificação limpa da caixa de entrada.' })
   clear(
     @CurrentMembership() membership: RequestMembership,
     @Param('notificationId', ParseObjectIdPipe) notificationId: Types.ObjectId,

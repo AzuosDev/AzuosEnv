@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toast } from '@/components/ui/toast';
+import { FavoriteStar } from '@/features/favorites/components/favorite-star';
 import type { TreeCrumb } from '@/features/shell/tree-path';
 import { PANEL_MODE_LABEL, type PanelMode } from '../panel-mode';
 import { statusTone } from '../task-fields';
@@ -271,6 +272,8 @@ export function TaskPanelHeader({
           )}
           {following ? 'Seguindo' : 'Seguir'}
         </Button>
+
+        <FavoriteStar wsId={wsId} entityType="task" entityId={task.id} name={task.customId} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

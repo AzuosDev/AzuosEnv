@@ -242,3 +242,52 @@ export type ViewSortBy = NonNullable<ViewConfig['sortBy']>;
 export type CreateViewInput = components['schemas']['CreateViewDto'];
 export type UpdateViewInput = components['schemas']['UpdateViewDto'];
 export type ViewColumn = components['schemas']['ViewColumnDto'];
+
+/* Inbox, lembretes, favoritos e busca --------------------------------------- */
+
+/** Entrada do Inbox; `data` é JSON livre no contrato. */
+export type Notification = Doc<FreeJson<components['schemas']['Notification'], 'data'>>;
+export type NotificationType = Notification['type'];
+export type NotificationBucket = Notification['bucket'];
+export type NotificationEntityType = Notification['entityType'];
+export type InboxTab = NonNullable<
+  NonNullable<paths['/api/v1/workspaces/{wsId}/inbox']['get']['parameters']['query']>['tab']
+>;
+export type AssignedCommentStatus = NonNullable<
+  NonNullable<
+    paths['/api/v1/workspaces/{wsId}/assigned-comments']['get']['parameters']['query']
+  >['status']
+>;
+
+export type Reminder = Doc<components['schemas']['Reminder']>;
+export type ReminderRecurrence = Reminder['recurrence'];
+export type CreateReminderInput = components['schemas']['CreateReminderDto'];
+export type UpdateReminderInput = components['schemas']['UpdateReminderDto'];
+export type ReminderStatus = NonNullable<
+  NonNullable<paths['/api/v1/workspaces/{wsId}/reminders']['get']['parameters']['query']>['status']
+>;
+
+export type FavoriteItem = components['schemas']['FavoriteItemDto'];
+export type FavoriteEntity = components['schemas']['FavoriteEntityDto'];
+export type FavoriteEntityType = FavoriteItem['entityType'];
+export type RecentItem = components['schemas']['RecentItemDto'];
+export type CreateFavoriteInput = components['schemas']['CreateFavoriteDto'];
+
+export type SearchResult = components['schemas']['SearchResultDto'];
+export type SearchResults = components['schemas']['SearchResultsDto'];
+export type SearchType = SearchResult['types'][number];
+export type SearchTaskHit = components['schemas']['SearchTaskHitDto'];
+export type SearchListHit = components['schemas']['SearchListHitDto'];
+export type SearchSpaceHit = components['schemas']['SearchSpaceHitDto'];
+export type SearchFolderHit = components['schemas']['SearchFolderHitDto'];
+export type SearchCommentHit = components['schemas']['SearchCommentHitDto'];
+export type SearchPageHit = components['schemas']['SearchPageHitDto'];
+export type SearchMessageHit = components['schemas']['SearchMessageHitDto'];
+export type SearchUserHit = components['schemas']['SearchUserHitDto'];
+
+/** Minhas tarefas: as cinco seções por prazo, no fuso do usuário. */
+export type MyTasksResult = Omit<components['schemas']['MyTasksResultDto'], 'sections'> & {
+  sections: MyTasksSections;
+};
+export type MyTasksSections = Record<DueBucket, Task[]>;
+export type DueBucket = keyof components['schemas']['MyTasksSectionsDto'];

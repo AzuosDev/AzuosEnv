@@ -11,7 +11,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -20,18 +23,22 @@ import { permissionContextFrom } from '../hierarchy/permission.service';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
-import { CreateFavoriteDto } from './dto/favorite.dto';
+import { CreateFavoriteDto, FavoriteItemDto, RecentItemsDto } from './dto/favorite.dto';
 import { FavoriteItem, FavoritesService, RecentItemView } from './favorites.service';
 
 @ApiTags('favorites')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/favorites')
 export class FavoritesController {
   constructor(private readonly favorites: FavoritesService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Entidade favoritada para quem chamou.' })
+  @ApiCreatedResponse({
+    type: FavoriteItemDto,
+    description: 'Entidade favoritada para quem chamou.',
+  })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateFavoriteDto,
@@ -40,7 +47,7 @@ export class FavoritesController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Favoritos do usuário na ordem manual.' })
+  @ApiPagedResponse(FavoriteItemDto, 'Favoritos do usuário na ordem manual.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: PaginationQueryDto,
@@ -50,7 +57,7 @@ export class FavoritesController {
 
   @Post(':favoriteId/reorder')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Favorito reposicionado.' })
+  @ApiOkResponse({ type: FavoriteItemDto, description: 'Favorito reposicionado.' })
   reorder(
     @CurrentMembership() membership: RequestMembership,
     @Param('favoriteId', ParseObjectIdPipe) favoriteId: Types.ObjectId,
@@ -60,7 +67,7 @@ export class FavoritesController {
   }
 
   @Delete(':favoriteId')
-  @ApiOkResponse({ description: 'Favorito removido.' })
+  @ApiOkResponse({ type: SuccessDto, description: 'Favorito removido.' })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('favoriteId', ParseObjectIdPipe) favoriteId: Types.ObjectId,
@@ -74,12 +81,16 @@ export class FavoritesController {
 @ApiTags('favorites')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/me/recent')
 export class RecentsController {
   constructor(private readonly favorites: FavoritesService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Últimas tarefas e Lists abertas pelo usuário.' })
+  @ApiOkResponse({
+    type: RecentItemsDto,
+    description: 'Últimas tarefas, Lists e Docs abertas pelo usuário.',
+  })
   recent(@CurrentMembership() membership: RequestMembership): Promise<{ items: RecentItemView[] }> {
     return this.favorites.recent(permissionContextFrom(membership));
   }

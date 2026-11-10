@@ -4279,7 +4279,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Minhas tarefas por seção, no fuso do usuário."
+            "description": "Minhas tarefas por seção, no fuso do usuário.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyTasksResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -7109,8 +7116,15 @@
           }
         ],
         "responses": {
-          "201": {
-            "description": ""
+          "200": {
+            "description": "Quantas notificações foram marcadas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadAllResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -7147,12 +7161,12 @@
           }
         ],
         "responses": {
-          "201": {
-            "description": "",
+          "200": {
+            "description": "Notificação marcada como lida.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Notification"
                 }
               }
             }
@@ -7192,12 +7206,12 @@
           }
         ],
         "responses": {
-          "201": {
-            "description": "",
+          "200": {
+            "description": "Notificação marcada como não lida.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Notification"
                 }
               }
             }
@@ -7247,12 +7261,12 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "",
+          "200": {
+            "description": "Notificação adiada até a data pedida.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Notification"
                 }
               }
             }
@@ -7292,12 +7306,12 @@
           }
         ],
         "responses": {
-          "201": {
-            "description": "",
+          "200": {
+            "description": "Notificação limpa da caixa de entrada.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Notification"
                 }
               }
             }
@@ -7376,7 +7390,18 @@
     "/api/v1/workspaces/{wsId}/reminders": {
       "post": {
         "operationId": "RemindersController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -7443,6 +7468,16 @@
                 "done"
               ]
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -7495,15 +7530,25 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "",
+            "description": "Um lembrete do usuário.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Reminder"
                 }
               }
             }
@@ -7528,6 +7573,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -7542,11 +7597,11 @@
         },
         "responses": {
           "200": {
-            "description": "",
+            "description": "Lembrete atualizado.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/Reminder"
                 }
               }
             }
@@ -7571,11 +7626,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Lembrete removido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -7635,11 +7707,28 @@
               "default": 20,
               "type": "number"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Busca global do workspace, filtrada por permissão."
+            "description": "Busca global do workspace, filtrada por permissão.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -7655,7 +7744,18 @@
     "/api/v1/workspaces/{wsId}/favorites": {
       "post": {
         "operationId": "FavoritesController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -7668,7 +7768,14 @@
         },
         "responses": {
           "201": {
-            "description": "Entidade favoritada para quem chamou."
+            "description": "Entidade favoritada para quem chamou.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoriteItemDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -7702,11 +7809,45 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Favoritos do usuário na ordem manual."
+            "description": "Favoritos do usuário na ordem manual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FavoriteItemDto"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Cursor da próxima página; null na última."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -7730,6 +7871,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -7744,7 +7895,14 @@
         },
         "responses": {
           "200": {
-            "description": "Favorito reposicionado."
+            "description": "Favorito reposicionado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoriteItemDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -7768,11 +7926,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Favorito removido."
+            "description": "Favorito removido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -7788,10 +7963,28 @@
     "/api/v1/workspaces/{wsId}/me/recent": {
       "get": {
         "operationId": "RecentsController_recent",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Últimas tarefas e Lists abertas pelo usuário."
+            "description": "Últimas tarefas, Lists e Docs abertas pelo usuário.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecentItemsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -17069,6 +17262,70 @@
           "listId"
         ]
       },
+      "MyTasksSectionsDto": {
+        "type": "object",
+        "properties": {
+          "overdue": {
+            "description": "Prazo já passou.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          },
+          "today": {
+            "description": "Prazo é hoje.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          },
+          "next7": {
+            "description": "Prazo nos próximos sete dias.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          },
+          "later": {
+            "description": "Prazo depois dos próximos sete dias.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          },
+          "noDate": {
+            "description": "Tarefa sem prazo.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          }
+        },
+        "required": [
+          "overdue",
+          "today",
+          "next7",
+          "later",
+          "noDate"
+        ]
+      },
+      "MyTasksResultDto": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "description": "Fuso usado para montar as seções.",
+            "example": "America/Sao_Paulo"
+          },
+          "sections": {
+            "$ref": "#/components/schemas/MyTasksSectionsDto"
+          }
+        },
+        "required": [
+          "timezone",
+          "sections"
+        ]
+      },
       "CreateTagDto": {
         "type": "object",
         "properties": {
@@ -18095,7 +18352,6 @@
             ]
           },
           "type": {
-            "type": "string",
             "enum": [
               "invited",
               "overdue",
@@ -18111,17 +18367,18 @@
               "chatMessage",
               "formSubmitted",
               "aiSummary"
-            ]
+            ],
+            "type": "string"
           },
           "entityType": {
-            "type": "string",
             "enum": [
               "message",
               "comment",
               "workspace",
               "task",
               "reminder"
-            ]
+            ],
+            "type": "string"
           },
           "entityId": {
             "$ref": "#/components/schemas/ObjectId"
@@ -18142,11 +18399,11 @@
             "description": "Everything the inbox card needs to render without another read."
           },
           "bucket": {
-            "type": "string",
             "enum": [
               "primary",
               "other"
-            ]
+            ],
+            "type": "string"
           },
           "readAt": {
             "format": "date-time",
@@ -18214,6 +18471,19 @@
           "later",
           "cleared",
           "unread"
+        ]
+      },
+      "ReadAllResultDto": {
+        "type": "object",
+        "properties": {
+          "updated": {
+            "type": "number",
+            "description": "Quantas notificações saíram de não lidas.",
+            "example": 7
+          }
+        },
+        "required": [
+          "updated"
         ]
       },
       "SnoozeNotificationDto": {
@@ -18495,6 +18765,444 @@
           }
         }
       },
+      "SearchTaskHitDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "task",
+              "list",
+              "space",
+              "folder",
+              "comment",
+              "page",
+              "message",
+              "user"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do item; no comentário e na mensagem é o texto."
+          },
+          "customId": {
+            "type": "string",
+            "example": "AZD-142"
+          },
+          "listId": {
+            "type": "string"
+          },
+          "statusGroup": {
+            "type": "string",
+            "example": "active"
+          },
+          "priority": {
+            "type": "string",
+            "nullable": true,
+            "example": "high"
+          },
+          "dueAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "customId",
+          "listId",
+          "statusGroup",
+          "priority",
+          "dueAt"
+        ]
+      },
+      "SearchListHitDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "task",
+              "list",
+              "space",
+              "folder",
+              "comment",
+              "page",
+              "message",
+              "user"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do item; no comentário e na mensagem é o texto."
+          },
+          "spaceId": {
+            "type": "string"
+          },
+          "folderId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "spaceId",
+          "folderId"
+        ]
+      },
+      "SearchSpaceHitDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "task",
+              "list",
+              "space",
+              "folder",
+              "comment",
+              "page",
+              "message",
+              "user"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do item; no comentário e na mensagem é o texto."
+          },
+          "color": {
+            "type": "string",
+            "example": "#6E56CF"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "color",
+          "icon"
+        ]
+      },
+      "SearchFolderHitDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "task",
+              "list",
+              "space",
+              "folder",
+              "comment",
+              "page",
+              "message",
+              "user"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do item; no comentário e na mensagem é o texto."
+          },
+          "spaceId": {
+            "type": "string"
+          },
+          "parentFolderId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "spaceId",
+          "parentFolderId"
+        ]
+      },
+      "SearchCommentHitDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "task",
+              "list",
+              "space",
+              "folder",
+              "comment",
+              "page",
+              "message",
+              "user"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do item; no comentário e na mensagem é o texto."
+          },
+          "bodyText": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "customId": {
+            "type": "string",
+            "example": "AZD-142"
+          },
+          "createdBy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "bodyText",
+          "taskId",
+          "customId",
+          "createdBy"
+        ]
+      },
+      "SearchPageHitDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "task",
+              "list",
+              "space",
+              "folder",
+              "comment",
+              "page",
+              "message",
+              "user"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do item; no comentário e na mensagem é o texto."
+          },
+          "docId": {
+            "type": "string"
+          },
+          "parentPageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentText": {
+            "type": "string",
+            "description": "Primeiros 200 caracteres do conteúdo."
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "docId",
+          "parentPageId",
+          "contentText"
+        ]
+      },
+      "SearchMessageHitDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "task",
+              "list",
+              "space",
+              "folder",
+              "comment",
+              "page",
+              "message",
+              "user"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do item; no comentário e na mensagem é o texto."
+          },
+          "bodyText": {
+            "type": "string"
+          },
+          "channelId": {
+            "type": "string"
+          },
+          "parentMessageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "authorId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "bodyText",
+          "channelId",
+          "parentMessageId",
+          "authorId"
+        ]
+      },
+      "SearchUserHitDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "task",
+              "list",
+              "space",
+              "folder",
+              "comment",
+              "page",
+              "message",
+              "user"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do item; no comentário e na mensagem é o texto."
+          },
+          "email": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name",
+          "email",
+          "avatarUrl"
+        ]
+      },
+      "SearchResultsDto": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchTaskHitDto"
+            }
+          },
+          "list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchListHitDto"
+            }
+          },
+          "space": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchSpaceHitDto"
+            }
+          },
+          "folder": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchFolderHitDto"
+            }
+          },
+          "comment": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchCommentHitDto"
+            }
+          },
+          "page": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchPageHitDto"
+            }
+          },
+          "message": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchMessageHitDto"
+            }
+          },
+          "user": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchUserHitDto"
+            }
+          }
+        }
+      },
+      "SearchResultDto": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "Termo buscado, já sem espaços nas pontas."
+          },
+          "types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "task",
+                "list",
+                "space",
+                "folder",
+                "comment",
+                "page",
+                "message",
+                "user"
+              ]
+            },
+            "description": "Tipos considerados na busca."
+          },
+          "results": {
+            "$ref": "#/components/schemas/SearchResultsDto"
+          }
+        },
+        "required": [
+          "q",
+          "types",
+          "results"
+        ]
+      },
       "CreateFavoriteDto": {
         "type": "object",
         "properties": {
@@ -18515,6 +19223,119 @@
         "required": [
           "entityType",
           "entityId"
+        ]
+      },
+      "FavoriteEntityDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "customId": {
+            "type": "string",
+            "example": "AZD-142"
+          },
+          "spaceId": {
+            "type": "string"
+          },
+          "folderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "listId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "FavoriteItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "entityType": {
+            "enum": [
+              "space",
+              "folder",
+              "list",
+              "task",
+              "doc"
+            ],
+            "type": "string"
+          },
+          "entityId": {
+            "type": "string"
+          },
+          "position": {
+            "type": "string",
+            "description": "Ordem manual (fractional indexing)."
+          },
+          "entity": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FavoriteEntityDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "entityType",
+          "entityId",
+          "position",
+          "entity"
+        ]
+      },
+      "RecentItemDto": {
+        "type": "object",
+        "properties": {
+          "entityType": {
+            "enum": [
+              "task",
+              "list",
+              "doc"
+            ],
+            "type": "string"
+          },
+          "entityId": {
+            "type": "string"
+          },
+          "openedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "entity": {
+            "$ref": "#/components/schemas/FavoriteEntityDto"
+          }
+        },
+        "required": [
+          "entityType",
+          "entityId",
+          "openedAt",
+          "entity"
+        ]
+      },
+      "RecentItemsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecentItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "TrashItemDto": {

@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { UnderConstruction } from '@/features/shell/components/under-construction';
+import { MyTasksPage } from '@/features/my-tasks/components/my-tasks-page';
 
 function Page() {
   const { wsId } = Route.useParams();
 
-  return <UnderConstruction wsId={wsId} title="Minhas tarefas" />;
+  return <MyTasksPage wsId={wsId} />;
 }
 
 export const Route = createFileRoute('/_app/w/$wsId/minhas-tarefas')({

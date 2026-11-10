@@ -38,6 +38,7 @@ import {
   UpdateTaskDto,
 } from './dto/task.dto';
 import { Task, TaskDocument } from './schemas/task.schema';
+import { MyTasksResultDto } from './dto/my-tasks.dto';
 import { MyTasksResult, TaskQueryResult, TaskQueryService } from './task-query.service';
 import { BulkResult, TaskDetail, TasksService } from './tasks.service';
 
@@ -216,7 +217,10 @@ export class MyTasksController {
   constructor(private readonly queries: TaskQueryService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Minhas tarefas por seção, no fuso do usuário.' })
+  @ApiOkResponse({
+    type: MyTasksResultDto,
+    description: 'Minhas tarefas por seção, no fuso do usuário.',
+  })
   myTasks(
     @CurrentMembership() membership: RequestMembership,
     @CurrentUser('timezone') timezone: string,

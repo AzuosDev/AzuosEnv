@@ -160,11 +160,41 @@ function NewTaskForm({ wsId, onClose }: { wsId: string; onClose: () => void }) {
 }
 
 /** Botão "Nova tarefa" da topbar com o diálogo de criação rápida. */
+/** Diálogo de nova tarefa, controlado por quem abre (topbar ou palette). */
+export function NewTaskDialog({
+  wsId,
+  open,
+  onOpenChange,
+}: {
+  wsId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Nova tarefa</DialogTitle>
+          <DialogDescription>Ela nasce na List escolhida.</DialogDescription>
+        </DialogHeader>
+        {open ? (
+          <NewTaskForm
+            wsId={wsId}
+            onClose={() => {
+              onOpenChange(false);
+            }}
+          />
+        ) : null}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function NewTaskButton({ wsId }: { wsId: string }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <>
       <Button
         size="sm"
         className="shrink-0"
@@ -177,20 +207,7 @@ export function NewTaskButton({ wsId }: { wsId: string }) {
         <span className="sr-only md:hidden">Nova tarefa</span>
       </Button>
 
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Nova tarefa</DialogTitle>
-          <DialogDescription>Ela nasce na List escolhida.</DialogDescription>
-        </DialogHeader>
-        {open ? (
-          <NewTaskForm
-            wsId={wsId}
-            onClose={() => {
-              setOpen(false);
-            }}
-          />
-        ) : null}
-      </DialogContent>
-    </Dialog>
+      <NewTaskDialog wsId={wsId} open={open} onOpenChange={setOpen} />
+    </>
   );
 }

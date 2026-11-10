@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { UnderConstruction } from '@/features/shell/components/under-construction';
+import { InboxPage } from '@/features/inbox/components/inbox-page';
 
 function Page() {
   const { wsId } = Route.useParams();
 
-  return <UnderConstruction wsId={wsId} title="Inbox" />;
+  return <InboxPage wsId={wsId} />;
 }
 
 export const Route = createFileRoute('/_app/w/$wsId/inbox')({

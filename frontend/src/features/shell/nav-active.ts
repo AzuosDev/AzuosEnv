@@ -8,6 +8,7 @@ const SEGMENT_TO_NAV: Record<string, string> = {
   l: 'tarefas',
   inbox: 'tarefas',
   'minhas-tarefas': 'tarefas',
+  tudo: 'tarefas',
   arquivados: 'tarefas',
   lixeira: 'tarefas',
   planner: 'planner',

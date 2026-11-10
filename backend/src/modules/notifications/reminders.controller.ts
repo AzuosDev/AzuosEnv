@@ -9,8 +9,10 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -25,6 +27,7 @@ import { Reminder, ReminderDocument } from './schemas/reminder.schema';
 @ApiTags('reminders')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/reminders')
 export class RemindersController {
   constructor(private readonly reminders: RemindersService) {}
@@ -48,6 +51,7 @@ export class RemindersController {
   }
 
   @Get(':reminderId')
+  @ApiOkResponse({ type: Reminder, description: 'Um lembrete do usuário.' })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('reminderId', ParseObjectIdPipe) reminderId: Types.ObjectId,
@@ -56,6 +60,7 @@ export class RemindersController {
   }
 
   @Patch(':reminderId')
+  @ApiOkResponse({ type: Reminder, description: 'Lembrete atualizado.' })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('reminderId', ParseObjectIdPipe) reminderId: Types.ObjectId,
@@ -65,6 +70,7 @@ export class RemindersController {
   }
 
   @Delete(':reminderId')
+  @ApiOkResponse({ type: SuccessDto, description: 'Lembrete removido.' })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('reminderId', ParseObjectIdPipe) reminderId: Types.ObjectId,

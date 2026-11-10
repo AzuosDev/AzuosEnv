@@ -8,6 +8,7 @@ import {
   Palette,
   Pencil,
   Plus,
+  Star,
   Trash2,
   UserPlus,
 } from 'lucide-react';
@@ -19,6 +20,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { favoriteOf } from '@/features/favorites/favorite-model';
+import { useFavorites } from '@/features/favorites/hooks/use-favorites';
 import { cn } from '@/lib/utils';
 import { NODE_LABEL } from '../node-kinds';
 import type { FlatNode } from '../tree-dnd';
@@ -97,7 +100,9 @@ export function NodeMenu({
   className,
   includeCreate = false,
 }: NodeMenuProps & { includeCreate?: boolean }) {
-  const { open } = useHierarchy();
+  const { open, wsId } = useHierarchy();
+  const { items, toggle } = useFavorites(wsId);
+  const favourite = favoriteOf(items, node.kind, node.id) !== null;
   const canNestFolder = node.kind === 'space' || node.folderId === null;
 
   return (
@@ -148,6 +153,15 @@ export function NodeMenu({
             <DropdownMenuSeparator />
           </>
         ) : null}
+
+        <DropdownMenuItem
+          onSelect={() => {
+            toggle(node.kind, node.id);
+          }}
+        >
+          <Star className={itemIcon} aria-hidden="true" />
+          {favourite ? 'Tirar dos favoritos' : 'Favoritar'}
+        </DropdownMenuItem>
 
         <DropdownMenuItem
           onSelect={() => {

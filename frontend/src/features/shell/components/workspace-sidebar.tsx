@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Archive, CircleCheckBig, Inbox, Plus, Trash2 } from 'lucide-react';
+import { Archive, CircleCheckBig, Inbox, LayoutGrid, Plus, Trash2 } from 'lucide-react';
 import type { Workspace } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FavoritesSection } from '@/features/favorites/components/favorites-section';
 import { useHierarchy } from '@/features/hierarchy/components/hierarchy-provider';
 import { cn } from '@/lib/utils';
 import { inboxCountsQuery, treeQuery } from '../api';
@@ -63,7 +64,13 @@ export function WorkspaceSidebar({ wsId, workspaces, active, onNavigate }: Works
           <CircleCheckBig className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="min-w-0 flex-1 truncate">Minhas tarefas</span>
         </Link>
+        <Link to="/w/$wsId/tudo" params={{ wsId }} onClick={onNavigate} className={homeRow}>
+          <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1 truncate">Tudo</span>
+        </Link>
       </nav>
+
+      <FavoritesSection wsId={wsId} {...(onNavigate ? { onNavigate } : {})} />
 
       <nav aria-label="Spaces" className="flex min-w-0 flex-col">
         <div className="flex items-center justify-between">
