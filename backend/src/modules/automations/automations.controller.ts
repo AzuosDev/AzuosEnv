@@ -10,7 +10,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -27,12 +29,14 @@ import {
   CreateAutomationDto,
   UpdateAutomationDto,
 } from './dto/automation.dto';
+import { AutomationRecipesDto, AutomationResultDto } from './dto/automation-result.dto';
 import { Automation, AutomationDocument } from './schemas/automation.schema';
 import { AutomationRun, AutomationRunDocument } from './schemas/automation-run.schema';
 
 @ApiTags('automations')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/automations')
 export class AutomationsController {
   constructor(
@@ -41,7 +45,10 @@ export class AutomationsController {
   ) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Automação criada; o secret do hook aparece uma única vez.' })
+  @ApiCreatedResponse({
+    description: 'Automação criada; o secret do hook aparece uma única vez.',
+    type: AutomationResultDto,
+  })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateAutomationDto,
@@ -60,7 +67,7 @@ export class AutomationsController {
 
   /** Declared before :automationId so the word is not read as an id. */
   @Get('recipes')
-  @ApiOkResponse({ description: 'Receitas prontas de automação.' })
+  @ApiOkResponse({ description: 'Receitas prontas de automação.', type: AutomationRecipesDto })
   recipes(): { items: AutomationRecipe[] } {
     return { items: AUTOMATION_RECIPES };
   }
@@ -79,7 +86,7 @@ export class AutomationsController {
   }
 
   @Patch(':automationId')
-  @ApiOkResponse({ description: 'Automação atualizada.' })
+  @ApiOkResponse({ description: 'Automação atualizada.', type: AutomationResultDto })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('automationId', ParseObjectIdPipe) automationId: Types.ObjectId,
@@ -89,7 +96,7 @@ export class AutomationsController {
   }
 
   @Delete(':automationId')
-  @ApiOkResponse({ description: 'Automação excluída.' })
+  @ApiOkResponse({ description: 'Automação excluída.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('automationId', ParseObjectIdPipe) automationId: Types.ObjectId,

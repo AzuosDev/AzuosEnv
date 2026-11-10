@@ -66,4 +66,25 @@ export const queryKeys = {
   recent: (workspaceId: string) => ['workspaces', workspaceId, 'recent'] as const,
   search: (workspaceId: string, term: string) =>
     ['workspaces', workspaceId, 'search', term] as const,
+  timesheet: (workspaceId: string, userId: string, weekStart: string) =>
+    ['workspaces', workspaceId, 'timesheets', 'grid', userId, weekStart] as const,
+  weekEntries: (workspaceId: string, userId: string, weekStart: string) =>
+    ['workspaces', workspaceId, 'timesheets', 'entries', userId, weekStart] as const,
+  timesheetApprovals: (workspaceId: string) =>
+    ['workspaces', workspaceId, 'timesheets', 'approvals'] as const,
+  dashboards: (workspaceId: string) => ['workspaces', workspaceId, 'dashboards'] as const,
+  dashboard: (workspaceId: string, dashboardId: string) =>
+    ['workspaces', workspaceId, 'dashboards', dashboardId] as const,
+  cardData: (workspaceId: string, dashboardId: string, cardId: string, params: unknown) =>
+    ['workspaces', workspaceId, 'dashboards', dashboardId, 'cards', cardId, params] as const,
+  automations: (workspaceId: string, params: Record<string, unknown>) =>
+    ['workspaces', workspaceId, 'automations', params] as const,
+  automation: (workspaceId: string, automationId: string) =>
+    ['workspaces', workspaceId, 'automations', 'detail', automationId] as const,
+  automationRuns: (workspaceId: string, automationId: string) =>
+    ['workspaces', workspaceId, 'automations', 'detail', automationId, 'runs'] as const,
+  automationRecipes: (workspaceId: string) =>
+    ['workspaces', workspaceId, 'automations', 'recipes'] as const,
+  templates: (workspaceId: string, type: string) =>
+    ['workspaces', workspaceId, 'templates', type] as const,
 } as const;

@@ -12,8 +12,16 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Response } from 'express';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
@@ -41,6 +49,7 @@ import {
   DashboardQueryDto,
   UpdateDashboardDto,
 } from './dto/dashboard.dto';
+import { CardDataResponseDto, CardDataShapesDto } from './dto/card-data.dto';
 import { Dashboard, DashboardDocument } from './schemas/dashboard.schema';
 
 interface CardDataResponse {
@@ -52,6 +61,8 @@ interface CardDataResponse {
 @ApiTags('dashboards')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
+@ApiExtraModels(CardDataShapesDto)
 @Controller('workspaces/:wsId/dashboards')
 export class DashboardsController {
   constructor(
@@ -98,7 +109,7 @@ export class DashboardsController {
   }
 
   @Delete(':dashboardId')
-  @ApiOkResponse({ description: 'Dashboard excluído.' })
+  @ApiOkResponse({ description: 'Dashboard excluído.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('dashboardId', ParseObjectIdPipe) dashboardId: Types.ObjectId,
@@ -110,7 +121,7 @@ export class DashboardsController {
 
   @Post(':dashboardId/cards/:cardId/data')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Dados agregados do card.' })
+  @ApiOkResponse({ description: 'Dados agregados do card.', type: CardDataResponseDto })
   async data(
     @CurrentMembership() membership: RequestMembership,
     @CurrentWorkspace() workspace: WorkspaceDocument,

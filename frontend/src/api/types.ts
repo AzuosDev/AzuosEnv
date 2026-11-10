@@ -291,3 +291,112 @@ export type MyTasksResult = Omit<components['schemas']['MyTasksResultDto'], 'sec
 };
 export type MyTasksSections = Record<DueBucket, Task[]>;
 export type DueBucket = keyof components['schemas']['MyTasksSectionsDto'];
+
+/* Timesheets ------------------------------------------------------------ */
+
+export type Timesheet = components['schemas']['TimesheetDto'];
+export type TimesheetRow = components['schemas']['TimesheetRowDto'];
+export type TimesheetTotals = components['schemas']['TimesheetTotalsDto'];
+export type TimesheetApproval = components['schemas']['TimesheetApprovalDto'];
+export type TimesheetSubmitResult = components['schemas']['TimesheetSubmitResultDto'];
+export type TimesheetReviewResult = components['schemas']['TimesheetReviewResultDto'];
+export type ApprovalStatus = Timesheet['approvalStatus'];
+
+/* Dashboards ------------------------------------------------------------ */
+
+export type Dashboard = Doc<
+  Omit<components['schemas']['Dashboard'], 'cards'> & { cards: DashboardCard[] }
+>;
+
+/** Card salvo; `config` é JSON livre no contrato e vira CardConfig aqui. */
+export type DashboardCard = Omit<components['schemas']['DashboardCard'], 'config'> & {
+  config: CardConfig;
+};
+export type CardType = DashboardCard['type'];
+export type CardConfig = components['schemas']['CardConfigDto'];
+export type CardInput = Omit<components['schemas']['CardDto'], 'config'> & {
+  config?: CardConfig;
+};
+export type CreateDashboardInput = components['schemas']['CreateDashboardDto'];
+export type UpdateDashboardInput = Omit<components['schemas']['UpdateDashboardDto'], 'cards'> & {
+  cards?: CardInput[];
+};
+
+/** Resposta do card; `data` muda com o tipo e é lida pelos modelos abaixo. */
+export type CardDataResponse = Omit<components['schemas']['CardDataResponseDto'], 'data'> & {
+  data: unknown;
+};
+export type CardTasksByStatus = components['schemas']['CardTasksByStatusDto'];
+export type CardTasksByAssignee = components['schemas']['CardTasksByAssigneeDto'];
+export type CardBurndown = components['schemas']['CardBurndownDto'];
+export type CardBurnup = components['schemas']['CardBurnupDto'];
+export type CardTimeByClient = components['schemas']['CardTimeByClientDto'];
+export type CardTimeByUser = components['schemas']['CardTimeByUserDto'];
+export type CardBillable = components['schemas']['CardBillableDto'];
+export type CardTaskList = components['schemas']['CardTaskListDto'];
+export type CardTaskRow = components['schemas']['CardTaskRowDto'];
+export type CardCalculator = components['schemas']['CardCalculatorDto'];
+export type CalculatorTaskField = NonNullable<CardConfig['taskField']>;
+export type CalculatorOp = NonNullable<CardConfig['op']>;
+
+/* Automações ------------------------------------------------------------ */
+
+export type Automation = Doc<
+  Omit<components['schemas']['Automation'], 'trigger' | 'conditions' | 'actions'> & {
+    trigger: AutomationTrigger;
+    conditions: AutomationCondition[];
+    actions: AutomationAction[];
+  }
+>;
+export type AutomationTrigger = FreeJson<components['schemas']['AutomationTrigger'], 'params'>;
+export type AutomationCondition = FreeJson<components['schemas']['AutomationCondition'], 'value'>;
+export type AutomationAction = FreeJson<components['schemas']['AutomationAction'], 'params'>;
+export type TriggerType = AutomationTrigger['type'];
+export type ActionType = AutomationAction['type'];
+export type ConditionOp = AutomationCondition['op'];
+export type AutomationLocationType = Automation['locationType'];
+export type TriggerParams = components['schemas']['TriggerParamsDto'];
+export type ActionParams = FreeJsonOptional<components['schemas']['ActionParamsDto'], 'value'>;
+export type CreateAutomationInput = Omit<
+  components['schemas']['CreateAutomationDto'],
+  'trigger' | 'conditions' | 'actions'
+> & {
+  trigger: AutomationTriggerInput;
+  conditions?: AutomationConditionInput[];
+  actions: AutomationActionInput[];
+};
+export type UpdateAutomationInput = Partial<
+  Omit<CreateAutomationInput, 'locationType' | 'locationId'>
+>;
+export type AutomationTriggerInput = Omit<components['schemas']['TriggerDto'], 'params'> & {
+  params?: TriggerParams;
+};
+export type AutomationConditionInput = FreeJsonOptional<
+  components['schemas']['ConditionDto'],
+  'value'
+>;
+export type AutomationActionInput = Omit<components['schemas']['ActionDto'], 'params'> & {
+  params?: ActionParams;
+};
+export type AutomationResult = Omit<components['schemas']['AutomationResultDto'], 'automation'> & {
+  automation: Automation;
+};
+export type AutomationRecipe = Omit<
+  components['schemas']['AutomationRecipeDto'],
+  'trigger' | 'conditions' | 'actions'
+> & {
+  trigger: AutomationTriggerInput;
+  conditions: AutomationConditionInput[];
+  actions: AutomationActionInput[];
+};
+export type AutomationRun = Doc<components['schemas']['AutomationRun']>;
+export type AutomationRunStatus = AutomationRun['status'];
+
+/* Templates ------------------------------------------------------------- */
+
+export type Template = Doc<components['schemas']['Template']>;
+export type TemplateType = Template['type'];
+export type CreateTemplateInput = components['schemas']['CreateTemplateDto'];
+export type ApplyTemplateInput = components['schemas']['ApplyTemplateDto'];
+export type TemplateTargetType = NonNullable<ApplyTemplateInput['targetType']>;
+export type AppliedTemplate = components['schemas']['AppliedTemplateDto'];

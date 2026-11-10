@@ -5007,13 +5007,78 @@ export interface components {
             billable?: boolean;
             note?: string;
         };
+        TimesheetRowDto: {
+            taskId: string;
+            customId: string;
+            name: string;
+            listId: string;
+            listName: string;
+            /** @description Cliente da List; vazio quando não há. */
+            client: string;
+            /** @description Minutos por dia, com a data YYYY-MM-DD na chave. */
+            minutes: {
+                [key: string]: number;
+            };
+            total: number;
+            billableMinutes: number;
+        };
+        TimesheetTotalsDto: {
+            byDay: {
+                [key: string]: number;
+            };
+            total: number;
+            billableMinutes: number;
+        };
+        TimesheetDto: {
+            userId: string;
+            /** @example America/Sao_Paulo */
+            timezone: string;
+            /** @description Segunda-feira da semana (YYYY-MM-DD). */
+            weekStart: string;
+            /** @description Domingo da semana (YYYY-MM-DD). */
+            weekEnd: string;
+            /** @description Os sete dias da semana, de segunda a domingo. */
+            days: string[];
+            rows: components["schemas"]["TimesheetRowDto"][];
+            totals: components["schemas"]["TimesheetTotalsDto"];
+            /** @enum {string} */
+            approvalStatus: "draft" | "submitted" | "approved" | "rejected";
+            /** @description Lançamentos da semana. */
+            entries: number;
+        };
         SubmitTimesheetDto: {
             /** @description Qualquer dia da semana enviada. */
             weekStart: string;
         };
+        TimesheetSubmitResultDto: {
+            weekStart: string;
+            /** @enum {string} */
+            approvalStatus: "draft" | "submitted" | "approved" | "rejected";
+            /** @description Lançamentos que mudaram de status. */
+            updated: number;
+        };
+        TimesheetApprovalDto: {
+            userId: string;
+            name: string;
+            weekStart: string;
+            totalMinutes: number;
+            billableMinutes: number;
+            entries: number;
+        };
+        TimesheetApprovalsDto: {
+            items: components["schemas"]["TimesheetApprovalDto"][];
+        };
         ReviewTimesheetDto: {
             userId: string;
             weekStart: string;
+        };
+        TimesheetReviewResultDto: {
+            weekStart: string;
+            /** @enum {string} */
+            approvalStatus: "draft" | "submitted" | "approved" | "rejected";
+            /** @description Lançamentos que mudaram de status. */
+            updated: number;
+            userId: string;
         };
         WorkloadMemberDto: {
             userId: string;
@@ -5043,6 +5108,110 @@ export interface components {
             /** @description Membros ativos do workspace. */
             members: components["schemas"]["WorkloadMemberDto"][];
         };
+        CardStatusSliceDto: {
+            statusId: string;
+            name: string;
+            /** @enum {string|null} */
+            group: "notStarted" | "active" | "done" | "closed" | null;
+            position: number;
+            count: number;
+        };
+        CardTasksByStatusDto: {
+            items: components["schemas"]["CardStatusSliceDto"][];
+            total: number;
+        };
+        CardAssigneeSliceDto: {
+            userId: string | null;
+            name: string;
+            count: number;
+        };
+        CardTasksByAssigneeDto: {
+            items: components["schemas"]["CardAssigneeSliceDto"][];
+            total: number;
+        };
+        CardBurndownDto: {
+            days: string[];
+            total: number;
+            remaining: number[];
+            ideal: number[];
+        };
+        CardBurnupDto: {
+            days: string[];
+            scope: number[];
+            completed: number[];
+        };
+        CardTimeByClientRowDto: {
+            client: string;
+            minutes: number;
+            billableMinutes: number;
+            hours: number;
+        };
+        CardTimeByClientDto: {
+            items: components["schemas"]["CardTimeByClientRowDto"][];
+            totalMinutes: number;
+        };
+        CardTimeByUserRowDto: {
+            userId: string;
+            name: string;
+            minutes: number;
+            billableMinutes: number;
+            hours: number;
+        };
+        CardTimeByUserDto: {
+            items: components["schemas"]["CardTimeByUserRowDto"][];
+            totalMinutes: number;
+        };
+        CardBillableDto: {
+            totalMinutes: number;
+            billableMinutes: number;
+            nonBillableMinutes: number;
+            billableHours: number;
+            totalHours: number;
+            /** @description Percentual inteiro de 0 a 100. */
+            billablePercent: number;
+        };
+        CardTaskRowDto: {
+            id: string;
+            customId: string;
+            name: string;
+            status: string;
+            /** @enum {string} */
+            statusGroup: "notStarted" | "active" | "done" | "closed";
+            /** @enum {string|null} */
+            priority: "urgent" | "high" | "normal" | "low" | null;
+            /** @description Nomes dos responsáveis. */
+            assignees: string[];
+            /** Format: date-time */
+            dueAt: string | null;
+            points: number | null;
+            estimateMinutes: number | null;
+            trackedMinutes: number;
+        };
+        CardTaskListDto: {
+            /** @description Total que casa com o recorte, antes do limite. */
+            total: number;
+            items: components["schemas"]["CardTaskRowDto"][];
+        };
+        CardCalculatorDto: {
+            /** @example sum */
+            op: string;
+            /** @description Campo da tarefa ou id do campo personalizado. */
+            field: string;
+            /** @description Tarefas que entraram na conta. */
+            count: number;
+            value: number;
+        };
+        CardDataShapesDto: {
+            tasksByStatus?: components["schemas"]["CardTasksByStatusDto"];
+            tasksByAssignee?: components["schemas"]["CardTasksByAssigneeDto"];
+            burndown?: components["schemas"]["CardBurndownDto"];
+            burnup?: components["schemas"]["CardBurnupDto"];
+            timeByClient?: components["schemas"]["CardTimeByClientDto"];
+            timeByUser?: components["schemas"]["CardTimeByUserDto"];
+            billable?: components["schemas"]["CardBillableDto"];
+            taskList?: components["schemas"]["CardTaskListDto"];
+            calculator?: components["schemas"]["CardCalculatorDto"];
+        };
         CardConfigDto: {
             /** @enum {string} */
             location?: "space" | "folder" | "list" | "everything";
@@ -5064,10 +5233,10 @@ export interface components {
             /** @enum {string} */
             taskField?: "estimateMinutes" | "points" | "trackedMinutes";
             /**
-             * @default sum
+             * @description Ausente soma (sum).
              * @enum {string}
              */
-            op: "sum" | "avg";
+            op?: "sum" | "avg";
             limit?: number;
         };
         CardDto: {
@@ -5120,6 +5289,14 @@ export interface components {
         CardDataDto: {
             /** @description Sobrepõe o config salvo do card. */
             config?: components["schemas"]["CardConfigDto"];
+        };
+        CardDataResponseDto: {
+            cardId: string;
+            /** @enum {string} */
+            type: "tasksByStatus" | "tasksByAssignee" | "workload" | "burndown" | "burnup" | "timeByClient" | "timeByUser" | "billable" | "overdueList" | "taskTable" | "calculator";
+            data: {
+                [key: string]: unknown;
+            };
         };
         TriggerParamsDto: {
             /** @description statusChanged: status de destino. */
@@ -5255,6 +5432,48 @@ export interface components {
             actions: components["schemas"]["AutomationAction"][];
             createdBy: components["schemas"]["ObjectId"];
         };
+        AutomationResultDto: {
+            automation: components["schemas"]["Automation"];
+            /** @description Segredo do hook, mostrado só na criação ou ao girar. */
+            webhookSecret?: string;
+            /** @description URL pública do hook, com o segredo embutido. */
+            webhookUrl?: string;
+        };
+        AutomationRecipeTriggerDto: {
+            /** @enum {string} */
+            type: "taskCreated" | "statusChanged" | "assigneeChanged" | "priorityChanged" | "dueDateArrived" | "dueDatePassed" | "allSubtasksDone" | "formSubmitted" | "webhookReceived" | "schedule";
+            params: {
+                [key: string]: unknown;
+            };
+        };
+        AutomationRecipeConditionDto: {
+            field: string;
+            /** @enum {string} */
+            op: "eq" | "ne" | "contains" | "notContains" | "gt" | "lt" | "in" | "nin" | "isEmpty" | "isNotEmpty";
+            /** @description Valor comparado; JSON livre. */
+            value?: Record<string, never>;
+        };
+        AutomationRecipeActionDto: {
+            /** @enum {string} */
+            type: "setStatus" | "assign" | "unassign" | "setPriority" | "addComment" | "moveToList" | "addTag" | "setCustomField" | "createTask" | "applyTemplate" | "notify" | "callWebhook";
+            params: {
+                [key: string]: unknown;
+            };
+        };
+        AutomationRecipeDto: {
+            key: string;
+            name: string;
+            description: string;
+            locationTypes: ("space" | "folder" | "list")[];
+            trigger: components["schemas"]["AutomationRecipeTriggerDto"];
+            conditions: components["schemas"]["AutomationRecipeConditionDto"][];
+            actions: components["schemas"]["AutomationRecipeActionDto"][];
+            /** @description Caminhos que o usuário precisa preencher, como actions.0.params.userIds. */
+            requires: string[];
+        };
+        AutomationRecipesDto: {
+            items: components["schemas"]["AutomationRecipeDto"][];
+        };
         UpdateAutomationDto: {
             name?: string;
             /** @default true */
@@ -5305,6 +5524,12 @@ export interface components {
             name?: string;
             /** @description Ancora das datas relativas (UTC ISO 8601); padrao agora. */
             startAt?: string;
+        };
+        AppliedTemplateDto: {
+            /** @description Id do recurso criado. */
+            id: string;
+            /** @description Nome do recurso criado. */
+            name: string;
         };
         CreateDocDto: {
             /** @enum {string} */
@@ -10373,7 +10598,10 @@ export interface operations {
                 weekStart?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -10383,7 +10611,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TimesheetDto"];
+                };
             };
         };
     };
@@ -10396,7 +10626,10 @@ export interface operations {
                 weekStart?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -10414,7 +10647,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -10428,7 +10664,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TimesheetSubmitResultDto"];
+                };
             };
         };
     };
@@ -10439,7 +10677,10 @@ export interface operations {
                 userId?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -10449,7 +10690,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TimesheetApprovalsDto"];
+                };
             };
         };
     };
@@ -10457,7 +10700,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -10471,7 +10717,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TimesheetReviewResultDto"];
+                };
             };
         };
     };
@@ -10479,7 +10727,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -10493,7 +10744,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TimesheetReviewResultDto"];
+                };
             };
         };
     };
@@ -10536,7 +10789,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -10560,7 +10816,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -10586,6 +10845,8 @@ export interface operations {
             header?: never;
             path: {
                 dashboardId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10608,6 +10869,8 @@ export interface operations {
             header?: never;
             path: {
                 dashboardId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10618,7 +10881,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -10628,6 +10893,8 @@ export interface operations {
             header?: never;
             path: {
                 dashboardId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10655,6 +10922,8 @@ export interface operations {
             path: {
                 dashboardId: components["schemas"]["ObjectId"];
                 cardId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10669,7 +10938,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CardDataResponseDto"];
+                };
             };
         };
     };
@@ -10680,6 +10951,8 @@ export interface operations {
             path: {
                 dashboardId: components["schemas"]["ObjectId"];
                 cardId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10705,7 +10978,10 @@ export interface operations {
                 active?: boolean;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -10729,7 +11005,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -10743,7 +11022,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AutomationResultDto"];
+                };
             };
         };
     };
@@ -10751,7 +11032,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -10761,7 +11045,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AutomationRecipesDto"];
+                };
             };
         };
     };
@@ -10771,6 +11057,8 @@ export interface operations {
             header?: never;
             path: {
                 automationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10793,6 +11081,8 @@ export interface operations {
             header?: never;
             path: {
                 automationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10803,7 +11093,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -10813,6 +11105,8 @@ export interface operations {
             header?: never;
             path: {
                 automationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10827,7 +11121,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AutomationResultDto"];
+                };
             };
         };
     };
@@ -10842,6 +11138,8 @@ export interface operations {
             header?: never;
             path: {
                 automationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10871,7 +11169,10 @@ export interface operations {
                 type?: "space" | "folder" | "list" | "task" | "checklist" | "view";
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -10895,7 +11196,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -10921,6 +11225,8 @@ export interface operations {
             header?: never;
             path: {
                 templateId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10943,6 +11249,8 @@ export interface operations {
             header?: never;
             path: {
                 templateId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10953,7 +11261,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -10963,6 +11273,8 @@ export interface operations {
             header?: never;
             path: {
                 templateId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -10977,7 +11289,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AppliedTemplateDto"];
+                };
             };
         };
     };

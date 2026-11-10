@@ -24,7 +24,6 @@ import { Route as AppWWsIdArquivadosRouteImport } from './routes/_app.w.$wsId.ar
 import { Route as AppWWsIdAutomacoesRouteImport } from './routes/_app.w.$wsId.automacoes'
 import { Route as AppWWsIdChatRouteImport } from './routes/_app.w.$wsId.chat'
 import { Route as AppWWsIdConfiguracoesRouteImport } from './routes/_app.w.$wsId.configuracoes'
-import { Route as AppWWsIdDashboardsRouteImport } from './routes/_app.w.$wsId.dashboards'
 import { Route as AppWWsIdDocsRouteImport } from './routes/_app.w.$wsId.docs'
 import { Route as AppWWsIdIaRouteImport } from './routes/_app.w.$wsId.ia'
 import { Route as AppWWsIdInboxRouteImport } from './routes/_app.w.$wsId.inbox'
@@ -43,6 +42,8 @@ import { Route as AppWWsIdConfiguracoesPessoasRouteImport } from './routes/_app.
 import { Route as AppWWsIdConfiguracoesPreferenciasRouteImport } from './routes/_app.w.$wsId.configuracoes.preferencias'
 import { Route as AppWWsIdConfiguracoesSegurancaRouteImport } from './routes/_app.w.$wsId.configuracoes.seguranca'
 import { Route as AppWWsIdConfiguracoesWorkspaceRouteImport } from './routes/_app.w.$wsId.configuracoes.workspace'
+import { Route as AppWWsIdDashboardsIndexRouteImport } from './routes/_app.w.$wsId.dashboards.index'
+import { Route as AppWWsIdDashboardsDashboardIdRouteImport } from './routes/_app.w.$wsId.dashboards.$dashboardId'
 import { Route as AppWWsIdFFolderIdRouteImport } from './routes/_app.w.$wsId.f.$folderId'
 import { Route as AppWWsIdLListIdRouteImport } from './routes/_app.w.$wsId.l.$listId'
 import { Route as AppWWsIdSSpaceIdRouteImport } from './routes/_app.w.$wsId.s.$spaceId'
@@ -119,11 +120,6 @@ const AppWWsIdChatRoute = AppWWsIdChatRouteImport.update({
 const AppWWsIdConfiguracoesRoute = AppWWsIdConfiguracoesRouteImport.update({
   id: '/configuracoes',
   path: '/configuracoes',
-  getParentRoute: () => AppWWsIdRoute,
-} as any)
-const AppWWsIdDashboardsRoute = AppWWsIdDashboardsRouteImport.update({
-  id: '/dashboards',
-  path: '/dashboards',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
 const AppWWsIdDocsRoute = AppWWsIdDocsRouteImport.update({
@@ -224,6 +220,17 @@ const AppWWsIdConfiguracoesWorkspaceRoute =
     path: '/workspace',
     getParentRoute: () => AppWWsIdConfiguracoesRoute,
   } as any)
+const AppWWsIdDashboardsIndexRoute = AppWWsIdDashboardsIndexRouteImport.update({
+  id: '/dashboards/',
+  path: '/dashboards/',
+  getParentRoute: () => AppWWsIdRoute,
+} as any)
+const AppWWsIdDashboardsDashboardIdRoute =
+  AppWWsIdDashboardsDashboardIdRouteImport.update({
+    id: '/dashboards/$dashboardId',
+    path: '/dashboards/$dashboardId',
+    getParentRoute: () => AppWWsIdRoute,
+  } as any)
 const AppWWsIdFFolderIdRoute = AppWWsIdFFolderIdRouteImport.update({
   id: '/f/$folderId',
   path: '/f/$folderId',
@@ -258,7 +265,6 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/automacoes': typeof AppWWsIdAutomacoesRoute
   '/w/$wsId/chat': typeof AppWWsIdChatRoute
   '/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesRouteWithChildren
-  '/w/$wsId/dashboards': typeof AppWWsIdDashboardsRoute
   '/w/$wsId/docs': typeof AppWWsIdDocsRoute
   '/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/w/$wsId/inbox': typeof AppWWsIdInboxRoute
@@ -277,11 +283,13 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/configuracoes/preferencias': typeof AppWWsIdConfiguracoesPreferenciasRoute
   '/w/$wsId/configuracoes/seguranca': typeof AppWWsIdConfiguracoesSegurancaRoute
   '/w/$wsId/configuracoes/workspace': typeof AppWWsIdConfiguracoesWorkspaceRoute
+  '/w/$wsId/dashboards/$dashboardId': typeof AppWWsIdDashboardsDashboardIdRoute
   '/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
   '/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
   '/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
   '/w/$wsId/configuracoes/': typeof AppWWsIdConfiguracoesIndexRoute
+  '/w/$wsId/dashboards/': typeof AppWWsIdDashboardsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -294,7 +302,6 @@ export interface FileRoutesByTo {
   '/w/$wsId/arquivados': typeof AppWWsIdArquivadosRoute
   '/w/$wsId/automacoes': typeof AppWWsIdAutomacoesRoute
   '/w/$wsId/chat': typeof AppWWsIdChatRoute
-  '/w/$wsId/dashboards': typeof AppWWsIdDashboardsRoute
   '/w/$wsId/docs': typeof AppWWsIdDocsRoute
   '/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/w/$wsId/inbox': typeof AppWWsIdInboxRoute
@@ -313,11 +320,13 @@ export interface FileRoutesByTo {
   '/w/$wsId/configuracoes/preferencias': typeof AppWWsIdConfiguracoesPreferenciasRoute
   '/w/$wsId/configuracoes/seguranca': typeof AppWWsIdConfiguracoesSegurancaRoute
   '/w/$wsId/configuracoes/workspace': typeof AppWWsIdConfiguracoesWorkspaceRoute
+  '/w/$wsId/dashboards/$dashboardId': typeof AppWWsIdDashboardsDashboardIdRoute
   '/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
   '/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
   '/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
   '/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesIndexRoute
+  '/w/$wsId/dashboards': typeof AppWWsIdDashboardsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -335,7 +344,6 @@ export interface FileRoutesById {
   '/_app/w/$wsId/automacoes': typeof AppWWsIdAutomacoesRoute
   '/_app/w/$wsId/chat': typeof AppWWsIdChatRoute
   '/_app/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesRouteWithChildren
-  '/_app/w/$wsId/dashboards': typeof AppWWsIdDashboardsRoute
   '/_app/w/$wsId/docs': typeof AppWWsIdDocsRoute
   '/_app/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/_app/w/$wsId/inbox': typeof AppWWsIdInboxRoute
@@ -354,11 +362,13 @@ export interface FileRoutesById {
   '/_app/w/$wsId/configuracoes/preferencias': typeof AppWWsIdConfiguracoesPreferenciasRoute
   '/_app/w/$wsId/configuracoes/seguranca': typeof AppWWsIdConfiguracoesSegurancaRoute
   '/_app/w/$wsId/configuracoes/workspace': typeof AppWWsIdConfiguracoesWorkspaceRoute
+  '/_app/w/$wsId/dashboards/$dashboardId': typeof AppWWsIdDashboardsDashboardIdRoute
   '/_app/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/_app/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
   '/_app/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
   '/_app/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
   '/_app/w/$wsId/configuracoes/': typeof AppWWsIdConfiguracoesIndexRoute
+  '/_app/w/$wsId/dashboards/': typeof AppWWsIdDashboardsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -375,7 +385,6 @@ export interface FileRouteTypes {
     | '/w/$wsId/automacoes'
     | '/w/$wsId/chat'
     | '/w/$wsId/configuracoes'
-    | '/w/$wsId/dashboards'
     | '/w/$wsId/docs'
     | '/w/$wsId/ia'
     | '/w/$wsId/inbox'
@@ -394,11 +403,13 @@ export interface FileRouteTypes {
     | '/w/$wsId/configuracoes/preferencias'
     | '/w/$wsId/configuracoes/seguranca'
     | '/w/$wsId/configuracoes/workspace'
+    | '/w/$wsId/dashboards/$dashboardId'
     | '/w/$wsId/f/$folderId'
     | '/w/$wsId/l/$listId'
     | '/w/$wsId/s/$spaceId'
     | '/w/$wsId/t/$customId'
     | '/w/$wsId/configuracoes/'
+    | '/w/$wsId/dashboards/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -411,7 +422,6 @@ export interface FileRouteTypes {
     | '/w/$wsId/arquivados'
     | '/w/$wsId/automacoes'
     | '/w/$wsId/chat'
-    | '/w/$wsId/dashboards'
     | '/w/$wsId/docs'
     | '/w/$wsId/ia'
     | '/w/$wsId/inbox'
@@ -430,11 +440,13 @@ export interface FileRouteTypes {
     | '/w/$wsId/configuracoes/preferencias'
     | '/w/$wsId/configuracoes/seguranca'
     | '/w/$wsId/configuracoes/workspace'
+    | '/w/$wsId/dashboards/$dashboardId'
     | '/w/$wsId/f/$folderId'
     | '/w/$wsId/l/$listId'
     | '/w/$wsId/s/$spaceId'
     | '/w/$wsId/t/$customId'
     | '/w/$wsId/configuracoes'
+    | '/w/$wsId/dashboards'
   id:
     | '__root__'
     | '/'
@@ -451,7 +463,6 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/automacoes'
     | '/_app/w/$wsId/chat'
     | '/_app/w/$wsId/configuracoes'
-    | '/_app/w/$wsId/dashboards'
     | '/_app/w/$wsId/docs'
     | '/_app/w/$wsId/ia'
     | '/_app/w/$wsId/inbox'
@@ -470,11 +481,13 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/configuracoes/preferencias'
     | '/_app/w/$wsId/configuracoes/seguranca'
     | '/_app/w/$wsId/configuracoes/workspace'
+    | '/_app/w/$wsId/dashboards/$dashboardId'
     | '/_app/w/$wsId/f/$folderId'
     | '/_app/w/$wsId/l/$listId'
     | '/_app/w/$wsId/s/$spaceId'
     | '/_app/w/$wsId/t/$customId'
     | '/_app/w/$wsId/configuracoes/'
+    | '/_app/w/$wsId/dashboards/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -590,13 +603,6 @@ declare module '@tanstack/react-router' {
       path: '/configuracoes'
       fullPath: '/w/$wsId/configuracoes'
       preLoaderRoute: typeof AppWWsIdConfiguracoesRouteImport
-      parentRoute: typeof AppWWsIdRoute
-    }
-    '/_app/w/$wsId/dashboards': {
-      id: '/_app/w/$wsId/dashboards'
-      path: '/dashboards'
-      fullPath: '/w/$wsId/dashboards'
-      preLoaderRoute: typeof AppWWsIdDashboardsRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
     '/_app/w/$wsId/docs': {
@@ -725,6 +731,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWWsIdConfiguracoesWorkspaceRouteImport
       parentRoute: typeof AppWWsIdConfiguracoesRoute
     }
+    '/_app/w/$wsId/dashboards/': {
+      id: '/_app/w/$wsId/dashboards/'
+      path: '/dashboards'
+      fullPath: '/w/$wsId/dashboards/'
+      preLoaderRoute: typeof AppWWsIdDashboardsIndexRouteImport
+      parentRoute: typeof AppWWsIdRoute
+    }
+    '/_app/w/$wsId/dashboards/$dashboardId': {
+      id: '/_app/w/$wsId/dashboards/$dashboardId'
+      path: '/dashboards/$dashboardId'
+      fullPath: '/w/$wsId/dashboards/$dashboardId'
+      preLoaderRoute: typeof AppWWsIdDashboardsDashboardIdRouteImport
+      parentRoute: typeof AppWWsIdRoute
+    }
     '/_app/w/$wsId/f/$folderId': {
       id: '/_app/w/$wsId/f/$folderId'
       path: '/f/$folderId'
@@ -790,7 +810,6 @@ interface AppWWsIdRouteChildren {
   AppWWsIdAutomacoesRoute: typeof AppWWsIdAutomacoesRoute
   AppWWsIdChatRoute: typeof AppWWsIdChatRoute
   AppWWsIdConfiguracoesRoute: typeof AppWWsIdConfiguracoesRouteWithChildren
-  AppWWsIdDashboardsRoute: typeof AppWWsIdDashboardsRoute
   AppWWsIdDocsRoute: typeof AppWWsIdDocsRoute
   AppWWsIdIaRoute: typeof AppWWsIdIaRoute
   AppWWsIdInboxRoute: typeof AppWWsIdInboxRoute
@@ -802,10 +821,12 @@ interface AppWWsIdRouteChildren {
   AppWWsIdTudoRoute: typeof AppWWsIdTudoRoute
   AppWWsIdWhiteboardsRoute: typeof AppWWsIdWhiteboardsRoute
   AppWWsIdIndexRoute: typeof AppWWsIdIndexRoute
+  AppWWsIdDashboardsDashboardIdRoute: typeof AppWWsIdDashboardsDashboardIdRoute
   AppWWsIdFFolderIdRoute: typeof AppWWsIdFFolderIdRoute
   AppWWsIdLListIdRoute: typeof AppWWsIdLListIdRoute
   AppWWsIdSSpaceIdRoute: typeof AppWWsIdSSpaceIdRoute
   AppWWsIdTCustomIdRoute: typeof AppWWsIdTCustomIdRoute
+  AppWWsIdDashboardsIndexRoute: typeof AppWWsIdDashboardsIndexRoute
 }
 
 const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
@@ -813,7 +834,6 @@ const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
   AppWWsIdAutomacoesRoute: AppWWsIdAutomacoesRoute,
   AppWWsIdChatRoute: AppWWsIdChatRoute,
   AppWWsIdConfiguracoesRoute: AppWWsIdConfiguracoesRouteWithChildren,
-  AppWWsIdDashboardsRoute: AppWWsIdDashboardsRoute,
   AppWWsIdDocsRoute: AppWWsIdDocsRoute,
   AppWWsIdIaRoute: AppWWsIdIaRoute,
   AppWWsIdInboxRoute: AppWWsIdInboxRoute,
@@ -825,10 +845,12 @@ const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
   AppWWsIdTudoRoute: AppWWsIdTudoRoute,
   AppWWsIdWhiteboardsRoute: AppWWsIdWhiteboardsRoute,
   AppWWsIdIndexRoute: AppWWsIdIndexRoute,
+  AppWWsIdDashboardsDashboardIdRoute: AppWWsIdDashboardsDashboardIdRoute,
   AppWWsIdFFolderIdRoute: AppWWsIdFFolderIdRoute,
   AppWWsIdLListIdRoute: AppWWsIdLListIdRoute,
   AppWWsIdSSpaceIdRoute: AppWWsIdSSpaceIdRoute,
   AppWWsIdTCustomIdRoute: AppWWsIdTCustomIdRoute,
+  AppWWsIdDashboardsIndexRoute: AppWWsIdDashboardsIndexRoute,
 }
 
 const AppWWsIdRouteWithChildren = AppWWsIdRoute._addFileChildren(

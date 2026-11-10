@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { safeTimeZone } from '../../common/utils/timezone';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import { Roles } from '../workspaces/decorators/roles.decorator';
@@ -27,6 +28,12 @@ import {
   SubmitTimesheetDto,
   TimesheetQueryDto,
 } from './dto/timesheet.dto';
+import {
+  TimesheetApprovalsDto,
+  TimesheetDto,
+  TimesheetReviewResultDto,
+  TimesheetSubmitResultDto,
+} from './dto/timesheet-result.dto';
 import { ApprovalStatus } from './time-fields';
 import {
   ReviewResult,
@@ -38,12 +45,16 @@ import {
 @ApiTags('timesheets')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/timesheets')
 export class TimesheetsController {
   constructor(private readonly timesheets: TimesheetsService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Grade tarefa × dia da semana, com cliente e totais.' })
+  @ApiOkResponse({
+    description: 'Grade tarefa × dia da semana, com cliente e totais.',
+    type: TimesheetDto,
+  })
   grid(
     @CurrentMembership() membership: RequestMembership,
     @CurrentWorkspace() workspace: WorkspaceDocument,
@@ -76,7 +87,7 @@ export class TimesheetsController {
 
   @Post('submit')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Semana enviada para aprovação.' })
+  @ApiOkResponse({ description: 'Semana enviada para aprovação.', type: TimesheetSubmitResultDto })
   submit(
     @CurrentMembership() membership: RequestMembership,
     @CurrentWorkspace() workspace: WorkspaceDocument,
@@ -91,7 +102,7 @@ export class TimesheetsController {
 
   @Get('approvals')
   @Roles('admin')
-  @ApiOkResponse({ description: 'Semanas aguardando aprovação.' })
+  @ApiOkResponse({ description: 'Semanas aguardando aprovação.', type: TimesheetApprovalsDto })
   approvals(
     @CurrentMembership() membership: RequestMembership,
     @CurrentWorkspace() workspace: WorkspaceDocument,
@@ -107,7 +118,7 @@ export class TimesheetsController {
   @Post('approve')
   @Roles('admin')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Semana aprovada.' })
+  @ApiOkResponse({ description: 'Semana aprovada.', type: TimesheetReviewResultDto })
   approve(
     @CurrentMembership() membership: RequestMembership,
     @CurrentWorkspace() workspace: WorkspaceDocument,
@@ -124,7 +135,7 @@ export class TimesheetsController {
   @Post('reject')
   @Roles('admin')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Semana rejeitada.' })
+  @ApiOkResponse({ description: 'Semana rejeitada.', type: TimesheetReviewResultDto })
   reject(
     @CurrentMembership() membership: RequestMembership,
     @CurrentWorkspace() workspace: WorkspaceDocument,

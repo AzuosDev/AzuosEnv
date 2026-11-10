@@ -94,7 +94,7 @@ export class CardConfigDto {
   @IsEnum(CALCULATOR_TASK_FIELDS)
   taskField?: CalculatorTaskField;
 
-  @ApiPropertyOptional({ enum: CALCULATOR_OPS, default: 'sum' })
+  @ApiPropertyOptional({ enum: CALCULATOR_OPS, description: 'Ausente soma (sum).' })
   @IsOptional()
   @IsEnum(CALCULATOR_OPS)
   op?: CalculatorOp;

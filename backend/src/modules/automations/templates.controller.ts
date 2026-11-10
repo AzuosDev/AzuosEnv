@@ -11,7 +11,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -24,6 +26,7 @@ import {
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { WorkspaceDocument } from '../workspaces/schemas/workspace.schema';
 import { RequestMembership } from '../workspaces/workspace-context';
+import { AppliedTemplateDto } from './dto/automation-result.dto';
 import { ApplyTemplateDto, CreateTemplateDto, TemplateQueryDto } from './dto/template.dto';
 import { Template, TemplateDocument } from './schemas/template.schema';
 import { AppliedTemplate, TemplatesService } from './templates.service';
@@ -31,6 +34,7 @@ import { AppliedTemplate, TemplatesService } from './templates.service';
 @ApiTags('templates')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/templates')
 export class TemplatesController {
   constructor(private readonly templates: TemplatesService) {}
@@ -67,6 +71,7 @@ export class TemplatesController {
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({
     description: 'Template aplicado no local; ids novos e datas recalculadas.',
+    type: AppliedTemplateDto,
   })
   apply(
     @CurrentMembership() membership: RequestMembership,
@@ -84,7 +89,7 @@ export class TemplatesController {
 
   @Delete(':templateId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Template excluído.' })
+  @ApiOkResponse({ description: 'Template excluído.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('templateId', ParseObjectIdPipe) templateId: Types.ObjectId,

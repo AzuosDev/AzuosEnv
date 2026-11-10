@@ -2,6 +2,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import 'react-grid-layout/css/styles.css';
 import { onSessionLost, setAccessToken } from '@/api/token-store';
 import { setSession } from '@/features/auth/session';
 import { createQueryClient } from '@/lib/query-client';

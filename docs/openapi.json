@@ -8645,11 +8645,28 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Grade tarefa × dia da semana, com cliente e totais."
+            "description": "Grade tarefa × dia da semana, com cliente e totais.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimesheetDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -8683,6 +8700,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -8703,7 +8730,18 @@
     "/api/v1/workspaces/{wsId}/timesheets/submit": {
       "post": {
         "operationId": "TimesheetsController_submit",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -8716,7 +8754,14 @@
         },
         "responses": {
           "200": {
-            "description": "Semana enviada para aprovação."
+            "description": "Semana enviada para aprovação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimesheetSubmitResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -8748,11 +8793,28 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Semanas aguardando aprovação."
+            "description": "Semanas aguardando aprovação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimesheetApprovalsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -8768,7 +8830,18 @@
     "/api/v1/workspaces/{wsId}/timesheets/approve": {
       "post": {
         "operationId": "TimesheetsController_approve",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -8781,7 +8854,14 @@
         },
         "responses": {
           "200": {
-            "description": "Semana aprovada."
+            "description": "Semana aprovada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimesheetReviewResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -8797,7 +8877,18 @@
     "/api/v1/workspaces/{wsId}/timesheets/reject": {
       "post": {
         "operationId": "TimesheetsController_reject",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -8810,7 +8901,14 @@
         },
         "responses": {
           "200": {
-            "description": "Semana rejeitada."
+            "description": "Semana rejeitada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimesheetReviewResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -8918,7 +9016,18 @@
     "/api/v1/workspaces/{wsId}/dashboards": {
       "post": {
         "operationId": "DashboardsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -8972,6 +9081,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -9024,6 +9143,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -9056,6 +9185,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -9100,11 +9239,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Dashboard excluído."
+            "description": "Dashboard excluído.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -9136,6 +9292,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -9150,7 +9316,14 @@
         },
         "responses": {
           "200": {
-            "description": "Dados agregados do card."
+            "description": "Dados agregados do card.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardDataResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -9182,6 +9355,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -9202,7 +9385,18 @@
     "/api/v1/workspaces/{wsId}/automations": {
       "post": {
         "operationId": "AutomationsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -9215,7 +9409,14 @@
         },
         "responses": {
           "201": {
-            "description": "Automação criada; o secret do hook aparece uma única vez."
+            "description": "Automação criada; o secret do hook aparece uma única vez.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -9278,6 +9479,16 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -9322,10 +9533,28 @@
     "/api/v1/workspaces/{wsId}/automations/recipes": {
       "get": {
         "operationId": "AutomationsController_recipes",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Receitas prontas de automação."
+            "description": "Receitas prontas de automação.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationRecipesDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -9349,6 +9578,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -9383,6 +9622,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -9397,7 +9646,14 @@
         },
         "responses": {
           "200": {
-            "description": "Automação atualizada."
+            "description": "Automação atualizada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -9419,11 +9675,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Automação excluída."
+            "description": "Automação excluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -9480,6 +9753,16 @@
                 "skipped"
               ]
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -9524,7 +9807,18 @@
     "/api/v1/workspaces/{wsId}/templates": {
       "post": {
         "operationId": "TemplatesController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -9594,6 +9888,16 @@
                 "view"
               ]
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -9646,6 +9950,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -9679,11 +9993,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Template excluído."
+            "description": "Template excluído.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -9707,6 +10038,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -9721,7 +10062,14 @@
         },
         "responses": {
           "201": {
-            "description": "Template aplicado no local; ids novos e datas recalculadas."
+            "description": "Template aplicado no local; ids novos e datas recalculadas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppliedTemplateDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -19590,6 +19938,136 @@
           }
         }
       },
+      "TimesheetRowDto": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string"
+          },
+          "customId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "listId": {
+            "type": "string"
+          },
+          "listName": {
+            "type": "string"
+          },
+          "client": {
+            "type": "string",
+            "description": "Cliente da List; vazio quando não há."
+          },
+          "minutes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Minutos por dia, com a data YYYY-MM-DD na chave."
+          },
+          "total": {
+            "type": "number"
+          },
+          "billableMinutes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "taskId",
+          "customId",
+          "name",
+          "listId",
+          "listName",
+          "client",
+          "minutes",
+          "total",
+          "billableMinutes"
+        ]
+      },
+      "TimesheetTotalsDto": {
+        "type": "object",
+        "properties": {
+          "byDay": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "billableMinutes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "byDay",
+          "total",
+          "billableMinutes"
+        ]
+      },
+      "TimesheetDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "America/Sao_Paulo"
+          },
+          "weekStart": {
+            "type": "string",
+            "description": "Segunda-feira da semana (YYYY-MM-DD)."
+          },
+          "weekEnd": {
+            "type": "string",
+            "description": "Domingo da semana (YYYY-MM-DD)."
+          },
+          "days": {
+            "description": "Os sete dias da semana, de segunda a domingo.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimesheetRowDto"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/TimesheetTotalsDto"
+          },
+          "approvalStatus": {
+            "enum": [
+              "draft",
+              "submitted",
+              "approved",
+              "rejected"
+            ],
+            "type": "string"
+          },
+          "entries": {
+            "type": "number",
+            "description": "Lançamentos da semana."
+          }
+        },
+        "required": [
+          "userId",
+          "timezone",
+          "weekStart",
+          "weekEnd",
+          "days",
+          "rows",
+          "totals",
+          "approvalStatus",
+          "entries"
+        ]
+      },
       "SubmitTimesheetDto": {
         "type": "object",
         "properties": {
@@ -19600,6 +20078,77 @@
         },
         "required": [
           "weekStart"
+        ]
+      },
+      "TimesheetSubmitResultDto": {
+        "type": "object",
+        "properties": {
+          "weekStart": {
+            "type": "string"
+          },
+          "approvalStatus": {
+            "enum": [
+              "draft",
+              "submitted",
+              "approved",
+              "rejected"
+            ],
+            "type": "string"
+          },
+          "updated": {
+            "type": "number",
+            "description": "Lançamentos que mudaram de status."
+          }
+        },
+        "required": [
+          "weekStart",
+          "approvalStatus",
+          "updated"
+        ]
+      },
+      "TimesheetApprovalDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "weekStart": {
+            "type": "string"
+          },
+          "totalMinutes": {
+            "type": "number"
+          },
+          "billableMinutes": {
+            "type": "number"
+          },
+          "entries": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "weekStart",
+          "totalMinutes",
+          "billableMinutes",
+          "entries"
+        ]
+      },
+      "TimesheetApprovalsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimesheetApprovalDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "ReviewTimesheetDto": {
@@ -19615,6 +20164,36 @@
         "required": [
           "userId",
           "weekStart"
+        ]
+      },
+      "TimesheetReviewResultDto": {
+        "type": "object",
+        "properties": {
+          "weekStart": {
+            "type": "string"
+          },
+          "approvalStatus": {
+            "enum": [
+              "draft",
+              "submitted",
+              "approved",
+              "rejected"
+            ],
+            "type": "string"
+          },
+          "updated": {
+            "type": "number",
+            "description": "Lançamentos que mudaram de status."
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "weekStart",
+          "approvalStatus",
+          "updated",
+          "userId"
         ]
       },
       "WorkloadMemberDto": {
@@ -19702,6 +20281,423 @@
           "members"
         ]
       },
+      "CardStatusSliceDto": {
+        "type": "object",
+        "properties": {
+          "statusId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "group": {
+            "nullable": true,
+            "enum": [
+              "notStarted",
+              "active",
+              "done",
+              "closed"
+            ],
+            "type": "string"
+          },
+          "position": {
+            "type": "number"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "statusId",
+          "name",
+          "group",
+          "position",
+          "count"
+        ]
+      },
+      "CardTasksByStatusDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CardStatusSliceDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "CardAssigneeSliceDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "count"
+        ]
+      },
+      "CardTasksByAssigneeDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CardAssigneeSliceDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "CardBurndownDto": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "remaining": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "ideal": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "days",
+          "total",
+          "remaining",
+          "ideal"
+        ]
+      },
+      "CardBurnupDto": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scope": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "completed": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "days",
+          "scope",
+          "completed"
+        ]
+      },
+      "CardTimeByClientRowDto": {
+        "type": "object",
+        "properties": {
+          "client": {
+            "type": "string"
+          },
+          "minutes": {
+            "type": "number"
+          },
+          "billableMinutes": {
+            "type": "number"
+          },
+          "hours": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "client",
+          "minutes",
+          "billableMinutes",
+          "hours"
+        ]
+      },
+      "CardTimeByClientDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CardTimeByClientRowDto"
+            }
+          },
+          "totalMinutes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "totalMinutes"
+        ]
+      },
+      "CardTimeByUserRowDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "minutes": {
+            "type": "number"
+          },
+          "billableMinutes": {
+            "type": "number"
+          },
+          "hours": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "minutes",
+          "billableMinutes",
+          "hours"
+        ]
+      },
+      "CardTimeByUserDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CardTimeByUserRowDto"
+            }
+          },
+          "totalMinutes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "totalMinutes"
+        ]
+      },
+      "CardBillableDto": {
+        "type": "object",
+        "properties": {
+          "totalMinutes": {
+            "type": "number"
+          },
+          "billableMinutes": {
+            "type": "number"
+          },
+          "nonBillableMinutes": {
+            "type": "number"
+          },
+          "billableHours": {
+            "type": "number"
+          },
+          "totalHours": {
+            "type": "number"
+          },
+          "billablePercent": {
+            "type": "number",
+            "description": "Percentual inteiro de 0 a 100."
+          }
+        },
+        "required": [
+          "totalMinutes",
+          "billableMinutes",
+          "nonBillableMinutes",
+          "billableHours",
+          "totalHours",
+          "billablePercent"
+        ]
+      },
+      "CardTaskRowDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "customId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "statusGroup": {
+            "enum": [
+              "notStarted",
+              "active",
+              "done",
+              "closed"
+            ],
+            "type": "string"
+          },
+          "priority": {
+            "nullable": true,
+            "enum": [
+              "urgent",
+              "high",
+              "normal",
+              "low"
+            ],
+            "type": "string"
+          },
+          "assignees": {
+            "description": "Nomes dos responsáveis.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dueAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "points": {
+            "type": "number",
+            "nullable": true
+          },
+          "estimateMinutes": {
+            "type": "number",
+            "nullable": true
+          },
+          "trackedMinutes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "customId",
+          "name",
+          "status",
+          "statusGroup",
+          "priority",
+          "assignees",
+          "dueAt",
+          "points",
+          "estimateMinutes",
+          "trackedMinutes"
+        ]
+      },
+      "CardTaskListDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "description": "Total que casa com o recorte, antes do limite."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CardTaskRowDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "items"
+        ]
+      },
+      "CardCalculatorDto": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string",
+            "example": "sum"
+          },
+          "field": {
+            "type": "string",
+            "description": "Campo da tarefa ou id do campo personalizado."
+          },
+          "count": {
+            "type": "number",
+            "description": "Tarefas que entraram na conta."
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "op",
+          "field",
+          "count",
+          "value"
+        ]
+      },
+      "CardDataShapesDto": {
+        "type": "object",
+        "properties": {
+          "tasksByStatus": {
+            "$ref": "#/components/schemas/CardTasksByStatusDto"
+          },
+          "tasksByAssignee": {
+            "$ref": "#/components/schemas/CardTasksByAssigneeDto"
+          },
+          "burndown": {
+            "$ref": "#/components/schemas/CardBurndownDto"
+          },
+          "burnup": {
+            "$ref": "#/components/schemas/CardBurnupDto"
+          },
+          "timeByClient": {
+            "$ref": "#/components/schemas/CardTimeByClientDto"
+          },
+          "timeByUser": {
+            "$ref": "#/components/schemas/CardTimeByUserDto"
+          },
+          "billable": {
+            "$ref": "#/components/schemas/CardBillableDto"
+          },
+          "taskList": {
+            "$ref": "#/components/schemas/CardTaskListDto"
+          },
+          "calculator": {
+            "$ref": "#/components/schemas/CardCalculatorDto"
+          }
+        }
+      },
       "CardConfigDto": {
         "type": "object",
         "properties": {
@@ -19771,7 +20767,7 @@
               "avg"
             ],
             "type": "string",
-            "default": "sum"
+            "description": "Ausente soma (sum)."
           },
           "limit": {
             "type": "number",
@@ -19972,6 +20968,39 @@
             ]
           }
         }
+      },
+      "CardDataResponseDto": {
+        "type": "object",
+        "properties": {
+          "cardId": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "tasksByStatus",
+              "tasksByAssignee",
+              "workload",
+              "burndown",
+              "burnup",
+              "timeByClient",
+              "timeByUser",
+              "billable",
+              "overdueList",
+              "taskTable",
+              "calculator"
+            ],
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "cardId",
+          "type",
+          "data"
+        ]
       },
       "TriggerParamsDto": {
         "type": "object",
@@ -20417,6 +21446,185 @@
           "createdBy"
         ]
       },
+      "AutomationResultDto": {
+        "type": "object",
+        "properties": {
+          "automation": {
+            "$ref": "#/components/schemas/Automation"
+          },
+          "webhookSecret": {
+            "type": "string",
+            "description": "Segredo do hook, mostrado só na criação ou ao girar."
+          },
+          "webhookUrl": {
+            "type": "string",
+            "description": "URL pública do hook, com o segredo embutido."
+          }
+        },
+        "required": [
+          "automation"
+        ]
+      },
+      "AutomationRecipeTriggerDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "taskCreated",
+              "statusChanged",
+              "assigneeChanged",
+              "priorityChanged",
+              "dueDateArrived",
+              "dueDatePassed",
+              "allSubtasksDone",
+              "formSubmitted",
+              "webhookReceived",
+              "schedule"
+            ],
+            "type": "string"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "type",
+          "params"
+        ]
+      },
+      "AutomationRecipeConditionDto": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "eq",
+              "ne",
+              "contains",
+              "notContains",
+              "gt",
+              "lt",
+              "in",
+              "nin",
+              "isEmpty",
+              "isNotEmpty"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "object",
+            "description": "Valor comparado; JSON livre."
+          }
+        },
+        "required": [
+          "field",
+          "op"
+        ]
+      },
+      "AutomationRecipeActionDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "setStatus",
+              "assign",
+              "unassign",
+              "setPriority",
+              "addComment",
+              "moveToList",
+              "addTag",
+              "setCustomField",
+              "createTask",
+              "applyTemplate",
+              "notify",
+              "callWebhook"
+            ],
+            "type": "string"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "type",
+          "params"
+        ]
+      },
+      "AutomationRecipeDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "locationTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "space",
+                "folder",
+                "list"
+              ]
+            }
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/AutomationRecipeTriggerDto"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AutomationRecipeConditionDto"
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AutomationRecipeActionDto"
+            }
+          },
+          "requires": {
+            "description": "Caminhos que o usuário precisa preencher, como actions.0.params.userIds.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "description",
+          "locationTypes",
+          "trigger",
+          "conditions",
+          "actions",
+          "requires"
+        ]
+      },
+      "AutomationRecipesDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AutomationRecipeDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "UpdateAutomationDto": {
         "type": "object",
         "properties": {
@@ -20595,6 +21803,23 @@
             "description": "Ancora das datas relativas (UTC ISO 8601); padrao agora."
           }
         }
+      },
+      "AppliedTemplateDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id do recurso criado."
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do recurso criado."
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
       },
       "CreateDocDto": {
         "type": "object",
