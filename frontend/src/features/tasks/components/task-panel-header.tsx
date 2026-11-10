@@ -53,6 +53,7 @@ export interface TaskPanelHeaderProps {
   onMove: () => void;
   onAddList: () => void;
   onArchive: () => void;
+  onSaveTemplate: () => void;
   onDelete: () => void;
   onClose: () => void;
 }
@@ -97,6 +98,7 @@ export function TaskPanelHeader({
   onMove,
   onAddList,
   onArchive,
+  onSaveTemplate,
   onDelete,
   onClose,
 }: TaskPanelHeaderProps) {
@@ -302,6 +304,10 @@ export function TaskPanelHeader({
             >
               <Link2 className="h-4 w-4" aria-hidden="true" />
               Copiar link
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onSaveTemplate}>
+              <Copy className="h-4 w-4" aria-hidden="true" />
+              Salvar como template
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={onArchive}>

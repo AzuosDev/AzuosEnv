@@ -68,10 +68,7 @@ function HourCell({
       aria-invalid={invalid || undefined}
       disabled={busy}
       value={text}
-      className={cn(
-        'h-9 w-[64px] px-1.5 text-center text-[13px] md:h-9',
-        invalid && 'border-danger',
-      )}
+      className={cn('h-9 w-[56px] px-1 text-center text-[13px] md:h-9', invalid && 'border-danger')}
       onChange={(event) => {
         setText(event.target.value);
       }}
@@ -120,7 +117,7 @@ export function WeekGrid({
 }: WeekGridProps) {
   return (
     <div className="min-w-0 overflow-x-auto rounded-2xl border border-line">
-      <table className="w-full min-w-[920px] border-collapse text-[13px]">
+      <table className="w-full min-w-[820px] border-collapse text-[13px]">
         <caption className="sr-only">Horas lançadas por tarefa e por dia da semana</caption>
         <thead>
           <tr className="bg-surface-2 text-left">
@@ -156,10 +153,10 @@ export function WeekGrid({
         <tbody>
           {rows.map((row) => (
             <tr key={row.taskId} className="border-t border-line">
-              <td className="max-w-[260px] px-3 py-2">
+              <td className="max-w-[220px] px-3 py-2">
                 <TaskCell wsId={wsId} row={row} />
               </td>
-              <td className="px-3 py-2 text-body">{row.client || '—'}</td>
+              <td className="max-w-[120px] truncate px-3 py-2 text-body">{row.client || '—'}</td>
               <td className="px-2 py-2 text-center">
                 <Checkbox
                   aria-label={`Faturável: ${row.name}`}
@@ -183,7 +180,7 @@ export function WeekGrid({
                   />
                 </td>
               ))}
-              <td className="px-3 py-2 text-right font-semibold text-ink">
+              <td className="whitespace-nowrap px-3 py-2 text-right font-semibold text-ink">
                 {formatCellHours(row.total)}
               </td>
             </tr>
@@ -197,7 +194,10 @@ export function WeekGrid({
                 {formatCellHours(totalsByDay[day] ?? 0)}
               </td>
             ))}
-            <td data-testid="week-total" className="px-3 py-2.5 text-right font-bold text-ink">
+            <td
+              data-testid="week-total"
+              className="whitespace-nowrap px-3 py-2.5 text-right font-bold text-ink"
+            >
               {formatCellHours(total)}
             </td>
           </tr>

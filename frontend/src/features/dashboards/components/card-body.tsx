@@ -28,7 +28,7 @@ import {
   userSlices,
   workloadSlices,
 } from '../card-model';
-import { ChartLegend, SeriesLines, SliceDonut, SliceRows } from './card-charts';
+import { ChartLegend, SeriesLines, SliceDonut, SliceRows, seriesSummary } from './card-charts';
 
 export interface CardBodyProps {
   wsId: string;
@@ -145,6 +145,12 @@ export function CardBody({ wsId, type, data, palette }: CardBodyProps) {
   }
 
   if (type === 'burndown') {
+    const points = burndownSeries(data as CardBurndown);
+    const lines = [
+      { key: 'restante', label: 'Restante' },
+      { key: 'ideal', label: 'Ideal', dashed: true },
+    ];
+
     return (
       <div className="flex min-h-0 flex-1 flex-col gap-2">
         <ChartLegend
@@ -154,21 +160,20 @@ export function CardBody({ wsId, type, data, palette }: CardBodyProps) {
             { label: 'Ideal', index: 1, dashed: true },
           ]}
         />
-        <div className="min-h-0 flex-1">
-          <SeriesLines
-            points={burndownSeries(data as CardBurndown)}
-            palette={palette}
-            lines={[
-              { key: 'restante', label: 'Restante' },
-              { key: 'ideal', label: 'Ideal', dashed: true },
-            ]}
-          />
+        <div role="img" aria-label={seriesSummary(points, lines)} className="min-h-0 flex-1">
+          <SeriesLines points={points} palette={palette} lines={lines} />
         </div>
       </div>
     );
   }
 
   if (type === 'burnup') {
+    const points = burnupSeries(data as CardBurnup);
+    const lines = [
+      { key: 'escopo', label: 'Escopo' },
+      { key: 'concluido', label: 'Concluído' },
+    ];
+
     return (
       <div className="flex min-h-0 flex-1 flex-col gap-2">
         <ChartLegend
@@ -178,15 +183,8 @@ export function CardBody({ wsId, type, data, palette }: CardBodyProps) {
             { label: 'Concluído', index: 1 },
           ]}
         />
-        <div className="min-h-0 flex-1">
-          <SeriesLines
-            points={burnupSeries(data as CardBurnup)}
-            palette={palette}
-            lines={[
-              { key: 'escopo', label: 'Escopo' },
-              { key: 'concluido', label: 'Concluído' },
-            ]}
-          />
+        <div role="img" aria-label={seriesSummary(points, lines)} className="min-h-0 flex-1">
+          <SeriesLines points={points} palette={palette} lines={lines} />
         </div>
       </div>
     );
@@ -223,7 +221,7 @@ export function CardBody({ wsId, type, data, palette }: CardBodyProps) {
       <div className="flex min-h-0 flex-1 items-center gap-4">
         <Figure value={`${String(billable.billablePercent)}%`} hint={hint} />
         {slices.length > 0 ? (
-          <div className="min-h-[90px] min-w-0 flex-1">
+          <div aria-hidden="true" className="min-h-[90px] min-w-0 flex-1">
             <SliceDonut
               slices={slices}
               palette={palette}

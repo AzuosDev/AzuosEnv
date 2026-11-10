@@ -15,7 +15,7 @@ const buttonVariants = cva(
         nav: 'border-0 bg-transparent text-muted hover:bg-surface-2 hover:text-ink',
       },
       size: {
-        sm: 'h-9 px-3 text-[13px]',
+        sm: 'h-11 px-3 text-[13px] md:h-9',
         md: 'h-11 px-4 md:h-10',
         lg: 'h-12 px-6',
         icon: 'h-11 w-11 p-0 md:h-10 md:w-10',

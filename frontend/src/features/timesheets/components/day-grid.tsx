@@ -68,7 +68,7 @@ function DayRow({
         <Link
           to="/w/$wsId/t/$customId"
           params={{ wsId, customId: row.customId }}
-          className="truncate text-[13px] font-medium text-ink"
+          className="flex min-h-11 items-center truncate text-[13px] font-medium text-ink md:min-h-0"
         >
           {row.name}
         </Link>

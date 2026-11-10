@@ -1,6 +1,7 @@
 import {
   Archive,
   CircleDot,
+  Copy,
   FolderPlus,
   ListPlus,
   MoreHorizontal,
@@ -210,6 +211,15 @@ export function NodeMenu({
         >
           <UserPlus className={itemIcon} aria-hidden="true" />
           Compartilhar
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          onSelect={() => {
+            open({ type: 'template', node });
+          }}
+        >
+          <Copy className={itemIcon} aria-hidden="true" />
+          Salvar como template
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />

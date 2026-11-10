@@ -25,10 +25,12 @@ import {
   ROW_HEIGHT,
   appendCard,
   applyLayout,
+  cardIndex,
   presetRange,
   removeCard,
   replaceCard,
   singleColumn,
+  swapCards,
   toCardInputs,
   toLayout,
   type RangePreset,
@@ -117,6 +119,11 @@ export function DashboardPanel({ wsId, dashboardId }: DashboardPanelProps) {
       range={range}
       draggable={draggable}
       canEdit={canEdit}
+      canMoveUp={cardIndex(cards, card.id) > 0}
+      canMoveDown={cardIndex(cards, card.id) < cards.length - 1}
+      onMove={(delta) => {
+        commit(swapCards(cards, card.id, delta));
+      }}
       onConfigure={() => {
         setEditing(card);
       }}

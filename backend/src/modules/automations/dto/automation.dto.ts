@@ -194,7 +194,7 @@ export class ActionParamsDto {
   @Length(1, 2000)
   url?: string;
 
-  @ApiPropertyOptional({ enum: WEBHOOK_METHODS, default: 'POST' })
+  @ApiPropertyOptional({ enum: WEBHOOK_METHODS, description: 'Ausente envia POST.' })
   @IsOptional()
   @IsEnum(WEBHOOK_METHODS)
   method?: WebhookMethod;

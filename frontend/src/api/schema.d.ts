@@ -5371,10 +5371,10 @@ export interface components {
              */
             url?: string;
             /**
-             * @default POST
+             * @description Ausente envia POST.
              * @enum {string}
              */
-            method: "POST" | "PUT" | "PATCH";
+            method?: "POST" | "PUT" | "PATCH";
             /** @description callWebhook: cabecalhos extras. */
             headers?: {
                 [key: string]: string;

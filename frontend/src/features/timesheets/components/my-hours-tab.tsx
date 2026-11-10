@@ -39,7 +39,7 @@ export interface MyHoursTabProps {
 
 function SummaryCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="flex min-w-0 flex-1 basis-[180px] flex-col gap-1 rounded-2xl border border-line bg-surface p-4">
+    <div className="flex min-w-0 flex-1 basis-[136px] flex-col gap-1 rounded-2xl border border-line bg-surface p-4">
       <span className="text-[12.5px] text-muted">{label}</span>
       <span className="text-[26px] font-semibold leading-tight text-ink">{value}</span>
       {hint ? <span className="text-[12px] text-muted">{hint}</span> : null}

@@ -69,7 +69,10 @@ export function SliceRows({ slices, palette, unit, format }: SliceChartProps) {
   );
 }
 
-/** Rosca para a divisão faturável × não faturável. */
+/**
+ * Rosca para a divisão faturável × não faturável. O número já aparece em texto
+ * ao lado, então o desenho entra como decoração.
+ */
 export function SliceDonut({ slices, palette, unit, format }: SliceChartProps) {
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -96,6 +99,23 @@ export interface SeriesChartProps {
   palette: ChartPalette;
   /** Chaves das séries, na ordem da legenda. */
   lines: { key: string; label: string; dashed?: boolean }[];
+}
+
+/** Frase do gráfico de linha: o que cada série vale no primeiro e no último dia. */
+export function seriesSummary(points: SeriesPoint[], lines: SeriesChartProps['lines']): string {
+  const first = points[0];
+  const last = points[points.length - 1];
+
+  if (!first || !last) {
+    return 'Sem dados no período.';
+  }
+
+  const parts = lines.map(
+    (line) =>
+      `${line.label} de ${String(first[line.key] ?? 0)} para ${String(last[line.key] ?? 0)}`,
+  );
+
+  return `De ${String(first.label)} a ${String(last.label)}: ${parts.join('; ')}.`;
 }
 
 /** Linhas por dia: burndown e burnup. */

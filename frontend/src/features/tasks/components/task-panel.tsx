@@ -41,6 +41,7 @@ import { ListPicker } from './list-picker';
 import { SubtasksSection } from './subtasks-section';
 import { TaskDescription } from './task-description';
 import { TaskPanelFields } from './task-panel-fields';
+import { SaveTemplateDialog } from '@/features/templates/components/save-template-dialog';
 import { TaskPanelHeader } from './task-panel-header';
 import { TimeSection } from './time-section';
 
@@ -85,6 +86,7 @@ export function TaskPanel({ wsId, customId, mode, onMode, onClose }: TaskPanelPr
   const [name, setName] = useState('');
   const [action, setAction] = useState<PendingAction>(null);
   const [targetList, setTargetList] = useState('');
+  const [savingTemplate, setSavingTemplate] = useState(false);
   const nameTimer = useRef<number | undefined>(undefined);
 
   // O nome do servidor vence enquanto a pessoa não está digitando.
@@ -235,6 +237,9 @@ export function TaskPanel({ wsId, customId, mode, onMode, onClose }: TaskPanelPr
         }}
         onArchive={() => {
           setAction('archive');
+        }}
+        onSaveTemplate={() => {
+          setSavingTemplate(true);
         }}
         onDelete={() => {
           setAction('delete');
@@ -438,6 +443,13 @@ export function TaskPanel({ wsId, customId, mode, onMode, onClose }: TaskPanelPr
         onConfirm={() => {
           remove.mutate();
         }}
+      />
+
+      <SaveTemplateDialog
+        wsId={wsId}
+        open={savingTemplate}
+        onOpenChange={setSavingTemplate}
+        source={{ type: 'task', id: task.id, name: task.name }}
       />
     </div>
   );

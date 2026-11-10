@@ -115,6 +115,42 @@ export function replaceCard(cards: DashboardCard[], card: DashboardCard): Dashbo
   return cards.map((item) => (item.id === card.id ? card : item));
 }
 
+/**
+ * Troca o card de lugar com o vizinho na ordem de leitura. É o caminho de
+ * teclado e de toque para reordenar: a alça de arrastar só existe no mouse.
+ */
+export function swapCards(cards: DashboardCard[], cardId: string, delta: 1 | -1): DashboardCard[] {
+  const order = singleColumn(cards);
+  const index = order.findIndex((card) => card.id === cardId);
+  const neighbor = order[index + delta];
+  const card = order[index];
+
+  if (!card || !neighbor) {
+    return cards;
+  }
+
+  const place = (one: DashboardCard, other: DashboardCard): DashboardCard => ({
+    ...one,
+    x: other.x,
+    y: other.y,
+    w: other.w,
+    h: other.h,
+  });
+
+  return cards.map((item) => {
+    if (item.id === card.id) {
+      return place(item, neighbor);
+    }
+
+    return item.id === neighbor.id ? place(item, card) : item;
+  });
+}
+
+/** Posição do card na ordem de leitura; -1 quando ele não está na grade. */
+export function cardIndex(cards: DashboardCard[], cardId: string): number {
+  return singleColumn(cards).findIndex((card) => card.id === cardId);
+}
+
 /** No celular os cards ficam em uma coluna, na ordem de cima para baixo. */
 export function singleColumn(cards: DashboardCard[]): DashboardCard[] {
   return [...cards].sort((a, b) => a.y - b.y || a.x - b.x);

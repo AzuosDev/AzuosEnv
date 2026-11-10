@@ -1,6 +1,7 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { ConfirmDialog } from '@/features/settings/components/confirm-dialog';
+import { SaveTemplateDialog } from '@/features/templates/components/save-template-dialog';
 import { useArchiveNode, useDeleteNode } from '../hooks/use-hierarchy-actions';
 import { NODE_LABEL } from '../node-kinds';
 import type { FlatNode } from '../tree-dnd';
@@ -20,6 +21,7 @@ export type HierarchyDialog =
   | { type: 'share'; node: FlatNode }
   | { type: 'statuses'; node: FlatNode }
   | { type: 'archive'; node: FlatNode }
+  | { type: 'template'; node: FlatNode }
   | { type: 'delete'; node: FlatNode };
 
 export interface HierarchyActions {
@@ -106,6 +108,15 @@ export function HierarchyProvider({ wsId, children }: { wsId: string; children: 
 
       {dialog?.type === 'statuses' ? (
         <StatusesDialog wsId={wsId} node={dialog.node} onClose={close} />
+      ) : null}
+
+      {dialog?.type === 'template' ? (
+        <SaveTemplateDialog
+          wsId={wsId}
+          open
+          onOpenChange={close}
+          source={{ type: dialog.node.kind, id: dialog.node.id, name: dialog.node.name }}
+        />
       ) : null}
 
       {dialog?.type === 'archive' ? (

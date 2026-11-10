@@ -21210,7 +21210,7 @@
               "PATCH"
             ],
             "type": "string",
-            "default": "POST"
+            "description": "Ausente envia POST."
           },
           "headers": {
             "type": "object",

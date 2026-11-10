@@ -1,5 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { Download, GripVertical, MoreHorizontal, Settings2, Trash2 } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  Download,
+  GripVertical,
+  MoreHorizontal,
+  Settings2,
+  Trash2,
+} from 'lucide-react';
 import { errorMessage } from '@/api/errors';
 import type { CardConfig, DashboardCard } from '@/api/types';
 import { Button } from '@/components/ui/button';
@@ -25,9 +33,13 @@ export interface CardFrameProps {
   /** Falso no celular: sem alça de arrastar. */
   draggable: boolean;
   canEdit: boolean;
+  /** Vizinhos na ordem de leitura, para o reordenar por botão. */
+  canMoveUp: boolean;
+  canMoveDown: boolean;
   onConfigure: () => void;
   onRemove: () => void;
   onExport: () => void;
+  onMove: (delta: 1 | -1) => void;
 }
 
 /** Recorte efetivo do card; o painel só preenche o que o card não fixou. */
@@ -43,9 +55,12 @@ export function CardFrame({
   range,
   draggable,
   canEdit,
+  canMoveUp,
+  canMoveDown,
   onConfigure,
   onRemove,
   onExport,
+  onMove,
 }: CardFrameProps) {
   const kind = cardKind(card.type);
   const config = configOf(card, range);
@@ -79,6 +94,26 @@ export function CardFrame({
               <DropdownMenuItem onSelect={onConfigure}>
                 <Settings2 className="h-4 w-4" aria-hidden="true" />
                 Configurar
+              </DropdownMenuItem>
+            ) : null}
+            {canEdit && canMoveUp ? (
+              <DropdownMenuItem
+                onSelect={() => {
+                  onMove(-1);
+                }}
+              >
+                <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                Mover para cima
+              </DropdownMenuItem>
+            ) : null}
+            {canEdit && canMoveDown ? (
+              <DropdownMenuItem
+                onSelect={() => {
+                  onMove(1);
+                }}
+              >
+                <ArrowDown className="h-4 w-4" aria-hidden="true" />
+                Mover para baixo
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuItem onSelect={onExport}>

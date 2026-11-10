@@ -11,6 +11,7 @@ import {
   replaceCard,
   singleColumn,
   statusSlices,
+  swapCards,
   toCardInputs,
   toLayout,
 } from './card-model';
@@ -70,6 +71,14 @@ describe('grade dos cards', () => {
     expect(
       singleColumn([card({ id: 'x', y: 4 }), card({ id: 'y', y: 0 })]).map((item) => item.id),
     ).toEqual(['y', 'x']);
+  });
+
+  it('trocar de lugar leva a geometria do vizinho', () => {
+    const swapped = swapCards(cards, 'b', -1);
+
+    expect(swapped.find((item) => item.id === 'b')).toMatchObject({ x: 0, y: 0 });
+    expect(swapped.find((item) => item.id === 'a')).toMatchObject({ x: 6, y: 0 });
+    expect(swapCards(cards, 'a', -1)).toEqual(cards);
   });
 
   it('o corpo do PATCH leva id, tipo, config e posição', () => {
