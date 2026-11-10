@@ -30,12 +30,12 @@ export class CreateDocDto {
   @Length(1, 40)
   icon?: string;
 
-  @ApiPropertyOptional({ default: false, description: 'Visível apenas para quem criou.' })
+  @ApiPropertyOptional({ description: 'Visível apenas para quem criou (padrão false).' })
   @IsOptional()
   @IsBoolean()
   private?: boolean;
 
-  @ApiPropertyOptional({ default: false, description: 'Doc de referência do local.' })
+  @ApiPropertyOptional({ description: 'Doc de referência do local (padrão false).' })
   @IsOptional()
   @IsBoolean()
   isWiki?: boolean;
@@ -66,7 +66,7 @@ export class UpdateDocDto {
 }
 
 export class DocQueryDto extends PaginationQueryDto {
-  @ApiPropertyOptional({ enum: DOC_HUB_TABS, default: 'all' })
+  @ApiPropertyOptional({ enum: DOC_HUB_TABS, description: 'Aba do hub (padrão all).' })
   @IsOptional()
   @IsEnum(DOC_HUB_TABS)
   tab?: DocHubTab;

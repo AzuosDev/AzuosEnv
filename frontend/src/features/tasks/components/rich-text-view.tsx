@@ -75,6 +75,44 @@ function render(node: Node, key: string): ReactNode {
     );
   }
 
+  if (node.type === 'taskMention') {
+    const label = attr(node, 'label') || attr(node, 'id');
+
+    return (
+      <span key={key} className="mention mention-task">
+        {label}
+      </span>
+    );
+  }
+
+  if (node.type === 'image') {
+    const src = attr(node, 'src');
+
+    return src === '' ? null : (
+      <img key={key} src={src} alt={attr(node, 'alt')} className="doc-image" />
+    );
+  }
+
+  if (node.type === 'table') {
+    return (
+      <table key={key}>
+        <tbody>{children(node, key)}</tbody>
+      </table>
+    );
+  }
+
+  if (node.type === 'tableRow') {
+    return <tr key={key}>{children(node, key)}</tr>;
+  }
+
+  if (node.type === 'tableHeader') {
+    return <th key={key}>{children(node, key)}</th>;
+  }
+
+  if (node.type === 'tableCell') {
+    return <td key={key}>{children(node, key)}</td>;
+  }
+
   if (node.type === 'heading') {
     const level = Number(node.attrs?.level ?? 2);
     const Tag = level <= 1 ? 'h3' : level === 2 ? 'h4' : 'h5';

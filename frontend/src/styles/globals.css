@@ -339,6 +339,48 @@
     white-space: nowrap;
   }
 
+  /* Página do Doc: texto maior e os blocos que só existem aqui. */
+  .rich-text.doc-page {
+    font-size: 14.5px;
+    line-height: 1.7;
+  }
+
+  .rich-text table {
+    border-collapse: collapse;
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  .rich-text th,
+  .rich-text td {
+    border: 1px solid rgb(var(--line));
+    min-width: 7rem;
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .rich-text th {
+    background: rgb(var(--surface-2));
+    color: rgb(var(--ink));
+    font-weight: 600;
+  }
+
+  .rich-text .doc-image {
+    border: 1px solid rgb(var(--line));
+    border-radius: 12px;
+    display: block;
+    height: auto;
+    max-width: 100%;
+  }
+
+  .rich-text .mention-task {
+    background: rgb(var(--accent) / 0.1);
+    white-space: normal;
+  }
+
   .rich-text p.is-editor-empty:first-child::before {
     color: rgb(var(--muted));
     content: attr(data-placeholder);

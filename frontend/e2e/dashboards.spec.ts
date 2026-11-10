@@ -20,6 +20,7 @@ let page: Page;
 let session: AdminApi;
 let wsId: string;
 let listId: string;
+let spaceId = '';
 let open: StatusBody | undefined;
 
 interface StatusBody {
@@ -32,7 +33,7 @@ test.beforeAll(async ({ browser }) => {
   session = await adminApi();
   wsId = session.wsId;
 
-  const spaceId = await createResource(session, 'spaces', { name: SPACE });
+  spaceId = await createResource(session, 'spaces', { name: SPACE });
 
   listId = await createResource(session, 'lists', { spaceId, name: LIST });
 
@@ -63,6 +64,9 @@ test.beforeAll(async ({ browser }) => {
 
 test.afterAll(async () => {
   await page.context().close();
+  await session.api.delete(`${API_URL}/workspaces/${wsId}/spaces/${spaceId}`, {
+    headers: session.headers,
+  });
   await session.dispose();
 });
 

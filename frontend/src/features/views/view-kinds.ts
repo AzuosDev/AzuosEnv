@@ -3,6 +3,7 @@ import {
   CalendarDays,
   ChartGantt,
   Columns3,
+  FileText,
   Gauge,
   List as ListIcon,
   Rows3,
@@ -23,6 +24,7 @@ export const SUPPORTED_VIEW_TYPES = [
   'workload',
   'team',
   'activity',
+  'doc',
 ] as const;
 export type SupportedViewType = (typeof SUPPORTED_VIEW_TYPES)[number];
 
@@ -36,6 +38,7 @@ export const VIEW_TYPE_LABEL: Record<SupportedViewType, string> = {
   workload: 'Workload',
   team: 'Team',
   activity: 'Activity',
+  doc: 'Doc',
 };
 
 export const VIEW_TYPE_ICON: Record<SupportedViewType, LucideIcon> = {
@@ -48,6 +51,7 @@ export const VIEW_TYPE_ICON: Record<SupportedViewType, LucideIcon> = {
   workload: Gauge,
   team: Users,
   activity: ActivityIcon,
+  doc: FileText,
 };
 
 export function isSupportedViewType(type: ViewType): type is SupportedViewType {
@@ -111,6 +115,7 @@ export const DEFAULT_GROUP_BY: Record<SupportedViewType, ViewGroupBy> = {
   workload: 'assignee',
   team: 'assignee',
   activity: 'none',
+  doc: 'none',
 };
 
 /** Agrupamento que a view vai usar de fato. */
@@ -118,9 +123,9 @@ export function groupByOf(type: SupportedViewType, groupBy: ViewGroupBy | undefi
   return FIXED_GROUP_BY[type] ?? groupBy ?? DEFAULT_GROUP_BY[type];
 }
 
-/** Views que leem o /tasks/query; a Activity tem feed próprio. */
+/** Views que leem o /tasks/query; Activity e Doc têm conteúdo próprio. */
 export function usesTasks(type: SupportedViewType): boolean {
-  return type !== 'activity';
+  return type !== 'activity' && type !== 'doc';
 }
 
 /** Views que aceitam escolher colunas de campo personalizado. */

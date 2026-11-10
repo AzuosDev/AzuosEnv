@@ -12,7 +12,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -32,6 +34,7 @@ import {
   MovePageDto,
   UpdatePageDto,
 } from './dto/doc-page.dto';
+import { DocPagesDto, PageCommentThreadDto, ShareDocResultDto } from './dto/doc-result.dto';
 import { Doc, DocDocument } from './schemas/doc.schema';
 import { DocPage, DocPageDocument } from './schemas/doc-page.schema';
 import { DocPageVersion, DocPageVersionDocument } from './schemas/doc-page-version.schema';
@@ -45,6 +48,7 @@ interface ShareResponse {
 
 @ApiTags('docs')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/docs')
 export class DocsController {
@@ -91,7 +95,7 @@ export class DocsController {
   }
 
   @Delete(':docId')
-  @ApiOkResponse({ description: 'Doc enviado para a lixeira.' })
+  @ApiOkResponse({ description: 'Doc enviado para a lixeira.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('docId', ParseObjectIdPipe) docId: Types.ObjectId,
@@ -133,7 +137,7 @@ export class DocsController {
 
   @Post(':docId/share')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Link público criado ou revogado.' })
+  @ApiOkResponse({ description: 'Link público criado ou revogado.', type: ShareDocResultDto })
   share(
     @CurrentMembership() membership: RequestMembership,
     @Param('docId', ParseObjectIdPipe) docId: Types.ObjectId,
@@ -153,7 +157,7 @@ export class DocsController {
   }
 
   @Get(':docId/pages')
-  @ApiOkResponse({ description: 'Páginas do Doc em ordem manual.' })
+  @ApiOkResponse({ description: 'Páginas do Doc em ordem manual.', type: DocPagesDto })
   listPages(
     @CurrentMembership() membership: RequestMembership,
     @Param('docId', ParseObjectIdPipe) docId: Types.ObjectId,
@@ -164,6 +168,7 @@ export class DocsController {
 
 @ApiTags('docs')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/pages')
 export class DocPagesController {
@@ -203,7 +208,10 @@ export class DocPagesController {
   }
 
   @Delete(':pageId')
-  @ApiOkResponse({ description: 'Página excluída com as páginas aninhadas nela.' })
+  @ApiOkResponse({
+    description: 'Página excluída com as páginas aninhadas nela.',
+    type: SuccessDto,
+  })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('pageId', ParseObjectIdPipe) pageId: Types.ObjectId,
@@ -224,7 +232,7 @@ export class DocPagesController {
   }
 
   @Get(':pageId/comments')
-  @ApiOkResponse({ description: 'Comentários da página com as respostas.' })
+  @ApiPagedResponse(PageCommentThreadDto, 'Comentários da página com as respostas.')
   listComments(
     @CurrentMembership() membership: RequestMembership,
     @Param('pageId', ParseObjectIdPipe) pageId: Types.ObjectId,

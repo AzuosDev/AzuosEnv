@@ -5540,16 +5540,10 @@ export interface components {
             title: string;
             /** @example book */
             icon?: string;
-            /**
-             * @description Visível apenas para quem criou.
-             * @default false
-             */
-            private: boolean;
-            /**
-             * @description Doc de referência do local.
-             * @default false
-             */
-            isWiki: boolean;
+            /** @description Visível apenas para quem criou (padrão false). */
+            private?: boolean;
+            /** @description Doc de referência do local (padrão false). */
+            isWiki?: boolean;
         };
         DocShare: {
             public: boolean;
@@ -5584,6 +5578,13 @@ export interface components {
             /** @description true gera o link público; false revoga o token. */
             public: boolean;
         };
+        ShareDocResultDto: {
+            doc: components["schemas"]["Doc"];
+            /** @description Token do link público; só nesta resposta e null ao revogar. */
+            token: string | null;
+            /** @description URL pública do Doc. */
+            url: string | null;
+        };
         CreatePageDto: {
             /** @description Página pai; ausente cria na raiz do Doc. */
             parentPageId?: string;
@@ -5602,12 +5603,14 @@ export interface components {
             nextId?: string;
         };
         DocPage: {
+            content: {
+                [key: string]: unknown;
+            } | null;
             workspaceId: components["schemas"]["ObjectId"];
             docId: components["schemas"]["ObjectId"];
             /** @description Parent page; null on the pages at the root of the Doc. */
             parentPageId: components["schemas"]["ObjectId"] | null;
             title: string;
-            content: Record<string, never>;
             /** @description Plain text of `content`, indexed by the global search. */
             contentText: string;
             /** @description Tasks mentioned in the page, filtered on every write. */
@@ -5616,6 +5619,9 @@ export interface components {
             /** @description Bumped on every saved change; a PATCH with another value is a conflict. */
             version: number;
             updatedBy: components["schemas"]["ObjectId"];
+        };
+        DocPagesDto: {
+            items: components["schemas"]["DocPage"][];
         };
         UpdatePageDto: {
             /** @description Versão que o cliente carregou; divergência responde 409. */
@@ -5645,17 +5651,28 @@ export interface components {
             anchor?: string;
             parentCommentId?: string;
         };
+        PageCommentThreadDto: {
+            comment: components["schemas"]["Comment"];
+            /** @description Respostas, da mais antiga para a mais recente. */
+            replies: components["schemas"]["Comment"][];
+        };
         DocPageVersion: {
+            content: {
+                [key: string]: unknown;
+            } | null;
             workspaceId: components["schemas"]["ObjectId"];
             docId: components["schemas"]["ObjectId"];
             pageId: components["schemas"]["ObjectId"];
             /** @description Version of the page the snapshot holds. */
             version: number;
             title: string;
-            content: Record<string, never>;
             contentText: string;
             /** @description Who wrote the content of the snapshot. */
             createdBy: components["schemas"]["ObjectId"];
+        };
+        PublicDocDto: {
+            doc: components["schemas"]["Doc"];
+            pages: components["schemas"]["DocPage"][];
         };
         CreateChannelDto: {
             /**
@@ -11322,12 +11339,16 @@ export interface operations {
                 limit?: number;
                 /** @description Cursor retornado em nextCursor. */
                 cursor?: string;
+                /** @description Aba do hub (padrão all). */
                 tab?: "recent" | "favorites" | "mine" | "all";
                 locationType?: "workspace" | "space" | "folder" | "list";
                 locationId?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -11351,7 +11372,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -11377,6 +11401,8 @@ export interface operations {
             header?: never;
             path: {
                 docId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11399,6 +11425,8 @@ export interface operations {
             header?: never;
             path: {
                 docId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11409,7 +11437,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -11419,6 +11449,8 @@ export interface operations {
             header?: never;
             path: {
                 docId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11445,6 +11477,8 @@ export interface operations {
             header?: never;
             path: {
                 docId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11467,6 +11501,8 @@ export interface operations {
             header?: never;
             path: {
                 docId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11489,6 +11525,8 @@ export interface operations {
             header?: never;
             path: {
                 docId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11511,6 +11549,8 @@ export interface operations {
             header?: never;
             path: {
                 docId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11525,7 +11565,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ShareDocResultDto"];
+                };
             };
         };
     };
@@ -11535,6 +11577,8 @@ export interface operations {
             header?: never;
             path: {
                 docId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11545,7 +11589,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DocPagesDto"];
+                };
             };
         };
     };
@@ -11555,6 +11601,8 @@ export interface operations {
             header?: never;
             path: {
                 docId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11581,6 +11629,8 @@ export interface operations {
             header?: never;
             path: {
                 pageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11603,6 +11653,8 @@ export interface operations {
             header?: never;
             path: {
                 pageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11613,7 +11665,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -11623,6 +11677,8 @@ export interface operations {
             header?: never;
             path: {
                 pageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11649,6 +11705,8 @@ export interface operations {
             header?: never;
             path: {
                 pageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11679,6 +11737,8 @@ export interface operations {
             header?: never;
             path: {
                 pageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11689,7 +11749,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["PageCommentThreadDto"][];
+                        /** @description Cursor da próxima página; null na última. */
+                        nextCursor: string | null;
+                    };
+                };
             };
         };
     };
@@ -11699,6 +11765,8 @@ export interface operations {
             header?: never;
             path: {
                 pageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11729,6 +11797,8 @@ export interface operations {
             header?: never;
             path: {
                 pageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11756,6 +11826,8 @@ export interface operations {
             path: {
                 pageId: components["schemas"]["ObjectId"];
                 versionId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11788,7 +11860,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PublicDocDto"];
+                };
             };
         };
     };

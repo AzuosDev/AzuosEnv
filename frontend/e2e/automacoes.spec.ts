@@ -79,6 +79,9 @@ test.beforeAll(async ({ browser }) => {
 
 test.afterAll(async () => {
   await page.context().close();
+  await session.api.delete(`${API_URL}/workspaces/${wsId}/spaces/${spaceId}`, {
+    headers: session.headers,
+  });
   await session.dispose();
 });
 

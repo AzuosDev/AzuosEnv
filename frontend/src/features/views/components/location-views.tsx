@@ -28,6 +28,8 @@ import {
   usesTasks,
 } from '../view-kinds';
 import { viewsQuery } from '../api';
+import { DocViewTab } from './doc-view-tab';
+
 import { ActivityView } from './activity-view';
 import { CalendarView } from './calendar-view';
 import { GanttView } from './gantt-view';
@@ -226,7 +228,7 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
         <div className="px-4 pb-8 md:px-6">
           <EmptyState
             title="Essa view chega em outra etapa"
-            description="Formulário, Doc, Chat, Whiteboard, Dashboard, Mind Map, Embed e Mapa vêm nos módulos seguintes."
+            description="Formulário, Chat, Whiteboard, Dashboard, Mind Map, Embed e Mapa vêm nos módulos seguintes."
           />
         </div>
       ) : null}
@@ -264,6 +266,7 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
       {type === 'workload' && ready ? <WorkloadView {...surface} /> : null}
       {type === 'team' && ready ? <TeamView {...surface} /> : null}
       {type === 'activity' ? <ActivityView {...surface} /> : null}
+      {type === 'doc' ? <DocViewTab wsId={wsId} view={active} /> : null}
 
       {reads && tasks.isError ? (
         <div className="px-4 pb-8 md:px-6">
