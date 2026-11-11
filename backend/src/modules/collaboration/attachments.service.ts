@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Readable } from 'node:stream';
+import { ChatAccessService } from '../chat/chat-access.service';
 import { PermissionContext } from '../hierarchy/permission.service';
 import { TaskAccessService } from '../tasks/task-access.service';
 import { StorageService } from '../storage/storage.service';
@@ -33,6 +34,7 @@ export class AttachmentsService {
     @InjectModel(Attachment.name) private readonly model: Model<Attachment>,
     private readonly taskAccess: TaskAccessService,
     private readonly comments: CommentsService,
+    private readonly chat: ChatAccessService,
     private readonly storage: StorageService,
   ) {}
 
@@ -59,6 +61,32 @@ export class AttachmentsService {
     return this.store(ctx, 'comment', comment._id, task._id, file);
   }
 
+  /** Files of a chat channel: whoever may write in the channel may upload. */
+  async uploadToChannel(
+    ctx: PermissionContext,
+    channelId: Types.ObjectId,
+    file: UploadedFile | undefined,
+  ): Promise<AttachmentDocument> {
+    const channel = await this.chat.requireChannel(ctx, channelId, 'comment');
+
+    this.chat.requireMembership(ctx, channel);
+
+    return this.store(ctx, 'channel', channel._id, null, file);
+  }
+
+  /** Files already sent to the channel, so the messages can name them. */
+  async listForChannel(
+    ctx: PermissionContext,
+    channelId: Types.ObjectId,
+  ): Promise<AttachmentDocument[]> {
+    const channel = await this.chat.requireChannel(ctx, channelId, 'view');
+
+    return this.model
+      .find({ workspaceId: ctx.workspaceId, entityType: 'channel', entityId: channel._id })
+      .sort({ _id: 1 })
+      .exec();
+  }
+
   async listForTask(ctx: PermissionContext, idOrCustomId: string): Promise<AttachmentDocument[]> {
     const { task } = await this.taskAccess.requireTask(ctx, idOrCustomId, 'view');
 
@@ -82,7 +110,7 @@ export class AttachmentsService {
       throw this.attachmentNotFound();
     }
 
-    await this.requireTaskOf(ctx, attachment, 'view');
+    await this.requireOwnerOf(ctx, attachment, 'view');
 
     return { attachment, stream: await this.storage.read(attachment.storageKey) };
   }
@@ -98,7 +126,7 @@ export class AttachmentsService {
       throw this.attachmentNotFound();
     }
 
-    await this.requireTaskOf(
+    await this.requireOwnerOf(
       ctx,
       attachment,
       String(attachment.uploadedBy) === String(ctx.userId) ? 'view' : 'full',
@@ -112,7 +140,7 @@ export class AttachmentsService {
     ctx: PermissionContext,
     entityType: AttachmentEntityType,
     entityId: Types.ObjectId,
-    taskId: Types.ObjectId,
+    taskId: Types.ObjectId | null,
     file: UploadedFile | undefined,
   ): Promise<AttachmentDocument> {
     const upload = this.requireFile(file);
@@ -161,11 +189,26 @@ export class AttachmentsService {
     return file;
   }
 
-  private async requireTaskOf(
+  /** Permission of the file: the channel on a chat attachment, the task otherwise. */
+  private async requireOwnerOf(
     ctx: PermissionContext,
     attachment: AttachmentDocument,
     required: 'view' | 'full',
   ): Promise<void> {
+    if (attachment.entityType === 'channel') {
+      await this.chat.requireChannel(
+        ctx,
+        attachment.entityId,
+        required === 'full' ? 'edit' : 'view',
+      );
+
+      return;
+    }
+
+    if (!attachment.taskId) {
+      throw this.attachmentNotFound();
+    }
+
     await this.taskAccess.requireTask(ctx, String(attachment.taskId), required);
   }
 

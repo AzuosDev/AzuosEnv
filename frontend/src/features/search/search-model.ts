@@ -25,7 +25,14 @@ export const SEARCH_TYPE_LABEL: Record<SearchType, string> = {
 };
 
 /** Tipos que já têm tela; os outros aparecem sem link até o módulo chegar. */
-export const NAVIGABLE_TYPES: SearchType[] = ['task', 'list', 'folder', 'space', 'comment'];
+export const NAVIGABLE_TYPES: SearchType[] = [
+  'task',
+  'list',
+  'folder',
+  'space',
+  'comment',
+  'message',
+];
 
 export interface SearchRow {
   type: SearchType;
@@ -80,6 +87,16 @@ function toRow(wsId: string, type: SearchType, hit: Record<string, unknown>): Se
       title: name,
       hint: customId,
       target: entityLink(wsId, 'task', textOf(hit, 'taskId'), customId),
+    };
+  }
+
+  if (type === 'message') {
+    return {
+      type,
+      id,
+      title: name,
+      hint: 'Mensagem do chat',
+      target: entityLink(wsId, 'channel', textOf(hit, 'channelId')),
     };
   }
 

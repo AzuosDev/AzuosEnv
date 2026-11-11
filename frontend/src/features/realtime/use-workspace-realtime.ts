@@ -67,6 +67,11 @@ export function useWorkspaceRealtime({ wsId, currentUserId }: WorkspaceRealtimeO
     void queryClient.invalidateQueries({ queryKey: ['workspaces', wsId, 'inbox'] });
   }, [queryClient, wsId]);
 
+  /** Não lidas do chat: a mensagem só chega na sala do canal, mas a menção e a DM viram notificação. */
+  const refreshChat = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.chatActivity(wsId) });
+  }, [queryClient, wsId]);
+
   const onTask = useCallback(
     (event: TaskEvent) => {
       if (event.workspaceId === wsId && !mine(event.actorId)) {
@@ -100,6 +105,7 @@ export function useWorkspaceRealtime({ wsId, currentUserId }: WorkspaceRealtimeO
     }
 
     refreshInbox();
+    refreshChat();
     void queryClient.invalidateQueries({ queryKey: queryKeys.inboxCounts(wsId) });
 
     const card = describeNotification({
@@ -118,9 +124,10 @@ export function useWorkspaceRealtime({ wsId, currentUserId }: WorkspaceRealtimeO
     if (connected && !wasConnected.current) {
       refreshTasks();
       refreshInbox();
+      refreshChat();
       void queryClient.invalidateQueries({ queryKey: queryKeys.inboxCounts(wsId) });
     }
 
     wasConnected.current = connected;
-  }, [connected, queryClient, refreshInbox, refreshTasks, wsId]);
+  }, [connected, queryClient, refreshChat, refreshInbox, refreshTasks, wsId]);
 }

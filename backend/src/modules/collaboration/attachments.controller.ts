@@ -109,6 +109,37 @@ export class CommentAttachmentsController {
 @ApiBearerAuth()
 @ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
+@Controller('workspaces/:wsId/channels/:channelId/attachments')
+export class ChannelAttachmentsController {
+  constructor(private readonly attachments: AttachmentsService) {}
+
+  @Post()
+  @UploadFile()
+  @ApiConsumes('multipart/form-data')
+  @UploadBody()
+  @ApiCreatedResponse({ description: 'Anexo enviado para o canal.', type: Attachment })
+  upload(
+    @CurrentMembership() membership: RequestMembership,
+    @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
+    @UploadedFileParam() file: UploadedFile | undefined,
+  ): Promise<AttachmentDocument> {
+    return this.attachments.uploadToChannel(permissionContextFrom(membership), channelId, file);
+  }
+
+  @Get()
+  @ApiOkResponse({ description: 'Anexos enviados ao canal.', type: [Attachment] })
+  list(
+    @CurrentMembership() membership: RequestMembership,
+    @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
+  ): Promise<AttachmentDocument[]> {
+    return this.attachments.listForChannel(permissionContextFrom(membership), channelId);
+  }
+}
+
+@ApiTags('attachments')
+@ApiBearerAuth()
+@ApiWorkspaceParam()
+@UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/attachments')
 export class AttachmentsController {
   constructor(private readonly attachments: AttachmentsService) {}

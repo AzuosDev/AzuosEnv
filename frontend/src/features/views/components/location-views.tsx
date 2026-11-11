@@ -17,6 +17,7 @@ import { QuickAdd } from '@/features/tasks/components/quick-add';
 import type { ViewSurfaceProps } from '@/features/tasks/components/view-surface';
 import { useTaskActions } from '@/features/tasks/hooks/use-task-actions';
 import { fillStatusGroups, mergePages, planTaskDrop } from '@/features/tasks/task-model';
+import { ChannelSurface } from '@/features/chat/components/channel-surface';
 import { toQueryParams } from '../filters';
 import { useViewActions } from '../hooks/use-view-actions';
 import { useViewConfig } from '../hooks/use-view-config';
@@ -226,7 +227,7 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
         <div className="px-4 pb-8 md:px-6">
           <EmptyState
             title="Essa view chega em outra etapa"
-            description="Formulário, Doc, Chat, Whiteboard, Dashboard, Mind Map, Embed e Mapa vêm nos módulos seguintes."
+            description="Formulário, Doc, Whiteboard, Dashboard, Mind Map, Embed e Mapa vêm nos módulos seguintes."
           />
         </div>
       ) : null}
@@ -264,6 +265,17 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
       {type === 'workload' && ready ? <WorkloadView {...surface} /> : null}
       {type === 'team' && ready ? <TeamView {...surface} /> : null}
       {type === 'activity' ? <ActivityView {...surface} /> : null}
+      {type === 'chat' && locationType === 'list' && listId !== '' ? (
+        <ChannelSurface wsId={wsId} locationType="list" locationId={listId} role={role} />
+      ) : null}
+      {type === 'chat' && (locationType !== 'list' || listId === '') ? (
+        <div className="px-4 pb-8 md:px-6">
+          <EmptyState
+            title="O Chat é view de um local"
+            description="Abra a view de Chat dentro de uma List, de um Folder ou de um Space."
+          />
+        </div>
+      ) : null}
 
       {reads && tasks.isError ? (
         <div className="px-4 pb-8 md:px-6">

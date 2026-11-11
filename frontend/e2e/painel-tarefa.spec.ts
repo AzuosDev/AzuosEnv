@@ -196,7 +196,12 @@ test('a barra de formatação liga o negrito da descrição', async () => {
   // Cada editor tem a barra com o próprio nome: a do comentário também existe.
   const toolbar = page.getByRole('toolbar', { name: 'Formatação: Descrição da tarefa' });
 
-  await page.getByRole('textbox', { name: 'Descrição da tarefa' }).click();
+  const editor = page.getByRole('textbox', { name: 'Descrição da tarefa' });
+
+  await editor.click();
+  // O Tiptap só aceita a marca com o editor em foco; sem esperar, o clique no
+  // Negrito chega antes do foco e o estado não liga.
+  await expect(editor).toBeFocused();
   await toolbar.getByRole('button', { name: 'Negrito' }).click();
 
   await expect(toolbar.getByRole('button', { name: 'Negrito' })).toHaveAttribute(

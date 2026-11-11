@@ -400,3 +400,23 @@ export type CreateTemplateInput = components['schemas']['CreateTemplateDto'];
 export type ApplyTemplateInput = components['schemas']['ApplyTemplateDto'];
 export type TemplateTargetType = NonNullable<ApplyTemplateInput['targetType']>;
 export type AppliedTemplate = components['schemas']['AppliedTemplateDto'];
+
+/* Chat: canais, DMs, mensagens e threads --------------------------------- */
+
+export type Channel = Doc<components['schemas']['Channel']>;
+export type ChannelType = Channel['type'];
+export type ChannelLocationType = Channel['locationType'];
+export type Message = Doc<FreeJson<components['schemas']['Message'], 'body'>>;
+export type MessageReaction = components['schemas']['MessageReaction'];
+export type CreateChannelInput = components['schemas']['CreateChannelDto'];
+export type UpdateChannelInput = components['schemas']['UpdateChannelDto'];
+export type CreateDmInput = components['schemas']['CreateDmDto'];
+export type ChannelMembersInput = components['schemas']['ChannelMembersDto'];
+export type CreateMessageInput = components['schemas']['CreateMessageDto'];
+export type UpdateMessageInput = components['schemas']['UpdateMessageDto'];
+export type ChannelRead = components['schemas']['ChannelReadDto'];
+export type ChatActivity = components['schemas']['ChatActivityDto'];
+export type ChannelActivity = components['schemas']['ChannelActivityDto'];
+export type MessageToTaskResult = Omit<components['schemas']['MessageToTaskResultDto'], 'task'> & {
+  task: Task;
+};

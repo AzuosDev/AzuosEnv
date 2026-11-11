@@ -22,7 +22,7 @@ export const CREATABLE_CHANNEL_TYPES = ['channel', 'group'] as const;
 export type CreatableChannelType = (typeof CREATABLE_CHANNEL_TYPES)[number];
 
 export class CreateChannelDto {
-  @ApiPropertyOptional({ enum: CREATABLE_CHANNEL_TYPES, default: 'channel' })
+  @ApiPropertyOptional({ enum: CREATABLE_CHANNEL_TYPES, description: 'Padrão: channel.' })
   @IsOptional()
   @IsEnum(CREATABLE_CHANNEL_TYPES)
   type?: CreatableChannelType;
@@ -32,7 +32,7 @@ export class CreateChannelDto {
   @Length(1, MAX_CHANNEL_NAME_LENGTH)
   name: string;
 
-  @ApiPropertyOptional({ enum: CHANNEL_LOCATION_TYPES, default: 'workspace' })
+  @ApiPropertyOptional({ enum: CHANNEL_LOCATION_TYPES, description: 'Padrão: workspace.' })
   @IsOptional()
   @IsEnum(CHANNEL_LOCATION_TYPES)
   locationType?: ChannelLocationType;
@@ -42,7 +42,7 @@ export class CreateChannelDto {
   @IsMongoId()
   locationId?: string;
 
-  @ApiPropertyOptional({ default: false, description: 'Visível apenas para os membros.' })
+  @ApiPropertyOptional({ description: 'Visível apenas para os membros. Padrão: false.' })
   @IsOptional()
   @IsBoolean()
   private?: boolean;
@@ -79,7 +79,7 @@ export class ChannelQueryDto extends PaginationQueryDto {
   @IsMongoId()
   locationId?: string;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Padrão: false.' })
   @IsOptional()
   @IsBoolean()
   includeArchived?: boolean;

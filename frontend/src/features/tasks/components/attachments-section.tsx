@@ -108,7 +108,7 @@ function useBlobUrl(wsId: string, attachment: Attachment, enabled: boolean): str
 }
 
 /** Salva o arquivo no computador pelo blob já autenticado. */
-async function saveFile(wsId: string, attachment: Attachment): Promise<void> {
+export async function saveFile(wsId: string, attachment: Attachment): Promise<void> {
   const blob = await downloadAttachment(wsId, attachment.id);
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

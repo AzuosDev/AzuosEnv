@@ -1,10 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Archive, CircleCheckBig, Inbox, LayoutGrid, Plus, Trash2 } from 'lucide-react';
+import {
+  Archive,
+  CircleCheckBig,
+  Inbox,
+  LayoutGrid,
+  MessagesSquare,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import type { Workspace } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { chatActivityQuery } from '@/features/chat/api';
 import { FavoritesSection } from '@/features/favorites/components/favorites-section';
 import { useHierarchy } from '@/features/hierarchy/components/hierarchy-provider';
 import { cn } from '@/lib/utils';
@@ -32,7 +41,9 @@ export function WorkspaceSidebar({ wsId, workspaces, active, onNavigate }: Works
   const { open } = useHierarchy();
   const tree = useQuery(treeQuery(wsId));
   const counts = useQuery(inboxCountsQuery(wsId));
+  const chat = useQuery(chatActivityQuery(wsId));
   const unread = counts.data?.unread ?? 0;
+  const chatUnread = chat.data?.unread ?? 0;
   const location = active ? findLocation(tree.data, active.kind, active.id) : null;
   const expanded = useExpanded(wsId, active ? [...ancestorIds(location), active.id] : []);
 
@@ -63,6 +74,22 @@ export function WorkspaceSidebar({ wsId, workspaces, active, onNavigate }: Works
         >
           <CircleCheckBig className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="min-w-0 flex-1 truncate">Minhas tarefas</span>
+        </Link>
+        <Link
+          to="/w/$wsId/chat"
+          params={{ wsId }}
+          search={{}}
+          onClick={onNavigate}
+          className={homeRow}
+        >
+          <MessagesSquare className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1 truncate">Chat</span>
+          {chatUnread > 0 ? (
+            <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-signal">
+              {chatUnread > 99 ? '99+' : chatUnread}
+              <span className="sr-only"> mensagens não lidas</span>
+            </span>
+          ) : null}
         </Link>
         <Link to="/w/$wsId/tudo" params={{ wsId }} onClick={onNavigate} className={homeRow}>
           <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden="true" />

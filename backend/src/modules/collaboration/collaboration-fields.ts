@@ -2,7 +2,8 @@
 export const COMMENT_ENTITY_TYPES = ['task', 'page', 'message'] as const;
 export type CommentEntityType = (typeof COMMENT_ENTITY_TYPES)[number];
 
-export const ATTACHMENT_ENTITY_TYPES = ['task', 'comment'] as const;
+/** `channel` hangs the file from a chat channel, which has no task behind it. */
+export const ATTACHMENT_ENTITY_TYPES = ['task', 'comment', 'channel'] as const;
 export type AttachmentEntityType = (typeof ATTACHMENT_ENTITY_TYPES)[number];
 
 export const DEPENDENCY_TYPES = ['waiting_on', 'blocking', 'linked'] as const;

@@ -748,4 +748,75 @@ describe('Chat (canais, DMs e threads)', () => {
       expect(types).toContain('chatMessage');
     });
   });
+
+  describe('anexos do canal', () => {
+    it('envia o arquivo, lista, usa na mensagem e esconde de quem não participa', async () => {
+      const fixture = await setup();
+      const channel = (
+        await createChannel(fixture, {
+          name: 'privado',
+          private: true,
+          memberIds: [fixture.memberId],
+        }).expect(201)
+      ).body as ChannelBody;
+      const base = `/api/v1/workspaces/${fixture.workspace.id}`;
+      const attachment = (
+        await withAuth(http().post(`${base}/channels/${channel.id}/attachments`), fixture.owner)
+          .attach('file', Buffer.from('print do caixa'), {
+            filename: 'caixa.txt',
+            contentType: 'text/plain',
+          })
+          .expect(201)
+      ).body as { id: string; entityType: string; entityId: string; taskId: string | null };
+
+      expect(attachment.entityType).toBe('channel');
+      expect(attachment.entityId).toBe(channel.id);
+      expect(attachment.taskId).toBeNull();
+
+      const listed = await withAuth(
+        http().get(`${base}/channels/${channel.id}/attachments`),
+        fixture.member,
+      ).expect(200);
+
+      expect((listed.body as { id: string }[]).map((one) => one.id)).toEqual([attachment.id]);
+
+      const message = (
+        await sendMessage(fixture, channel.id, {
+          bodyText: 'segue o print',
+          attachmentIds: [attachment.id],
+        }).expect(201)
+      ).body as MessageBody & { attachmentIds: string[] };
+
+      expect(message.attachmentIds).toEqual([attachment.id]);
+
+      await withAuth(
+        http().get(`${base}/attachments/${attachment.id}/download`),
+        fixture.member,
+      ).expect(200);
+
+      await withAuth(
+        http().get(`${base}/attachments/${attachment.id}/download`),
+        fixture.outsider,
+      ).expect(404);
+
+      await withAuth(http().post(`${base}/channels/${channel.id}/attachments`), fixture.outsider)
+        .attach('file', Buffer.from('nada'), { filename: 'nada.txt', contentType: 'text/plain' })
+        .expect(404);
+    });
+
+    it('recusa o anexo sem arquivo e o MIME fora da lista', async () => {
+      const fixture = await setup();
+      const channel = (await createChannel(fixture, { name: 'geral' }).expect(201))
+        .body as ChannelBody;
+      const url = `/api/v1/workspaces/${fixture.workspace.id}/channels/${channel.id}/attachments`;
+
+      await withAuth(http().post(url), fixture.owner).expect(400);
+      await withAuth(http().post(url), fixture.owner)
+        .attach('file', Buffer.from('MZ'), {
+          filename: 'virus.exe',
+          contentType: 'application/x-msdownload',
+        })
+        .expect(400);
+    });
+  });
 });

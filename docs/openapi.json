@@ -6081,6 +6081,116 @@
         ]
       }
     },
+    "/api/v1/workspaces/{wsId}/channels/{channelId}/attachments": {
+      "post": {
+        "operationId": "ChannelAttachmentsController_upload",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Anexo enviado para o canal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attachment"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "attachments"
+        ]
+      },
+      "get": {
+        "operationId": "ChannelAttachmentsController_list",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Anexos enviados ao canal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Attachment"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "attachments"
+        ]
+      }
+    },
     "/api/v1/workspaces/{wsId}/attachments/{attachmentId}/download": {
       "get": {
         "operationId": "AttachmentsController_download",
@@ -10947,7 +11057,18 @@
     "/api/v1/workspaces/{wsId}/channels": {
       "post": {
         "operationId": "ChannelsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -11028,9 +11149,19 @@
             "name": "includeArchived",
             "required": false,
             "in": "query",
+            "description": "Padrão: false.",
             "schema": {
-              "default": false,
               "type": "boolean"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -11076,7 +11207,18 @@
     "/api/v1/workspaces/{wsId}/channels/dm": {
       "post": {
         "operationId": "ChannelsController_dm",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -11120,6 +11262,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -11152,6 +11304,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -11196,11 +11358,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Canal arquivado."
+            "description": "Canal arquivado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -11223,6 +11402,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -11259,6 +11448,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -11294,6 +11493,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -11328,6 +11537,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -11382,6 +11601,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -11417,11 +11646,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Canal marcado como lido."
+            "description": "Canal marcado como lido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelReadDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -11444,6 +11690,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -11508,6 +11764,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -11560,6 +11826,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -11603,11 +11879,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Mensagem excluída."
+            "description": "Mensagem excluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -11630,6 +11923,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -11696,6 +11999,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -11748,6 +12061,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -11762,7 +12085,14 @@
         },
         "responses": {
           "201": {
-            "description": "Tarefa criada a partir da mensagem."
+            "description": "Tarefa criada a partir da mensagem.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageToTaskResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -11778,10 +12108,28 @@
     "/api/v1/workspaces/{wsId}/me/chat-activity": {
       "get": {
         "operationId": "ChatActivityController_activity",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Não lidas por canal, para a Sidebar Home."
+            "description": "Não lidas por canal, para a Sidebar Home.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatActivityDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -18167,7 +18515,8 @@
           "entityType": {
             "enum": [
               "comment",
-              "task"
+              "task",
+              "channel"
             ],
             "type": "string"
           },
@@ -18175,7 +18524,9 @@
             "$ref": "#/components/schemas/ObjectId"
           },
           "taskId": {
-            "description": "Task the file hangs from, directly or through a comment; drives the permission.",
+            "nullable": true,
+            "description": "Task the file hangs from, directly or through a comment; drives the\npermission. null on a channel attachment, where the channel does it.",
+            "type": "object",
             "allOf": [
               {
                 "$ref": "#/components/schemas/ObjectId"
@@ -22220,7 +22571,7 @@
               "group"
             ],
             "type": "string",
-            "default": "channel"
+            "description": "Padrão: channel."
           },
           "name": {
             "type": "string",
@@ -22236,7 +22587,7 @@
               "list"
             ],
             "type": "string",
-            "default": "workspace"
+            "description": "Padrão: workspace."
           },
           "locationId": {
             "type": "string",
@@ -22244,8 +22595,7 @@
           },
           "private": {
             "type": "boolean",
-            "default": false,
-            "description": "Visível apenas para os membros."
+            "description": "Visível apenas para os membros. Padrão: false."
           },
           "memberIds": {
             "maxItems": 200,
@@ -22365,6 +22715,22 @@
         },
         "required": [
           "userIds"
+        ]
+      },
+      "ChannelReadDto": {
+        "type": "object",
+        "properties": {
+          "channelId": {
+            "type": "string"
+          },
+          "lastReadAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "channelId",
+          "lastReadAt"
         ]
       },
       "CreateMessageDto": {
@@ -22543,6 +22909,83 @@
         },
         "required": [
           "listId"
+        ]
+      },
+      "MessageToTaskResultDto": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "$ref": "#/components/schemas/Task"
+          },
+          "messageUrl": {
+            "type": "string",
+            "description": "Link direto da mensagem que originou a tarefa."
+          }
+        },
+        "required": [
+          "task",
+          "messageUrl"
+        ]
+      },
+      "ChannelActivityDto": {
+        "type": "object",
+        "properties": {
+          "channelId": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "channel",
+              "dm",
+              "group"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "usolutionspdv"
+          },
+          "unread": {
+            "type": "number",
+            "example": 3
+          },
+          "lastMessageAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "lastReadAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "channelId",
+          "type",
+          "name",
+          "unread",
+          "lastMessageAt",
+          "lastReadAt"
+        ]
+      },
+      "ChatActivityDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChannelActivityDto"
+            }
+          },
+          "unread": {
+            "type": "number",
+            "description": "Soma das não lidas de todos os canais visíveis."
+          }
+        },
+        "required": [
+          "items",
+          "unread"
         ]
       },
       "CreateCalendarEventDto": {

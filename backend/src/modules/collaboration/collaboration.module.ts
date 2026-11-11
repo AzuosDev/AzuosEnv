@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ChatDataModule } from '../chat/chat-data.module';
 import { HierarchyModule } from '../hierarchy/hierarchy.module';
 import { StorageModule } from '../storage/storage.module';
 import { TasksModule } from '../tasks/tasks.module';
@@ -8,6 +9,7 @@ import { ActivitiesService } from './activities.service';
 import { ActivityController, TaskActivityController } from './activities.controller';
 import {
   AttachmentsController,
+  ChannelAttachmentsController,
   CommentAttachmentsController,
   TaskAttachmentsController,
 } from './attachments.controller';
@@ -25,7 +27,14 @@ import { DependenciesController, TaskDependenciesController } from './dependenci
 import { DependenciesService } from './dependencies.service';
 
 @Module({
-  imports: [CollaborationDataModule, TasksModule, HierarchyModule, WorkspacesModule, StorageModule],
+  imports: [
+    CollaborationDataModule,
+    TasksModule,
+    HierarchyModule,
+    WorkspacesModule,
+    StorageModule,
+    ChatDataModule,
+  ],
   controllers: [
     TaskChecklistsController,
     ChecklistsController,
@@ -34,6 +43,7 @@ import { DependenciesService } from './dependencies.service';
     CommentInboxController,
     TaskAttachmentsController,
     CommentAttachmentsController,
+    ChannelAttachmentsController,
     AttachmentsController,
     TaskDependenciesController,
     DependenciesController,

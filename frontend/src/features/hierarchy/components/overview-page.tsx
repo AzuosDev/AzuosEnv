@@ -1,10 +1,14 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { Folder as FolderIcon, Lock } from 'lucide-react';
+import { useState } from 'react';
 import type { TreeFolder, TreeList } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { StatusPill } from '@/components/ui/status-pill';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ChannelSurface } from '@/features/chat/components/channel-surface';
+import { workspaceQuery } from '@/features/settings/api';
 import { treeQuery } from '@/features/shell/api';
 import { PageHeader } from '@/features/shell/components/page-header';
 import { crumbsOf, findLocation, type TreeNodeKind } from '@/features/shell/tree-path';
@@ -75,7 +79,9 @@ export interface OverviewPageProps {
 /** Visão geral de um Space ou Folder: subfolders e Lists em cards. */
 export function OverviewPage({ wsId, kind, id }: OverviewPageProps) {
   const { data: tree } = useSuspenseQuery(treeQuery(wsId));
+  const { data: workspace } = useSuspenseQuery(workspaceQuery(wsId));
   const { open } = useHierarchy();
+  const [tab, setTab] = useState('overview');
   const location = findLocation(tree, kind, id);
 
   if (!location) {
@@ -121,70 +127,83 @@ export function OverviewPage({ wsId, kind, id }: OverviewPageProps) {
   const Icon = kind === 'space' ? iconOf(space?.icon) : FolderIcon;
 
   return (
-    <div className="flex flex-col gap-5 pb-8">
-      <PageHeader
-        wsId={wsId}
-        title={location.name}
-        crumbs={crumbsOf(location)}
-        description={openLabel(total)}
-        actions={
-          <span className="flex items-center gap-1">
-            <AddMenu node={node} />
-            <NodeMenu node={node} />
-          </span>
-        }
-      />
-
-      <div className="flex flex-col gap-4 px-4 md:px-6">
-        {folders.length === 0 && lists.length === 0 ? (
-          <EmptyState
-            {...(Icon ? { icon: <Icon className="h-6 w-6" aria-hidden="true" /> } : {})}
-            title="Nada aqui ainda"
-            description={`Crie a primeira List deste ${NODE_LABEL[kind]} para começar a receber tarefas.`}
-            action={
-              <Button
-                onClick={() => {
-                  open({
-                    type: 'createList',
-                    parent: {
-                      spaceId: node.spaceId,
-                      folderId: kind === 'folder' ? id : null,
-                    },
-                  });
-                }}
-              >
-                Nova List
-              </Button>
-            }
-          />
-        ) : null}
-
-        {folders.length > 0 ? (
-          <section aria-label="Folders" className="flex flex-col gap-2">
-            <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-              Folders
-            </h2>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {folders.map((folder) => (
-                <FolderCard key={folder.id} wsId={wsId} folder={folder} />
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {lists.length > 0 ? (
-          <section aria-label="Lists" className="flex flex-col gap-2">
-            <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-              Lists
-            </h2>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {lists.map((list) => (
-                <ListCard key={list.id} wsId={wsId} list={list} />
-              ))}
-            </div>
-          </section>
-        ) : null}
+    <div className={cn('flex flex-col', tab === 'chat' ? 'h-full min-h-0' : 'gap-5 pb-8')}>
+      <div className="shrink-0">
+        <PageHeader
+          wsId={wsId}
+          title={location.name}
+          crumbs={crumbsOf(location)}
+          description={openLabel(total)}
+          actions={
+            <span className="flex items-center gap-1">
+              <AddMenu node={node} />
+              <NodeMenu node={node} />
+            </span>
+          }
+        />
       </div>
+
+      <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
+        <TabsList className="shrink-0 px-4 md:px-6">
+          <TabsTrigger value="overview">Visão geral</TabsTrigger>
+          <TabsTrigger value="chat">Chat</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="chat" className="flex min-h-0 flex-1 flex-col pt-3">
+          <ChannelSurface wsId={wsId} locationType={kind} locationId={id} role={workspace.role} />
+        </TabsContent>
+
+        <TabsContent value="overview" className="flex flex-col gap-4 px-4 pt-4 md:px-6">
+          {folders.length === 0 && lists.length === 0 ? (
+            <EmptyState
+              {...(Icon ? { icon: <Icon className="h-6 w-6" aria-hidden="true" /> } : {})}
+              title="Nada aqui ainda"
+              description={`Crie a primeira List deste ${NODE_LABEL[kind]} para começar a receber tarefas.`}
+              action={
+                <Button
+                  onClick={() => {
+                    open({
+                      type: 'createList',
+                      parent: {
+                        spaceId: node.spaceId,
+                        folderId: kind === 'folder' ? id : null,
+                      },
+                    });
+                  }}
+                >
+                  Nova List
+                </Button>
+              }
+            />
+          ) : null}
+
+          {folders.length > 0 ? (
+            <section aria-label="Folders" className="flex flex-col gap-2">
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                Folders
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {folders.map((folder) => (
+                  <FolderCard key={folder.id} wsId={wsId} folder={folder} />
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {lists.length > 0 ? (
+            <section aria-label="Lists" className="flex flex-col gap-2">
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                Lists
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {lists.map((list) => (
+                  <ListCard key={list.id} wsId={wsId} list={list} />
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

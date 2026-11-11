@@ -1,5 +1,5 @@
 /** Tipos de entidade que o app sabe abrir por link. */
-export type LinkableKind = 'space' | 'folder' | 'list' | 'task' | 'doc';
+export type LinkableKind = 'space' | 'folder' | 'list' | 'task' | 'doc' | 'channel';
 
 /**
  * Destino de navegação do TanStack Router. A união é fechada para o roteador
@@ -9,7 +9,8 @@ export type EntityLink =
   | { to: '/w/$wsId/s/$spaceId'; params: { wsId: string; spaceId: string } }
   | { to: '/w/$wsId/f/$folderId'; params: { wsId: string; folderId: string } }
   | { to: '/w/$wsId/l/$listId'; params: { wsId: string; listId: string } }
-  | { to: '/w/$wsId/t/$customId'; params: { wsId: string; customId: string } };
+  | { to: '/w/$wsId/t/$customId'; params: { wsId: string; customId: string } }
+  | { to: '/w/$wsId/chat'; params: { wsId: string }; search: { canal: string } };
 
 /**
  * Para onde cada entidade abre. A tarefa vai pelo customId quando ele vem, e a
@@ -35,6 +36,10 @@ export function entityLink(
 
   if (kind === 'task') {
     return { to: '/w/$wsId/t/$customId', params: { wsId, customId: customId ?? id } };
+  }
+
+  if (kind === 'channel') {
+    return { to: '/w/$wsId/chat', params: { wsId }, search: { canal: id } };
   }
 
   return null;

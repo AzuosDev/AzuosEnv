@@ -12,7 +12,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
@@ -34,6 +36,7 @@ import {
   CreateDmDto,
   UpdateChannelDto,
 } from './dto/channel.dto';
+import { ChannelReadDto, ChatActivityDto, MessageToTaskResultDto } from './dto/chat-result.dto';
 import {
   CreateMessageDto,
   MessageReactionDto,
@@ -45,6 +48,7 @@ import { Message, MessageDocument } from './schemas/message.schema';
 
 @ApiTags('chat')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/channels')
 export class ChannelsController {
@@ -104,7 +108,7 @@ export class ChannelsController {
   }
 
   @Delete(':channelId')
-  @ApiOkResponse({ description: 'Canal arquivado.' })
+  @ApiOkResponse({ description: 'Canal arquivado.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
@@ -167,7 +171,7 @@ export class ChannelsController {
 
   @Post(':channelId/read')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Canal marcado como lido.' })
+  @ApiOkResponse({ description: 'Canal marcado como lido.', type: ChannelReadDto })
   async read(
     @CurrentMembership() membership: RequestMembership,
     @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
@@ -200,6 +204,7 @@ export class ChannelsController {
 
 @ApiTags('chat')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/messages')
 export class MessagesController {
@@ -216,7 +221,7 @@ export class MessagesController {
   }
 
   @Delete(':messageId')
-  @ApiOkResponse({ description: 'Mensagem excluída.' })
+  @ApiOkResponse({ description: 'Mensagem excluída.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('messageId', ParseObjectIdPipe) messageId: Types.ObjectId,
@@ -248,7 +253,10 @@ export class MessagesController {
   }
 
   @Post(':messageId/to-task')
-  @ApiCreatedResponse({ description: 'Tarefa criada a partir da mensagem.' })
+  @ApiCreatedResponse({
+    description: 'Tarefa criada a partir da mensagem.',
+    type: MessageToTaskResultDto,
+  })
   toTask(
     @CurrentMembership() membership: RequestMembership,
     @CurrentWorkspace() workspace: WorkspaceDocument,
@@ -266,13 +274,17 @@ export class MessagesController {
 
 @ApiTags('chat')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/me/chat-activity')
 export class ChatActivityController {
   constructor(private readonly channels: ChannelsService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Não lidas por canal, para a Sidebar Home.' })
+  @ApiOkResponse({
+    description: 'Não lidas por canal, para a Sidebar Home.',
+    type: ChatActivityDto,
+  })
   activity(@CurrentMembership() membership: RequestMembership): Promise<ChatActivity> {
     return this.channels.activity(permissionContextFrom(membership));
   }

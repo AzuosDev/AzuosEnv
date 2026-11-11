@@ -87,4 +87,15 @@ export const queryKeys = {
     ['workspaces', workspaceId, 'automations', 'recipes'] as const,
   templates: (workspaceId: string, type: string) =>
     ['workspaces', workspaceId, 'templates', type] as const,
+  channels: (workspaceId: string, params: Record<string, unknown>) =>
+    ['workspaces', workspaceId, 'channels', 'list', params] as const,
+  channel: (workspaceId: string, channelId: string) =>
+    ['workspaces', workspaceId, 'channels', 'detail', channelId] as const,
+  messages: (workspaceId: string, channelId: string) =>
+    ['workspaces', workspaceId, 'channels', 'detail', channelId, 'messages'] as const,
+  channelAttachments: (workspaceId: string, channelId: string) =>
+    ['workspaces', workspaceId, 'channels', 'detail', channelId, 'attachments'] as const,
+  messageReplies: (workspaceId: string, messageId: string) =>
+    ['workspaces', workspaceId, 'messages', messageId, 'replies'] as const,
+  chatActivity: (workspaceId: string) => ['workspaces', workspaceId, 'chat-activity'] as const,
 } as const;

@@ -5,6 +5,7 @@ import {
   Columns3,
   Gauge,
   List as ListIcon,
+  MessagesSquare,
   Rows3,
   Table as TableIcon,
   Users,
@@ -23,6 +24,7 @@ export const SUPPORTED_VIEW_TYPES = [
   'workload',
   'team',
   'activity',
+  'chat',
 ] as const;
 export type SupportedViewType = (typeof SUPPORTED_VIEW_TYPES)[number];
 
@@ -36,6 +38,7 @@ export const VIEW_TYPE_LABEL: Record<SupportedViewType, string> = {
   workload: 'Workload',
   team: 'Team',
   activity: 'Activity',
+  chat: 'Chat',
 };
 
 export const VIEW_TYPE_ICON: Record<SupportedViewType, LucideIcon> = {
@@ -48,6 +51,7 @@ export const VIEW_TYPE_ICON: Record<SupportedViewType, LucideIcon> = {
   workload: Gauge,
   team: Users,
   activity: ActivityIcon,
+  chat: MessagesSquare,
 };
 
 export function isSupportedViewType(type: ViewType): type is SupportedViewType {
@@ -98,6 +102,7 @@ export const FIXED_GROUP_BY: Partial<Record<SupportedViewType, ViewGroupBy>> = {
   timeline: 'assignee',
   workload: 'assignee',
   team: 'assignee',
+  chat: 'none',
 };
 
 /** Agrupamento padrão de cada tipo de view quando a config não diz nada. */
@@ -111,6 +116,7 @@ export const DEFAULT_GROUP_BY: Record<SupportedViewType, ViewGroupBy> = {
   workload: 'assignee',
   team: 'assignee',
   activity: 'none',
+  chat: 'none',
 };
 
 /** Agrupamento que a view vai usar de fato. */
@@ -118,9 +124,9 @@ export function groupByOf(type: SupportedViewType, groupBy: ViewGroupBy | undefi
   return FIXED_GROUP_BY[type] ?? groupBy ?? DEFAULT_GROUP_BY[type];
 }
 
-/** Views que leem o /tasks/query; a Activity tem feed próprio. */
+/** Views que leem o /tasks/query; a Activity e o Chat têm fonte própria. */
 export function usesTasks(type: SupportedViewType): boolean {
-  return type !== 'activity';
+  return type !== 'activity' && type !== 'chat';
 }
 
 /** Views que aceitam escolher colunas de campo personalizado. */

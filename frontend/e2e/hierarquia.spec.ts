@@ -123,14 +123,22 @@ test('arrasta a List para outro Folder e o lugar novo resiste ao recarregar', as
   await grip.hover();
   await page.mouse.down();
 
-  const box = await target.boundingBox();
+  // A sidebar rola durante o arrasto (o dnd-kit tem auto-scroll), então o
+  // destino é remedido a cada passo até o ponteiro parar dentro dele.
+  let x = 0;
+  let y = 0;
 
-  expect(box, 'posição do Folder de destino').toBeTruthy();
+  for (let step = 0; step < 8; step += 1) {
+    const box = await target.boundingBox();
 
-  const x = (box?.x ?? 0) + (box?.width ?? 0) / 2;
-  const y = (box?.y ?? 0) + (box?.height ?? 0) / 2;
+    expect(box, 'posição do Folder de destino').toBeTruthy();
 
-  await page.mouse.move(x, y, { steps: 12 });
+    x = (box?.x ?? 0) + (box?.width ?? 0) / 2;
+    y = (box?.y ?? 0) + (box?.height ?? 0) / 2;
+
+    await page.mouse.move(x, y, { steps: 4 });
+  }
+
   await page.mouse.move(x, y + 1, { steps: 2 });
   await page.mouse.up();
 

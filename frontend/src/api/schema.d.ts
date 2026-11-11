@@ -1349,6 +1349,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{wsId}/channels/{channelId}/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ChannelAttachmentsController_list"];
+        put?: never;
+        post: operations["ChannelAttachmentsController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{wsId}/attachments/{attachmentId}/download": {
         parameters: {
             query?: never;
@@ -4509,10 +4525,13 @@ export interface components {
         Attachment: {
             workspaceId: components["schemas"]["ObjectId"];
             /** @enum {string} */
-            entityType: "comment" | "task";
+            entityType: "comment" | "task" | "channel";
             entityId: components["schemas"]["ObjectId"];
-            /** @description Task the file hangs from, directly or through a comment; drives the permission. */
-            taskId: components["schemas"]["ObjectId"];
+            /**
+             * @description Task the file hangs from, directly or through a comment; drives the
+             *     permission. null on a channel attachment, where the channel does it.
+             */
+            taskId: components["schemas"]["ObjectId"] | null;
             name: string;
             mimeType: string;
             size: number;
@@ -5659,24 +5678,21 @@ export interface components {
         };
         CreateChannelDto: {
             /**
-             * @default channel
+             * @description Padrão: channel.
              * @enum {string}
              */
-            type: "channel" | "group";
+            type?: "channel" | "group";
             /** @example uSolutionsPDV */
             name: string;
             /**
-             * @default workspace
+             * @description Padrão: workspace.
              * @enum {string}
              */
-            locationType: "workspace" | "space" | "folder" | "list";
+            locationType?: "workspace" | "space" | "folder" | "list";
             /** @description Obrigatório fora de locationType workspace. */
             locationId?: string;
-            /**
-             * @description Visível apenas para os membros.
-             * @default false
-             */
-            private: boolean;
+            /** @description Visível apenas para os membros. Padrão: false. */
+            private?: boolean;
             memberIds?: string[];
         };
         Channel: {
@@ -5706,6 +5722,11 @@ export interface components {
         };
         ChannelMembersDto: {
             userIds: string[];
+        };
+        ChannelReadDto: {
+            channelId: string;
+            /** Format: date-time */
+            lastReadAt: string;
         };
         CreateMessageDto: {
             /** @example Subi o build do PDV */
@@ -5757,6 +5778,29 @@ export interface components {
         MessageToTaskDto: {
             /** @description List onde a tarefa será criada. */
             listId: string;
+        };
+        MessageToTaskResultDto: {
+            task: components["schemas"]["Task"];
+            /** @description Link direto da mensagem que originou a tarefa. */
+            messageUrl: string;
+        };
+        ChannelActivityDto: {
+            channelId: string;
+            /** @enum {string} */
+            type: "channel" | "dm" | "group";
+            /** @example usolutionspdv */
+            name: string;
+            /** @example 3 */
+            unread: number;
+            /** Format: date-time */
+            lastMessageAt: string | null;
+            /** Format: date-time */
+            lastReadAt: string | null;
+        };
+        ChatActivityDto: {
+            items: components["schemas"]["ChannelActivityDto"][];
+            /** @description Soma das não lidas de todos os canais visíveis. */
+            unread: number;
         };
         CreateCalendarEventDto: {
             /** @example Daily uSolutionsPDV */
@@ -9342,6 +9386,61 @@ export interface operations {
             };
         };
     };
+    ChannelAttachmentsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Anexos enviados ao canal. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Attachment"][];
+                };
+            };
+        };
+    };
+    ChannelAttachmentsController_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Anexo enviado para o canal. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Attachment"];
+                };
+            };
+        };
+    };
     AttachmentsController_download: {
         parameters: {
             query?: never;
@@ -11800,10 +11899,14 @@ export interface operations {
                 cursor?: string;
                 locationType?: "workspace" | "space" | "folder" | "list";
                 locationId?: string;
+                /** @description Padrão: false. */
                 includeArchived?: boolean;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -11827,7 +11930,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -11851,7 +11957,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -11877,6 +11986,8 @@ export interface operations {
             header?: never;
             path: {
                 channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11899,6 +12010,8 @@ export interface operations {
             header?: never;
             path: {
                 channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11909,7 +12022,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -11919,6 +12034,8 @@ export interface operations {
             header?: never;
             path: {
                 channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11945,6 +12062,8 @@ export interface operations {
             header?: never;
             path: {
                 channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11967,6 +12086,8 @@ export interface operations {
             header?: never;
             path: {
                 channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -11989,6 +12110,8 @@ export interface operations {
             header?: never;
             path: {
                 channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12011,6 +12134,8 @@ export interface operations {
             header?: never;
             path: {
                 channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12038,6 +12163,8 @@ export interface operations {
             path: {
                 channelId: components["schemas"]["ObjectId"];
                 userId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12060,6 +12187,8 @@ export interface operations {
             header?: never;
             path: {
                 channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12070,7 +12199,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ChannelReadDto"];
+                };
             };
         };
     };
@@ -12084,6 +12215,8 @@ export interface operations {
             header?: never;
             path: {
                 channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12110,6 +12243,8 @@ export interface operations {
             header?: never;
             path: {
                 channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12136,6 +12271,8 @@ export interface operations {
             header?: never;
             path: {
                 messageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12146,7 +12283,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -12156,6 +12295,8 @@ export interface operations {
             header?: never;
             path: {
                 messageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12182,6 +12323,8 @@ export interface operations {
             header?: never;
             path: {
                 messageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12212,6 +12355,8 @@ export interface operations {
             header?: never;
             path: {
                 messageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12238,6 +12383,8 @@ export interface operations {
             header?: never;
             path: {
                 messageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12252,7 +12399,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageToTaskResultDto"];
+                };
             };
         };
     };
@@ -12260,7 +12409,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -12270,7 +12422,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ChatActivityDto"];
+                };
             };
         };
     };

@@ -20,7 +20,7 @@ import {
 export const NAV_ITEMS = [
   { id: 'tarefas', label: 'Tarefas', icon: CircleCheckBig, to: '/w/$wsId', ready: true },
   { id: 'planner', label: 'Planner', icon: CalendarDays, to: '/w/$wsId/planner', ready: false },
-  { id: 'chat', label: 'Chat', icon: MessageSquare, to: '/w/$wsId/chat', ready: false },
+  { id: 'chat', label: 'Chat', icon: MessageSquare, to: '/w/$wsId/chat', ready: true },
   { id: 'docs', label: 'Docs', icon: FileText, to: '/w/$wsId/docs', ready: false },
   {
     id: 'dashboards',

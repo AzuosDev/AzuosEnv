@@ -15,9 +15,12 @@ export class Attachment {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   entityId: Types.ObjectId;
 
-  /** Task the file hangs from, directly or through a comment; drives the permission. */
-  @Prop({ type: Types.ObjectId, ref: 'Task', required: true, index: true })
-  taskId: Types.ObjectId;
+  /**
+   * Task the file hangs from, directly or through a comment; drives the
+   * permission. null on a channel attachment, where the channel does it.
+   */
+  @Prop({ type: Types.ObjectId, ref: 'Task', default: null, index: true })
+  taskId: Types.ObjectId | null;
 
   @Prop({ required: true, trim: true })
   name: string;

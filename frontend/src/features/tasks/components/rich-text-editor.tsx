@@ -76,6 +76,9 @@ function suggestionFor(char: string, search: MentionSearch): Suggestion {
   };
 }
 
+/** Rótulo do menu de sugestão, que vive fora do React da página. */
+const MENTION_MENU = '[aria-label="Sugestões da menção"]';
+
 export interface RichTextEditorProps {
   /** Documento do Tiptap; null quando a descrição está vazia. */
   value: JSONContent | null;
@@ -88,6 +91,11 @@ export interface RichTextEditorProps {
   className?: string;
   /** Falso esconde a barra de formatação (editor compacto de resposta). */
   showToolbar?: boolean;
+  /**
+   * Quando existe, Enter envia e Shift+Enter quebra a linha (editor de mensagem
+   * do chat). Com o menu de menção aberto, Enter continua escolhendo a sugestão.
+   */
+  onEnter?: () => void;
 }
 
 const toolbarButton =
@@ -107,14 +115,17 @@ export function RichTextEditor({
   'aria-label': ariaLabel,
   className,
   showToolbar = true,
+  onEnter,
 }: RichTextEditorProps) {
   const notify = useRef(onChange);
   const people = useRef(searchPeople);
   const tasks = useRef(searchTasks);
+  const enter = useRef(onEnter);
 
   notify.current = onChange;
   people.current = searchPeople;
   tasks.current = searchTasks;
+  enter.current = onEnter;
 
   const editor = useEditor({
     editable,
@@ -146,11 +157,34 @@ export function RichTextEditor({
         role: 'textbox',
         'aria-multiline': 'true',
       },
+      handleKeyDown: (_view, event) => {
+        const submit = enter.current;
+
+        if (
+          !submit ||
+          event.key !== 'Enter' ||
+          event.shiftKey ||
+          event.isComposing ||
+          document.querySelector(MENTION_MENU) !== null
+        ) {
+          return false;
+        }
+
+        submit();
+
+        return true;
+      },
     },
     onUpdate: ({ editor: instance }) => {
       notify.current(instance.getJSON(), instance.getText());
     },
     immediatelyRender: false,
+    /**
+     * O Tiptap 3 não re-renderiza a cada transação por padrão, e sem isso o
+     * aria-pressed da barra congela no estado de quando ela montou. Só o editor
+     * com barra paga esse custo; o compacto do chat e do comentário não têm.
+     */
+    shouldRerenderOnTransaction: showToolbar,
   });
 
   useEffect(() => {
