@@ -10,7 +10,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { PaginationQueryDto } from '../../common/pagination/pagination-query.dto';
@@ -27,10 +29,12 @@ import {
   UpdateGoalDto,
   UpdateGoalFolderDto,
 } from './dto/goal.dto';
+import { GoalViewDto, TargetResultDto, TargetsResultDto } from './dto/goal-result.dto';
 import { CreateTargetDto, UpdateTargetDto } from './dto/target.dto';
 import { GoalFoldersService } from './goal-folders.service';
 import { GoalView, GoalsService } from './goals.service';
 import { GoalFolder, GoalFolderDocument } from './schemas/goal-folder.schema';
+import { Goal } from './schemas/goal.schema';
 import { TargetDocument } from './schemas/target.schema';
 import { TargetsService } from './targets.service';
 
@@ -42,6 +46,7 @@ interface TargetResponse {
 @ApiTags('goals')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/goal-folders')
 export class GoalFoldersController {
   constructor(private readonly folders: GoalFoldersService) {}
@@ -78,7 +83,10 @@ export class GoalFoldersController {
 
   @Delete(':folderId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Pasta excluída; as metas voltam para a raiz.' })
+  @ApiOkResponse({
+    description: 'Pasta excluída; as metas voltam para a raiz.',
+    type: SuccessDto,
+  })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('folderId', ParseObjectIdPipe) folderId: Types.ObjectId,
@@ -92,6 +100,7 @@ export class GoalFoldersController {
 @ApiTags('goals')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/goals')
 export class GoalsController {
   constructor(
@@ -101,7 +110,7 @@ export class GoalsController {
 
   @Post()
   @Roles('member')
-  @ApiCreatedResponse({ description: 'Meta criada.' })
+  @ApiCreatedResponse({ description: 'Meta criada.', type: Goal })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateGoalDto,
@@ -110,7 +119,7 @@ export class GoalsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Metas visíveis com o progresso de cada uma.' })
+  @ApiPagedResponse(GoalViewDto, 'Metas visíveis com o progresso de cada uma.')
   list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: GoalQueryDto,
@@ -119,7 +128,7 @@ export class GoalsController {
   }
 
   @Get(':goalId')
-  @ApiOkResponse({ description: 'Meta com os alvos e o progresso.' })
+  @ApiOkResponse({ description: 'Meta com os alvos e o progresso.', type: GoalViewDto })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('goalId', ParseObjectIdPipe) goalId: Types.ObjectId,
@@ -129,7 +138,7 @@ export class GoalsController {
 
   @Patch(':goalId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Meta atualizada.' })
+  @ApiOkResponse({ description: 'Meta atualizada.', type: GoalViewDto })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('goalId', ParseObjectIdPipe) goalId: Types.ObjectId,
@@ -140,7 +149,7 @@ export class GoalsController {
 
   @Delete(':goalId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Meta excluída com os alvos dela.' })
+  @ApiOkResponse({ description: 'Meta excluída com os alvos dela.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('goalId', ParseObjectIdPipe) goalId: Types.ObjectId,
@@ -152,7 +161,7 @@ export class GoalsController {
 
   @Post(':goalId/targets')
   @Roles('member')
-  @ApiCreatedResponse({ description: 'Alvo criado na meta.' })
+  @ApiCreatedResponse({ description: 'Alvo criado na meta.', type: TargetResultDto })
   async createTarget(
     @CurrentMembership() membership: RequestMembership,
     @Param('goalId', ParseObjectIdPipe) goalId: Types.ObjectId,
@@ -166,7 +175,7 @@ export class GoalsController {
   }
 
   @Get(':goalId/targets')
-  @ApiOkResponse({ description: 'Alvos da meta.' })
+  @ApiOkResponse({ description: 'Alvos da meta.', type: TargetsResultDto })
   async listTargets(
     @CurrentMembership() membership: RequestMembership,
     @Param('goalId', ParseObjectIdPipe) goalId: Types.ObjectId,
@@ -182,7 +191,7 @@ export class GoalsController {
 
   @Patch(':goalId/targets/:targetId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Alvo atualizado.' })
+  @ApiOkResponse({ description: 'Alvo atualizado.', type: TargetResultDto })
   async updateTarget(
     @CurrentMembership() membership: RequestMembership,
     @Param('goalId', ParseObjectIdPipe) goalId: Types.ObjectId,
@@ -198,7 +207,7 @@ export class GoalsController {
 
   @Delete(':goalId/targets/:targetId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Alvo excluído.' })
+  @ApiOkResponse({ description: 'Alvo excluído.', type: SuccessDto })
   async removeTarget(
     @CurrentMembership() membership: RequestMembership,
     @Param('goalId', ParseObjectIdPipe) goalId: Types.ObjectId,

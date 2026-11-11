@@ -12,6 +12,8 @@ import {
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
@@ -23,12 +25,14 @@ import {
   CreateTimeBlockDto,
   UpdateCalendarEventDto,
 } from './dto/calendar-event.dto';
+import { CalendarEventsDto, PlannerResultDto } from './dto/planner-result.dto';
 import { PlannerResult, PlannerService } from './planner.service';
 import { CalendarEvent, CalendarEventDocument } from './schemas/calendar-event.schema';
 
 @ApiTags('calendar')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/calendar/events')
 export class CalendarEventsController {
   constructor(private readonly calendar: CalendarService) {}
@@ -46,7 +50,10 @@ export class CalendarEventsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Eventos do período, meus e os que fui convidado.' })
+  @ApiOkResponse({
+    description: 'Eventos do período, meus e os que fui convidado.',
+    type: CalendarEventsDto,
+  })
   async list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: CalendarRangeDto,
@@ -74,7 +81,7 @@ export class CalendarEventsController {
   }
 
   @Delete(':eventId')
-  @ApiOkResponse({ description: 'Evento excluído.' })
+  @ApiOkResponse({ description: 'Evento excluído.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('eventId', ParseObjectIdPipe) eventId: Types.ObjectId,
@@ -88,12 +95,16 @@ export class CalendarEventsController {
 @ApiTags('calendar')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/me/planner')
 export class PlannerController {
   constructor(private readonly planner: PlannerService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'Agenda, tarefas com prazo no período e tarefas sem bloco.' })
+  @ApiOkResponse({
+    description: 'Agenda, tarefas com prazo no período e tarefas sem bloco.',
+    type: PlannerResultDto,
+  })
   plan(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: CalendarRangeDto,

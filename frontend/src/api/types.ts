@@ -447,3 +447,91 @@ export type PublicDoc = Omit<components['schemas']['PublicDocDto'], 'doc' | 'pag
   doc: WorkspaceDoc;
   pages: DocPage[];
 };
+
+/* Planner e calendário --------------------------------------------------- */
+
+export type CalendarEvent = Doc<components['schemas']['CalendarEvent']>;
+export type CalendarSource = CalendarEvent['source'];
+export type CreateEventInput = components['schemas']['CreateCalendarEventDto'];
+export type UpdateEventInput = components['schemas']['UpdateCalendarEventDto'];
+export type CreateTimeBlockInput = components['schemas']['CreateTimeBlockDto'];
+
+/** O planner devolve o documento cru da tarefa, sem as contagens de subtarefa. */
+export type PlannerTask = Doc<
+  Omit<components['schemas']['Task'], 'description' | 'customFields'> & {
+    description: unknown;
+    customFields: TaskFieldValue[];
+  }
+>;
+
+export type PlannerResult = Omit<
+  components['schemas']['PlannerResultDto'],
+  'events' | 'dueTasks' | 'unscheduledTasks'
+> & { events: CalendarEvent[]; dueTasks: PlannerTask[]; unscheduledTasks: PlannerTask[] };
+
+/* Metas ------------------------------------------------------------------ */
+
+export type GoalFolder = Doc<components['schemas']['GoalFolder']>;
+export type Goal = Doc<components['schemas']['Goal']>;
+export type GoalTarget = Doc<components['schemas']['Target']>;
+export type TargetType = GoalTarget['type'];
+export type GoalView = Omit<components['schemas']['GoalViewDto'], 'goal' | 'targets'> & {
+  goal: Goal;
+  targets: GoalTarget[];
+};
+export type TargetResult = Omit<components['schemas']['TargetResultDto'], 'target'> & {
+  target: GoalTarget;
+};
+export type CreateGoalFolderInput = components['schemas']['CreateGoalFolderDto'];
+export type UpdateGoalFolderInput = components['schemas']['UpdateGoalFolderDto'];
+export type CreateGoalInput = components['schemas']['CreateGoalDto'];
+export type UpdateGoalInput = components['schemas']['UpdateGoalDto'];
+export type CreateTargetInput = components['schemas']['CreateTargetDto'];
+export type UpdateTargetInput = components['schemas']['UpdateTargetDto'];
+
+/* Formulários ------------------------------------------------------------ */
+
+export type WorkspaceForm = Doc<components['schemas']['Form']>;
+export type FormFieldModel = components['schemas']['FormField'];
+export type FormFieldKind = FormFieldModel['type'];
+export type FormFieldOption = components['schemas']['FormFieldOption'];
+export type FormConditionModel = FreeJson<components['schemas']['FormCondition'], 'value'>;
+export type FormConditionOp = FormConditionModel['op'];
+export type FormFieldInput = components['schemas']['FormFieldDto'];
+export type FormConditionInput = FreeJsonOptional<
+  components['schemas']['FormConditionDto'],
+  'value'
+>;
+export type CreateFormInput = Omit<components['schemas']['CreateFormDto'], 'conditions'> & {
+  conditions?: FormConditionInput[];
+};
+export type UpdateFormInput = Omit<components['schemas']['UpdateFormDto'], 'conditions'> & {
+  conditions?: FormConditionInput[];
+};
+export type FormResult = Omit<components['schemas']['FormResultDto'], 'form'> & {
+  form: WorkspaceForm;
+};
+export type PublicFormField = components['schemas']['PublicFormFieldDto'];
+export type PublicFormCondition = FreeJsonOptional<
+  components['schemas']['PublicFormConditionDto'],
+  'value'
+>;
+export type PublicForm = Omit<components['schemas']['PublicFormDto'], 'conditions'> & {
+  conditions: PublicFormCondition[];
+};
+export type SubmitFormResult = components['schemas']['SubmitFormResultDto'];
+
+/* Sprints ---------------------------------------------------------------- */
+
+export type SprintFolder = Doc<components['schemas']['SprintFolder']>;
+export type SprintFolderView = Omit<
+  components['schemas']['SprintFolderViewDto'],
+  'sprintFolder' | 'sprints'
+> & { sprintFolder: SprintFolder; sprints: ListNode[] };
+export type CloseSprintResult = Omit<
+  components['schemas']['CloseSprintResultDto'],
+  'sprint' | 'nextSprint'
+> & { sprint: ListNode; nextSprint: ListNode };
+export type CreateSprintFolderInput = components['schemas']['CreateSprintFolderDto'];
+export type UpdateSprintFolderInput = components['schemas']['UpdateSprintFolderDto'];
+export type CreateSprintInput = components['schemas']['CreateSprintDto'];

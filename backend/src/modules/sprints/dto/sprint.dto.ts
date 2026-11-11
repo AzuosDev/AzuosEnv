@@ -26,7 +26,7 @@ export class CreateSprintFolderDto {
   @Length(1, MAX_SPRINT_NAME_LENGTH)
   name: string;
 
-  @ApiPropertyOptional({ default: 14, description: 'Duração de cada sprint em dias.' })
+  @ApiPropertyOptional({ description: 'Duração de cada sprint em dias; padrão 14.' })
   @IsOptional()
   @IsInt()
   @Min(MIN_SPRINT_DURATION_DAYS)

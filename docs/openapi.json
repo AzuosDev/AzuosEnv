@@ -12395,7 +12395,18 @@
     "/api/v1/workspaces/{wsId}/calendar/events": {
       "post": {
         "operationId": "CalendarEventsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -12447,11 +12458,28 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Eventos do período, meus e os que fui convidado."
+            "description": "Eventos do período, meus e os que fui convidado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarEventsDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -12474,6 +12502,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -12507,6 +12545,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -12551,11 +12599,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Evento excluído."
+            "description": "Evento excluído.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -12589,11 +12654,28 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Agenda, tarefas com prazo no período e tarefas sem bloco."
+            "description": "Agenda, tarefas com prazo no período e tarefas sem bloco.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlannerResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -12609,7 +12691,18 @@
     "/api/v1/workspaces/{wsId}/me/planner/blocks": {
       "post": {
         "operationId": "PlannerController_block",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -12739,7 +12832,18 @@
     "/api/v1/workspaces/{wsId}/goal-folders": {
       "post": {
         "operationId": "GoalFoldersController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -12793,6 +12897,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -12845,6 +12959,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -12888,11 +13012,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Pasta excluída; as metas voltam para a raiz."
+            "description": "Pasta excluída; as metas voltam para a raiz.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -12908,7 +13049,18 @@
     "/api/v1/workspaces/{wsId}/goals": {
       "post": {
         "operationId": "GoalsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -12921,7 +13073,14 @@
         },
         "responses": {
           "201": {
-            "description": "Meta criada."
+            "description": "Meta criada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Goal"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -12973,11 +13132,45 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Metas visíveis com o progresso de cada uma."
+            "description": "Metas visíveis com o progresso de cada uma.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/GoalViewDto"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Cursor da próxima página; null na última."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13001,11 +13194,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Meta com os alvos e o progresso."
+            "description": "Meta com os alvos e o progresso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalViewDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13027,6 +13237,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -13041,7 +13261,14 @@
         },
         "responses": {
           "200": {
-            "description": "Meta atualizada."
+            "description": "Meta atualizada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoalViewDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13063,11 +13290,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Meta excluída com os alvos dela."
+            "description": "Meta excluída com os alvos dela.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13091,6 +13335,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -13105,7 +13359,14 @@
         },
         "responses": {
           "201": {
-            "description": "Alvo criado na meta."
+            "description": "Alvo criado na meta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13127,11 +13388,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Alvos da meta."
+            "description": "Alvos da meta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetsResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13163,6 +13441,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -13177,7 +13465,14 @@
         },
         "responses": {
           "200": {
-            "description": "Alvo atualizado."
+            "description": "Alvo atualizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13207,11 +13502,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Alvo excluído."
+            "description": "Alvo excluído.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13227,7 +13539,18 @@
     "/api/v1/workspaces/{wsId}/forms": {
       "post": {
         "operationId": "FormsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -13240,7 +13563,14 @@
         },
         "responses": {
           "201": {
-            "description": "Formulário criado; o token público vem uma única vez."
+            "description": "Formulário criado; o token público vem uma única vez.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13282,6 +13612,16 @@
             "description": "Formulários de uma List.",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -13335,6 +13675,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -13367,6 +13717,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -13411,11 +13771,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Formulário excluído."
+            "description": "Formulário excluído.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13443,7 +13820,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Formulário público, somente leitura."
+            "description": "Formulário público, somente leitura.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicFormDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -13475,8 +13859,15 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Envio aceito; a tarefa é criada na List do formulário."
+          "201": {
+            "description": "Envio aceito; a tarefa é criada na List do formulário.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitFormResultDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -13487,7 +13878,18 @@
     "/api/v1/workspaces/{wsId}/sprint-folders": {
       "post": {
         "operationId": "SprintFoldersController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -13500,7 +13902,14 @@
         },
         "responses": {
           "201": {
-            "description": "Pasta de sprints criada com a primeira sprint."
+            "description": "Pasta de sprints criada com a primeira sprint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SprintFolderViewDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13533,6 +13942,16 @@
             "description": "Cursor retornado em nextCursor.",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -13586,11 +14005,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Pasta de sprints com as sprints em ordem."
+            "description": "Pasta de sprints com as sprints em ordem.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SprintFolderViewDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13611,6 +14047,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -13655,11 +14101,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Pasta de sprints excluída com o Folder dela."
+            "description": "Pasta de sprints excluída com o Folder dela.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -13682,6 +14145,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -13728,6 +14201,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -13763,11 +14246,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Sprint fechada; as pendências vão para a próxima."
+            "description": "Sprint fechada; as pendências vão para a próxima.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloseSprintResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -23333,7 +23833,7 @@
           },
           "allDay": {
             "type": "boolean",
-            "default": false
+            "description": "Padrao: false."
           },
           "attendeeIds": {
             "maxItems": 50,
@@ -23449,6 +23949,20 @@
           "externalId"
         ]
       },
+      "CalendarEventsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarEvent"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "UpdateCalendarEventDto": {
         "type": "object",
         "properties": {
@@ -23492,6 +24006,46 @@
             "description": "null encerra a recorrência."
           }
         }
+      },
+      "PlannerResultDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Começo do período em UTC ISO 8601."
+          },
+          "to": {
+            "type": "string",
+            "description": "Fim do período em UTC ISO 8601."
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarEvent"
+            }
+          },
+          "dueTasks": {
+            "description": "Tarefas minhas com prazo no período.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          },
+          "unscheduledTasks": {
+            "description": "Tarefas minhas em aberto sem bloco de tempo.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "events",
+          "dueTasks",
+          "unscheduledTasks"
+        ]
       },
       "CreateTimeBlockDto": {
         "type": "object",
@@ -23616,12 +24170,167 @@
           },
           "private": {
             "type": "boolean",
-            "default": false,
-            "description": "Visível só para quem criou e os donos."
+            "description": "Visível só para quem criou e os donos; padrão false."
           }
         },
         "required": [
           "name"
+        ]
+      },
+      "Goal": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "folderId": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownerIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "dueDate": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "type": "string"
+          },
+          "private": {
+            "type": "boolean",
+            "description": "A private goal is visible only to who created it and to its owners."
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "workspaceId",
+          "folderId",
+          "name",
+          "description",
+          "ownerIds",
+          "dueDate",
+          "color",
+          "private",
+          "completedAt",
+          "createdBy",
+          "deletedAt"
+        ]
+      },
+      "Target": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "goalId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "number",
+              "boolean",
+              "tasks",
+              "currency"
+            ]
+          },
+          "start": {
+            "type": "number"
+          },
+          "target": {
+            "type": "number"
+          },
+          "current": {
+            "type": "number",
+            "description": "Kept by hand, except in a `tasks` target, where the events recompute it."
+          },
+          "unit": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskIds": {
+            "description": "Tasks counted by a `tasks` target; empty when it follows a whole List.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          "listId": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          }
+        },
+        "required": [
+          "workspaceId",
+          "goalId",
+          "name",
+          "type",
+          "start",
+          "target",
+          "current",
+          "unit",
+          "taskIds",
+          "listId"
+        ]
+      },
+      "GoalViewDto": {
+        "type": "object",
+        "properties": {
+          "goal": {
+            "$ref": "#/components/schemas/Goal"
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Target"
+            }
+          },
+          "progress": {
+            "type": "number",
+            "description": "Percentual de 0 a 100 da meta."
+          }
+        },
+        "required": [
+          "goal",
+          "targets",
+          "progress"
         ]
       },
       "UpdateGoalDto": {
@@ -23688,8 +24397,7 @@
           },
           "start": {
             "type": "number",
-            "default": 0,
-            "description": "Ponto de partida do alvo."
+            "description": "Ponto de partida do alvo; padrão 0."
           },
           "target": {
             "type": "number",
@@ -23697,8 +24405,7 @@
           },
           "current": {
             "type": "number",
-            "default": 0,
-            "description": "Ignorado no tipo tasks."
+            "description": "Ignorado no tipo tasks; padrão 0."
           },
           "unit": {
             "type": "string",
@@ -23724,6 +24431,36 @@
         "required": [
           "name",
           "type"
+        ]
+      },
+      "TargetResultDto": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/Target"
+          },
+          "progress": {
+            "type": "number",
+            "description": "Percentual de 0 a 100 do alvo."
+          }
+        },
+        "required": [
+          "target",
+          "progress"
+        ]
+      },
+      "TargetsResultDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TargetResultDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "UpdateTargetDto": {
@@ -23815,7 +24552,7 @@
           },
           "required": {
             "type": "boolean",
-            "default": false
+            "description": "Padrão: false."
           },
           "options": {
             "maxItems": 100,
@@ -23927,7 +24664,7 @@
           },
           "active": {
             "type": "boolean",
-            "default": true
+            "description": "Padrão: true."
           }
         },
         "required": [
@@ -24125,6 +24862,29 @@
           "deletedAt"
         ]
       },
+      "FormResultDto": {
+        "type": "object",
+        "properties": {
+          "form": {
+            "$ref": "#/components/schemas/Form"
+          },
+          "token": {
+            "type": "string",
+            "nullable": true,
+            "description": "Token do link público, só na criação."
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL pública do formulário, só na criação."
+          }
+        },
+        "required": [
+          "form",
+          "token",
+          "url"
+        ]
+      },
       "UpdateFormDto": {
         "type": "object",
         "properties": {
@@ -24177,6 +24937,132 @@
           }
         }
       },
+      "PublicFormFieldOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ]
+      },
+      "PublicFormFieldDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "text",
+              "longText",
+              "number",
+              "email",
+              "phone",
+              "url",
+              "date",
+              "dropdown",
+              "labels",
+              "checkbox"
+            ],
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicFormFieldOptionDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "type",
+          "required",
+          "options"
+        ]
+      },
+      "PublicFormConditionDto": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "eq",
+              "ne",
+              "contains",
+              "gt",
+              "lt",
+              "isEmpty",
+              "isNotEmpty"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "object",
+            "description": "Valor comparado; JSON livre."
+          },
+          "showFieldIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "fieldId",
+          "op",
+          "showFieldIds"
+        ]
+      },
+      "PublicFormDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicFormFieldDto"
+            }
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicFormConditionDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "fields",
+          "conditions"
+        ]
+      },
       "SubmitFormDto": {
         "type": "object",
         "properties": {
@@ -24196,6 +25082,27 @@
           "values"
         ]
       },
+      "SubmitFormResultDto": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "type": "boolean",
+            "example": true
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "customId": {
+            "type": "string",
+            "example": "AZD-150"
+          }
+        },
+        "required": [
+          "received",
+          "taskId",
+          "customId"
+        ]
+      },
       "CreateSprintFolderDto": {
         "type": "object",
         "properties": {
@@ -24212,8 +25119,7 @@
             "type": "number",
             "minimum": 1,
             "maximum": 60,
-            "default": 14,
-            "description": "Duração de cada sprint em dias."
+            "description": "Duração de cada sprint em dias; padrão 14."
           },
           "startDate": {
             "type": "string",
@@ -24274,6 +25180,24 @@
           "deletedAt"
         ]
       },
+      "SprintFolderViewDto": {
+        "type": "object",
+        "properties": {
+          "sprintFolder": {
+            "$ref": "#/components/schemas/SprintFolder"
+          },
+          "sprints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/List"
+            }
+          }
+        },
+        "required": [
+          "sprintFolder",
+          "sprints"
+        ]
+      },
       "UpdateSprintFolderDto": {
         "type": "object",
         "properties": {
@@ -24304,6 +25228,36 @@
             "description": "Início; ausente segue o fim da última sprint."
           }
         }
+      },
+      "CloseSprintResultDto": {
+        "type": "object",
+        "properties": {
+          "sprint": {
+            "description": "Sprint fechada.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/List"
+              }
+            ]
+          },
+          "nextSprint": {
+            "description": "Sprint que recebeu as pendências.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/List"
+              }
+            ]
+          },
+          "moved": {
+            "type": "number",
+            "description": "Tarefas movidas para a próxima sprint."
+          }
+        },
+        "required": [
+          "sprint",
+          "nextSprint",
+          "moved"
+        ]
       },
       "AiChatDto": {
         "type": "object",

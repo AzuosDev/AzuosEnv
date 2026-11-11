@@ -5826,8 +5826,8 @@ export interface components {
             start: string;
             /** @description Fim em UTC ISO 8601; precisa ser depois do início. */
             end: string;
-            /** @default false */
-            allDay: boolean;
+            /** @description Padrao: false. */
+            allDay?: boolean;
             /** @description Membros ativos do workspace. */
             attendeeIds?: string[];
             /** @description Tarefa do bloco de tempo. */
@@ -5861,6 +5861,9 @@ export interface components {
             /** @description Id of the event in the external calendar, when it came from one. */
             externalId: string | null;
         };
+        CalendarEventsDto: {
+            items: components["schemas"]["CalendarEvent"][];
+        };
         UpdateCalendarEventDto: {
             title?: string;
             start?: string;
@@ -5876,6 +5879,17 @@ export interface components {
             meetUrl?: string | null;
             /** @description null encerra a recorrência. */
             recurrence?: string | null;
+        };
+        PlannerResultDto: {
+            /** @description Começo do período em UTC ISO 8601. */
+            from: string;
+            /** @description Fim do período em UTC ISO 8601. */
+            to: string;
+            events: components["schemas"]["CalendarEvent"][];
+            /** @description Tarefas minhas com prazo no período. */
+            dueTasks: components["schemas"]["Task"][];
+            /** @description Tarefas minhas em aberto sem bloco de tempo. */
+            unscheduledTasks: components["schemas"]["Task"][];
         };
         CreateTimeBlockDto: {
             taskId: string;
@@ -5914,11 +5928,46 @@ export interface components {
             dueDate?: string | null;
             /** @example #2563EB */
             color?: string;
-            /**
-             * @description Visível só para quem criou e os donos.
-             * @default false
-             */
+            /** @description Visível só para quem criou e os donos; padrão false. */
+            private?: boolean;
+        };
+        Goal: {
+            workspaceId: components["schemas"]["ObjectId"];
+            folderId: components["schemas"]["ObjectId"] | null;
+            name: string;
+            description: string | null;
+            ownerIds: components["schemas"]["ObjectId"][];
+            /** Format: date-time */
+            dueDate: string | null;
+            color: string;
+            /** @description A private goal is visible only to who created it and to its owners. */
             private: boolean;
+            /** Format: date-time */
+            completedAt: string | null;
+            createdBy: components["schemas"]["ObjectId"];
+            /** Format: date-time */
+            deletedAt: string | null;
+        };
+        Target: {
+            workspaceId: components["schemas"]["ObjectId"];
+            goalId: components["schemas"]["ObjectId"];
+            name: string;
+            /** @enum {string} */
+            type: "number" | "boolean" | "tasks" | "currency";
+            start: number;
+            target: number;
+            /** @description Kept by hand, except in a `tasks` target, where the events recompute it. */
+            current: number;
+            unit: string | null;
+            /** @description Tasks counted by a `tasks` target; empty when it follows a whole List. */
+            taskIds: components["schemas"]["ObjectId"][];
+            listId: components["schemas"]["ObjectId"] | null;
+        };
+        GoalViewDto: {
+            goal: components["schemas"]["Goal"];
+            targets: components["schemas"]["Target"][];
+            /** @description Percentual de 0 a 100 da meta. */
+            progress: number;
         };
         UpdateGoalDto: {
             /** @description null tira a meta da pasta. */
@@ -5938,24 +5987,26 @@ export interface components {
             name: string;
             /** @enum {string} */
             type: "number" | "boolean" | "currency" | "tasks";
-            /**
-             * @description Ponto de partida do alvo.
-             * @default 0
-             */
-            start: number;
+            /** @description Ponto de partida do alvo; padrão 0. */
+            start?: number;
             /** @description Obrigatório fora do tipo tasks, que conta as tarefas. */
             target?: number;
-            /**
-             * @description Ignorado no tipo tasks.
-             * @default 0
-             */
-            current: number;
+            /** @description Ignorado no tipo tasks; padrão 0. */
+            current?: number;
             /** @example horas */
             unit?: string | null;
             /** @description Tarefas contadas no tipo tasks. */
             taskIds?: string[];
             /** @description List inteira contada no tipo tasks. */
             listId?: string | null;
+        };
+        TargetResultDto: {
+            target: components["schemas"]["Target"];
+            /** @description Percentual de 0 a 100 do alvo. */
+            progress: number;
+        };
+        TargetsResultDto: {
+            items: components["schemas"]["TargetResultDto"][];
         };
         UpdateTargetDto: {
             name?: string;
@@ -5979,8 +6030,8 @@ export interface components {
             label: string;
             /** @enum {string} */
             type: "text" | "longText" | "number" | "email" | "phone" | "url" | "date" | "dropdown" | "labels" | "checkbox";
-            /** @default false */
-            required: boolean;
+            /** @description Padrão: false. */
+            required?: boolean;
             options?: components["schemas"]["FormFieldOptionDto"][];
             /** @description name, description, priority, dueAt, assignee ou customField:<id>. */
             mapTo?: string | null;
@@ -6007,8 +6058,8 @@ export interface components {
             defaultStatusId?: string | null;
             /** @description Membros avisados a cada envio. */
             notify?: string[];
-            /** @default true */
-            active: boolean;
+            /** @description Padrão: true. */
+            active?: boolean;
         };
         FormFieldOption: {
             id: string;
@@ -6051,6 +6102,13 @@ export interface components {
             /** Format: date-time */
             deletedAt: string | null;
         };
+        FormResultDto: {
+            form: components["schemas"]["Form"];
+            /** @description Token do link público, só na criação. */
+            token: string | null;
+            /** @description URL pública do formulário, só na criação. */
+            url: string | null;
+        };
         UpdateFormDto: {
             title?: string;
             description?: string | null;
@@ -6065,6 +6123,33 @@ export interface components {
             notify?: string[];
             active?: boolean;
         };
+        PublicFormFieldOptionDto: {
+            id: string;
+            label: string;
+        };
+        PublicFormFieldDto: {
+            id: string;
+            label: string;
+            /** @enum {string} */
+            type: "text" | "longText" | "number" | "email" | "phone" | "url" | "date" | "dropdown" | "labels" | "checkbox";
+            required: boolean;
+            options: components["schemas"]["PublicFormFieldOptionDto"][];
+        };
+        PublicFormConditionDto: {
+            fieldId: string;
+            /** @enum {string} */
+            op: "eq" | "ne" | "contains" | "gt" | "lt" | "isEmpty" | "isNotEmpty";
+            /** @description Valor comparado; JSON livre. */
+            value?: Record<string, never>;
+            showFieldIds: string[];
+        };
+        PublicFormDto: {
+            id: string;
+            title: string;
+            description: string | null;
+            fields: components["schemas"]["PublicFormFieldDto"][];
+            conditions: components["schemas"]["PublicFormConditionDto"][];
+        };
         SubmitFormDto: {
             /** @description Respostas por id de campo. */
             values: {
@@ -6073,15 +6158,19 @@ export interface components {
             /** @description Campo honeypot: precisa chegar vazio, senão o envio é recusado. */
             website?: string;
         };
+        SubmitFormResultDto: {
+            /** @example true */
+            received: boolean;
+            taskId: string;
+            /** @example AZD-150 */
+            customId: string;
+        };
         CreateSprintFolderDto: {
             spaceId: string;
             /** @example Sprints uSolutionsPDV */
             name: string;
-            /**
-             * @description Duração de cada sprint em dias.
-             * @default 14
-             */
-            durationDays: number;
+            /** @description Duração de cada sprint em dias; padrão 14. */
+            durationDays?: number;
             /** @description Primeiro dia da primeira sprint (UTC ISO 8601). */
             startDate: string;
         };
@@ -6101,6 +6190,10 @@ export interface components {
             /** Format: date-time */
             deletedAt: string | null;
         };
+        SprintFolderViewDto: {
+            sprintFolder: components["schemas"]["SprintFolder"];
+            sprints: components["schemas"]["List"][];
+        };
         UpdateSprintFolderDto: {
             name?: string;
             /** @description Vale para as próximas sprints criadas. */
@@ -6111,6 +6204,14 @@ export interface components {
             name?: string;
             /** @description Início; ausente segue o fim da última sprint. */
             startDate?: string;
+        };
+        CloseSprintResultDto: {
+            /** @description Sprint fechada. */
+            sprint: components["schemas"]["List"];
+            /** @description Sprint que recebeu as pendências. */
+            nextSprint: components["schemas"]["List"];
+            /** @description Tarefas movidas para a próxima sprint. */
+            moved: number;
         };
         AiChatDto: {
             /** @example Quais tarefas estão atrasadas? */
@@ -12511,7 +12612,10 @@ export interface operations {
                 to: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -12521,7 +12625,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CalendarEventsDto"];
+                };
             };
         };
     };
@@ -12529,7 +12635,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -12555,6 +12664,8 @@ export interface operations {
             header?: never;
             path: {
                 eventId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12577,6 +12688,8 @@ export interface operations {
             header?: never;
             path: {
                 eventId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12587,7 +12700,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -12597,6 +12712,8 @@ export interface operations {
             header?: never;
             path: {
                 eventId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12626,7 +12743,10 @@ export interface operations {
                 to: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -12636,7 +12756,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PlannerResultDto"];
+                };
             };
         };
     };
@@ -12644,7 +12766,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -12748,7 +12873,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -12772,7 +12900,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -12798,6 +12929,8 @@ export interface operations {
             header?: never;
             path: {
                 folderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12808,7 +12941,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -12818,6 +12953,8 @@ export interface operations {
             header?: never;
             path: {
                 folderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12850,7 +12987,10 @@ export interface operations {
                 mine?: boolean;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -12860,7 +13000,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["GoalViewDto"][];
+                        /** @description Cursor da próxima página; null na última. */
+                        nextCursor: string | null;
+                    };
+                };
             };
         };
     };
@@ -12868,7 +13014,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -12882,7 +13031,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["Goal"];
+                };
             };
         };
     };
@@ -12892,6 +13043,8 @@ export interface operations {
             header?: never;
             path: {
                 goalId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12902,7 +13055,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GoalViewDto"];
+                };
             };
         };
     };
@@ -12912,6 +13067,8 @@ export interface operations {
             header?: never;
             path: {
                 goalId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12922,7 +13079,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -12932,6 +13091,8 @@ export interface operations {
             header?: never;
             path: {
                 goalId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12946,7 +13107,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GoalViewDto"];
+                };
             };
         };
     };
@@ -12956,6 +13119,8 @@ export interface operations {
             header?: never;
             path: {
                 goalId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12966,7 +13131,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TargetsResultDto"];
+                };
             };
         };
     };
@@ -12976,6 +13143,8 @@ export interface operations {
             header?: never;
             path: {
                 goalId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -12990,7 +13159,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TargetResultDto"];
+                };
             };
         };
     };
@@ -13001,6 +13172,8 @@ export interface operations {
             path: {
                 goalId: components["schemas"]["ObjectId"];
                 targetId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13011,7 +13184,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -13022,6 +13197,8 @@ export interface operations {
             path: {
                 goalId: components["schemas"]["ObjectId"];
                 targetId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13036,7 +13213,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TargetResultDto"];
+                };
             };
         };
     };
@@ -13050,7 +13229,10 @@ export interface operations {
                 listId?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -13074,7 +13256,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -13088,7 +13273,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FormResultDto"];
+                };
             };
         };
     };
@@ -13098,6 +13285,8 @@ export interface operations {
             header?: never;
             path: {
                 formId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13120,6 +13309,8 @@ export interface operations {
             header?: never;
             path: {
                 formId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13130,7 +13321,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -13140,6 +13333,8 @@ export interface operations {
             header?: never;
             path: {
                 formId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13176,7 +13371,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PublicFormDto"];
+                };
             };
         };
     };
@@ -13196,11 +13393,13 @@ export interface operations {
         };
         responses: {
             /** @description Envio aceito; a tarefa é criada na List do formulário. */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SubmitFormResultDto"];
+                };
             };
         };
     };
@@ -13212,7 +13411,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -13236,7 +13438,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -13250,7 +13455,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SprintFolderViewDto"];
+                };
             };
         };
     };
@@ -13260,6 +13467,8 @@ export interface operations {
             header?: never;
             path: {
                 sprintFolderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13270,7 +13479,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SprintFolderViewDto"];
+                };
             };
         };
     };
@@ -13280,6 +13491,8 @@ export interface operations {
             header?: never;
             path: {
                 sprintFolderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13290,7 +13503,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -13300,6 +13515,8 @@ export interface operations {
             header?: never;
             path: {
                 sprintFolderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13326,6 +13543,8 @@ export interface operations {
             header?: never;
             path: {
                 sprintFolderId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13352,6 +13571,8 @@ export interface operations {
             header?: never;
             path: {
                 sprintId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13374,6 +13595,8 @@ export interface operations {
             header?: never;
             path: {
                 sprintId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13384,7 +13607,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CloseSprintResultDto"];
+                };
             };
         };
     };

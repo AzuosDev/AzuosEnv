@@ -72,7 +72,9 @@ export class CreateGoalDto {
   @IsHexColor()
   color?: string;
 
-  @ApiPropertyOptional({ default: false, description: 'Visível só para quem criou e os donos.' })
+  @ApiPropertyOptional({
+    description: 'Visível só para quem criou e os donos; padrão false.',
+  })
   @IsOptional()
   @IsBoolean()
   private?: boolean;

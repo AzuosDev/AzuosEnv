@@ -21,7 +21,7 @@ export class CreateTargetDto {
   @IsEnum(TARGET_TYPES)
   type: TargetType;
 
-  @ApiPropertyOptional({ default: 0, description: 'Ponto de partida do alvo.' })
+  @ApiPropertyOptional({ description: 'Ponto de partida do alvo; padrão 0.' })
   @IsOptional()
   @IsNumber()
   start?: number;
@@ -31,7 +31,7 @@ export class CreateTargetDto {
   @IsNumber()
   target?: number;
 
-  @ApiPropertyOptional({ default: 0, description: 'Ignorado no tipo tasks.' })
+  @ApiPropertyOptional({ description: 'Ignorado no tipo tasks; padrão 0.' })
   @IsOptional()
   @IsNumber()
   current?: number;

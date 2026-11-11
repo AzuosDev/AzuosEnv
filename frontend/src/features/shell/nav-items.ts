@@ -19,7 +19,7 @@ import {
  */
 export const NAV_ITEMS = [
   { id: 'tarefas', label: 'Tarefas', icon: CircleCheckBig, to: '/w/$wsId', ready: true },
-  { id: 'planner', label: 'Planner', icon: CalendarDays, to: '/w/$wsId/planner', ready: false },
+  { id: 'planner', label: 'Planner', icon: CalendarDays, to: '/w/$wsId/planner', ready: true },
   { id: 'chat', label: 'Chat', icon: MessageSquare, to: '/w/$wsId/chat', ready: true },
   { id: 'docs', label: 'Docs', icon: FileText, to: '/w/$wsId/docs', ready: true },
   {
@@ -29,7 +29,7 @@ export const NAV_ITEMS = [
     to: '/w/$wsId/dashboards',
     ready: true,
   },
-  { id: 'metas', label: 'Metas', icon: Target, to: '/w/$wsId/metas', ready: false },
+  { id: 'metas', label: 'Metas', icon: Target, to: '/w/$wsId/metas', ready: true },
   { id: 'timesheets', label: 'Timesheets', icon: Clock, to: '/w/$wsId/timesheets', ready: true },
   { id: 'automacoes', label: 'Automações', icon: Zap, to: '/w/$wsId/automacoes', ready: true },
   {

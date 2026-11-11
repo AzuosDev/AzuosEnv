@@ -26,7 +26,7 @@ export class CreateCalendarEventDto {
   @IsDateString()
   end: string;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Padrao: false.' })
   @IsOptional()
   @IsBoolean()
   allDay?: boolean;

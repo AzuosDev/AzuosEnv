@@ -10,7 +10,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -19,6 +21,7 @@ import { Roles } from '../workspaces/decorators/roles.decorator';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../workspaces/workspace-context';
+import { FormResultDto } from './dto/form-result.dto';
 import { CreateFormDto, FormQueryDto, UpdateFormDto } from './dto/form.dto';
 import { FormResult, FormsService } from './forms.service';
 import { Form, FormDocument } from './schemas/form.schema';
@@ -26,13 +29,17 @@ import { Form, FormDocument } from './schemas/form.schema';
 @ApiTags('forms')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/forms')
 export class FormsController {
   constructor(private readonly forms: FormsService) {}
 
   @Post()
   @Roles('member')
-  @ApiCreatedResponse({ description: 'Formulário criado; o token público vem uma única vez.' })
+  @ApiCreatedResponse({
+    description: 'Formulário criado; o token público vem uma única vez.',
+    type: FormResultDto,
+  })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateFormDto,
@@ -71,7 +78,7 @@ export class FormsController {
 
   @Delete(':formId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Formulário excluído.' })
+  @ApiOkResponse({ description: 'Formulário excluído.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('formId', ParseObjectIdPipe) formId: Types.ObjectId,

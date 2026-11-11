@@ -28,7 +28,6 @@ import { Route as AppWWsIdConfiguracoesRouteImport } from './routes/_app.w.$wsId
 import { Route as AppWWsIdIaRouteImport } from './routes/_app.w.$wsId.ia'
 import { Route as AppWWsIdInboxRouteImport } from './routes/_app.w.$wsId.inbox'
 import { Route as AppWWsIdLixeiraRouteImport } from './routes/_app.w.$wsId.lixeira'
-import { Route as AppWWsIdMetasRouteImport } from './routes/_app.w.$wsId.metas'
 import { Route as AppWWsIdMinhasTarefasRouteImport } from './routes/_app.w.$wsId.minhas-tarefas'
 import { Route as AppWWsIdPlannerRouteImport } from './routes/_app.w.$wsId.planner'
 import { Route as AppWWsIdTimesheetsRouteImport } from './routes/_app.w.$wsId.timesheets'
@@ -48,6 +47,8 @@ import { Route as AppWWsIdDocsIndexRouteImport } from './routes/_app.w.$wsId.doc
 import { Route as AppWWsIdDocsDocIdRouteImport } from './routes/_app.w.$wsId.docs.$docId'
 import { Route as AppWWsIdFFolderIdRouteImport } from './routes/_app.w.$wsId.f.$folderId'
 import { Route as AppWWsIdLListIdRouteImport } from './routes/_app.w.$wsId.l.$listId'
+import { Route as AppWWsIdMetasIndexRouteImport } from './routes/_app.w.$wsId.metas.index'
+import { Route as AppWWsIdMetasGoalIdRouteImport } from './routes/_app.w.$wsId.metas.$goalId'
 import { Route as AppWWsIdSSpaceIdRouteImport } from './routes/_app.w.$wsId.s.$spaceId'
 import { Route as AppWWsIdTCustomIdRouteImport } from './routes/_app.w.$wsId.t.$customId'
 
@@ -142,11 +143,6 @@ const AppWWsIdInboxRoute = AppWWsIdInboxRouteImport.update({
 const AppWWsIdLixeiraRoute = AppWWsIdLixeiraRouteImport.update({
   id: '/lixeira',
   path: '/lixeira',
-  getParentRoute: () => AppWWsIdRoute,
-} as any)
-const AppWWsIdMetasRoute = AppWWsIdMetasRouteImport.update({
-  id: '/metas',
-  path: '/metas',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
 const AppWWsIdMinhasTarefasRoute = AppWWsIdMinhasTarefasRouteImport.update({
@@ -253,6 +249,16 @@ const AppWWsIdLListIdRoute = AppWWsIdLListIdRouteImport.update({
   path: '/l/$listId',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
+const AppWWsIdMetasIndexRoute = AppWWsIdMetasIndexRouteImport.update({
+  id: '/metas/',
+  path: '/metas/',
+  getParentRoute: () => AppWWsIdRoute,
+} as any)
+const AppWWsIdMetasGoalIdRoute = AppWWsIdMetasGoalIdRouteImport.update({
+  id: '/metas/$goalId',
+  path: '/metas/$goalId',
+  getParentRoute: () => AppWWsIdRoute,
+} as any)
 const AppWWsIdSSpaceIdRoute = AppWWsIdSSpaceIdRouteImport.update({
   id: '/s/$spaceId',
   path: '/s/$spaceId',
@@ -281,7 +287,6 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/w/$wsId/inbox': typeof AppWWsIdInboxRoute
   '/w/$wsId/lixeira': typeof AppWWsIdLixeiraRoute
-  '/w/$wsId/metas': typeof AppWWsIdMetasRoute
   '/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
@@ -299,11 +304,13 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/docs/$docId': typeof AppWWsIdDocsDocIdRoute
   '/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
+  '/w/$wsId/metas/$goalId': typeof AppWWsIdMetasGoalIdRoute
   '/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
   '/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
   '/w/$wsId/configuracoes/': typeof AppWWsIdConfiguracoesIndexRoute
   '/w/$wsId/dashboards/': typeof AppWWsIdDashboardsIndexRoute
   '/w/$wsId/docs/': typeof AppWWsIdDocsIndexRoute
+  '/w/$wsId/metas/': typeof AppWWsIdMetasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -320,7 +327,6 @@ export interface FileRoutesByTo {
   '/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/w/$wsId/inbox': typeof AppWWsIdInboxRoute
   '/w/$wsId/lixeira': typeof AppWWsIdLixeiraRoute
-  '/w/$wsId/metas': typeof AppWWsIdMetasRoute
   '/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
@@ -338,11 +344,13 @@ export interface FileRoutesByTo {
   '/w/$wsId/docs/$docId': typeof AppWWsIdDocsDocIdRoute
   '/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
+  '/w/$wsId/metas/$goalId': typeof AppWWsIdMetasGoalIdRoute
   '/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
   '/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
   '/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesIndexRoute
   '/w/$wsId/dashboards': typeof AppWWsIdDashboardsIndexRoute
   '/w/$wsId/docs': typeof AppWWsIdDocsIndexRoute
+  '/w/$wsId/metas': typeof AppWWsIdMetasIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -364,7 +372,6 @@ export interface FileRoutesById {
   '/_app/w/$wsId/ia': typeof AppWWsIdIaRoute
   '/_app/w/$wsId/inbox': typeof AppWWsIdInboxRoute
   '/_app/w/$wsId/lixeira': typeof AppWWsIdLixeiraRoute
-  '/_app/w/$wsId/metas': typeof AppWWsIdMetasRoute
   '/_app/w/$wsId/minhas-tarefas': typeof AppWWsIdMinhasTarefasRoute
   '/_app/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/_app/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
@@ -382,11 +389,13 @@ export interface FileRoutesById {
   '/_app/w/$wsId/docs/$docId': typeof AppWWsIdDocsDocIdRoute
   '/_app/w/$wsId/f/$folderId': typeof AppWWsIdFFolderIdRoute
   '/_app/w/$wsId/l/$listId': typeof AppWWsIdLListIdRoute
+  '/_app/w/$wsId/metas/$goalId': typeof AppWWsIdMetasGoalIdRoute
   '/_app/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
   '/_app/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
   '/_app/w/$wsId/configuracoes/': typeof AppWWsIdConfiguracoesIndexRoute
   '/_app/w/$wsId/dashboards/': typeof AppWWsIdDashboardsIndexRoute
   '/_app/w/$wsId/docs/': typeof AppWWsIdDocsIndexRoute
+  '/_app/w/$wsId/metas/': typeof AppWWsIdMetasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -407,7 +416,6 @@ export interface FileRouteTypes {
     | '/w/$wsId/ia'
     | '/w/$wsId/inbox'
     | '/w/$wsId/lixeira'
-    | '/w/$wsId/metas'
     | '/w/$wsId/minhas-tarefas'
     | '/w/$wsId/planner'
     | '/w/$wsId/timesheets'
@@ -425,11 +433,13 @@ export interface FileRouteTypes {
     | '/w/$wsId/docs/$docId'
     | '/w/$wsId/f/$folderId'
     | '/w/$wsId/l/$listId'
+    | '/w/$wsId/metas/$goalId'
     | '/w/$wsId/s/$spaceId'
     | '/w/$wsId/t/$customId'
     | '/w/$wsId/configuracoes/'
     | '/w/$wsId/dashboards/'
     | '/w/$wsId/docs/'
+    | '/w/$wsId/metas/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -446,7 +456,6 @@ export interface FileRouteTypes {
     | '/w/$wsId/ia'
     | '/w/$wsId/inbox'
     | '/w/$wsId/lixeira'
-    | '/w/$wsId/metas'
     | '/w/$wsId/minhas-tarefas'
     | '/w/$wsId/planner'
     | '/w/$wsId/timesheets'
@@ -464,11 +473,13 @@ export interface FileRouteTypes {
     | '/w/$wsId/docs/$docId'
     | '/w/$wsId/f/$folderId'
     | '/w/$wsId/l/$listId'
+    | '/w/$wsId/metas/$goalId'
     | '/w/$wsId/s/$spaceId'
     | '/w/$wsId/t/$customId'
     | '/w/$wsId/configuracoes'
     | '/w/$wsId/dashboards'
     | '/w/$wsId/docs'
+    | '/w/$wsId/metas'
   id:
     | '__root__'
     | '/'
@@ -489,7 +500,6 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/ia'
     | '/_app/w/$wsId/inbox'
     | '/_app/w/$wsId/lixeira'
-    | '/_app/w/$wsId/metas'
     | '/_app/w/$wsId/minhas-tarefas'
     | '/_app/w/$wsId/planner'
     | '/_app/w/$wsId/timesheets'
@@ -507,11 +517,13 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/docs/$docId'
     | '/_app/w/$wsId/f/$folderId'
     | '/_app/w/$wsId/l/$listId'
+    | '/_app/w/$wsId/metas/$goalId'
     | '/_app/w/$wsId/s/$spaceId'
     | '/_app/w/$wsId/t/$customId'
     | '/_app/w/$wsId/configuracoes/'
     | '/_app/w/$wsId/dashboards/'
     | '/_app/w/$wsId/docs/'
+    | '/_app/w/$wsId/metas/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -658,13 +670,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWWsIdLixeiraRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
-    '/_app/w/$wsId/metas': {
-      id: '/_app/w/$wsId/metas'
-      path: '/metas'
-      fullPath: '/w/$wsId/metas'
-      preLoaderRoute: typeof AppWWsIdMetasRouteImport
-      parentRoute: typeof AppWWsIdRoute
-    }
     '/_app/w/$wsId/minhas-tarefas': {
       id: '/_app/w/$wsId/minhas-tarefas'
       path: '/minhas-tarefas'
@@ -798,6 +803,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWWsIdLListIdRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
+    '/_app/w/$wsId/metas/': {
+      id: '/_app/w/$wsId/metas/'
+      path: '/metas'
+      fullPath: '/w/$wsId/metas/'
+      preLoaderRoute: typeof AppWWsIdMetasIndexRouteImport
+      parentRoute: typeof AppWWsIdRoute
+    }
+    '/_app/w/$wsId/metas/$goalId': {
+      id: '/_app/w/$wsId/metas/$goalId'
+      path: '/metas/$goalId'
+      fullPath: '/w/$wsId/metas/$goalId'
+      preLoaderRoute: typeof AppWWsIdMetasGoalIdRouteImport
+      parentRoute: typeof AppWWsIdRoute
+    }
     '/_app/w/$wsId/s/$spaceId': {
       id: '/_app/w/$wsId/s/$spaceId'
       path: '/s/$spaceId'
@@ -852,7 +871,6 @@ interface AppWWsIdRouteChildren {
   AppWWsIdIaRoute: typeof AppWWsIdIaRoute
   AppWWsIdInboxRoute: typeof AppWWsIdInboxRoute
   AppWWsIdLixeiraRoute: typeof AppWWsIdLixeiraRoute
-  AppWWsIdMetasRoute: typeof AppWWsIdMetasRoute
   AppWWsIdMinhasTarefasRoute: typeof AppWWsIdMinhasTarefasRoute
   AppWWsIdPlannerRoute: typeof AppWWsIdPlannerRoute
   AppWWsIdTimesheetsRoute: typeof AppWWsIdTimesheetsRoute
@@ -863,10 +881,12 @@ interface AppWWsIdRouteChildren {
   AppWWsIdDocsDocIdRoute: typeof AppWWsIdDocsDocIdRoute
   AppWWsIdFFolderIdRoute: typeof AppWWsIdFFolderIdRoute
   AppWWsIdLListIdRoute: typeof AppWWsIdLListIdRoute
+  AppWWsIdMetasGoalIdRoute: typeof AppWWsIdMetasGoalIdRoute
   AppWWsIdSSpaceIdRoute: typeof AppWWsIdSSpaceIdRoute
   AppWWsIdTCustomIdRoute: typeof AppWWsIdTCustomIdRoute
   AppWWsIdDashboardsIndexRoute: typeof AppWWsIdDashboardsIndexRoute
   AppWWsIdDocsIndexRoute: typeof AppWWsIdDocsIndexRoute
+  AppWWsIdMetasIndexRoute: typeof AppWWsIdMetasIndexRoute
 }
 
 const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
@@ -877,7 +897,6 @@ const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
   AppWWsIdIaRoute: AppWWsIdIaRoute,
   AppWWsIdInboxRoute: AppWWsIdInboxRoute,
   AppWWsIdLixeiraRoute: AppWWsIdLixeiraRoute,
-  AppWWsIdMetasRoute: AppWWsIdMetasRoute,
   AppWWsIdMinhasTarefasRoute: AppWWsIdMinhasTarefasRoute,
   AppWWsIdPlannerRoute: AppWWsIdPlannerRoute,
   AppWWsIdTimesheetsRoute: AppWWsIdTimesheetsRoute,
@@ -888,10 +907,12 @@ const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
   AppWWsIdDocsDocIdRoute: AppWWsIdDocsDocIdRoute,
   AppWWsIdFFolderIdRoute: AppWWsIdFFolderIdRoute,
   AppWWsIdLListIdRoute: AppWWsIdLListIdRoute,
+  AppWWsIdMetasGoalIdRoute: AppWWsIdMetasGoalIdRoute,
   AppWWsIdSSpaceIdRoute: AppWWsIdSSpaceIdRoute,
   AppWWsIdTCustomIdRoute: AppWWsIdTCustomIdRoute,
   AppWWsIdDashboardsIndexRoute: AppWWsIdDashboardsIndexRoute,
   AppWWsIdDocsIndexRoute: AppWWsIdDocsIndexRoute,
+  AppWWsIdMetasIndexRoute: AppWWsIdMetasIndexRoute,
 }
 
 const AppWWsIdRouteWithChildren = AppWWsIdRoute._addFileChildren(

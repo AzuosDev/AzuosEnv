@@ -54,7 +54,7 @@ export class FormFieldDto {
   @IsEnum(FORM_FIELD_TYPES)
   type: FormFieldType;
 
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({ description: 'Padrão: false.' })
   @IsOptional()
   @IsBoolean()
   required?: boolean;
@@ -144,7 +144,7 @@ export class CreateFormDto {
   @IsMongoId({ each: true })
   notify?: string[];
 
-  @ApiPropertyOptional({ default: true })
+  @ApiPropertyOptional({ description: 'Padrão: true.' })
   @IsOptional()
   @IsBoolean()
   active?: boolean;

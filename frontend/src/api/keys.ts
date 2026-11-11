@@ -111,4 +111,20 @@ export const queryKeys = {
   pageVersions: (workspaceId: string, pageId: string) =>
     ['workspaces', workspaceId, 'pages', pageId, 'versions'] as const,
   publicDoc: (token: string) => ['public', 'docs', token] as const,
+  planner: (workspaceId: string, from: string, to: string) =>
+    ['workspaces', workspaceId, 'planner', from, to] as const,
+  calendarEvents: (workspaceId: string, from: string, to: string) =>
+    ['workspaces', workspaceId, 'calendar', from, to] as const,
+  goalFolders: (workspaceId: string) => ['workspaces', workspaceId, 'goal-folders'] as const,
+  goals: (workspaceId: string, params: Record<string, unknown>) =>
+    ['workspaces', workspaceId, 'goals', params] as const,
+  goal: (workspaceId: string, goalId: string) =>
+    ['workspaces', workspaceId, 'goals', 'detail', goalId] as const,
+  forms: (workspaceId: string) => ['workspaces', workspaceId, 'forms'] as const,
+  form: (workspaceId: string, formId: string) =>
+    ['workspaces', workspaceId, 'forms', 'detail', formId] as const,
+  publicForm: (token: string) => ['public', 'forms', token] as const,
+  sprintFolders: (workspaceId: string) => ['workspaces', workspaceId, 'sprint-folders'] as const,
+  sprintFolder: (workspaceId: string, sprintFolderId: string) =>
+    ['workspaces', workspaceId, 'sprint-folders', 'detail', sprintFolderId] as const,
 } as const;

@@ -1,7 +1,8 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Public } from '../../common/decorators/public.decorator';
+import { PublicFormDto, SubmitFormResultDto } from './dto/form-result.dto';
 import { SubmitFormDto } from './dto/form-submission.dto';
 import { SUBMIT_THROTTLE } from './form-fields';
 import { FormSubmissionsService, PublicFormView, SubmitResult } from './form-submissions.service';
@@ -18,7 +19,7 @@ export class PublicFormsController {
 
   @Public()
   @Get(':token')
-  @ApiOkResponse({ description: 'Formulário público, somente leitura.' })
+  @ApiOkResponse({ description: 'Formulário público, somente leitura.', type: PublicFormDto })
   read(@Param('token') token: string): Promise<PublicFormView> {
     return this.submissions.publicForm(token);
   }
@@ -27,7 +28,10 @@ export class PublicFormsController {
   @Throttle(SUBMIT_THROTTLE)
   @Post(':token/submit')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOkResponse({ description: 'Envio aceito; a tarefa é criada na List do formulário.' })
+  @ApiCreatedResponse({
+    description: 'Envio aceito; a tarefa é criada na List do formulário.',
+    type: SubmitFormResultDto,
+  })
   submit(@Param('token') token: string, @Body() dto: SubmitFormDto): Promise<SubmitResult> {
     return this.submissions.submit(token, dto);
   }

@@ -12,7 +12,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -28,19 +30,24 @@ import {
   SprintFolderQueryDto,
   UpdateSprintFolderDto,
 } from './dto/sprint.dto';
+import { CloseSprintResultDto, SprintFolderViewDto } from './dto/sprint-result.dto';
 import { SprintFolder, SprintFolderDocument } from './schemas/sprint-folder.schema';
 import { CloseSprintResult, SprintFolderView, SprintsService } from './sprints.service';
 
 @ApiTags('sprints')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/sprint-folders')
 export class SprintFoldersController {
   constructor(private readonly sprints: SprintsService) {}
 
   @Post()
   @Roles('member')
-  @ApiCreatedResponse({ description: 'Pasta de sprints criada com a primeira sprint.' })
+  @ApiCreatedResponse({
+    description: 'Pasta de sprints criada com a primeira sprint.',
+    type: SprintFolderViewDto,
+  })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateSprintFolderDto,
@@ -58,7 +65,10 @@ export class SprintFoldersController {
   }
 
   @Get(':sprintFolderId')
-  @ApiOkResponse({ description: 'Pasta de sprints com as sprints em ordem.' })
+  @ApiOkResponse({
+    description: 'Pasta de sprints com as sprints em ordem.',
+    type: SprintFolderViewDto,
+  })
   get(
     @CurrentMembership() membership: RequestMembership,
     @Param('sprintFolderId', ParseObjectIdPipe) sprintFolderId: Types.ObjectId,
@@ -79,7 +89,10 @@ export class SprintFoldersController {
 
   @Delete(':sprintFolderId')
   @Roles('member')
-  @ApiOkResponse({ description: 'Pasta de sprints excluída com o Folder dela.' })
+  @ApiOkResponse({
+    description: 'Pasta de sprints excluída com o Folder dela.',
+    type: SuccessDto,
+  })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('sprintFolderId', ParseObjectIdPipe) sprintFolderId: Types.ObjectId,
@@ -104,6 +117,7 @@ export class SprintFoldersController {
 @ApiTags('sprints')
 @ApiBearerAuth()
 @UseGuards(WorkspaceGuard)
+@ApiWorkspaceParam()
 @Controller('workspaces/:wsId/sprints')
 export class SprintsController {
   constructor(private readonly sprints: SprintsService) {}
@@ -120,7 +134,10 @@ export class SprintsController {
   @Post(':sprintId/close')
   @Roles('member')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ description: 'Sprint fechada; as pendências vão para a próxima.' })
+  @ApiOkResponse({
+    description: 'Sprint fechada; as pendências vão para a próxima.',
+    type: CloseSprintResultDto,
+  })
   close(
     @CurrentMembership() membership: RequestMembership,
     @Param('sprintId', ParseObjectIdPipe) sprintId: Types.ObjectId,
