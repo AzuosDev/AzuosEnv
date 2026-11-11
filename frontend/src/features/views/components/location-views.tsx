@@ -29,6 +29,7 @@ import {
   usesTasks,
 } from '../view-kinds';
 import { viewsQuery } from '../api';
+import { FormViewTab } from '@/features/forms/components/form-view-tab';
 import { DocViewTab } from './doc-view-tab';
 
 import { ActivityView } from './activity-view';
@@ -49,6 +50,8 @@ export interface LocationViewsProps {
   listId: string;
   spaceId: string;
   role: WorkspaceRole;
+  /** Nome da List, usado no título do formulário que nasce na view. */
+  listName?: string;
 }
 
 const SEARCH_DEBOUNCE_MS = 350;
@@ -64,7 +67,14 @@ const EMPTY_STATE_TYPES = ['list', 'board', 'table'];
  * Views salvas do local com a toolbar e a view aberta. É quem monta a consulta a
  * partir da config e distribui dados e ações para a view do tipo escolhido.
  */
-export function LocationViews({ wsId, locationType, listId, spaceId, role }: LocationViewsProps) {
+export function LocationViews({
+  wsId,
+  locationType,
+  listId,
+  spaceId,
+  role,
+  listName,
+}: LocationViewsProps) {
   const user = useSession();
   const views = useQuery(viewsQuery(wsId, locationType, listId));
   const statuses = useQuery({ ...listStatusesQuery(wsId, listId), enabled: listId !== '' });
@@ -229,7 +239,7 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
         <div className="px-4 pb-8 md:px-6">
           <EmptyState
             title="Essa view chega em outra etapa"
-            description="Formulário, Whiteboard, Dashboard, Mind Map, Embed e Mapa vêm nos módulos seguintes."
+            description="Whiteboard, Dashboard, Mind Map, Embed e Mapa vêm nos módulos seguintes."
           />
         </div>
       ) : null}
@@ -279,6 +289,17 @@ export function LocationViews({ wsId, locationType, listId, spaceId, role }: Loc
         </div>
       ) : null}
       {type === 'doc' ? <DocViewTab wsId={wsId} view={active} /> : null}
+      {type === 'form' && locationType === 'list' && listId !== '' ? (
+        <FormViewTab wsId={wsId} listId={listId} listName={listName ?? 'tarefas'} role={role} />
+      ) : null}
+      {type === 'form' && (locationType !== 'list' || listId === '') ? (
+        <div className="px-4 pb-8 md:px-6">
+          <EmptyState
+            title="O Formulário é view de uma List"
+            description="Abra a view de Formulário dentro de uma List: é nela que a tarefa do envio nasce."
+          />
+        </div>
+      ) : null}
 
       {reads && tasks.isError ? (
         <div className="px-4 pb-8 md:px-6">

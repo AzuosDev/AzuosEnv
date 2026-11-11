@@ -14,7 +14,8 @@ import {
 import type { CardType } from '@/api/types';
 
 /** Campos de config que cada tipo de card usa; o diálogo mostra só esses. */
-export type CardField = 'location' | 'range' | 'metric' | 'calculator' | 'limit' | 'closed';
+export type CardField =
+  'location' | 'range' | 'sprint' | 'metric' | 'calculator' | 'limit' | 'closed';
 
 export interface CardKind {
   type: CardType;
@@ -59,7 +60,7 @@ export const CARD_KINDS: CardKind[] = [
     label: 'Burndown',
     description: 'O que falta fechar, dia a dia, contra a linha ideal.',
     icon: LineChart,
-    fields: ['location', 'range'],
+    fields: ['location', 'sprint', 'range'],
     size: { w: 6, h: 5 },
     needsRange: true,
   },
@@ -68,7 +69,7 @@ export const CARD_KINDS: CardKind[] = [
     label: 'Burnup',
     description: 'Escopo e concluído acumulados no período.',
     icon: TrendingUp,
-    fields: ['location', 'range'],
+    fields: ['location', 'sprint', 'range'],
     size: { w: 6, h: 5 },
     needsRange: true,
   },

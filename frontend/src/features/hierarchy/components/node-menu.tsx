@@ -9,6 +9,7 @@ import {
   Palette,
   Pencil,
   Plus,
+  Repeat,
   Star,
   Trash2,
   UserPlus,
@@ -221,6 +222,17 @@ export function NodeMenu({
           <Copy className={itemIcon} aria-hidden="true" />
           Salvar como template
         </DropdownMenuItem>
+
+        {node.kind === 'space' ? (
+          <DropdownMenuItem
+            onSelect={() => {
+              open({ type: 'sprints', node });
+            }}
+          >
+            <Repeat className={itemIcon} aria-hidden="true" />
+            Nova pasta de sprints
+          </DropdownMenuItem>
+        ) : null}
 
         <DropdownMenuSeparator />
 

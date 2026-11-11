@@ -3,6 +3,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { NodeMenu } from '@/features/hierarchy/components/node-menu';
 import { refFromLocation } from '@/features/hierarchy/node-ref';
 import { workspaceQuery } from '@/features/settings/api';
+import { canAdmin } from '@/features/settings/roles';
+import { SprintStrip } from '@/features/sprints/components/sprint-strip';
+import { useSprints } from '@/features/sprints/hooks/use-sprints';
 import { LocationViews } from '@/features/views/components/location-views';
 import { treeQuery } from '../api';
 import { crumbsOf, findLocation } from '../tree-path';
@@ -22,6 +25,8 @@ export function LocationPage({ wsId, listId }: LocationPageProps) {
   const { data: tree } = useSuspenseQuery(treeQuery(wsId));
   const { data: workspace } = useSuspenseQuery(workspaceQuery(wsId));
   const location = findLocation(tree, 'list', listId);
+  const sprints = useSprints(wsId);
+  const sprint = sprints.find(listId);
 
   if (!location) {
     return (
@@ -50,12 +55,24 @@ export function LocationPage({ wsId, listId }: LocationPageProps) {
         />
       </div>
 
+      {sprint ? (
+        <div className="shrink-0 pb-3">
+          <SprintStrip
+            wsId={wsId}
+            sprint={sprint.sprint}
+            folder={sprint.folder}
+            canEdit={canAdmin(workspace.role) || workspace.role === 'member'}
+          />
+        </div>
+      ) : null}
+
       <LocationViews
         wsId={wsId}
         locationType="list"
         listId={listId}
         spaceId={space?.id ?? ''}
         role={workspace.role}
+        listName={location.name}
       />
     </div>
   );

@@ -18,6 +18,7 @@ import { Route as Char91_devChar93UiRouteImport } from './routes/[_dev].ui'
 import { Route as PublicCadastroRouteImport } from './routes/_public.cadastro'
 import { Route as PublicLoginRouteImport } from './routes/_public.login'
 import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
+import { Route as FTokenRouteImport } from './routes/f.$token'
 import { Route as AppWWsIdRouteImport } from './routes/_app.w.$wsId'
 import { Route as PDocTokenRouteImport } from './routes/p.doc.$token'
 import { Route as AppWWsIdIndexRouteImport } from './routes/_app.w.$wsId.index'
@@ -93,6 +94,11 @@ const PublicLoginRoute = PublicLoginRouteImport.update({
 const ConviteTokenRoute = ConviteTokenRouteImport.update({
   id: '/convite/$token',
   path: '/convite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FTokenRoute = FTokenRouteImport.update({
+  id: '/f/$token',
+  path: '/f/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppWWsIdRoute = AppWWsIdRouteImport.update({
@@ -278,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof PublicCadastroRoute
   '/login': typeof PublicLoginRoute
   '/convite/$token': typeof ConviteTokenRoute
+  '/f/$token': typeof FTokenRoute
   '/w/$wsId': typeof AppWWsIdRouteWithChildren
   '/p/doc/$token': typeof PDocTokenRoute
   '/w/$wsId/arquivados': typeof AppWWsIdArquivadosRoute
@@ -320,6 +327,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof PublicCadastroRoute
   '/login': typeof PublicLoginRoute
   '/convite/$token': typeof ConviteTokenRoute
+  '/f/$token': typeof FTokenRoute
   '/p/doc/$token': typeof PDocTokenRoute
   '/w/$wsId/arquivados': typeof AppWWsIdArquivadosRoute
   '/w/$wsId/automacoes': typeof AppWWsIdAutomacoesRoute
@@ -363,6 +371,7 @@ export interface FileRoutesById {
   '/_public/cadastro': typeof PublicCadastroRoute
   '/_public/login': typeof PublicLoginRoute
   '/convite/$token': typeof ConviteTokenRoute
+  '/f/$token': typeof FTokenRoute
   '/_app/w/$wsId': typeof AppWWsIdRouteWithChildren
   '/p/doc/$token': typeof PDocTokenRoute
   '/_app/w/$wsId/arquivados': typeof AppWWsIdArquivadosRoute
@@ -407,6 +416,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/login'
     | '/convite/$token'
+    | '/f/$token'
     | '/w/$wsId'
     | '/p/doc/$token'
     | '/w/$wsId/arquivados'
@@ -449,6 +459,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/login'
     | '/convite/$token'
+    | '/f/$token'
     | '/p/doc/$token'
     | '/w/$wsId/arquivados'
     | '/w/$wsId/automacoes'
@@ -491,6 +502,7 @@ export interface FileRouteTypes {
     | '/_public/cadastro'
     | '/_public/login'
     | '/convite/$token'
+    | '/f/$token'
     | '/_app/w/$wsId'
     | '/p/doc/$token'
     | '/_app/w/$wsId/arquivados'
@@ -532,6 +544,7 @@ export interface RootRouteChildren {
   PublicRoute: typeof PublicRouteWithChildren
   Char91_devChar93UiRoute: typeof Char91_devChar93UiRoute
   ConviteTokenRoute: typeof ConviteTokenRoute
+  FTokenRoute: typeof FTokenRoute
   PDocTokenRoute: typeof PDocTokenRoute
 }
 
@@ -598,6 +611,13 @@ declare module '@tanstack/react-router' {
       path: '/convite/$token'
       fullPath: '/convite/$token'
       preLoaderRoute: typeof ConviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/f/$token': {
+      id: '/f/$token'
+      path: '/f/$token'
+      fullPath: '/f/$token'
+      preLoaderRoute: typeof FTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/w/$wsId': {
@@ -952,6 +972,7 @@ const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRouteWithChildren,
   Char91_devChar93UiRoute: Char91_devChar93UiRoute,
   ConviteTokenRoute: ConviteTokenRoute,
+  FTokenRoute: FTokenRoute,
   PDocTokenRoute: PDocTokenRoute,
 }
 export const routeTree = rootRouteImport

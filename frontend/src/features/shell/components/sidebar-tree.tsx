@@ -20,6 +20,7 @@ import { AddMenu, NodeMenu } from '@/features/hierarchy/components/node-menu';
 import { useDropNode } from '@/features/hierarchy/hooks/use-hierarchy-actions';
 import { iconOf } from '@/features/hierarchy/node-kinds';
 import { flattenTree, planDrop, type FlatNode } from '@/features/hierarchy/tree-dnd';
+import { useSprints } from '@/features/sprints/hooks/use-sprints';
 import { colorSwatch } from '@/lib/colors';
 import { cn } from '@/lib/utils';
 import type { ExpandedTree } from '../hooks/use-expanded';
@@ -105,12 +106,15 @@ function ListRow({
   list,
   node,
   active,
+  sprint,
   onNavigate,
 }: {
   wsId: string;
   list: TreeList;
   node: FlatNode;
   active: boolean;
+  /** Verdadeiro quando esta List é a sprint que está correndo. */
+  sprint?: boolean;
   onNavigate?: () => void;
 }) {
   return (
@@ -124,6 +128,11 @@ function ListRow({
           className={cn(rowClass, active && 'bg-accent/15 text-ink')}
         >
           <span className="min-w-0 flex-1 truncate">{list.name}</span>
+          {sprint ? (
+            <span className="shrink-0 rounded-full bg-accent/[0.18] px-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-ink">
+              Sprint
+            </span>
+          ) : null}
           {list.openTaskCount > 0 ? (
             <span className="shrink-0 text-[12px] text-muted">{list.openTaskCount}</span>
           ) : null}
@@ -141,6 +150,7 @@ function FolderRow({
   parentFolderId,
   expanded,
   activeId,
+  sprintIds,
   onNavigate,
 }: {
   wsId: string;
@@ -149,6 +159,7 @@ function FolderRow({
   parentFolderId: string | null;
   expanded: ExpandedTree;
   activeId: string | null;
+  sprintIds: Set<string>;
   onNavigate?: () => void;
 }) {
   const open = expanded.isExpanded(folder.id);
@@ -196,6 +207,7 @@ function FolderRow({
               parentFolderId={folder.id}
               expanded={expanded}
               activeId={activeId}
+              sprintIds={sprintIds}
               {...(onNavigate ? { onNavigate } : {})}
             />
           ))}
@@ -213,6 +225,7 @@ function FolderRow({
                 folderId: folder.id,
               }}
               active={activeId === list.id}
+              sprint={sprintIds.has(list.id)}
               {...(onNavigate ? { onNavigate } : {})}
             />
           ))}
@@ -227,12 +240,14 @@ function SpaceRow({
   space,
   expanded,
   activeId,
+  sprintIds,
   onNavigate,
 }: {
   wsId: string;
   space: TreeSpace;
   expanded: ExpandedTree;
   activeId: string | null;
+  sprintIds: Set<string>;
   onNavigate?: () => void;
 }) {
   const open = expanded.isExpanded(space.id);
@@ -292,6 +307,7 @@ function SpaceRow({
               parentFolderId={null}
               expanded={expanded}
               activeId={activeId}
+              sprintIds={sprintIds}
               {...(onNavigate ? { onNavigate } : {})}
             />
           ))}
@@ -309,6 +325,7 @@ function SpaceRow({
                 folderId: null,
               }}
               active={activeId === list.id}
+              sprint={sprintIds.has(list.id)}
               {...(onNavigate ? { onNavigate } : {})}
             />
           ))}
@@ -331,6 +348,7 @@ const collisionDetection: CollisionDetection = (args) => {
 /** Árvore de Spaces, Folders e Lists do workspace, com arrastar para reordenar. */
 export function SidebarTree({ wsId, tree, expanded, activeId, onNavigate }: SidebarTreeProps) {
   const nodes = flattenTree(tree, expanded.isExpanded);
+  const sprints = useSprints(wsId);
   const drop = useDropNode(wsId);
   const [dragging, setDragging] = useState<FlatNode | null>(null);
   const sensors = useSensors(
@@ -375,6 +393,7 @@ export function SidebarTree({ wsId, tree, expanded, activeId, onNavigate }: Side
               space={space}
               expanded={expanded}
               activeId={activeId}
+              sprintIds={sprints.currentIds}
               {...(onNavigate ? { onNavigate } : {})}
             />
           ))}

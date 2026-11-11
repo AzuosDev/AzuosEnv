@@ -508,6 +508,13 @@ export type CreateFormInput = Omit<components['schemas']['CreateFormDto'], 'cond
 export type UpdateFormInput = Omit<components['schemas']['UpdateFormDto'], 'conditions'> & {
   conditions?: FormConditionInput[];
 };
+/**
+ * Corpo cru do contrato. O Swagger descreve `conditions[].value` como objeto
+ * vazio, então a conversão do rascunho para esse formato fica num ponto só, no
+ * api.ts do módulo.
+ */
+export type CreateFormBody = components['schemas']['CreateFormDto'];
+export type UpdateFormBody = components['schemas']['UpdateFormDto'];
 export type FormResult = Omit<components['schemas']['FormResultDto'], 'form'> & {
   form: WorkspaceForm;
 };

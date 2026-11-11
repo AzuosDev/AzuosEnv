@@ -22,6 +22,8 @@ import { Label } from '@/components/ui/label';
 import { SelectNative } from '@/components/ui/select-native';
 import { customFieldsQuery } from '@/features/tasks/fields-api';
 import { LocationSelect } from '@/features/hierarchy/components/location-select';
+import { useSprints } from '@/features/sprints/hooks/use-sprints';
+import { sprintRangeDays, sprintRangeLabel } from '@/features/sprints/sprint-model';
 import { WORKLOAD_METRIC_LABEL } from '@/features/views/workload-model';
 import { CARD_KINDS, cardKind } from '../card-kinds';
 
@@ -63,6 +65,7 @@ export function CardDialog({ wsId, open, onOpenChange, initial, onConfirm }: Car
   }, [open, initial?.type, initial?.config]);
 
   const kind = cardKind(type);
+  const sprints = useSprints(wsId);
   const numericFields = (fields.data ?? []).filter(
     (field) => field.type === 'number' || field.type === 'currency' || field.type === 'formula',
   );
@@ -117,6 +120,55 @@ export function CardDialog({ wsId, open, onOpenChange, initial, onConfirm }: Car
                   });
                 }}
               />
+            </div>
+          ) : null}
+
+          {kind.fields.includes('sprint') ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="card-sprint">Sprint</Label>
+              <SelectNative
+                id="card-sprint"
+                value={config.sprintId ?? ''}
+                onChange={(event) => {
+                  const sprintId = event.target.value;
+                  const sprint = sprints.views
+                    .flatMap((view) => view.sprints)
+                    .find((item) => item.id === sprintId);
+                  const range = sprint ? sprintRangeDays(sprint) : null;
+
+                  setConfig((current) => {
+                    const next = { ...current };
+
+                    if (sprintId === '') {
+                      delete next.sprintId;
+                    } else {
+                      next.sprintId = sprintId;
+                    }
+
+                    if (range) {
+                      next.from = range.from;
+                      next.to = range.to;
+                    }
+
+                    return next;
+                  });
+                }}
+              >
+                <option value="">Sem sprint</option>
+                {sprints.views.map((view) => (
+                  <optgroup key={view.sprintFolder.id} label={view.sprintFolder.name}>
+                    {view.sprints.map((sprint) => (
+                      <option key={sprint.id} value={sprint.id}>
+                        {sprint.name}
+                        {sprintRangeLabel(sprint) ? ` · ${sprintRangeLabel(sprint) ?? ''}` : ''}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </SelectNative>
+              <p className="text-[12px] text-muted">
+                Escolher a sprint preenche o período com as datas dela.
+              </p>
             </div>
           ) : null}
 
