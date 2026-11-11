@@ -33,7 +33,6 @@ import { Route as AppWWsIdMinhasTarefasRouteImport } from './routes/_app.w.$wsId
 import { Route as AppWWsIdPlannerRouteImport } from './routes/_app.w.$wsId.planner'
 import { Route as AppWWsIdTimesheetsRouteImport } from './routes/_app.w.$wsId.timesheets'
 import { Route as AppWWsIdTudoRouteImport } from './routes/_app.w.$wsId.tudo'
-import { Route as AppWWsIdWhiteboardsRouteImport } from './routes/_app.w.$wsId.whiteboards'
 import { Route as AppWWsIdConfiguracoesIndexRouteImport } from './routes/_app.w.$wsId.configuracoes.index'
 import { Route as AppWWsIdConfiguracoesEquipesRouteImport } from './routes/_app.w.$wsId.configuracoes.equipes'
 import { Route as AppWWsIdConfiguracoesNotificacoesRouteImport } from './routes/_app.w.$wsId.configuracoes.notificacoes'
@@ -52,6 +51,8 @@ import { Route as AppWWsIdMetasIndexRouteImport } from './routes/_app.w.$wsId.me
 import { Route as AppWWsIdMetasGoalIdRouteImport } from './routes/_app.w.$wsId.metas.$goalId'
 import { Route as AppWWsIdSSpaceIdRouteImport } from './routes/_app.w.$wsId.s.$spaceId'
 import { Route as AppWWsIdTCustomIdRouteImport } from './routes/_app.w.$wsId.t.$customId'
+import { Route as AppWWsIdWhiteboardsIndexRouteImport } from './routes/_app.w.$wsId.whiteboards.index'
+import { Route as AppWWsIdWhiteboardsWhiteboardIdRouteImport } from './routes/_app.w.$wsId.whiteboards.$whiteboardId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -171,11 +172,6 @@ const AppWWsIdTudoRoute = AppWWsIdTudoRouteImport.update({
   path: '/tudo',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
-const AppWWsIdWhiteboardsRoute = AppWWsIdWhiteboardsRouteImport.update({
-  id: '/whiteboards',
-  path: '/whiteboards',
-  getParentRoute: () => AppWWsIdRoute,
-} as any)
 const AppWWsIdConfiguracoesIndexRoute =
   AppWWsIdConfiguracoesIndexRouteImport.update({
     id: '/',
@@ -275,6 +271,18 @@ const AppWWsIdTCustomIdRoute = AppWWsIdTCustomIdRouteImport.update({
   path: '/t/$customId',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
+const AppWWsIdWhiteboardsIndexRoute =
+  AppWWsIdWhiteboardsIndexRouteImport.update({
+    id: '/whiteboards/',
+    path: '/whiteboards/',
+    getParentRoute: () => AppWWsIdRoute,
+  } as any)
+const AppWWsIdWhiteboardsWhiteboardIdRoute =
+  AppWWsIdWhiteboardsWhiteboardIdRouteImport.update({
+    id: '/whiteboards/$whiteboardId',
+    path: '/whiteboards/$whiteboardId',
+    getParentRoute: () => AppWWsIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -298,7 +306,6 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
   '/w/$wsId/tudo': typeof AppWWsIdTudoRoute
-  '/w/$wsId/whiteboards': typeof AppWWsIdWhiteboardsRoute
   '/w/$wsId/': typeof AppWWsIdIndexRoute
   '/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
   '/w/$wsId/configuracoes/notificacoes': typeof AppWWsIdConfiguracoesNotificacoesRoute
@@ -314,10 +321,12 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/metas/$goalId': typeof AppWWsIdMetasGoalIdRoute
   '/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
   '/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
+  '/w/$wsId/whiteboards/$whiteboardId': typeof AppWWsIdWhiteboardsWhiteboardIdRoute
   '/w/$wsId/configuracoes/': typeof AppWWsIdConfiguracoesIndexRoute
   '/w/$wsId/dashboards/': typeof AppWWsIdDashboardsIndexRoute
   '/w/$wsId/docs/': typeof AppWWsIdDocsIndexRoute
   '/w/$wsId/metas/': typeof AppWWsIdMetasIndexRoute
+  '/w/$wsId/whiteboards/': typeof AppWWsIdWhiteboardsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -339,7 +348,6 @@ export interface FileRoutesByTo {
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
   '/w/$wsId/tudo': typeof AppWWsIdTudoRoute
-  '/w/$wsId/whiteboards': typeof AppWWsIdWhiteboardsRoute
   '/w/$wsId': typeof AppWWsIdIndexRoute
   '/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
   '/w/$wsId/configuracoes/notificacoes': typeof AppWWsIdConfiguracoesNotificacoesRoute
@@ -355,10 +363,12 @@ export interface FileRoutesByTo {
   '/w/$wsId/metas/$goalId': typeof AppWWsIdMetasGoalIdRoute
   '/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
   '/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
+  '/w/$wsId/whiteboards/$whiteboardId': typeof AppWWsIdWhiteboardsWhiteboardIdRoute
   '/w/$wsId/configuracoes': typeof AppWWsIdConfiguracoesIndexRoute
   '/w/$wsId/dashboards': typeof AppWWsIdDashboardsIndexRoute
   '/w/$wsId/docs': typeof AppWWsIdDocsIndexRoute
   '/w/$wsId/metas': typeof AppWWsIdMetasIndexRoute
+  '/w/$wsId/whiteboards': typeof AppWWsIdWhiteboardsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -385,7 +395,6 @@ export interface FileRoutesById {
   '/_app/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/_app/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
   '/_app/w/$wsId/tudo': typeof AppWWsIdTudoRoute
-  '/_app/w/$wsId/whiteboards': typeof AppWWsIdWhiteboardsRoute
   '/_app/w/$wsId/': typeof AppWWsIdIndexRoute
   '/_app/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
   '/_app/w/$wsId/configuracoes/notificacoes': typeof AppWWsIdConfiguracoesNotificacoesRoute
@@ -401,10 +410,12 @@ export interface FileRoutesById {
   '/_app/w/$wsId/metas/$goalId': typeof AppWWsIdMetasGoalIdRoute
   '/_app/w/$wsId/s/$spaceId': typeof AppWWsIdSSpaceIdRoute
   '/_app/w/$wsId/t/$customId': typeof AppWWsIdTCustomIdRoute
+  '/_app/w/$wsId/whiteboards/$whiteboardId': typeof AppWWsIdWhiteboardsWhiteboardIdRoute
   '/_app/w/$wsId/configuracoes/': typeof AppWWsIdConfiguracoesIndexRoute
   '/_app/w/$wsId/dashboards/': typeof AppWWsIdDashboardsIndexRoute
   '/_app/w/$wsId/docs/': typeof AppWWsIdDocsIndexRoute
   '/_app/w/$wsId/metas/': typeof AppWWsIdMetasIndexRoute
+  '/_app/w/$wsId/whiteboards/': typeof AppWWsIdWhiteboardsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -430,7 +441,6 @@ export interface FileRouteTypes {
     | '/w/$wsId/planner'
     | '/w/$wsId/timesheets'
     | '/w/$wsId/tudo'
-    | '/w/$wsId/whiteboards'
     | '/w/$wsId/'
     | '/w/$wsId/configuracoes/equipes'
     | '/w/$wsId/configuracoes/notificacoes'
@@ -446,10 +456,12 @@ export interface FileRouteTypes {
     | '/w/$wsId/metas/$goalId'
     | '/w/$wsId/s/$spaceId'
     | '/w/$wsId/t/$customId'
+    | '/w/$wsId/whiteboards/$whiteboardId'
     | '/w/$wsId/configuracoes/'
     | '/w/$wsId/dashboards/'
     | '/w/$wsId/docs/'
     | '/w/$wsId/metas/'
+    | '/w/$wsId/whiteboards/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -471,7 +483,6 @@ export interface FileRouteTypes {
     | '/w/$wsId/planner'
     | '/w/$wsId/timesheets'
     | '/w/$wsId/tudo'
-    | '/w/$wsId/whiteboards'
     | '/w/$wsId'
     | '/w/$wsId/configuracoes/equipes'
     | '/w/$wsId/configuracoes/notificacoes'
@@ -487,10 +498,12 @@ export interface FileRouteTypes {
     | '/w/$wsId/metas/$goalId'
     | '/w/$wsId/s/$spaceId'
     | '/w/$wsId/t/$customId'
+    | '/w/$wsId/whiteboards/$whiteboardId'
     | '/w/$wsId/configuracoes'
     | '/w/$wsId/dashboards'
     | '/w/$wsId/docs'
     | '/w/$wsId/metas'
+    | '/w/$wsId/whiteboards'
   id:
     | '__root__'
     | '/'
@@ -516,7 +529,6 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/planner'
     | '/_app/w/$wsId/timesheets'
     | '/_app/w/$wsId/tudo'
-    | '/_app/w/$wsId/whiteboards'
     | '/_app/w/$wsId/'
     | '/_app/w/$wsId/configuracoes/equipes'
     | '/_app/w/$wsId/configuracoes/notificacoes'
@@ -532,10 +544,12 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/metas/$goalId'
     | '/_app/w/$wsId/s/$spaceId'
     | '/_app/w/$wsId/t/$customId'
+    | '/_app/w/$wsId/whiteboards/$whiteboardId'
     | '/_app/w/$wsId/configuracoes/'
     | '/_app/w/$wsId/dashboards/'
     | '/_app/w/$wsId/docs/'
     | '/_app/w/$wsId/metas/'
+    | '/_app/w/$wsId/whiteboards/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -718,13 +732,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWWsIdTudoRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
-    '/_app/w/$wsId/whiteboards': {
-      id: '/_app/w/$wsId/whiteboards'
-      path: '/whiteboards'
-      fullPath: '/w/$wsId/whiteboards'
-      preLoaderRoute: typeof AppWWsIdWhiteboardsRouteImport
-      parentRoute: typeof AppWWsIdRoute
-    }
     '/_app/w/$wsId/configuracoes/': {
       id: '/_app/w/$wsId/configuracoes/'
       path: '/'
@@ -851,6 +858,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWWsIdTCustomIdRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
+    '/_app/w/$wsId/whiteboards/': {
+      id: '/_app/w/$wsId/whiteboards/'
+      path: '/whiteboards'
+      fullPath: '/w/$wsId/whiteboards/'
+      preLoaderRoute: typeof AppWWsIdWhiteboardsIndexRouteImport
+      parentRoute: typeof AppWWsIdRoute
+    }
+    '/_app/w/$wsId/whiteboards/$whiteboardId': {
+      id: '/_app/w/$wsId/whiteboards/$whiteboardId'
+      path: '/whiteboards/$whiteboardId'
+      fullPath: '/w/$wsId/whiteboards/$whiteboardId'
+      preLoaderRoute: typeof AppWWsIdWhiteboardsWhiteboardIdRouteImport
+      parentRoute: typeof AppWWsIdRoute
+    }
   }
 }
 
@@ -895,7 +916,6 @@ interface AppWWsIdRouteChildren {
   AppWWsIdPlannerRoute: typeof AppWWsIdPlannerRoute
   AppWWsIdTimesheetsRoute: typeof AppWWsIdTimesheetsRoute
   AppWWsIdTudoRoute: typeof AppWWsIdTudoRoute
-  AppWWsIdWhiteboardsRoute: typeof AppWWsIdWhiteboardsRoute
   AppWWsIdIndexRoute: typeof AppWWsIdIndexRoute
   AppWWsIdDashboardsDashboardIdRoute: typeof AppWWsIdDashboardsDashboardIdRoute
   AppWWsIdDocsDocIdRoute: typeof AppWWsIdDocsDocIdRoute
@@ -904,9 +924,11 @@ interface AppWWsIdRouteChildren {
   AppWWsIdMetasGoalIdRoute: typeof AppWWsIdMetasGoalIdRoute
   AppWWsIdSSpaceIdRoute: typeof AppWWsIdSSpaceIdRoute
   AppWWsIdTCustomIdRoute: typeof AppWWsIdTCustomIdRoute
+  AppWWsIdWhiteboardsWhiteboardIdRoute: typeof AppWWsIdWhiteboardsWhiteboardIdRoute
   AppWWsIdDashboardsIndexRoute: typeof AppWWsIdDashboardsIndexRoute
   AppWWsIdDocsIndexRoute: typeof AppWWsIdDocsIndexRoute
   AppWWsIdMetasIndexRoute: typeof AppWWsIdMetasIndexRoute
+  AppWWsIdWhiteboardsIndexRoute: typeof AppWWsIdWhiteboardsIndexRoute
 }
 
 const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
@@ -921,7 +943,6 @@ const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
   AppWWsIdPlannerRoute: AppWWsIdPlannerRoute,
   AppWWsIdTimesheetsRoute: AppWWsIdTimesheetsRoute,
   AppWWsIdTudoRoute: AppWWsIdTudoRoute,
-  AppWWsIdWhiteboardsRoute: AppWWsIdWhiteboardsRoute,
   AppWWsIdIndexRoute: AppWWsIdIndexRoute,
   AppWWsIdDashboardsDashboardIdRoute: AppWWsIdDashboardsDashboardIdRoute,
   AppWWsIdDocsDocIdRoute: AppWWsIdDocsDocIdRoute,
@@ -930,9 +951,11 @@ const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
   AppWWsIdMetasGoalIdRoute: AppWWsIdMetasGoalIdRoute,
   AppWWsIdSSpaceIdRoute: AppWWsIdSSpaceIdRoute,
   AppWWsIdTCustomIdRoute: AppWWsIdTCustomIdRoute,
+  AppWWsIdWhiteboardsWhiteboardIdRoute: AppWWsIdWhiteboardsWhiteboardIdRoute,
   AppWWsIdDashboardsIndexRoute: AppWWsIdDashboardsIndexRoute,
   AppWWsIdDocsIndexRoute: AppWWsIdDocsIndexRoute,
   AppWWsIdMetasIndexRoute: AppWWsIdMetasIndexRoute,
+  AppWWsIdWhiteboardsIndexRoute: AppWWsIdWhiteboardsIndexRoute,
 }
 
 const AppWWsIdRouteWithChildren = AppWWsIdRoute._addFileChildren(

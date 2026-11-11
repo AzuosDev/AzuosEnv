@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Response } from 'express';
 import { Types } from 'mongoose';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -40,6 +41,13 @@ import { AiAgentsService } from './ai-agents.service';
 import { AiChatService } from './ai-chat.service';
 import { AiUsageService, AiUsageSummary } from './ai-usage.service';
 import {
+  AiConfirmResultDto,
+  AiSummaryResultDto,
+  AiTaskProposalResultDto,
+  AiUsageSummaryDto,
+  AiWriteResultDto,
+} from './dto/ai-result.dto';
+import {
   AiChatDto,
   AiSummarizeDto,
   AiTasksFromTextDto,
@@ -53,6 +61,7 @@ import { AiAgent, AiAgentDocument } from './schemas/ai-agent.schema';
 
 @ApiTags('ai')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard, AiEnabledGuard)
 @Controller('workspaces/:wsId/ai')
 export class AiController {
@@ -101,7 +110,7 @@ export class AiController {
   }
 
   @Post('summarize')
-  @ApiOkResponse({ description: 'Resumo da tarefa, thread, canal ou Doc.' })
+  @ApiOkResponse({ description: 'Resumo da tarefa, thread, canal ou Doc.', type: AiSummaryResultDto })
   summarize(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: AiSummarizeDto,
@@ -110,7 +119,10 @@ export class AiController {
   }
 
   @Post('tasks-from-text')
-  @ApiOkResponse({ description: 'Proposta de tarefas validada; nada é criado aqui.' })
+  @ApiOkResponse({
+    description: 'Proposta de tarefas validada; nada é criado aqui.',
+    type: AiTaskProposalResultDto,
+  })
   tasksFromText(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: AiTasksFromTextDto,
@@ -119,7 +131,10 @@ export class AiController {
   }
 
   @Post('tasks-from-text/confirm')
-  @ApiCreatedResponse({ description: 'Tarefas criadas a partir da proposta confirmada.' })
+  @ApiCreatedResponse({
+    description: 'Tarefas criadas a partir da proposta confirmada.',
+    type: AiConfirmResultDto,
+  })
   confirmTasksFromText(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: ConfirmTasksFromTextDto,
@@ -128,7 +143,7 @@ export class AiController {
   }
 
   @Post('write')
-  @ApiOkResponse({ description: 'Texto reescrito pela IA.' })
+  @ApiOkResponse({ description: 'Texto reescrito pela IA.', type: AiWriteResultDto })
   write(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: AiWriteDto,
@@ -137,7 +152,10 @@ export class AiController {
   }
 
   @Get('usage')
-  @ApiOkResponse({ description: 'Consumo de tokens do mês e orçamento do workspace.' })
+  @ApiOkResponse({
+    description: 'Consumo de tokens do mês e orçamento do workspace.',
+    type: AiUsageSummaryDto,
+  })
   usageSummary(@CurrentMembership() membership: RequestMembership): Promise<AiUsageSummary> {
     return this.usage.summary(permissionContextFrom(membership).workspaceId);
   }
@@ -162,6 +180,7 @@ export class AiController {
 
 @ApiTags('ai')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard, AiEnabledGuard)
 @Controller('workspaces/:wsId/ai/agents')
 export class AiAgentsController {

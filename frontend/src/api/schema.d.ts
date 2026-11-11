@@ -6227,6 +6227,14 @@ export interface components {
             /** @description Pergunta extra sobre o conteúdo. */
             instruction?: string;
         };
+        AiSummaryResultDto: {
+            /** @enum {string} */
+            entityType: "task" | "thread" | "channel" | "doc";
+            /** @description Id da entidade resumida. */
+            id: string;
+            /** @description Resumo em markdown. */
+            summary: string;
+        };
         AiTasksFromTextDto: {
             /** @example Corrigir o fechamento de caixa e revisar o relatório até sexta. */
             text: string;
@@ -6245,14 +6253,43 @@ export interface components {
             estimateMinutes?: number;
             points?: number;
         };
+        AiTaskProposalResultDto: {
+            /** @description List de destino da proposta. */
+            listId: string;
+            /** @description Tarefas propostas; nada foi criado. */
+            tasks: components["schemas"]["ProposedTaskDto"][];
+            /** @description Avisos sobre o que a IA não aproveitou. */
+            warnings: string[];
+        };
         ConfirmTasksFromTextDto: {
             listId: string;
             tasks: components["schemas"]["ProposedTaskDto"][];
+        };
+        AiConfirmResultDto: {
+            /** @description List onde as tarefas foram criadas. */
+            listId: string;
+            /** @description Tarefas criadas. */
+            created: components["schemas"]["Task"][];
         };
         AiWriteDto: {
             /** @enum {string} */
             action: "improve" | "shorten" | "translate" | "fixGrammar";
             text: string;
+        };
+        AiWriteResultDto: {
+            /** @enum {string} */
+            action: "improve" | "shorten" | "translate" | "fixGrammar";
+            /** @description Texto reescrito. */
+            text: string;
+        };
+        AiUsageSummaryDto: {
+            /** @description Início do mês contabilizado (UTC ISO 8601). */
+            from: string;
+            tokensIn: number;
+            tokensOut: number;
+            total: number;
+            /** @description Teto de tokens do mês; 0 é sem teto. */
+            budget: number;
         };
         CreateAiAgentDto: {
             /** @example Resumo diário */
@@ -6340,6 +6377,14 @@ export interface components {
         ElementToTaskDto: {
             /** @description List onde a tarefa é criada. */
             listId: string;
+        };
+        ElementTaskResultDto: {
+            /** @description Tarefa criada a partir do elemento. */
+            task: components["schemas"]["Task"];
+            /** @description Quadro com o elemento já ligado à tarefa. */
+            whiteboard: components["schemas"]["Whiteboard"];
+            /** @description Elemento convertido. */
+            elementId: string;
         };
         CreateGithubIntegrationDto: {
             /** @example azuosdev/usolutions-pdv */
@@ -13617,7 +13662,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -13639,7 +13687,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -13653,7 +13704,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AiSummaryResultDto"];
+                };
             };
         };
     };
@@ -13661,7 +13714,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -13675,7 +13731,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AiTaskProposalResultDto"];
+                };
             };
         };
     };
@@ -13683,7 +13741,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -13697,7 +13758,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AiConfirmResultDto"];
+                };
             };
         };
     };
@@ -13705,7 +13768,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -13719,7 +13785,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AiWriteResultDto"];
+                };
             };
         };
     };
@@ -13727,7 +13795,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -13737,7 +13808,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AiUsageSummaryDto"];
+                };
             };
         };
     };
@@ -13749,7 +13822,10 @@ export interface operations {
                 cursor?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -13773,7 +13849,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -13799,6 +13878,8 @@ export interface operations {
             header?: never;
             path: {
                 agentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13821,6 +13902,8 @@ export interface operations {
             header?: never;
             path: {
                 agentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13841,6 +13924,8 @@ export interface operations {
             header?: never;
             path: {
                 agentId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13871,7 +13956,10 @@ export interface operations {
                 locationId?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -13895,7 +13983,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -13921,6 +14012,8 @@ export interface operations {
             header?: never;
             path: {
                 whiteboardId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13943,6 +14036,8 @@ export interface operations {
             header?: never;
             path: {
                 whiteboardId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13963,6 +14058,8 @@ export interface operations {
             header?: never;
             path: {
                 whiteboardId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -13989,6 +14086,8 @@ export interface operations {
             header?: never;
             path: {
                 whiteboardId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -14016,6 +14115,8 @@ export interface operations {
             path: {
                 whiteboardId: components["schemas"]["ObjectId"];
                 elementId: string;
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -14030,7 +14131,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ElementTaskResultDto"];
+                };
             };
         };
     };
@@ -14040,6 +14143,8 @@ export interface operations {
             header?: never;
             path: {
                 whiteboardId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };

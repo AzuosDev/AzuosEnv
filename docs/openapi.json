@@ -14283,7 +14283,18 @@
     "/api/v1/workspaces/{wsId}/ai/chat": {
       "post": {
         "operationId": "AiController_chatStream",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -14313,7 +14324,18 @@
     "/api/v1/workspaces/{wsId}/ai/summarize": {
       "post": {
         "operationId": "AiController_summarize",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -14326,7 +14348,14 @@
         },
         "responses": {
           "200": {
-            "description": "Resumo da tarefa, thread, canal ou Doc."
+            "description": "Resumo da tarefa, thread, canal ou Doc.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiSummaryResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -14342,7 +14371,18 @@
     "/api/v1/workspaces/{wsId}/ai/tasks-from-text": {
       "post": {
         "operationId": "AiController_tasksFromText",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -14355,7 +14395,14 @@
         },
         "responses": {
           "200": {
-            "description": "Proposta de tarefas validada; nada é criado aqui."
+            "description": "Proposta de tarefas validada; nada é criado aqui.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiTaskProposalResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -14371,7 +14418,18 @@
     "/api/v1/workspaces/{wsId}/ai/tasks-from-text/confirm": {
       "post": {
         "operationId": "AiController_confirmTasksFromText",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -14384,7 +14442,14 @@
         },
         "responses": {
           "201": {
-            "description": "Tarefas criadas a partir da proposta confirmada."
+            "description": "Tarefas criadas a partir da proposta confirmada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiConfirmResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -14400,7 +14465,18 @@
     "/api/v1/workspaces/{wsId}/ai/write": {
       "post": {
         "operationId": "AiController_write",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -14413,7 +14489,14 @@
         },
         "responses": {
           "200": {
-            "description": "Texto reescrito pela IA."
+            "description": "Texto reescrito pela IA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiWriteResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -14429,10 +14512,28 @@
     "/api/v1/workspaces/{wsId}/ai/usage": {
       "get": {
         "operationId": "AiController_usageSummary",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Consumo de tokens do mês e orçamento do workspace."
+            "description": "Consumo de tokens do mês e orçamento do workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiUsageSummaryDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -14448,7 +14549,18 @@
     "/api/v1/workspaces/{wsId}/ai/agents": {
       "post": {
         "operationId": "AiAgentsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -14502,6 +14614,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -14554,6 +14676,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -14586,6 +14718,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -14630,6 +14772,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -14650,7 +14802,18 @@
     "/api/v1/workspaces/{wsId}/whiteboards": {
       "post": {
         "operationId": "WhiteboardsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -14726,6 +14889,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -14778,6 +14951,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -14810,6 +14993,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -14854,6 +15047,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -14881,6 +15084,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -14935,6 +15148,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -14949,7 +15172,14 @@
         },
         "responses": {
           "201": {
-            "description": "Elemento convertido em tarefa."
+            "description": "Elemento convertido em tarefa.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementTaskResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -14972,6 +15202,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -25305,6 +25545,33 @@
           "id"
         ]
       },
+      "AiSummaryResultDto": {
+        "type": "object",
+        "properties": {
+          "entityType": {
+            "type": "string",
+            "enum": [
+              "task",
+              "thread",
+              "channel",
+              "doc"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "Id da entidade resumida."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Resumo em markdown."
+          }
+        },
+        "required": [
+          "entityType",
+          "id",
+          "summary"
+        ]
+      },
       "AiTasksFromTextDto": {
         "type": "object",
         "properties": {
@@ -25374,6 +25641,34 @@
           "name"
         ]
       },
+      "AiTaskProposalResultDto": {
+        "type": "object",
+        "properties": {
+          "listId": {
+            "type": "string",
+            "description": "List de destino da proposta."
+          },
+          "tasks": {
+            "description": "Tarefas propostas; nada foi criado.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProposedTaskDto"
+            }
+          },
+          "warnings": {
+            "description": "Avisos sobre o que a IA não aproveitou.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "listId",
+          "tasks",
+          "warnings"
+        ]
+      },
       "ConfirmTasksFromTextDto": {
         "type": "object",
         "properties": {
@@ -25392,6 +25687,26 @@
         "required": [
           "listId",
           "tasks"
+        ]
+      },
+      "AiConfirmResultDto": {
+        "type": "object",
+        "properties": {
+          "listId": {
+            "type": "string",
+            "description": "List onde as tarefas foram criadas."
+          },
+          "created": {
+            "description": "Tarefas criadas.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          }
+        },
+        "required": [
+          "listId",
+          "created"
         ]
       },
       "AiWriteDto": {
@@ -25415,6 +25730,57 @@
         "required": [
           "action",
           "text"
+        ]
+      },
+      "AiWriteResultDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "improve",
+              "shorten",
+              "translate",
+              "fixGrammar"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "description": "Texto reescrito."
+          }
+        },
+        "required": [
+          "action",
+          "text"
+        ]
+      },
+      "AiUsageSummaryDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Início do mês contabilizado (UTC ISO 8601)."
+          },
+          "tokensIn": {
+            "type": "number"
+          },
+          "tokensOut": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "budget": {
+            "type": "number",
+            "description": "Teto de tokens do mês; 0 é sem teto."
+          }
+        },
+        "required": [
+          "from",
+          "tokensIn",
+          "tokensOut",
+          "total",
+          "budget"
         ]
       },
       "CreateAiAgentDto": {
@@ -25694,6 +26060,36 @@
         },
         "required": [
           "listId"
+        ]
+      },
+      "ElementTaskResultDto": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "description": "Tarefa criada a partir do elemento.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Task"
+              }
+            ]
+          },
+          "whiteboard": {
+            "description": "Quadro com o elemento já ligado à tarefa.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Whiteboard"
+              }
+            ]
+          },
+          "elementId": {
+            "type": "string",
+            "description": "Elemento convertido."
+          }
+        },
+        "required": [
+          "task",
+          "whiteboard",
+          "elementId"
         ]
       },
       "CreateGithubIntegrationDto": {

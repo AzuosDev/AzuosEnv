@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Types } from 'mongoose';
 import { CursorPage } from '../../common/pagination/cursor';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -31,11 +32,13 @@ import {
   UpdateWhiteboardDto,
   WhiteboardQueryDto,
 } from './dto/whiteboard.dto';
+import { ElementTaskResultDto } from './dto/whiteboard-result.dto';
 import { Whiteboard, WhiteboardDocument } from './schemas/whiteboard.schema';
 import { ElementTaskResult, WhiteboardsService } from './whiteboards.service';
 
 @ApiTags('whiteboards')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/whiteboards')
 export class WhiteboardsController {
@@ -93,7 +96,7 @@ export class WhiteboardsController {
 
   @Post(':whiteboardId/elements/:elementId/to-task')
   @HttpCode(HttpStatus.CREATED)
-  @ApiCreatedResponse({ description: 'Elemento convertido em tarefa.' })
+  @ApiCreatedResponse({ description: 'Elemento convertido em tarefa.', type: ElementTaskResultDto })
   toTask(
     @CurrentMembership() membership: RequestMembership,
     @CurrentWorkspace() workspace: WorkspaceDocument,

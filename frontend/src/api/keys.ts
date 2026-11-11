@@ -127,4 +127,10 @@ export const queryKeys = {
   sprintFolders: (workspaceId: string) => ['workspaces', workspaceId, 'sprint-folders'] as const,
   sprintFolder: (workspaceId: string, sprintFolderId: string) =>
     ['workspaces', workspaceId, 'sprint-folders', 'detail', sprintFolderId] as const,
+  aiUsage: (workspaceId: string) => ['workspaces', workspaceId, 'ai', 'usage'] as const,
+  aiAgents: (workspaceId: string) => ['workspaces', workspaceId, 'ai', 'agents'] as const,
+  whiteboards: (workspaceId: string, locationType?: string, locationId?: string) =>
+    ['workspaces', workspaceId, 'whiteboards', locationType ?? 'any', locationId ?? 'any'] as const,
+  whiteboard: (workspaceId: string, whiteboardId: string) =>
+    ['workspaces', workspaceId, 'whiteboards', 'detail', whiteboardId] as const,
 } as const;

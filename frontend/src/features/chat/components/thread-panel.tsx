@@ -2,6 +2,7 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import type { WorkspaceMemberItem, WorkspaceRole } from '@/api/types';
 import { Button } from '@/components/ui/button';
+import { SummarizeButton } from '@/features/ai/components/summarize-button';
 import { Spinner } from '@/components/ui/spinner';
 import { channelAttachmentsQuery, messagesQuery, repliesQuery } from '../api';
 import { mergeMessagePages, mergeReplyPages } from '../chat-model';
@@ -51,6 +52,7 @@ export function ThreadPanel({
     >
       <header className="flex shrink-0 items-center gap-2 border-b border-line px-3 py-2">
         <h2 className="min-w-0 flex-1 truncate text-[15px] font-semibold text-ink">Thread</h2>
+        <SummarizeButton wsId={wsId} entityType="thread" id={rootId} iconOnly />
         <Button variant="nav" size="icon" aria-label="Fechar a thread" onClick={onClose}>
           <X className="h-4 w-4" aria-hidden="true" />
         </Button>

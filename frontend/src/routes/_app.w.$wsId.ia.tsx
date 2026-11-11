@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { UnderConstruction } from '@/features/shell/components/under-construction';
+import { AiPage } from '@/features/ai/components/ai-page';
 
 function Page() {
   const { wsId } = Route.useParams();
 
-  return <UnderConstruction wsId={wsId} title="IA" />;
+  return <AiPage wsId={wsId} />;
 }
 
 export const Route = createFileRoute('/_app/w/$wsId/ia')({

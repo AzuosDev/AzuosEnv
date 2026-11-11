@@ -2,6 +2,7 @@ import { Menu, WifiOff } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import type { AuthUser } from '@/api/types';
+import { AiDrawer } from '@/features/ai/components/ai-drawer';
 import { UserMenu } from '@/features/auth/components/user-menu';
 import { useSocket } from '@/features/realtime/socket';
 import { CommandPalette } from '@/features/search/components/command-palette';
@@ -54,6 +55,7 @@ export function Topbar({ wsId, user, onOpenMenu }: TopbarProps) {
       <div className="flex-1" />
 
       <NewTaskButton wsId={wsId} />
+      <AiDrawer wsId={wsId} />
       <ConnectionBadge />
       <ThemeToggle className="hidden md:inline-flex" />
       {user ? <UserMenu user={user} wsId={wsId} /> : null}

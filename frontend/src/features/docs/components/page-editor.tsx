@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
+import { WriteAssist } from '@/features/ai/components/write-assist';
 import type { MentionSearch } from '@/features/tasks/components/rich-text-editor';
 import { docBlocks, personMention, slashCommands, taskMention } from './doc-extensions';
 
@@ -277,6 +278,8 @@ export function PageEditor({
               </button>
             );
           })}
+
+          <WriteAssist wsId={wsId} editor={editor} />
         </div>
       ) : null}
 

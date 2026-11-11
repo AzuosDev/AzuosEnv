@@ -4,6 +4,10 @@ const FALLBACK = 'Não foi possível concluir. Tente de novo.';
 
 const BY_CODE: Record<string, string> = {
   TOO_MANY_REQUESTS: 'Muitas tentativas. Aguarde um minuto e tente de novo.',
+  AI_DISABLED: 'A IA está desligada neste workspace. Um admin pode ligar em Configurações.',
+  AI_BUDGET_EXCEEDED: 'O orçamento de IA do mês acabou. Fale com um admin para aumentar o limite.',
+  AI_RATE_LIMITED: 'Muitos pedidos à IA em pouco tempo. Tente de novo em instantes.',
+  WHITEBOARD_VERSION_CONFLICT: 'O quadro mudou em outra aba. Recarregando para aplicar de novo.',
   INTERNAL_ERROR: 'O servidor falhou. Tente de novo em instantes.',
 };
 

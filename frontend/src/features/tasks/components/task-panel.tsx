@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { errorMessage } from '@/api/errors';
 import type { Checklist, TaskDetail } from '@/api/types';
 import { Button } from '@/components/ui/button';
+import { SummarizeButton } from '@/features/ai/components/summarize-button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/toast';
@@ -276,6 +277,10 @@ export function TaskPanel({ wsId, customId, mode, onMode, onClose }: TaskPanelPr
               );
             }}
           />
+
+          <div className="flex justify-end">
+            <SummarizeButton wsId={wsId} entityType="task" id={task.id} />
+          </div>
 
           <TaskDescription
             wsId={wsId}

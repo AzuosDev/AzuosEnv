@@ -542,3 +542,42 @@ export type CloseSprintResult = Omit<
 export type CreateSprintFolderInput = components['schemas']['CreateSprintFolderDto'];
 export type UpdateSprintFolderInput = components['schemas']['UpdateSprintFolderDto'];
 export type CreateSprintInput = components['schemas']['CreateSprintDto'];
+
+/* IA (Grok) -------------------------------------------------------------- */
+
+export type AiSummarizeEntityType = components['schemas']['AiSummarizeDto']['entityType'];
+export type AiSummarizeInput = components['schemas']['AiSummarizeDto'];
+export type AiSummary = components['schemas']['AiSummaryResultDto'];
+export type ProposedTask = components['schemas']['ProposedTaskDto'];
+export type AiTaskProposal = Omit<components['schemas']['AiTaskProposalResultDto'], 'tasks'> & {
+  tasks: ProposedTask[];
+};
+export type AiConfirmResult = Omit<components['schemas']['AiConfirmResultDto'], 'created'> & {
+  created: Task[];
+};
+export type AiWriteAction = components['schemas']['AiWriteDto']['action'];
+export type AiWriteResult = components['schemas']['AiWriteResultDto'];
+export type AiUsageSummary = components['schemas']['AiUsageSummaryDto'];
+export type AiAgent = Doc<FreeJson<components['schemas']['AiAgent'], 'config'>>;
+export type AiAgentType = AiAgent['type'];
+export type CreateAiAgentInput = components['schemas']['CreateAiAgentDto'];
+export type UpdateAiAgentInput = components['schemas']['UpdateAiAgentDto'];
+
+/* Quadros brancos -------------------------------------------------------- */
+
+/**
+ * `elements` é Mixed no contrato (o Swagger descreve objeto vazio): o quadro
+ * guarda o elemento normalizado do servidor, tipado em features/whiteboards.
+ */
+export type Whiteboard = Doc<Omit<components['schemas']['Whiteboard'], 'elements'>> & {
+  elements: unknown[];
+};
+export type WhiteboardLocationType = Whiteboard['locationType'];
+export type CreateWhiteboardInput = components['schemas']['CreateWhiteboardDto'];
+export type UpdateWhiteboardInput = components['schemas']['UpdateWhiteboardDto'];
+export type WhiteboardOpKind = components['schemas']['WhiteboardOpDto']['op'];
+export type PatchWhiteboardElementsBody = components['schemas']['PatchWhiteboardElementsDto'];
+export type ElementTaskResult = Omit<
+  components['schemas']['ElementTaskResultDto'],
+  'task' | 'whiteboard'
+> & { task: Task; whiteboard: Whiteboard };

@@ -52,7 +52,7 @@ test('a árvore da sidebar navega até uma List e guarda o que foi expandido', a
   await expect(page.getByRole('link', { name: /uSolutionsPDV — Sprint 3/ })).toBeHidden();
 });
 
-test('o Space abre com breadcrumb e o módulo futuro abre Em construção', async () => {
+test('o Space abre com breadcrumb e o módulo do rail abre a tela', async () => {
   await page.goto('/');
   await page.waitForURL(/\/w\/[0-9a-f]{24}$/);
 
@@ -60,7 +60,7 @@ test('o Space abre com breadcrumb e o módulo futuro abre Em construção', asyn
   await expect(page).toHaveURL(/\/s\/[0-9a-f]{24}$/);
   await expect(page.getByRole('heading', { name: 'Comercial' })).toBeVisible();
 
-  // Whiteboards segue sem tela própria; o Planner virou real na F14.
+  // Whiteboards virou tela real na F15: o rail leva ao hub de quadros.
   await page
     .getByRole('navigation', { name: 'Navegação global' })
     .getByRole('link', { name: 'Whiteboards' })
@@ -68,7 +68,7 @@ test('o Space abre com breadcrumb e o módulo futuro abre Em construção', asyn
 
   await expect(page).toHaveURL(/\/whiteboards$/);
   await expect(page.getByRole('heading', { name: 'Whiteboards' })).toBeVisible();
-  await expect(page.getByText('Em construção')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Novo quadro' }).first()).toBeVisible();
 });
 
 test('no celular a sidebar vira drawer e fecha ao navegar', async () => {

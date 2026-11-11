@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/s
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/toast';
 import { useSession } from '@/features/auth/session';
+import { SummarizeButton } from '@/features/ai/components/summarize-button';
 import { membersQuery } from '@/features/settings/api';
 import { useMentionSearch } from '@/features/tasks/hooks/use-mention-search';
 import { useMinWidth } from '@/lib/use-min-width';
@@ -307,6 +308,8 @@ export function DocEditor({ wsId, docId, pageId, onPickPage }: DocEditorProps) {
           >
             <History className="h-4 w-4" aria-hidden="true" /> Histórico de versões
           </Button>
+
+          <SummarizeButton wsId={wsId} entityType="doc" id={docId} />
 
           <Button
             size="sm"

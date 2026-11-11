@@ -34,7 +34,11 @@ export async function requestRefresh(): Promise<AuthSession | null> {
   }
 }
 
-const authFetch = createAuthFetch({
+/**
+ * fetch assinado da API: também serve ao stream SSE da IA, que não passa pelo
+ * cliente tipado porque a resposta não é JSON.
+ */
+export const apiFetch = createAuthFetch({
   fetch: (request) => fetch(request),
   getToken: getAccessToken,
   setToken: setAccessToken,
@@ -49,5 +53,5 @@ const authFetch = createAuthFetch({
 export const api = createClient<paths>({
   baseUrl: API_BASE_URL,
   credentials: 'include',
-  fetch: authFetch,
+  fetch: apiFetch,
 });
