@@ -1,5 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { FORM_CONDITION_OPS, FORM_FIELD_TYPES, FormConditionOp, FormFieldType } from '../form-fields';
+import {
+  FORM_CONDITION_OPS,
+  FORM_FIELD_TYPES,
+  FormConditionOp,
+  FormFieldType,
+} from '../form-fields';
 import { Form } from '../schemas/form.schema';
 
 /** Resposta de POST /forms: o token público aparece uma única vez. */

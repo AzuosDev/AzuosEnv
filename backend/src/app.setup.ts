@@ -33,9 +33,13 @@ export function configureApp(app: NestExpressApplication, options: ConfigureAppO
   app.useBodyParser('urlencoded', { limit: BODY_LIMIT, extended: true });
 
   // Runs before the global CORS so the site of Azuos Dev can post a public form.
+  // The app itself is on the list too: the public form page lives in the front.
   app.use(
     PUBLIC_FORMS_PATH,
-    publicFormCors(parseCorsOrigins(config.get<string>('PUBLIC_FORM_ORIGINS'))),
+    publicFormCors([
+      ...parseCorsOrigins(config.get<string>('CORS_ORIGINS')),
+      ...parseCorsOrigins(config.get<string>('PUBLIC_FORM_ORIGINS')),
+    ]),
   );
 
   app.enableCors({
@@ -103,8 +107,9 @@ export interface RawBodyRequest extends Request {
 export function publicFormCors(origins: string[]): RequestHandler {
   return (request, response, next) => {
     const origin = request.headers.origin;
+    const allowed = Boolean(origin && origins.includes(origin));
 
-    if (origin && origins.includes(origin)) {
+    if (origin && allowed) {
       response.setHeader('Access-Control-Allow-Origin', origin);
       response.setHeader('Vary', 'Origin');
       response.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
@@ -112,7 +117,9 @@ export function publicFormCors(origins: string[]): RequestHandler {
       response.setHeader('Access-Control-Max-Age', '600');
     }
 
-    if (request.method === 'OPTIONS') {
+    // Só responde o preflight da origem que ele libera; o resto segue para o
+    // CORS global, que é quem conhece as origens do app.
+    if (request.method === 'OPTIONS' && allowed) {
       response.status(204).end();
 
       return;

@@ -60,13 +60,14 @@ test('o Space abre com breadcrumb e o módulo futuro abre Em construção', asyn
   await expect(page).toHaveURL(/\/s\/[0-9a-f]{24}$/);
   await expect(page.getByRole('heading', { name: 'Comercial' })).toBeVisible();
 
+  // Whiteboards segue sem tela própria; o Planner virou real na F14.
   await page
     .getByRole('navigation', { name: 'Navegação global' })
-    .getByRole('link', { name: 'Planner' })
+    .getByRole('link', { name: 'Whiteboards' })
     .click();
 
-  await expect(page).toHaveURL(/\/planner$/);
-  await expect(page.getByRole('heading', { name: 'Planner' })).toBeVisible();
+  await expect(page).toHaveURL(/\/whiteboards$/);
+  await expect(page.getByRole('heading', { name: 'Whiteboards' })).toBeVisible();
   await expect(page.getByText('Em construção')).toBeVisible();
 });
 

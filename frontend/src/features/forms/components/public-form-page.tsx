@@ -141,8 +141,8 @@ export function PublicFormPage({ token }: { token: string }) {
                     }}
                   />
 
-                  {/* Honeypot: fora da tela e fora do leitor de tela. */}
-                  <div aria-hidden="true" className="sr-only">
+                  {/* Honeypot: display:none, fora do olho e do leitor de tela. */}
+                  <div aria-hidden="true" className="hidden">
                     <label htmlFor="public-website">Site</label>
                     <input
                       id="public-website"

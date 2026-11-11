@@ -40,13 +40,20 @@ const STATE_CLASS: Record<string, string> = {
 export function SprintStrip({ wsId, sprint, folder, canEdit }: SprintStripProps) {
   const client = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const params = { location: 'list' as const, locationId: sprint.id, limit: 100, showClosed: true };
+  // Página plana com as fechadas: a faixa conta pontos entregues e pendências.
+  const params = {
+    location: 'list' as const,
+    locationId: sprint.id,
+    limit: 100,
+    includeClosed: true,
+    groupBy: 'none' as const,
+  };
   const tasks = useQuery({
-    queryKey: queryKeys.tasks(wsId, { ...params, sprintStrip: true }),
+    queryKey: queryKeys.tasks(wsId, params),
     queryFn: () => queryTasks(wsId, params),
     staleTime: 15_000,
   });
-  const items = tasks.data ? flattenGroups(tasks.data.groups ?? []) : [];
+  const items = tasks.data?.items ?? flattenGroups(tasks.data?.groups ?? []);
   const points = sprintPoints(items);
   const pending = leftovers(items).length;
   const state = sprintState(sprint);

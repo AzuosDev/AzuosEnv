@@ -14,8 +14,14 @@ import { createBlock, createEvent, deleteEvent, updateEvent } from '../api';
 import type { PlannerRange } from '../planner-model';
 
 export interface PlannerActions {
-  /** Reserva o horário da tarefa e tira ela da lista "Para agendar". */
-  scheduleTask: (task: PlannerTask, slot: { start: string; end: string }) => Promise<void>;
+  /**
+   * Reserva o horário da tarefa, tira ela da lista "Para agendar" e devolve o
+   * bloco criado, para a tela já deixá-lo selecionado.
+   */
+  scheduleTask: (
+    task: PlannerTask,
+    slot: { start: string; end: string },
+  ) => Promise<CalendarEvent | null>;
   moveBlock: (eventId: string, slot: { start: string; end: string }) => Promise<void>;
   saveEvent: (body: CreateEventInput) => Promise<void>;
   patchEvent: (eventId: string, body: UpdateEventInput) => Promise<void>;
@@ -59,7 +65,10 @@ export function usePlannerActions(wsId: string, range: PlannerRange): PlannerAct
   }, [client, wsId]);
 
   const scheduleTask = useCallback(
-    async (task: PlannerTask, slot: { start: string; end: string }): Promise<void> => {
+    async (
+      task: PlannerTask,
+      slot: { start: string; end: string },
+    ): Promise<CalendarEvent | null> => {
       const previous = snapshot();
 
       write((state) => ({
@@ -67,17 +76,21 @@ export function usePlannerActions(wsId: string, range: PlannerRange): PlannerAct
         unscheduledTasks: state.unscheduledTasks.filter((item) => item.id !== task.id),
       }));
 
-      try {
-        const event = await createBlock(wsId, { taskId: task.id, ...slot });
+      let created: CalendarEvent;
 
-        write((state) => ({ ...state, events: [...state.events, event] }));
+      try {
+        created = await createBlock(wsId, { taskId: task.id, ...slot });
+
+        write((state) => ({ ...state, events: [...state.events, created] }));
       } catch (error) {
         restore(previous, error);
 
-        return;
+        return null;
       }
 
       refresh();
+
+      return created;
     },
     [refresh, restore, snapshot, write, wsId],
   );

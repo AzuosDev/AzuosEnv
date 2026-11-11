@@ -156,16 +156,17 @@ export class TargetsService {
     }
   }
 
-  /** Writes the counts of a `tasks` target; the other types are left alone. */
+  /**
+   * Saves the target, recounting the tasks first when it is of the type `tasks`.
+   * Every write of a target ends here, so a hand-kept value is persisted too.
+   */
   async refresh(target: TargetDocument): Promise<TargetDocument> {
-    if (target.type !== 'tasks') {
-      return target;
+    if (target.type === 'tasks') {
+      const counts = await this.countTasks(target);
+
+      target.target = counts.total;
+      target.current = counts.closed;
     }
-
-    const counts = await this.countTasks(target);
-
-    target.target = counts.total;
-    target.current = counts.closed;
 
     return target.save();
   }

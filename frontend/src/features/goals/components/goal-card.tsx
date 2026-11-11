@@ -49,10 +49,11 @@ export function GoalCard({ wsId, view, members, canWrite, onValue }: GoalCardPro
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h3 className="min-w-0 break-words text-[17px] font-semibold text-ink">
+            {/* No toque o nome é o caminho para a meta: alvo de 44 px. */}
             <Link
               to="/w/$wsId/metas/$goalId"
               params={{ wsId, goalId: view.goal.id }}
-              className="text-ink no-underline hover:text-accent"
+              className="inline-flex min-h-11 items-center text-ink no-underline hover:text-accent md:min-h-0"
             >
               {view.goal.name}
             </Link>

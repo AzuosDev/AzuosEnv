@@ -72,7 +72,11 @@ export function PlannerPage({ wsId }: { wsId: string }) {
       return;
     }
 
-    void actions.scheduleTask(task, slot);
+    void actions.scheduleTask(task, slot).then((event) => {
+      if (event) {
+        setSelectedId(event.id);
+      }
+    });
   };
 
   const onDragEnd = (drag: DragEndEvent): void => {
@@ -87,7 +91,13 @@ export function PlannerPage({ wsId }: { wsId: string }) {
     const top = drag.active.rect.current.translated?.top ?? drag.over.rect.top;
     const start = offsetToIso(day, top - drag.over.rect.top, hours);
 
-    void actions.scheduleTask(task, { start, end: addMinutesIso(start, taskBlockMinutes(task)) });
+    void actions
+      .scheduleTask(task, { start, end: addMinutesIso(start, taskBlockMinutes(task)) })
+      .then((event) => {
+        if (event) {
+          setSelectedId(event.id);
+        }
+      });
   };
 
   return (

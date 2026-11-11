@@ -278,6 +278,36 @@ describe('Metas e formulários públicos', () => {
       expect(advanced.targets[0].target).toBe(2);
     });
 
+    it('grava o valor do alvo de número no PATCH', async () => {
+      const fixture = await setup();
+      const goal = (await createGoal(fixture).expect(201)).body as IdBody;
+      const created = await withAuth(
+        http().post(`/api/v1/workspaces/${fixture.workspace.id}/goals/${goal.id}/targets`),
+        fixture.owner,
+      )
+        .send({ name: 'Horas', type: 'number', start: 0, target: 10, current: 0 })
+        .expect(201);
+      const targetId = (created.body.target as IdBody).id;
+
+      const patched = await withAuth(
+        http().patch(
+          `/api/v1/workspaces/${fixture.workspace.id}/goals/${goal.id}/targets/${targetId}`,
+        ),
+        fixture.owner,
+      )
+        .send({ current: 5 })
+        .expect(200);
+
+      expect(patched.body.target.current).toBe(5);
+      expect(patched.body.progress).toBe(50);
+
+      // O valor fica gravado: o GET da meta devolve o mesmo número.
+      const view = await goalOf(fixture, goal.id);
+
+      expect(view.targets[0].current).toBe(5);
+      expect(view.progress).toBe(50);
+    });
+
     it('recusa o alvo sem valor e sem escopo de tarefas', async () => {
       const fixture = await setup();
       const goal = (await createGoal(fixture).expect(201)).body as IdBody;

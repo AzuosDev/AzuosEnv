@@ -1,5 +1,5 @@
 import { Minus, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import type { GoalTarget } from '@/api/types';
 import { Button } from '@/components/ui/button';
@@ -36,9 +36,17 @@ const TONE_TEXT: Record<string, string> = {
 export function TargetRow({ target, wsId, canWrite, onValue, onRemove }: TargetRowProps) {
   const percent = targetPercent(target);
   const [draft, setDraft] = useState(() => String(target.current));
+  const synced = useRef(target.current);
 
+  /**
+   * O campo só volta ao valor da API quando ele muda de verdade: um rebusca em
+   * segundo plano não pode apagar o número que a pessoa está digitando.
+   */
   useEffect(() => {
-    setDraft(String(target.current));
+    if (synced.current !== target.current) {
+      synced.current = target.current;
+      setDraft(String(target.current));
+    }
   }, [target]);
 
   const commit = (): void => {
