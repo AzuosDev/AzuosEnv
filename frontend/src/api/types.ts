@@ -420,3 +420,30 @@ export type ChannelActivity = components['schemas']['ChannelActivityDto'];
 export type MessageToTaskResult = Omit<components['schemas']['MessageToTaskResultDto'], 'task'> & {
   task: Task;
 };
+
+/* Docs ------------------------------------------------------------------- */
+
+export type WorkspaceDoc = Doc<components['schemas']['Doc']>;
+export type DocLocationType = WorkspaceDoc['locationType'];
+export type DocHubTab = NonNullable<
+  NonNullable<paths['/api/v1/workspaces/{wsId}/docs']['get']['parameters']['query']>['tab']
+>;
+export type CreateDocInput = components['schemas']['CreateDocDto'];
+export type UpdateDocInput = components['schemas']['UpdateDocDto'];
+export type ShareDocResult = Omit<components['schemas']['ShareDocResultDto'], 'doc'> & {
+  doc: WorkspaceDoc;
+};
+export type DocPage = Doc<components['schemas']['DocPage']>;
+export type CreatePageInput = components['schemas']['CreatePageDto'];
+export type UpdatePageInput = components['schemas']['UpdatePageDto'];
+export type MovePageInput = components['schemas']['MovePageDto'];
+export type DocPageVersion = Doc<components['schemas']['DocPageVersion']>;
+export type CreatePageCommentInput = components['schemas']['CreatePageCommentDto'];
+export type PageCommentThread = Omit<
+  components['schemas']['PageCommentThreadDto'],
+  'comment' | 'replies'
+> & { comment: Comment; replies: Comment[] };
+export type PublicDoc = Omit<components['schemas']['PublicDocDto'], 'doc' | 'pages'> & {
+  doc: WorkspaceDoc;
+  pages: DocPage[];
+};

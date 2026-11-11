@@ -98,4 +98,17 @@ export const queryKeys = {
   messageReplies: (workspaceId: string, messageId: string) =>
     ['workspaces', workspaceId, 'messages', messageId, 'replies'] as const,
   chatActivity: (workspaceId: string) => ['workspaces', workspaceId, 'chat-activity'] as const,
+  docs: (workspaceId: string, tab: string, locationType?: string, locationId?: string) =>
+    ['workspaces', workspaceId, 'docs', tab, locationType ?? 'any', locationId ?? 'any'] as const,
+  doc: (workspaceId: string, docId: string) =>
+    ['workspaces', workspaceId, 'docs', 'detail', docId] as const,
+  docPages: (workspaceId: string, docId: string) =>
+    ['workspaces', workspaceId, 'docs', 'detail', docId, 'pages'] as const,
+  docPage: (workspaceId: string, pageId: string) =>
+    ['workspaces', workspaceId, 'pages', pageId] as const,
+  pageComments: (workspaceId: string, pageId: string) =>
+    ['workspaces', workspaceId, 'pages', pageId, 'comments'] as const,
+  pageVersions: (workspaceId: string, pageId: string) =>
+    ['workspaces', workspaceId, 'pages', pageId, 'versions'] as const,
+  publicDoc: (token: string) => ['public', 'docs', token] as const,
 } as const;

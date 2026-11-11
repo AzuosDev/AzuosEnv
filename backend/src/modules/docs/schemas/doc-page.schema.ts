@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 
@@ -20,6 +21,7 @@ export class DocPage {
   @Prop({ required: true, trim: true })
   title: string;
 
+  @ApiProperty({ type: 'object', additionalProperties: true, nullable: true })
   @Prop({ type: MongooseSchema.Types.Mixed, default: null })
   content: PageContent;
 

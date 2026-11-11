@@ -2,6 +2,7 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { DocsService, PublicDocView } from './docs.service';
+import { PublicDocDto } from './dto/doc-result.dto';
 
 /**
  * Public read-only entry point of a shared Doc. The token is stored only as a
@@ -14,7 +15,7 @@ export class PublicDocsController {
 
   @Public()
   @Get(':token')
-  @ApiOkResponse({ description: 'Doc compartilhado, somente leitura.' })
+  @ApiOkResponse({ description: 'Doc compartilhado, somente leitura.', type: PublicDocDto })
   read(@Param('token') token: string): Promise<PublicDocView> {
     return this.docs.publicDoc(token);
   }

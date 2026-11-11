@@ -120,6 +120,9 @@ test('arrasta a List para outro Folder e o lugar novo resiste ao recarregar', as
   const grip = page.getByRole('button', { name: `Reordenar ${LIST_MOVE}` });
   const target = page.getByRole('link', { name: FOLDER_B });
 
+  // A sidebar rola: medir o alvo fora da vista deixa o drop em outra linha.
+  await target.scrollIntoViewIfNeeded();
+  await grip.scrollIntoViewIfNeeded();
   await grip.hover();
   await page.mouse.down();
 
@@ -139,7 +142,33 @@ test('arrasta a List para outro Folder e o lugar novo resiste ao recarregar', as
     await page.mouse.move(x, y, { steps: 4 });
   }
 
-  await page.mouse.move(x, y + 1, { steps: 2 });
+  await page.mouse.move(x, y, { steps: 12 });
+
+  // A calha da sidebar rola durante o arraste (auto-scroll do dnd-kit): perseguir
+  // o alvo até ele parar de se mexer, senão a List cai na linha que escorregou
+  // para o cursor — e um Space colapsado a tira da árvore inteira.
+  let cx = x;
+  let cy = y;
+
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const box = await target.boundingBox();
+
+    expect(box, 'posição do Folder de destino durante o arraste').toBeTruthy();
+
+    const nx = (box?.x ?? 0) + (box?.width ?? 0) / 2;
+    const ny = (box?.y ?? 0) + (box?.height ?? 0) / 2;
+
+    await page.mouse.move(nx, ny, { steps: 4 });
+
+    if (Math.abs(nx - cx) < 2 && Math.abs(ny - cy) < 2) {
+      break;
+    }
+
+    cx = nx;
+    cy = ny;
+  }
+
+  await page.mouse.move(cx, cy + 1, { steps: 2 });
   await page.mouse.up();
 
   await expand(FOLDER_B);

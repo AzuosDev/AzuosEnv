@@ -10226,7 +10226,18 @@
     "/api/v1/workspaces/{wsId}/docs": {
       "post": {
         "operationId": "DocsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -10285,8 +10296,8 @@
             "name": "tab",
             "required": false,
             "in": "query",
+            "description": "Aba do hub (padrão all).",
             "schema": {
-              "default": "all",
               "type": "string",
               "enum": [
                 "recent",
@@ -10316,6 +10327,16 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -10369,6 +10390,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -10401,6 +10432,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -10445,11 +10486,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Doc enviado para a lixeira."
+            "description": "Doc enviado para a lixeira.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -10472,6 +10530,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -10508,6 +10576,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -10542,6 +10620,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -10578,6 +10666,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -10592,7 +10690,14 @@
         },
         "responses": {
           "200": {
-            "description": "Link público criado ou revogado."
+            "description": "Link público criado ou revogado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareDocResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -10615,6 +10720,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -10659,11 +10774,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Páginas do Doc em ordem manual."
+            "description": "Páginas do Doc em ordem manual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocPagesDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -10686,6 +10818,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -10719,6 +10861,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -10763,11 +10915,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Página excluída com as páginas aninhadas nela."
+            "description": "Página excluída com as páginas aninhadas nela.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -10790,6 +10959,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -10835,6 +11014,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -10899,11 +11088,45 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Comentários da página com as respostas."
+            "description": "Comentários da página com as respostas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PageCommentThreadDto"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Cursor da próxima página; null na última."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -10946,6 +11169,16 @@
             "description": "Cursor retornado em nextCursor.",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -11007,6 +11240,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
@@ -11046,7 +11289,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Doc compartilhado, somente leitura."
+            "description": "Doc compartilhado, somente leitura.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicDocDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -22202,13 +22452,11 @@
           },
           "private": {
             "type": "boolean",
-            "default": false,
-            "description": "Visível apenas para quem criou."
+            "description": "Visível apenas para quem criou (padrão false)."
           },
           "isWiki": {
             "type": "boolean",
-            "default": false,
-            "description": "Doc de referência do local."
+            "description": "Doc de referência do local (padrão false)."
           }
         },
         "required": [
@@ -22333,6 +22581,29 @@
           "public"
         ]
       },
+      "ShareDocResultDto": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "$ref": "#/components/schemas/Doc"
+          },
+          "token": {
+            "type": "string",
+            "nullable": true,
+            "description": "Token do link público; só nesta resposta e null ao revogar."
+          },
+          "url": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL pública do Doc."
+          }
+        },
+        "required": [
+          "doc",
+          "token",
+          "url"
+        ]
+      },
       "CreatePageDto": {
         "type": "object",
         "properties": {
@@ -22380,6 +22651,11 @@
       "DocPage": {
         "type": "object",
         "properties": {
+          "content": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true
+          },
           "workspaceId": {
             "$ref": "#/components/schemas/ObjectId"
           },
@@ -22398,9 +22674,6 @@
           },
           "title": {
             "type": "string"
-          },
-          "content": {
-            "type": "object"
           },
           "contentText": {
             "type": "string",
@@ -22425,16 +22698,30 @@
           }
         },
         "required": [
+          "content",
           "workspaceId",
           "docId",
           "parentPageId",
           "title",
-          "content",
           "contentText",
           "mentionedTaskIds",
           "position",
           "version",
           "updatedBy"
+        ]
+      },
+      "DocPagesDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocPage"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       },
       "UpdatePageDto": {
@@ -22517,9 +22804,33 @@
           "bodyText"
         ]
       },
+      "PageCommentThreadDto": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "$ref": "#/components/schemas/Comment"
+          },
+          "replies": {
+            "description": "Respostas, da mais antiga para a mais recente.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            }
+          }
+        },
+        "required": [
+          "comment",
+          "replies"
+        ]
+      },
       "DocPageVersion": {
         "type": "object",
         "properties": {
+          "content": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true
+          },
           "workspaceId": {
             "$ref": "#/components/schemas/ObjectId"
           },
@@ -22536,9 +22847,6 @@
           "title": {
             "type": "string"
           },
-          "content": {
-            "type": "object"
-          },
           "contentText": {
             "type": "string"
           },
@@ -22552,14 +22860,32 @@
           }
         },
         "required": [
+          "content",
           "workspaceId",
           "docId",
           "pageId",
           "version",
           "title",
-          "content",
           "contentText",
           "createdBy"
+        ]
+      },
+      "PublicDocDto": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "$ref": "#/components/schemas/Doc"
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocPage"
+            }
+          }
+        },
+        "required": [
+          "doc",
+          "pages"
         ]
       },
       "CreateChannelDto": {
