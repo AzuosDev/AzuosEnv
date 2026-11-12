@@ -12,9 +12,6 @@ export const SPRINT_STATE_LABEL: Record<SprintState, string> = {
   closed: 'Fechada',
 };
 
-/** Um dia em milissegundos, para o fim da sprint valer até o fim do último dia. */
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 /**
  * O começo e o fim da sprint são dias, não instantes: a API grava a meia-noite
  * UTC do dia. Lê-los no fuso do navegador puxaria a data para o dia anterior em
@@ -31,14 +28,18 @@ export function sprintState(sprint: ListNode, now = new Date()): SprintState {
     return 'closed';
   }
 
-  const start = sprint.startDate ? new Date(sprint.startDate) : null;
-  const end = sprint.endDate ? new Date(sprint.endDate) : null;
+  // Comparação por dia: a data da sprint é o meio-dia do dia dela, então o
+  // instante de agora deixava a sprint como 'Próxima' até meio-dia do dia em
+  // que ela começa.
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+  const start = sprint.startDate ? sprintDay(sprint.startDate) : null;
+  const end = sprint.endDate ? sprintDay(sprint.endDate) : null;
 
-  if (start && now < start) {
+  if (start && today < start) {
     return 'future';
   }
 
-  if (end && now.getTime() > end.getTime() + DAY_MS) {
+  if (end && today > end) {
     return 'past';
   }
 

@@ -185,13 +185,13 @@ export function SubtasksSection({
               >
                 <button
                   type="button"
-                  aria-label={`Prazo de ${item.name}`}
                   className={cn(
                     'shrink-0 rounded-lg px-1.5 py-1 text-[12.5px] hover:bg-surface-2',
                     DUE_TONE_CLASS[dueTone(item.dueAt)],
                   )}
                 >
                   {formatDue(item.dueAt, item.dueHasTime)}
+                  <span className="sr-only">{`— prazo de ${item.name}`}</span>
                 </button>
               </DuePicker>
 

@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-11-12T11:57:27.190Z",
+        "reason": "CLAUDE.md define --font-display: Inter como fonte do projeto ate a fonte definitiva da Azuos Dev chegar; a pagina offline so espelha o token"
+      }
+    ]
+  }
+}

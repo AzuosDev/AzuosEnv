@@ -292,9 +292,9 @@ function TaskRow({
             'h-9 items-center justify-start rounded-lg px-1 hover:bg-surface-2',
             layout.wide ? 'flex' : 'hidden',
           )}
-          aria-label={`Responsáveis de ${task.name}`}
         >
           <AssigneeStack ids={task.assigneeIds} members={surface.members} />
+          <span className="sr-only">{`Responsáveis de ${task.name}`}</span>
         </button>
       </AssigneesPicker>
 
@@ -308,13 +308,13 @@ function TaskRow({
         <button
           type="button"
           title={formatDueLong(task.dueAt)}
-          aria-label={`Prazo de ${task.name}: ${formatDueLong(task.dueAt)}`}
           className={cn(
             'h-9 truncate rounded-lg px-1 text-right text-[12.5px] hover:bg-surface-2 md:text-left',
             DUE_TONE_CLASS[tone],
           )}
         >
           {formatDue(task.dueAt, task.dueHasTime)}
+          <span className="sr-only">{`— prazo de ${task.name}: ${formatDueLong(task.dueAt)}`}</span>
         </button>
       </DuePicker>
 
@@ -335,9 +335,9 @@ function TaskRow({
             'h-9 items-center gap-1.5 rounded-lg px-1 hover:bg-surface-2',
             layout.wide ? 'flex' : 'hidden',
           )}
-          aria-label={`Prioridade de ${task.name}`}
         >
           <PriorityFlag priority={task.priority} withLabel />
+          <span className="sr-only">{`Prioridade de ${task.name}`}</span>
         </button>
       </PriorityPicker>
     </div>

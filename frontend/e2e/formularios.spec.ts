@@ -136,7 +136,7 @@ test('o envio público cria a tarefa na List de Leads', async ({ browser }) => {
   await page.goto(`/w/${wsId}/l/${listId}`);
   await page.getByRole('button', { name: /^Lista/ }).click();
 
-  await expect(page.getByText(LEAD)).toBeVisible();
+  await expect(page.getByRole('link', { name: LEAD })).toBeVisible();
 });
 
 test('o construtor cabe em 360, 768 e 1280', async () => {

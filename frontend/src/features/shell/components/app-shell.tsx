@@ -1,5 +1,5 @@
 import { useRouterState } from '@tanstack/react-router';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Workspace } from '@/api/types';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { useSession } from '@/features/auth/session';
@@ -24,6 +24,7 @@ export function AppShell({ wsId, workspaces, children }: AppShellProps) {
   const user = useSession();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLButtonElement>(null);
   const navId = activeNavId(pathname, wsId);
   const active = activeTreeTarget(pathname, wsId);
 
@@ -38,6 +39,13 @@ export function AppShell({ wsId, workspaces, children }: AppShellProps) {
 
   return (
     <div className="flex h-dvh w-full overflow-hidden">
+      <a
+        href="#conteudo"
+        /* O not-sr-only zera o padding: o foco devolve o respiro e a altura. */
+        className="sr-only left-3 top-3 z-50 rounded-xl bg-surface-2 text-[13px] font-semibold text-ink shadow-lg ring-2 ring-accent focus:not-sr-only focus:fixed focus:flex focus:h-11 focus:items-center focus:px-4 focus:py-2"
+      >
+        Pular para o conteúdo
+      </a>
       <NavRail wsId={wsId} activeId={navId} />
 
       <aside
@@ -51,11 +59,16 @@ export function AppShell({ wsId, workspaces, children }: AppShellProps) {
         <Topbar
           wsId={wsId}
           user={user}
+          menuRef={menuRef}
           onOpenMenu={() => {
             setMenuOpen(true);
           }}
         />
-        <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden pb-24 md:pb-0">
+        <main
+          id="conteudo"
+          tabIndex={-1}
+          className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden pb-24 outline-none md:pb-0"
+        >
           {children}
         </main>
       </div>
@@ -63,7 +76,16 @@ export function AppShell({ wsId, workspaces, children }: AppShellProps) {
       <BottomNav wsId={wsId} activeId={navId} />
 
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-        <SheetContent side="left" aria-describedby={undefined} className="lg:hidden">
+        <SheetContent
+          side="left"
+          aria-describedby={undefined}
+          className="lg:hidden"
+          onCloseAutoFocus={(event) => {
+            // Sem isto o foco cai no body: o drawer é controlado, sem Trigger.
+            event.preventDefault();
+            menuRef.current?.focus();
+          }}
+        >
           <SheetTitle className="sr-only">Navegação do workspace</SheetTitle>
           <WorkspaceSidebar
             wsId={wsId}

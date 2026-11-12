@@ -23,10 +23,7 @@ export function WorkspaceSwitcher({ wsId, workspaces, onNavigate }: WorkspaceSwi
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label="Trocar de workspace"
-        className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left hover:bg-surface-2"
-      >
+      <DropdownMenuTrigger className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left hover:bg-surface-2">
         <span
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-scene-line bg-scene text-[11px] font-bold text-ink"
           aria-hidden="true"
@@ -40,6 +37,7 @@ export function WorkspaceSwitcher({ wsId, workspaces, onNavigate }: WorkspaceSwi
           <span className="block truncate text-[12px] text-muted">{current?.taskPrefix}</span>
         </span>
         <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+        <span className="sr-only">Trocar de workspace</span>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="start" className="w-64">

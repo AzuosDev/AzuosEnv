@@ -230,8 +230,9 @@ function AssigneesCell({ task }: { task: Task }) {
         });
       }}
     >
-      <button type="button" className={CELL_BUTTON} aria-label={`Responsáveis de ${task.customId}`}>
+      <button type="button" className={CELL_BUTTON}>
         <AssigneeStack ids={task.assigneeIds} members={surface.members} max={2} />
+        <span className="sr-only">{`Responsáveis de ${task.customId}`}</span>
       </button>
     </AssigneesPicker>
   );

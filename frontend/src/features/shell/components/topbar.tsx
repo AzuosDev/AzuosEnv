@@ -1,4 +1,5 @@
 import { Menu, WifiOff } from 'lucide-react';
+import type { RefObject } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import type { AuthUser } from '@/api/types';
@@ -13,6 +14,8 @@ export interface TopbarProps {
   wsId: string;
   user: AuthUser | null;
   onOpenMenu: () => void;
+  /** O drawer devolve o foco para este botão ao fechar. */
+  menuRef?: RefObject<HTMLButtonElement | null>;
 }
 
 /** Aviso discreto de tempo real caído; some sozinho quando o socket volta. */
@@ -36,10 +39,11 @@ function ConnectionBadge() {
 }
 
 /** Topbar: busca, timer ativo, tema e conta. */
-export function Topbar({ wsId, user, onOpenMenu }: TopbarProps) {
+export function Topbar({ wsId, user, onOpenMenu, menuRef }: TopbarProps) {
   return (
     <header className="flex items-center gap-2 border-b border-line bg-paper px-3 py-2.5 md:gap-3 md:px-6">
       <Button
+        ref={menuRef}
         variant="ghost"
         size="icon"
         aria-label="Abrir navegação"

@@ -1,6 +1,6 @@
-# Deploy — Azuos Env (backend)
+# Deploy — Azuos Env
 
-## Imagem
+## Imagem do backend
 
 ```bash
 docker build -t azuos-env-backend ./backend
@@ -15,9 +15,13 @@ healthcheck em `GET /api/v1/health`. Os uploads ficam no volume `/app/storage/up
 
 ```bash
 cp backend/.env.example backend/.env   # preencha os segredos
-docker compose up -d backend           # Mongo externo (Atlas)
+docker compose build                   # backend + frontend
+docker compose up -d backend frontend  # Mongo externo (Atlas)
 docker compose --profile local up -d   # sobe também um Mongo local
 ```
+
+O `frontend` publica a porta 8080 (nginx) e o `backend` a 3000. Em produção os dois
+ficam atrás do proxy/TLS, cada um no seu host.
 
 O serviço `mongo` está no profile `local` e só sobe quando pedido; em produção
 aponte `MONGODB_URI` para o Atlas.
@@ -59,6 +63,61 @@ npm run seed     # workspace Azuos Dev (AZD) com o conteúdo do protótipo
 npm run start:prod
 ```
 
+## Frontend
+
+```bash
+docker build -t azuos-env-frontend --build-arg VITE_API_URL=https://api.azuosdev.com.br ./frontend
+docker run -p 8080:80 azuos-env-frontend
+```
+
+Multi-stage: `node:24` roda `npm run build` (typecheck, Vite e o teto de 250 KB gzip
+da entrada inicial) e a imagem final é um `nginx:1.27-alpine` com os estáticos.
+O `nginx.conf` traz fallback de SPA (`try_files … /index.html`), gzip, cache imutável
+de um ano em `/assets/` e `no-cache` em `index.html`, `sw.js`, `registerSW.js` e
+`manifest.webmanifest` — assim a versão nova chega sem limpar o cache do navegador.
+
+**`VITE_API_URL` é build-arg, não variável de runtime**: a URL entra no bundle. Trocar
+de ambiente significa reconstruir a imagem (ou usar uma tag por ambiente).
+
+### Domínios e cookie
+
+O refresh é um cookie `httpOnly` com `SameSite=Lax` no path `/api/v1/auth`. Para o
+navegador mandá-lo, o app e a API precisam do **mesmo site registrável**:
+
+| | Produção |
+| --- | --- |
+| App | `https://app.azuosdev.com.br` (imagem `frontend`) |
+| API | `https://api.azuosdev.com.br` (imagem `backend`) |
+
+No backend:
+
+```env
+CORS_ORIGINS=https://app.azuosdev.com.br
+APP_URL=https://app.azuosdev.com.br
+COOKIE_SECURE=true
+COOKIE_DOMAIN=.azuosdev.com.br
+```
+
+No build do frontend: `VITE_API_URL=https://api.azuosdev.com.br`.
+
+Sem `COOKIE_DOMAIN` o cookie fica preso em `api.azuosdev.com.br` e o refresh silencioso
+falha — a sessão cai no primeiro reload. Domínios de sites diferentes (por exemplo
+`app.azuos.dev` com `api.outracoisa.com`) exigiriam `SameSite=None`, fora do escopo.
+
+### PWA
+
+`vite-plugin-pwa` gera `sw.js` e `manifest.webmanifest` no build. O Service Worker
+guarda o shell, os assets e as fontes do Google; **nenhuma resposta da API é cacheada**
+(`navigateFallbackDenylist` cobre `/api/` e não há runtime cache do domínio da API).
+Sem rede, a navegação cai no shell e, se nem ele estiver em cache, em `offline.html`.
+Exige HTTPS (ou `localhost`): sem TLS o navegador não registra o Service Worker e o app
+não fica instalável.
+
+### Relatório de bundle
+
+Todo `npm run build` escreve `frontend/bundle-stats.html` (treemap com gzip) e falha se
+a entrada inicial passar de 250 KB gzip (hoje ~195 KB).
+
 ## Checklist de produção
 
 - `COOKIE_SECURE=true`, `ENCRYPTION_KEY` próprio e segredos JWT com 32+ caracteres.
@@ -69,3 +128,5 @@ npm run start:prod
 - Uma instância só: Socket.IO, os crons e os caches de automação vivem em memória
   (escalar horizontalmente exige adapter Redis e eleição de cron).
 - Contrato do front: `npm run openapi` regenera `docs/openapi.json`.
+- Frontend: `VITE_API_URL` apontando para a API, `COOKIE_DOMAIN` no domínio comum e
+  HTTPS nos dois hosts (sem isso não há Service Worker nem sessão persistente).

@@ -211,10 +211,11 @@ export function TaskPanelHeader({
 
       <div className="flex flex-wrap items-center gap-2">
         <StatusPicker statuses={statuses} value={task.statusId} onSelect={onStatus}>
-          <button type="button" aria-label="Trocar o status da tarefa">
+          <button type="button">
             <StatusPill tone={statusTone(task.statusGroup, status?.color)}>
               {status?.name ?? 'Status'}
             </StatusPill>
+            <span className="sr-only">Trocar o status da tarefa</span>
           </button>
         </StatusPicker>
 

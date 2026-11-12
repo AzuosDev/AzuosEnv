@@ -56,9 +56,9 @@ export function TagPicker({ wsId, spaceId, value, onChange }: TagPickerProps) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label="Escolher tags"
           className="flex min-h-9 w-full flex-wrap items-center gap-1 rounded-lg px-1.5 py-1 text-left hover:bg-surface-2"
         >
+          <span className="sr-only">Escolher tags</span>
           {value.length === 0 ? (
             <span className="flex items-center gap-1.5 text-[13px] text-muted">
               <TagIcon className="h-3.5 w-3.5" aria-hidden="true" />

@@ -1,7 +1,10 @@
 import { fileURLToPath, URL } from 'node:url';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vitest/config';
+import { VitePWA } from 'vite-plugin-pwa';
+import { pwaOptions } from './pwa.config';
 
 export default defineConfig({
   plugins: [
@@ -12,6 +15,14 @@ export default defineConfig({
       autoCodeSplitting: true,
     }),
     react(),
+    VitePWA(pwaOptions),
+    visualizer({
+      filename: 'bundle-stats.html',
+      template: 'treemap',
+      gzipSize: true,
+      brotliSize: false,
+      open: false,
+    }),
   ],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },

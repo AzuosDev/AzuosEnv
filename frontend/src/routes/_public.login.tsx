@@ -23,7 +23,7 @@ const schema = z.object({ email: emailField, password: currentPasswordField });
 type Values = z.infer<typeof schema>;
 
 function LoginPage() {
-  const { next } = Route.useSearch();
+  const { next, expirado } = Route.useSearch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [formError, setFormError] = useState<string | null>(null);
@@ -65,6 +65,9 @@ function LoginPage() {
     >
       <form className="space-y-4" onSubmit={submit} noValidate>
         {formError ? <FormAlert>{formError}</FormAlert> : null}
+        {!formError && expirado ? (
+          <FormAlert>Sua sessão expirou. Entre de novo para continuar.</FormAlert>
+        ) : null}
 
         <Field id="email" label="E-mail" error={errors.email?.message}>
           <IconInput
@@ -101,8 +104,9 @@ function LoginPage() {
 }
 
 export const Route = createFileRoute('/_public/login')({
-  validateSearch: (search: Record<string, unknown>): { next?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { next?: string; expirado?: boolean } => ({
     next: typeof search.next === 'string' ? search.next : undefined,
+    expirado: search.expirado === true || search.expirado === 'true' ? true : undefined,
   }),
   component: LoginPage,
 });

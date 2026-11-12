@@ -116,9 +116,9 @@ export function TaskLine({
         <button
           type="button"
           className="hidden h-9 min-w-0 items-center rounded-lg px-1 hover:bg-surface-2 md:flex"
-          aria-label={`Responsáveis de ${task.name}`}
         >
           <AssigneeStack ids={task.assigneeIds} members={members} max={2} />
+          <span className="sr-only">{`Responsáveis de ${task.name}`}</span>
         </button>
       </AssigneesPicker>
 
@@ -148,13 +148,13 @@ export function TaskLine({
         <button
           type="button"
           title={formatDueLong(task.dueAt)}
-          aria-label={`Prazo de ${task.name}: ${formatDueLong(task.dueAt)}`}
           className={cn(
             'h-9 min-w-0 truncate rounded-lg px-1 text-right text-[12.5px] hover:bg-surface-2',
             DUE_TONE_CLASS[tone],
           )}
         >
           {formatDue(task.dueAt, task.dueHasTime)}
+          <span className="sr-only">{`— prazo de ${task.name}: ${formatDueLong(task.dueAt)}`}</span>
         </button>
       </DuePicker>
     </li>

@@ -115,7 +115,6 @@ export function CommandPalette({ wsId }: { wsId: string }) {
     <>
       <button
         type="button"
-        aria-label="Buscar"
         aria-keyshortcuts="Control+K"
         onClick={() => {
           setOpen(true);

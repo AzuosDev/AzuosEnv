@@ -8,7 +8,7 @@ import type { DocHubTab, WorkspaceDoc } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { docsQuery } from '../api';
 import { NewDocDialog } from './new-doc-dialog';
 
@@ -99,41 +99,43 @@ export function DocsHub({ wsId }: { wsId: string }) {
             </TabsTrigger>
           ))}
         </TabsList>
-      </Tabs>
 
-      {docs.isPending ? <Spinner label="Carregando Docs" /> : null}
+        <TabsContent value={tab} className="flex min-h-0 flex-col gap-3">
+          {docs.isPending ? <Spinner label="Carregando Docs" /> : null}
 
-      {!docs.isPending && items.length === 0 ? (
-        <EmptyState
-          title="Nenhum Doc por aqui"
-          description="Crie o primeiro Doc deste workspace para reunir processos, escopos e modelos."
-          action={
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setCreating(true);
-              }}
-            >
-              <Plus className="h-4 w-4" aria-hidden="true" /> Novo Doc
-            </Button>
-          }
-        />
-      ) : null}
-
-      {items.length > 0 ? (
-        <ul className="grid min-h-0 grid-cols-1 gap-3 overflow-y-auto sm:grid-cols-2 xl:grid-cols-3">
-          {items.map((doc) => (
-            <DocCard
-              key={doc.id}
-              doc={doc}
-              onOpen={() => {
-                open(doc.id);
-              }}
+          {!docs.isPending && items.length === 0 ? (
+            <EmptyState
+              title="Nenhum Doc por aqui"
+              description="Crie o primeiro Doc deste workspace para reunir processos, escopos e modelos."
+              action={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setCreating(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4" aria-hidden="true" /> Novo Doc
+                </Button>
+              }
             />
-          ))}
-        </ul>
-      ) : null}
+          ) : null}
+
+          {items.length > 0 ? (
+            <ul className="grid min-h-0 grid-cols-1 gap-3 overflow-y-auto sm:grid-cols-2 xl:grid-cols-3">
+              {items.map((doc) => (
+                <DocCard
+                  key={doc.id}
+                  doc={doc}
+                  onOpen={() => {
+                    open(doc.id);
+                  }}
+                />
+              ))}
+            </ul>
+          ) : null}
+        </TabsContent>
+      </Tabs>
 
       <NewDocDialog
         wsId={wsId}

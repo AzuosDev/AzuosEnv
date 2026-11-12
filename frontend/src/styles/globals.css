@@ -389,3 +389,13 @@
     pointer-events: none;
   }
 }
+
+@layer utilities {
+  /* O texto só para leitor de tela é absoluto e, sem âncora, fica na posição
+     estática: dentro de uma área rolável (tabela, Gantt) isso esticava a página
+     para os lados. Ancorado no canto do contêiner, o scrollWidth não cresce. */
+  .sr-only:not(:focus) {
+    inset-block-start: 0;
+    inset-inline-start: 0;
+  }
+}

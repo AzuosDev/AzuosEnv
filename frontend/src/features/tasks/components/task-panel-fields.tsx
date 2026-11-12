@@ -209,8 +209,9 @@ export function TaskPanelFields({
             onPatch({ assigneeIds });
           }}
         >
-          <button type="button" aria-label="Escolher responsáveis" className={triggerClass}>
+          <button type="button" className={triggerClass}>
             <AssigneeStack ids={task.assigneeIds} members={members} max={4} />
+            <span className="sr-only">Escolher responsáveis</span>
           </button>
         </AssigneesPicker>
       </Row>
@@ -222,12 +223,13 @@ export function TaskPanelFields({
             onPatch({ priority: priority as TaskPriority | null });
           }}
         >
-          <button type="button" aria-label="Escolher prioridade" className={triggerClass}>
+          <button type="button" className={triggerClass}>
             {task.priority ? (
               <PriorityFlag priority={task.priority} withLabel />
             ) : (
               <span className="text-muted">Sem prioridade</span>
             )}
+            <span className="sr-only">Escolher prioridade</span>
           </button>
         </PriorityPicker>
       </Row>

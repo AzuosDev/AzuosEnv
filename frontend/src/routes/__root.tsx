@@ -1,6 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
+import { OfflineBanner } from '@/components/offline-banner';
+import { RouteError } from '@/components/route-error';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Toaster } from '@/components/ui/toast';
@@ -16,6 +18,7 @@ function Shell({ children }: { children: ReactNode }) {
     <ThemeProvider>
       <TooltipProvider delayDuration={200}>
         {children}
+        <OfflineBanner />
         <Toaster />
       </TooltipProvider>
     </ThemeProvider>
@@ -49,27 +52,12 @@ function NotFound() {
   );
 }
 
-function ErrorBoundaryView({ error }: { error: unknown }) {
-  const message = error instanceof Error ? error.message : '';
-
+function RootError({ error, reset }: { error: unknown; reset?: () => void }) {
   return (
     <Shell>
-      <main className="mx-auto flex min-h-dvh max-w-2xl items-center px-4">
-        <EmptyState
-          title="Algo deu errado"
-          description={message || 'Tente novamente em alguns instantes.'}
-          action={
-            <Button
-              variant="ghost"
-              onClick={() => {
-                window.location.reload();
-              }}
-            >
-              Recarregar
-            </Button>
-          }
-          className="w-full"
-        />
+      {/* Fora do shell não existe <main>: o erro da raiz traz o seu. */}
+      <main className="flex min-h-dvh items-center">
+        <RouteError error={error} reset={reset} />
       </main>
     </Shell>
   );
@@ -78,5 +66,5 @@ function ErrorBoundaryView({ error }: { error: unknown }) {
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   notFoundComponent: NotFound,
-  errorComponent: ErrorBoundaryView,
+  errorComponent: RootError,
 });

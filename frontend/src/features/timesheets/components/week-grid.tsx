@@ -139,7 +139,8 @@ export function WeekGrid({
                 scope="col"
                 className={cn(
                   'px-1 py-2.5 text-center text-[12px] font-semibold',
-                  isWeekend(day) ? 'text-muted/70' : 'text-muted',
+                  'text-muted',
+                  isWeekend(day) ? 'bg-surface-2/60' : '',
                 )}
               >
                 {dayLabel(day)}
