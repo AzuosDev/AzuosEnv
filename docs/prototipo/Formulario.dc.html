@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Formulário — Pedir orçamento</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.t-dark{color-scheme:dark;--paper:11 7 20;--paper-2:16 11 28;--surface:20 16 31;--surface-2:28 22 43;--line:44 36 62;--ink:245 243 249;--body:194 186 210;--muted:156 147 173;--accent:167 139 250;--signal:205 190 255;--signal-2:167 139 250;--on-signal:22 10 46;--scene:33 19 66;--scene-line:72 50 124;--dot:167 139 250;--success:34 197 94;--warning:245 158 11;--danger:239 68 68;--info:96 165 250}
+.t-light{color-scheme:light;--paper:248 246 252;--paper-2:240 236 249;--surface:255 255 255;--surface-2:245 241 252;--line:224 217 238;--ink:22 14 38;--body:72 63 94;--muted:101 92 122;--accent:109 40 217;--signal:139 92 246;--signal-2:109 40 217;--on-signal:255 255 255;--scene:236 228 255;--scene-line:212 198 250;--dot:124 58 237;--success:22 163 74;--warning:217 119 6;--danger:220 38 38;--info:37 99 235}
+.app{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:rgb(var(--paper));color:rgb(var(--ink))}
+.app button,.app input,.app textarea,.app select{font:inherit;color:inherit}
+.app button{cursor:pointer}
+.app ::selection{background:rgb(var(--accent) / .35);color:rgb(var(--ink))}
+.app input,.app textarea{caret-color:rgb(var(--accent))}
+.app :focus-visible{outline:2px solid rgb(var(--accent));outline-offset:2px}
+a{color:rgb(var(--accent))}a:hover{color:rgb(var(--signal))}
+.btn-signal{background-image:linear-gradient(100deg,rgb(var(--signal)) 0%,rgb(var(--signal-2)) 100%);color:rgb(var(--on-signal));box-shadow:0 10px 30px -12px rgb(var(--signal-2) / .7);border:0}
+.ghost{background:transparent;border:1px solid rgb(var(--line));color:rgb(var(--body))}
+.ghost:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.field{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid rgb(var(--line));background:rgb(var(--surface));padding:12px 14px}
+.dot-grid{background-image:radial-gradient(rgb(var(--dot) / .22) 1px,transparent 1.2px);background-size:14px 14px}
+.stage{background:radial-gradient(70% 60% at 12% 0%,rgb(var(--scene) / .9) 0%,transparent 70%),radial-gradient(120% 90% at 85% 100%,rgb(var(--scene)) 0%,transparent 65%),linear-gradient(160deg,rgb(var(--surface)) 0%,rgb(var(--scene) / .55) 55%,rgb(var(--scene) / .85) 100%)}
+.heading{font-weight:600;letter-spacing:-0.02em;line-height:1.02;color:rgb(var(--ink))}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{transition-duration:.01ms !important}}
+</style>
+</helmet>
+<div class="app {{themeClass}}" style="min-height: 100vh; box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; max-width: 1200px; width: 100%; margin: 0 auto;">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: rgb(var(--body)); height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid rgb(var(--line));">← Voltar para Tarefas</a>
+<span style="flex: 1;"></span>
+<span style="font-size: 12.5px; color: rgb(var(--muted));">View Formulário · Comercial › Leads</span>
+<button class="ghost" onClick="{{toggleTheme}}" aria-label="{{themeLabel}}" title="{{themeLabel}}" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{themeIcon}}"></path></svg>
+</button>
+</header>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; max-width: 1200px; width: 100%; margin: 0 auto; align-items: flex-start;">
+
+<section aria-label="Formulário público" class="stage" style="flex: 999 1 520px; min-width: 0; position: relative; border-radius: 24px; border: 1px solid rgb(var(--scene-line)); overflow: hidden;">
+<div class="dot-grid" aria-hidden="true" style="position: absolute; inset: 0; opacity: .6;"></div>
+<div style="position: relative; padding: 40px clamp(20px, 5vw, 56px); display: flex; flex-direction: column; gap: 20px; max-width: 620px;">
+<div style="display: flex; align-items: center; gap: 10px;">
+<div class="btn-signal" aria-hidden="true" style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px;">&lt;/&gt;</div>
+<span style="font-weight: 600;">Azuos Dev</span>
+</div>
+
+<sc-if value="{{isForm}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 20px;">
+<div style="display: flex; flex-direction: column; gap: 10px;">
+<h1 class="heading" style="margin: 0; font-size: 36px;">Conte o que você precisa.</h1>
+<p style="margin: 0; color: rgb(var(--body));">Retornamos com os próximos passos. Algumas linhas já bastam.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<label for="f-nome" style="font-weight: 600; font-size: 13px;">Nome <span style="color: rgb(var(--muted)); font-weight: 400;">obrigatório</span></label>
+<input id="f-nome" class="field" value="{{nome}}" onInput="{{setNome}}" autocomplete="name" style="height: 48px;">
+<sc-if value="{{errNome}}" hint-placeholder-val="{{false}}"><span style="font-size: 12.5px; color: rgb(var(--danger));">Informe seu nome.</span></sc-if>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<label for="f-contato" style="font-weight: 600; font-size: 13px;">E-mail ou WhatsApp <span style="color: rgb(var(--muted)); font-weight: 400;">obrigatório</span></label>
+<input id="f-contato" class="field" value="{{contato}}" onInput="{{setContato}}" style="height: 48px;">
+<sc-if value="{{errContato}}" hint-placeholder-val="{{false}}"><span style="font-size: 12.5px; color: rgb(var(--danger));">Informe um e-mail ou WhatsApp para retorno.</span></sc-if>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<label for="f-msg" style="font-weight: 600; font-size: 13px;">Mensagem</label>
+<textarea id="f-msg" class="field" rows="5" maxlength="1500" placeholder="Conte o processo e o que ele trava hoje." value="{{msg}}" onInput="{{setMsg}}" style="resize: vertical;"></textarea>
+<span style="font-size: 12px; color: rgb(var(--muted)); align-self: flex-end;">{{count}} / 1.500</span>
+</div>
+<button class="btn-signal" onClick="{{submit}}" style="height: 52px; border-radius: 14px; font-weight: 600; font-size: 15px;">Enviar mensagem</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 16px;" role="status">
+<h1 class="heading" style="margin: 0; font-size: 36px;">Recebido, {{firstName}}.</h1>
+<p style="margin: 0; color: rgb(var(--body));">Retornamos em breve pelo contato informado.</p>
+<div style="border-radius: 14px; border: 1px solid rgb(var(--line)); background: rgb(var(--surface)); padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 12px; color: rgb(var(--muted));">Visto pela equipe Azuos — tarefa criada automaticamente</span>
+<span style="font-weight: 600;">AZD-150 · Lead: {{nomeShow}}</span>
+<span style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 12.5px;">
+<span style="height: 24px; padding: 0 10px; border-radius: 999px; display: inline-flex; align-items: center; background: rgb(var(--success) / .16); font-weight: 600;">Lead</span>
+<span style="color: rgb(var(--body));">Comercial › Leads · Responsável: Felipe · Contato: {{contatoShow}}</span>
+</span>
+</div>
+<button class="ghost" onClick="{{reset}}" style="height: 44px; border-radius: 12px; align-self: flex-start; padding: 0 16px;">Enviar outra resposta</button>
+</div>
+</sc-if>
+</div>
+</section>
+
+<aside aria-label="Configuração do formulário" style="flex: 1 1 320px; min-width: 0; border-radius: 20px; border: 1px solid rgb(var(--line)); background: rgb(var(--surface)); padding: 20px; display: flex; flex-direction: column; gap: 18px; box-sizing: border-box;">
+<h2 style="margin: 0; font-size: 16px; font-weight: 600;">Configuração</h2>
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<label for="cfg-dest" style="font-size: 12.5px; color: rgb(var(--muted));">Cria tarefa em</label>
+<select id="cfg-dest" class="field" style="height: 44px; padding: 0 12px;"><option>Comercial › Leads</option><option>Comercial › Orçamentos</option><option>Clientes › Suporte</option></select>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<label for="cfg-resp" style="font-size: 12.5px; color: rgb(var(--muted));">Responsável padrão</label>
+<select id="cfg-resp" class="field" style="height: 44px; padding: 0 12px;"><option>Felipe de Souza</option><option>Ezequiel Santos</option></select>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 12.5px; color: rgb(var(--muted));">Mapeamento de campos</span>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px 10px; font-size: 13px; align-items: center;">
+<span>Nome</span><span style="color: rgb(var(--muted));">→</span><span style="color: rgb(var(--body));">Nome da tarefa</span>
+<span>E-mail ou WhatsApp</span><span style="color: rgb(var(--muted));">→</span><span style="color: rgb(var(--body));">Campo Contato</span>
+<span>Mensagem</span><span style="color: rgb(var(--muted));">→</span><span style="color: rgb(var(--body));">Descrição</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 12.5px; color: rgb(var(--muted));">Ao enviar</span>
+<label style="display: flex; align-items: center; gap: 10px; min-height: 32px;"><input type="checkbox" checked="{{notify}}" onChange="{{toggleNotify}}" style="width: 18px; height: 18px; accent-color: rgb(var(--accent)); margin: 0;">Notificar o responsável no Inbox</label>
+<label style="display: flex; align-items: center; gap: 10px; min-height: 32px;"><input type="checkbox" checked="{{whats}}" onChange="{{toggleWhats}}" style="width: 18px; height: 18px; accent-color: rgb(var(--accent)); margin: 0;">Enviar aviso no WhatsApp da equipe</label>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<span style="font-size: 12.5px; color: rgb(var(--muted));">Link público</span>
+<div style="display: flex; gap: 8px;">
+<span style="flex: 1; min-width: 0; height: 40px; display: flex; align-items: center; padding: 0 12px; border-radius: 10px; background: rgb(var(--surface-2)); font-size: 12.5px; color: rgb(var(--body)); overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">[link público do formulário]</span>
+<button class="ghost" onClick="{{copy}}" style="height: 40px; padding: 0 12px; border-radius: 10px;">{{copyLabel}}</button>
+</div>
+<span style="font-size: 12px; color: rgb(var(--muted));">Também pode ser incorporado no site da Azuos (seção de contato).</span>
+</div>
+</aside>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["escuro","claro"],"default":"escuro"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const self = this;
+    const s = this.state || {};
+    let stored = null;
+    try { stored = window.localStorage.getItem('azuos-theme'); } catch (e) {}
+    const theme = s.theme ?? stored ?? (this.props.tema === 'claro' ? 'light' : 'dark');
+    const nome = s.nome ?? '';
+    const contato = s.contato ?? '';
+    const msg = s.msg ?? '';
+    const tried = !!s.tried;
+    const done = !!s.done;
+    const P = {
+      sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      moon: 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z'
+    };
+    return {
+      themeClass: theme === 'light' ? 't-light' : 't-dark',
+      themeIcon: theme === 'light' ? P.moon : P.sun,
+      themeLabel: theme === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro',
+      toggleTheme: () => { const n = theme === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('azuos-theme', n); } catch (e) {} self.setState({ theme: n }); },
+      nome: nome, contato: contato, msg: msg,
+      count: msg.length.toLocaleString('pt-BR'),
+      setNome: (e) => self.setState({ nome: e.target.value }),
+      setContato: (e) => self.setState({ contato: e.target.value }),
+      setMsg: (e) => self.setState({ msg: e.target.value }),
+      errNome: tried && !nome.trim(),
+      errContato: tried && !contato.trim(),
+      isForm: !done, isDone: done,
+      firstName: nome.trim().split(' ')[0] || '',
+      nomeShow: nome.trim(), contatoShow: contato.trim(),
+      submit: () => { if (!nome.trim() || !contato.trim()) { self.setState({ tried: true }); return; } self.setState({ done: true, tried: false }); },
+      reset: () => self.setState({ done: false, nome: '', contato: '', msg: '', tried: false }),
+      notify: s.notify ?? true, whats: s.whats ?? false,
+      toggleNotify: () => self.setState({ notify: !(s.notify ?? true) }),
+      toggleWhats: () => self.setState({ whats: !(s.whats ?? false) }),
+      copyLabel: s.copied ? 'Copiado' : 'Copiar',
+      copy: () => self.setState({ copied: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

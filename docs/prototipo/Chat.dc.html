@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Azuos Env — Chat</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.t-dark{color-scheme:dark;--paper:11 7 20;--paper-2:16 11 28;--surface:20 16 31;--surface-2:28 22 43;--line:44 36 62;--ink:245 243 249;--body:194 186 210;--muted:156 147 173;--accent:167 139 250;--signal:205 190 255;--signal-2:167 139 250;--on-signal:22 10 46;--scene:33 19 66;--scene-line:72 50 124;--dot:167 139 250;--success:34 197 94;--warning:245 158 11;--danger:239 68 68;--info:96 165 250}
+.t-light{color-scheme:light;--paper:248 246 252;--paper-2:240 236 249;--surface:255 255 255;--surface-2:245 241 252;--line:224 217 238;--ink:22 14 38;--body:72 63 94;--muted:101 92 122;--accent:109 40 217;--signal:139 92 246;--signal-2:109 40 217;--on-signal:255 255 255;--scene:236 228 255;--scene-line:212 198 250;--dot:124 58 237;--success:22 163 74;--warning:217 119 6;--danger:220 38 38;--info:37 99 235}
+.app{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:rgb(var(--paper));color:rgb(var(--ink));scrollbar-color:rgb(var(--line)) rgb(var(--paper))}
+.app button,.app input,.app textarea,.app select{font:inherit;color:inherit}
+.app button{cursor:pointer}
+.app ::selection{background:rgb(var(--accent) / .35);color:rgb(var(--ink))}
+.app input,.app textarea{caret-color:rgb(var(--accent))}
+.app :focus-visible{outline:2px solid rgb(var(--accent));outline-offset:2px}
+a{color:rgb(var(--accent))}a:hover{color:rgb(var(--signal))}
+.btn-signal{background-image:linear-gradient(100deg,rgb(var(--signal)) 0%,rgb(var(--signal-2)) 100%);color:rgb(var(--on-signal));box-shadow:0 10px 30px -12px rgb(var(--signal-2) / .7);border:0}
+.ghost{background:transparent;border:1px solid rgb(var(--line));color:rgb(var(--body))}
+.ghost:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.nb{background:transparent;border:0;color:rgb(var(--muted))}
+.nb:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.msg:hover{background:rgb(var(--surface-2) / .6)}
+.heading{font-weight:600;letter-spacing:-0.02em;line-height:1.02;color:rgb(var(--ink))}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ellip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</helmet>
+<div class="app {{themeClass}}" style="min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+<nav aria-label="Navegação global" style="flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; background: rgb(var(--paper-2)); border-right: 1px solid rgb(var(--line)); box-sizing: border-box;">
+<a href="Main.dc.html" class="btn-signal" aria-label="Azuos Env — início" style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; margin-bottom: 10px; text-decoration: none;">&lt;/&gt;</a>
+<sc-for list="{{gnav}}" as="g" hint-placeholder-count="10">
+<a class="nb" href="{{g.href}}" aria-label="{{g.label}}" title="{{g.label}}" aria-current="{{g.current}}" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{g.style}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{g.d}}"></path></svg>
+</a>
+</sc-for>
+<span style="flex: 1;"></span>
+<a class="nb" href="Configuracoes.dc.html" aria-label="Configurações" title="Configurações" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{settingsStyle}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{gearIcon}}"></path></svg>
+</a>
+</nav>
+
+<aside aria-label="Canais e mensagens diretas" style="flex: 0 1 264px; min-width: 220px; box-sizing: border-box; padding: 16px 12px; background: rgb(var(--paper-2)); border-right: 1px solid rgb(var(--line)); display: flex; flex-direction: column; gap: 18px;">
+<div style="display: flex; align-items: center; gap: 8px; padding: 0 8px;">
+<h1 class="heading" style="margin: 0; font-size: 20px; flex: 1;">Chat</h1>
+<span style="font-size: 11px; color: rgb(var(--muted)); border: 1px solid rgb(var(--line)); border-radius: 999px; padding: 2px 8px;">Exemplo</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px;">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--muted)); padding: 0 8px 6px;">Canais</span>
+<sc-for list="{{channels}}" as="ch" hint-placeholder-count="5">
+<button class="nb" onClick="{{ch.pick}}" aria-current="{{ch.current}}" style="height: 40px; border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 10px; text-align: left; {{ch.style}}">
+<span style="color: rgb(var(--muted));">#</span><span class="ellip" style="flex: 1;">{{ch.name}}</span>
+<sc-if value="{{ch.hasUnread}}" hint-placeholder-val="{{false}}"><span style="min-width: 20px; height: 20px; border-radius: 999px; padding: 0 6px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: rgb(var(--accent)); color: rgb(var(--on-signal));">{{ch.unread}}</span></sc-if>
+</button>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px;">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--muted)); padding: 0 8px 6px;">Mensagens diretas</span>
+<sc-for list="{{dms}}" as="ch" hint-placeholder-count="1">
+<button class="nb" onClick="{{ch.pick}}" aria-current="{{ch.current}}" style="height: 40px; border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 10px; text-align: left; {{ch.style}}">
+<span style="width: 22px; height: 22px; border-radius: 50%; background: rgb(var(--scene)); border: 1px solid rgb(var(--scene-line)); display: inline-flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 700; color: rgb(var(--ink));">{{ch.initials}}</span><span class="ellip" style="flex: 1;">{{ch.name}}</span>
+<sc-if value="{{ch.hasUnread}}" hint-placeholder-val="{{false}}"><span style="min-width: 20px; height: 20px; border-radius: 999px; padding: 0 6px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: rgb(var(--accent)); color: rgb(var(--on-signal));">{{ch.unread}}</span></sc-if>
+</button>
+</sc-for>
+</div>
+</aside>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; min-height: 100vh;">
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgb(var(--line));">
+<div style="display: flex; flex-direction: column; gap: 2px; flex: 1 1 240px; min-width: 0;">
+<span style="font-weight: 600; font-size: 16px;">{{title}}</span>
+<span class="ellip" style="font-size: 12.5px; color: rgb(var(--muted));">{{desc}}</span>
+</div>
+<button class="ghost" style="height: 36px; padding: 0 12px; border-radius: 8px;">Fixados</button>
+<button class="ghost" style="height: 36px; padding: 0 12px; border-radius: 8px;">Membros · 2</button>
+<button class="ghost" onClick="{{toggleTheme}}" aria-label="{{themeLabel}}" title="{{themeLabel}}" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{themeIcon}}"></path></svg></button>
+<div role="img" aria-label="Felipe de Souza" style="width: 36px; height: 36px; border-radius: 50%; background: rgb(var(--scene)); border: 1px solid rgb(var(--scene-line)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">FS</div>
+</header>
+
+<section aria-label="Mensagens" style="flex: 1; padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 2px;">
+<sc-for list="{{messages}}" as="m" hint-placeholder-count="3">
+<div class="msg" style="display: flex; gap: 12px; padding: 10px 8px; border-radius: 10px;">
+<span style="width: 36px; height: 36px; flex: none; border-radius: 50%; background: rgb(var(--scene)); border: 1px solid rgb(var(--scene-line)); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;" aria-hidden="true">{{m.who}}</span>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+<span style="font-size: 13px;"><strong style="font-weight: 600;">{{m.name}}</strong> <span style="color: rgb(var(--muted)); font-size: 12px;">{{m.when}}</span></span>
+<span style="color: rgb(var(--body)); line-height: 1.5;">{{m.text}}</span>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 2px;">
+<sc-if value="{{m.hasThread}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: rgb(var(--accent)); font-weight: 500;">{{m.thread}}</span></sc-if>
+<sc-if value="{{m.hasTask}}" hint-placeholder-val="{{false}}"><a href="Main.dc.html" style="font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: rgb(var(--success) / 0.16); color: rgb(var(--ink)); text-decoration: none;">Tarefa {{m.task}} criada · abrir</a></sc-if>
+<sc-if value="{{m.canTask}}" hint-placeholder-val="{{true}}"><button class="ghost" onClick="{{m.toTask}}" style="height: 28px; padding: 0 10px; border-radius: 8px; font-size: 12px;">Criar tarefa</button></sc-if>
+<button class="ghost" style="height: 28px; padding: 0 10px; border-radius: 8px; font-size: 12px;">Responder em thread</button>
+</div>
+</div>
+</div>
+</sc-for>
+</section>
+
+<div style="padding: 12px 24px 20px; border-top: 1px solid rgb(var(--line));">
+<label for="msg" class="sr">Mensagem para {{title}}</label>
+<div style="border: 1px solid rgb(var(--line)); border-radius: 12px; background: rgb(var(--surface)); padding: 8px; display: flex; flex-direction: column; gap: 8px;">
+<textarea id="msg" rows="2" placeholder="Mensagem para {{title}} · @ menciona, / comandos" value="{{draft}}" onInput="{{setDraft}}" style="border: 0; background: transparent; resize: none; outline: none; padding: 4px 6px;"></textarea>
+<div style="display: flex; align-items: center; gap: 8px;">
+<button class="nb" aria-label="Anexar arquivo" title="Anexar arquivo" style="width: 32px; height: 32px; border-radius: 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"></path></svg></button>
+<span style="flex: 1;"></span>
+<button class="btn-signal" onClick="{{send}}" style="height: 36px; padding: 0 16px; border-radius: 10px; font-weight: 600;">Enviar</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["escuro","claro"],"default":"escuro"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  shell(active) {
+    const self = this;
+    const s = this.state || {};
+    let stored = null;
+    try { stored = window.localStorage.getItem('azuos-theme'); } catch (e) {}
+    const theme = s.theme || stored || (this.props.tema === 'claro' ? 'light' : 'dark');
+    const NAV = [
+      ['tarefas', 'Tarefas', 'Main.dc.html', 'M9 11l3 3 8-8M20 12v7H4V5h11'],
+      ['planner', 'Planner', 'Planner.dc.html', 'M4 6h16v15H4zM4 10h16M8 3v4M16 3v4'],
+      ['chat', 'Chat', 'Chat.dc.html', 'M4 5h16v11H9l-5 4z'],
+      ['docs', 'Docs', 'Docs.dc.html', 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7'],
+      ['dash', 'Dashboards', 'Dashboards.dc.html', 'M4 20V10M10 20V4M16 20v-7M2 20h20'],
+      ['time', 'Timesheets', 'Timesheets.dc.html', 'M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'],
+      ['metas', 'Metas', 'Metas.dc.html', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z'],
+      ['auto', 'Automações', 'Automacoes.dc.html', 'M13 2 4 14h7l-1 8 9-12h-7z'],
+      ['wb', 'Whiteboard', 'Whiteboard.dc.html', 'M3 4h18v12H3zM8 20l4-4 4 4'],
+      ['ia', 'IA', 'IA.dc.html', 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z']
+    ];
+    const on = 'background: rgb(var(--accent) / 0.16); color: rgb(var(--ink));';
+    return {
+      themeClass: theme === 'light' ? 't-light' : 't-dark',
+      themeIcon: theme === 'light' ? 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z' : 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      themeLabel: theme === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro',
+      toggleTheme: () => { const n = theme === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('azuos-theme', n); } catch (e) {} self.setState({ theme: n }); },
+      gnav: NAV.map(i => ({ label: i[1], href: i[2], d: i[3], current: i[0] === active ? 'page' : 'false', style: i[0] === active ? on : '' })),
+      settingsStyle: active === 'config' ? on : '',
+      gearIcon: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z'
+    };
+  }
+  seed() {
+    return {
+      geral: [{ id: 1, who: 'FS', when: 'seg, 08:30', text: 'Bom dia! A Sprint 3 começou: foco total no PDV da Cênio Construções.' }],
+      dev: [
+        { id: 2, who: 'ES', when: 'hoje, 09:10', text: 'Subi o PR da sincronização PouchDB ↔ CouchDB. Conflitos agora resolvem pela revisão mais recente.', thread: 2 },
+        { id: 3, who: 'FS', when: 'hoje, 09:25', text: 'Reviso depois da daily. Precisamos testar com duas máquinas sem conexão.' },
+        { id: 4, who: 'ES', when: 'hoje, 10:02', text: 'Estoque negativo: bloqueio no front e valido também no sync?' }
+      ],
+      comercial: [
+        { id: 5, who: 'ES', when: 'hoje, 08:40', text: 'Chegou lead pela landing page: loja de autopeças querendo controle de estoque.' },
+        { id: 6, who: 'FS', when: 'hoje, 08:55', text: 'Marca a reunião de diagnóstico; mando a proposta depois.' }
+      ],
+      cenio: [
+        { id: 7, who: 'FS', when: 'ontem, 16:30', text: 'Cupom não fiscal pronto para homologação na impressora da loja.' },
+        { id: 8, who: 'ES', when: 'ontem, 17:05', text: 'Reunião de homologação marcada para terça, 14h.' }
+      ],
+      central: [{ id: 9, who: 'ES', when: 'ontem, 11:20', text: 'Cadastro de motos com custo por veículo validado com o cliente.' }],
+      dm_es: [{ id: 10, who: 'ES', when: 'hoje, 10:15', text: 'Consegue olhar o PR hoje ainda?' }]
+    };
+  }
+  renderVals() {
+    const self = this;
+    const s = this.state || {};
+    const msgs = s.msgs || this.seed();
+    const active = s.active || 'dev';
+    const read = s.read || {};
+    const tasks = s.tasks || {};
+    const draft = s.draft || '';
+    const nextTask = s.nextTask || 150;
+    const PEOPLE = { FS: 'Felipe de Souza', ES: 'Ezequiel Santos' };
+    const CH = [
+      { id: 'geral', name: 'geral', desc: 'Avisos gerais da Azuos Dev', unread: 0 },
+      { id: 'dev', name: 'dev', desc: 'Desenvolvimento, PRs e deploys', unread: 2 },
+      { id: 'comercial', name: 'comercial', desc: 'Leads, propostas e contratos', unread: 1 },
+      { id: 'cenio', name: 'cenio-construcoes', desc: 'Canal do cliente Cênio Construções · ligado ao Folder do cliente', unread: 0 },
+      { id: 'central', name: 'central-motos', desc: 'Canal do cliente Central Motos', unread: 0 }
+    ];
+    const DM = [{ id: 'dm_es', name: 'Ezequiel Santos', initials: 'ES', desc: 'Mensagem direta', unread: 1 }];
+    const onStyle = 'background: rgb(var(--accent) / 0.14); color: rgb(var(--ink)); font-weight: 600;';
+    const mk = (c) => {
+      const u = (read[c.id] || c.id === active) ? 0 : c.unread;
+      return { name: c.name, initials: c.initials, current: c.id === active ? 'page' : 'false', style: c.id === active ? onStyle : 'color: rgb(var(--body));', hasUnread: u > 0, unread: String(u), pick: () => self.setState({ active: c.id, read: Object.assign({}, read, { [c.id]: true }) }) };
+    };
+    const cur = CH.find(c => c.id === active) || DM.find(c => c.id === active);
+    const messages = (msgs[active] || []).map(m => ({
+      who: m.who, name: PEOPLE[m.who], when: m.when, text: m.text,
+      hasThread: !!m.thread, thread: m.thread + ' respostas na thread',
+      hasTask: !!tasks[m.id], task: tasks[m.id] ? 'AZD-' + tasks[m.id] : '',
+      canTask: !tasks[m.id],
+      toTask: () => self.setState({ tasks: Object.assign({}, tasks, { [m.id]: nextTask }), nextTask: nextTask + 1 })
+    }));
+    return Object.assign(this.shell('chat'), {
+      channels: CH.map(mk), dms: DM.map(mk),
+      title: active.indexOf('dm_') === 0 ? cur.name : '#' + cur.name,
+      desc: cur.desc,
+      messages: messages,
+      draft: draft,
+      setDraft: (e) => self.setState({ draft: e.target.value }),
+      send: () => {
+        const t = draft.trim();
+        if (!t) return;
+        const list = (msgs[active] || []).concat([{ id: Date.now(), who: 'FS', when: 'agora', text: t }]);
+        self.setState({ msgs: Object.assign({}, msgs, { [active]: list }), draft: '' });
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

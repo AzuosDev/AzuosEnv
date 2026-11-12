@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+.env
+.env.local
+playwright-report
+test-results
+.tanstack
+bundle-stats.html
+
+# Cache do detector do Impeccable (o config.json fica versionado).
+.impeccable/hook.cache.json

@@ -1,0 +1,121 @@
+import { Module, ValidationPipe } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { AppLoggerModule } from './common/logging/logger.module';
+import { MongoSanitizePipe } from './common/pipes/mongo-sanitize.pipe';
+import { AuditInterceptor } from './modules/audit/audit.interceptor';
+import { AuditModule } from './modules/audit/audit.module';
+import { ImportModule } from './modules/import/import.module';
+import { ApiKeyScopeGuard } from './modules/api-keys/guards/api-key-scope.guard';
+import { HttpThrottlerGuard } from './common/guards/http-throttler.guard';
+import { envValidationSchema } from './config/env.validation';
+import { AiModule } from './modules/ai/ai.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { AutomationsModule } from './modules/automations/automations.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { CollaborationModule } from './modules/collaboration/collaboration.module';
+import { DashboardsModule } from './modules/dashboards/dashboards.module';
+import { DocsModule } from './modules/docs/docs.module';
+import { FavoritesModule } from './modules/favorites/favorites.module';
+import { FieldsModule } from './modules/fields/fields.module';
+import { FormsModule } from './modules/forms/forms.module';
+import { GoalsModule } from './modules/goals/goals.module';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { HealthModule } from './modules/health/health.module';
+import { HierarchyModule } from './modules/hierarchy/hierarchy.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { RealtimeModule } from './modules/realtime/realtime.module';
+import { SearchModule } from './modules/search/search.module';
+import { SprintsModule } from './modules/sprints/sprints.module';
+import { TimeModule } from './modules/time/time.module';
+import { TrashModule } from './modules/trash/trash.module';
+import { TasksModule } from './modules/tasks/tasks.module';
+import { UsersModule } from './modules/users/users.module';
+import { ViewsModule } from './modules/views/views.module';
+import { WhiteboardsModule } from './modules/whiteboards/whiteboards.module';
+import { WorkspacesModule } from './modules/workspaces/workspaces.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+      validationSchema: envValidationSchema,
+    }),
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        uri: config.getOrThrow<string>('MONGODB_URI'),
+      }),
+    }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [
+          {
+            ttl: config.get<number>('THROTTLE_TTL') ?? 60_000,
+            limit: config.get<number>('THROTTLE_LIMIT') ?? 120,
+          },
+        ],
+      }),
+    }),
+    EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
+    AppLoggerModule,
+    AuditModule,
+    AuthModule,
+    HealthModule,
+    UsersModule,
+    WorkspacesModule,
+    HierarchyModule,
+    TasksModule,
+    CollaborationModule,
+    FieldsModule,
+    ViewsModule,
+    NotificationsModule,
+    RealtimeModule,
+    SearchModule,
+    FavoritesModule,
+    TrashModule,
+    TimeModule,
+    DashboardsModule,
+    AutomationsModule,
+    DocsModule,
+    ChatModule,
+    CalendarModule,
+    GoalsModule,
+    FormsModule,
+    SprintsModule,
+    AiModule,
+    WhiteboardsModule,
+    IntegrationsModule,
+    ImportModule,
+  ],
+  providers: [
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
+    { provide: APP_GUARD, useClass: HttpThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: ApiKeyScopeGuard },
+    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
+    // Runs before the ValidationPipe: strips $ and dotted keys from every input.
+    { provide: APP_PIPE, useClass: MongoSanitizePipe },
+    {
+      provide: APP_PIPE,
+      useFactory: () =>
+        new ValidationPipe({
+          whitelist: true,
+          forbidNonWhitelisted: true,
+          transform: true,
+          transformOptions: { enableImplicitConversion: true },
+        }),
+    },
+  ],
+})
+export class AppModule {}

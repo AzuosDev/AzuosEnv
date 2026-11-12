@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sem conexão — Azuos Env</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        --paper: 11 7 20;
+        --surface: 20 16 31;
+        --line: 44 36 62;
+        --ink: 245 243 249;
+        --muted: 156 147 173;
+        --accent: 167 139 250;
+        --on-signal: 22 10 46;
+        color-scheme: dark;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --paper: 248 246 252;
+          --surface: 255 255 255;
+          --line: 224 217 238;
+          --ink: 22 14 38;
+          --muted: 101 92 122;
+          --accent: 109 40 217;
+          --on-signal: 255 255 255;
+          color-scheme: light;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 24px 16px;
+        background: rgb(var(--paper));
+        color: rgb(var(--ink));
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 14px;
+      }
+      main {
+        width: 100%;
+        max-width: 420px;
+        background: rgb(var(--surface));
+        border: 1px solid rgb(var(--line));
+        border-radius: 16px;
+        padding: 32px 24px;
+        text-align: center;
+      }
+      svg {
+        width: 56px;
+        height: 56px;
+        color: rgb(var(--accent));
+      }
+      h1 {
+        margin: 16px 0 8px;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      p {
+        margin: 0;
+        color: rgb(var(--muted));
+        line-height: 1.6;
+      }
+      button {
+        margin-top: 24px;
+        min-height: 44px;
+        padding: 0 24px;
+        border: 0;
+        border-radius: 999px;
+        background: rgb(var(--accent));
+        color: rgb(var(--on-signal));
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:focus-visible {
+        outline: 2px solid rgb(var(--accent));
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M2 2l20 20" stroke-linecap="round" />
+        <path d="M5 12.6a9 9 0 013.6-2.2M16 9.1a9 9 0 013 1.9" stroke-linecap="round" />
+        <path d="M8.5 16a5 5 0 014.6-1.2" stroke-linecap="round" />
+        <circle cx="12" cy="19.5" r="1" fill="currentColor" stroke="none" />
+      </svg>
+      <h1>Você está sem conexão</h1>
+      <p>
+        O Azuos Env precisa de internet para carregar seus dados. Assim que a conexão voltar, é só
+        tentar de novo.
+      </p>
+      <button type="button" onclick="location.reload()">Tentar de novo</button>
+    </main>
+  </body>
+</html>

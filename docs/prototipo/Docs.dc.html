@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Azuos Env — Docs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap">
+<style>
+body{margin:0}
+.t-dark{color-scheme:dark;--paper:11 7 20;--paper-2:16 11 28;--surface:20 16 31;--surface-2:28 22 43;--line:44 36 62;--ink:245 243 249;--body:194 186 210;--muted:156 147 173;--accent:167 139 250;--signal:205 190 255;--signal-2:167 139 250;--on-signal:22 10 46;--scene:33 19 66;--scene-line:72 50 124;--dot:167 139 250;--success:34 197 94;--warning:245 158 11;--danger:239 68 68;--info:96 165 250}
+.t-light{color-scheme:light;--paper:248 246 252;--paper-2:240 236 249;--surface:255 255 255;--surface-2:245 241 252;--line:224 217 238;--ink:22 14 38;--body:72 63 94;--muted:101 92 122;--accent:109 40 217;--signal:139 92 246;--signal-2:109 40 217;--on-signal:255 255 255;--scene:236 228 255;--scene-line:212 198 250;--dot:124 58 237;--success:22 163 74;--warning:217 119 6;--danger:220 38 38;--info:37 99 235}
+.app{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:rgb(var(--paper));color:rgb(var(--ink));scrollbar-color:rgb(var(--line)) rgb(var(--paper))}
+.app button,.app input,.app textarea,.app select{font:inherit;color:inherit}
+.app button{cursor:pointer}
+.app ::selection{background:rgb(var(--accent) / .35);color:rgb(var(--ink))}
+.app input,.app textarea{caret-color:rgb(var(--accent))}
+.app :focus-visible{outline:2px solid rgb(var(--accent));outline-offset:2px}
+a{color:rgb(var(--accent))}a:hover{color:rgb(var(--signal))}
+.btn-signal{background-image:linear-gradient(100deg,rgb(var(--signal)) 0%,rgb(var(--signal-2)) 100%);color:rgb(var(--on-signal));box-shadow:0 10px 30px -12px rgb(var(--signal-2) / .7);border:0}
+.ghost{background:transparent;border:1px solid rgb(var(--line));color:rgb(var(--body))}
+.ghost:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.nb{background:transparent;border:0;color:rgb(var(--muted))}
+.nb:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.heading{font-weight:600;letter-spacing:-0.02em;line-height:1.02;color:rgb(var(--ink))}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ellip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</helmet>
+<div class="app {{themeClass}}" style="min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+<nav aria-label="Navegação global" style="flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; background: rgb(var(--paper-2)); border-right: 1px solid rgb(var(--line)); box-sizing: border-box;">
+<a href="Main.dc.html" class="btn-signal" aria-label="Azuos Env — início" style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; margin-bottom: 10px; text-decoration: none;">&lt;/&gt;</a>
+<sc-for list="{{gnav}}" as="g" hint-placeholder-count="10">
+<a class="nb" href="{{g.href}}" aria-label="{{g.label}}" title="{{g.label}}" aria-current="{{g.current}}" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{g.style}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{g.d}}"></path></svg>
+</a>
+</sc-for>
+<span style="flex: 1;"></span>
+<a class="nb" href="Configuracoes.dc.html" aria-label="Configurações" title="Configurações" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{settingsStyle}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{gearIcon}}"></path></svg>
+</a>
+</nav>
+
+<aside aria-label="Páginas" style="flex: 0 1 272px; min-width: 220px; box-sizing: border-box; padding: 16px 12px; background: rgb(var(--paper-2)); border-right: 1px solid rgb(var(--line)); display: flex; flex-direction: column; gap: 16px;">
+<div style="display: flex; align-items: center; gap: 8px; padding: 0 8px;">
+<h1 class="heading" style="margin: 0; font-size: 20px; flex: 1;">Docs</h1>
+<span style="font-size: 11px; color: rgb(var(--muted)); border: 1px solid rgb(var(--line)); border-radius: 999px; padding: 2px 8px;">Exemplo</span>
+</div>
+<button class="ghost" onClick="{{newPage}}" style="height: 36px; border-radius: 8px;">+ Nova página</button>
+<sc-for list="{{tree}}" as="grp" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; gap: 2px;">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--muted)); padding: 0 8px 6px;">{{grp.name}}</span>
+<sc-for list="{{grp.pages}}" as="pg" hint-placeholder-count="3">
+<button class="nb" onClick="{{pg.pick}}" aria-current="{{pg.current}}" style="min-height: 40px; border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 4px 10px; text-align: left; {{pg.style}}">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5"></path></svg>
+<span class="ellip" style="flex: 1;">{{pg.title}}</span>
+</button>
+</sc-for>
+</div>
+</sc-for>
+</aside>
+
+<main style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column;">
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgb(var(--line));">
+<span class="ellip" style="flex: 1 1 200px; font-size: 12.5px; color: rgb(var(--muted));">{{crumb}}</span>
+<button class="ghost" style="height: 36px; padding: 0 12px; border-radius: 8px;">Histórico de versões</button>
+<button class="btn-signal" style="height: 36px; padding: 0 14px; border-radius: 8px; font-weight: 600;">Compartilhar</button>
+<button class="ghost" onClick="{{toggleTheme}}" aria-label="{{themeLabel}}" title="{{themeLabel}}" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{themeIcon}}"></path></svg></button>
+<div role="img" aria-label="Felipe de Souza" style="width: 36px; height: 36px; border-radius: 50%; background: rgb(var(--scene)); border: 1px solid rgb(var(--scene-line)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">FS</div>
+</header>
+<div style="display: flex; flex-wrap: wrap; gap: 24px; padding: 28px 24px 40px; align-items: flex-start;">
+<article style="flex: 999 1 480px; min-width: 0; max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px;">
+<label for="titulo" class="sr">Título da página</label>
+<input id="titulo" value="{{page.title}}" onInput="{{page.rename}}" style="font-size: 34px; font-weight: 600; letter-spacing: -0.02em; border: 0; background: transparent; padding: 4px 0; outline-offset: 4px;">
+<span style="font-size: 12.5px; color: rgb(var(--muted));">{{page.meta}}</span>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; border-radius: 10px; background: rgb(var(--surface-2));">
+<span style="font-size: 12px; color: rgb(var(--muted)); padding: 0 6px;">/ Inserir</span>
+<sc-for list="{{inserts}}" as="ins" hint-placeholder-count="6">
+<button class="ghost" onClick="{{ins.add}}" style="height: 30px; padding: 0 10px; border-radius: 8px; font-size: 12.5px; background: rgb(var(--surface));">{{ins.label}}</button>
+</sc-for>
+</div>
+<sc-for list="{{blocks}}" as="b" hint-placeholder-count="6">
+<div>
+<sc-if value="{{b.isH}}" hint-placeholder-val="{{false}}"><h2 style="margin: 12px 0 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em;">{{b.text}}</h2></sc-if>
+<sc-if value="{{b.isP}}" hint-placeholder-val="{{true}}"><p style="margin: 0; color: rgb(var(--body)); line-height: 1.65;">{{b.text}}</p></sc-if>
+<sc-if value="{{b.isLi}}" hint-placeholder-val="{{false}}"><div style="display: flex; gap: 10px; color: rgb(var(--body)); line-height: 1.6; padding-left: 4px;"><span aria-hidden="true" style="color: rgb(var(--accent));">•</span><span>{{b.text}}</span></div></sc-if>
+<sc-if value="{{b.isTodo}}" hint-placeholder-val="{{false}}"><div style="display: flex; align-items: center; gap: 10px; min-height: 32px;"><input type="checkbox" id="{{b.domId}}" checked="{{b.done}}" onChange="{{b.toggle}}" style="width: 18px; height: 18px; margin: 0; accent-color: rgb(var(--accent));"><label for="{{b.domId}}" style="color: rgb(var(--body)); text-decoration: {{b.deco}};">{{b.text}}</label></div></sc-if>
+<sc-if value="{{b.isCode}}" hint-placeholder-val="{{false}}"><pre style="margin: 0; padding: 14px 16px; border-radius: 10px; background: rgb(var(--surface-2)); border: 1px solid rgb(var(--line)); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; overflow-x: auto; color: rgb(var(--ink));">{{b.text}}</pre></sc-if>
+<sc-if value="{{b.isTask}}" hint-placeholder-val="{{false}}"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; border: 1px solid rgb(var(--scene-line)); background: rgb(var(--accent) / 0.08); color: rgb(var(--ink)); text-decoration: none;"><span style="width: 8px; height: 8px; border-radius: 50%; background: rgb({{b.tone}});"></span><span style="font-size: 12px; color: rgb(var(--muted));">{{b.code}}</span><span style="font-weight: 500;">{{b.text}}</span><span style="font-size: 12px; color: rgb(var(--muted));">{{b.status}}</span></a></sc-if>
+</div>
+</sc-for>
+</article>
+<aside aria-label="Comentários" style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 10px;">
+<span style="font-size: 12px; font-weight: 600; color: rgb(var(--muted)); text-transform: uppercase; letter-spacing: .06em;">Comentários</span>
+<sc-for list="{{comments}}" as="cm" hint-placeholder-count="1">
+<div style="border-radius: 12px; padding: 12px; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); display: flex; flex-direction: column; gap: 6px;">
+<span style="font-size: 12.5px;"><strong style="font-weight: 600;">{{cm.name}}</strong> <span style="color: rgb(var(--muted));">{{cm.when}}</span></span>
+<span style="font-size: 12px; color: rgb(var(--muted)); border-left: 0; background: rgb(var(--surface-2)); padding: 4px 8px; border-radius: 6px;">"{{cm.anchor}}"</span>
+<span style="color: rgb(var(--body));">{{cm.text}}</span>
+</div>
+</sc-for>
+<sc-if value="{{noComments}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: rgb(var(--muted));">Nenhum comentário nesta página.</span></sc-if>
+<label for="novo-coment" class="sr">Novo comentário</label>
+<textarea id="novo-coment" rows="2" placeholder="Comentar na página…" value="{{draft}}" onInput="{{setDraft}}" style="border-radius: 10px; border: 1px solid rgb(var(--line)); background: rgb(var(--surface)); padding: 10px 12px; resize: vertical;"></textarea>
+<button class="btn-signal" onClick="{{sendComment}}" style="height: 36px; border-radius: 8px; font-weight: 600;">Comentar</button>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["escuro","claro"],"default":"escuro"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  shell(active) {
+    const self = this;
+    const s = this.state || {};
+    let stored = null;
+    try { stored = window.localStorage.getItem('azuos-theme'); } catch (e) {}
+    const theme = s.theme || stored || (this.props.tema === 'claro' ? 'light' : 'dark');
+    const NAV = [
+      ['tarefas', 'Tarefas', 'Main.dc.html', 'M9 11l3 3 8-8M20 12v7H4V5h11'],
+      ['planner', 'Planner', 'Planner.dc.html', 'M4 6h16v15H4zM4 10h16M8 3v4M16 3v4'],
+      ['chat', 'Chat', 'Chat.dc.html', 'M4 5h16v11H9l-5 4z'],
+      ['docs', 'Docs', 'Docs.dc.html', 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7'],
+      ['dash', 'Dashboards', 'Dashboards.dc.html', 'M4 20V10M10 20V4M16 20v-7M2 20h20'],
+      ['time', 'Timesheets', 'Timesheets.dc.html', 'M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'],
+      ['metas', 'Metas', 'Metas.dc.html', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z'],
+      ['auto', 'Automações', 'Automacoes.dc.html', 'M13 2 4 14h7l-1 8 9-12h-7z'],
+      ['wb', 'Whiteboard', 'Whiteboard.dc.html', 'M3 4h18v12H3zM8 20l4-4 4 4'],
+      ['ia', 'IA', 'IA.dc.html', 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z']
+    ];
+    const on = 'background: rgb(var(--accent) / 0.16); color: rgb(var(--ink));';
+    return {
+      themeClass: theme === 'light' ? 't-light' : 't-dark',
+      themeIcon: theme === 'light' ? 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z' : 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      themeLabel: theme === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro',
+      toggleTheme: () => { const n = theme === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('azuos-theme', n); } catch (e) {} self.setState({ theme: n }); },
+      gnav: NAV.map(i => ({ label: i[1], href: i[2], d: i[3], current: i[0] === active ? 'page' : 'false', style: i[0] === active ? on : '' })),
+      settingsStyle: active === 'config' ? on : '',
+      gearIcon: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z'
+    };
+  }
+  seed() {
+    return [
+      { id: 'proc', group: 'Wiki Azuos', title: 'Processo de desenvolvimento', meta: 'Editado por Felipe de Souza · hoje', blocks: [
+        { t: 'p', x: 'Como uma tarefa anda do pedido do cliente até produção.' },
+        { t: 'h', x: 'Fluxo de status' },
+        { t: 'p', x: 'Backlog → A fazer → Em andamento → Code review → Teste → Homologação cliente → Deploy → Concluído. Bloqueado pode acontecer em qualquer etapa.' },
+        { t: 'h', x: 'Regras' },
+        { t: 'li', x: 'Todo PR cita o ID da tarefa (ex.: AZD-143).' },
+        { t: 'li', x: 'Nada vai para Deploy sem passar por Code review.' },
+        { t: 'li', x: 'Homologação é registrada como comentário na tarefa.' },
+        { t: 'task', id: 143, x: 'Sincronização PouchDB ↔ CouchDB', s: 'Code review', tone: 'var(--accent)' }
+      ], comments: [] },
+      { id: 'padroes', group: 'Wiki Azuos', title: 'Padrões de código', meta: 'Editado por Ezequiel Santos · ontem', blocks: [
+        { t: 'h', x: 'Stack padrão' },
+        { t: 'li', x: 'Next.js + React 19 + TypeScript' },
+        { t: 'li', x: 'Tailwind + shadcn/ui, tokens do globals.css da Azuos' },
+        { t: 'li', x: 'PostgreSQL com Prisma ou Drizzle' },
+        { t: 'h', x: 'Mensagens de commit' },
+        { t: 'p', x: 'Conventional Commits com o ID da tarefa no escopo:' },
+        { t: 'code', x: 'feat(AZD-143): resolve conflitos na replicação\nfix(AZD-148): bloqueia venda com estoque negativo' }
+      ], comments: [] },
+      { id: 'deploy', group: 'Wiki Azuos', title: 'Checklist de deploy', meta: 'Editado por Felipe de Souza · 21 out', blocks: [
+        { t: 'p', x: 'Use antes de cada publicação em produção.' },
+        { t: 'todo', x: 'PR aprovado em code review', d: true },
+        { t: 'todo', x: 'Preview testado', d: true },
+        { t: 'todo', x: 'Variáveis de ambiente conferidas', d: false },
+        { t: 'todo', x: 'Merge na main', d: false },
+        { t: 'todo', x: 'Aviso no canal do cliente', d: false }
+      ], comments: [] },
+      { id: 'pdv', group: 'Clientes', title: 'Cênio Construções — Escopo do PDV', meta: 'Editado por Felipe de Souza · 20 out', blocks: [
+        { t: 'p', x: 'PDV offline-first para depósito de material de construção, com sincronização quando a conexão volta.' },
+        { t: 'h', x: 'Stack' },
+        { t: 'li', x: 'Tauri v2 (Rust) + React 19 + TypeScript' },
+        { t: 'li', x: 'PouchDB / CouchDB' },
+        { t: 'li', x: 'Tailwind + shadcn/ui' },
+        { t: 'h', x: 'Sprint 3' },
+        { t: 'task', id: 142, x: 'Módulo de caixa offline', s: 'Em andamento', tone: 'var(--info)' },
+        { t: 'task', id: 143, x: 'Sincronização PouchDB ↔ CouchDB', s: 'Code review', tone: 'var(--accent)' },
+        { t: 'task', id: 146, x: 'Emissão de cupom não fiscal', s: 'Homologação', tone: 'var(--warning)' }
+      ], comments: [{ who: 'ES', name: 'Ezequiel Santos', when: 'ontem', anchor: 'Sprint 3', text: 'Incluir o relatório diário na próxima sprint?' }] },
+      { id: 'cm', group: 'Clientes', title: 'Central Motos — Plano empresarial', meta: 'Editado por Ezequiel Santos · 9 out', blocks: [
+        { t: 'p', x: 'Versão personalizada do MeuGasto para a Central Motos.' },
+        { t: 'li', x: 'Cadastro de motos' },
+        { t: 'li', x: 'Custo por veículo' }
+      ], comments: [] },
+      { id: 'ata', group: 'Modelos', title: 'Modelo — Ata de reunião', meta: 'Template', blocks: [
+        { t: 'h', x: 'Participantes' }, { t: 'p', x: '[NOMES]' },
+        { t: 'h', x: 'Decisões' }, { t: 'li', x: '[DECISÃO]' },
+        { t: 'h', x: 'Próximos passos' }, { t: 'todo', x: '[AÇÃO] — [RESPONSÁVEL] — [PRAZO]', d: false }
+      ], comments: [] },
+      { id: 'proposta', group: 'Modelos', title: 'Modelo — Proposta comercial', meta: 'Template', blocks: [
+        { t: 'h', x: 'Escopo' }, { t: 'p', x: '[O QUE SERÁ ENTREGUE]' },
+        { t: 'h', x: 'Prazo' }, { t: 'p', x: '[CRONOGRAMA COM MARCOS POR ETAPA]' },
+        { t: 'h', x: 'Investimento' }, { t: 'p', x: '[VALOR]' },
+        { t: 'h', x: 'Pagamento' }, { t: 'p', x: 'Dividido por etapa: entrada, meio e entrega.' }
+      ], comments: [] }
+    ];
+  }
+  renderVals() {
+    const self = this;
+    const s = this.state || {};
+    const pages = s.pages || this.seed();
+    const activeId = s.active || 'pdv';
+    const draft = s.draft || '';
+    const page = pages.find(p => p.id === activeId) || pages[0];
+    const upd = (fn) => self.setState({ pages: pages.map(p => p.id === page.id ? fn(p) : p) });
+    const groups = ['Wiki Azuos', 'Clientes', 'Modelos'];
+    const tree = groups.map(g => ({
+      name: g,
+      pages: pages.filter(p => p.group === g).map(p => ({
+        title: p.title || 'Sem título',
+        current: p.id === page.id ? 'page' : 'false',
+        style: p.id === page.id ? 'background: rgb(var(--accent) / 0.14); color: rgb(var(--ink)); font-weight: 600;' : 'color: rgb(var(--body));',
+        pick: () => self.setState({ active: p.id, draft: '' })
+      }))
+    }));
+    const blocks = page.blocks.map((b, i) => ({
+      isH: b.t === 'h', isP: b.t === 'p', isLi: b.t === 'li', isTodo: b.t === 'todo', isCode: b.t === 'code', isTask: b.t === 'task',
+      text: b.x, done: !!b.d, deco: b.d ? 'line-through' : 'none', domId: 'todo-' + page.id + '-' + i,
+      code: b.id ? 'AZD-' + b.id : '', status: b.s || '', tone: b.tone || 'var(--muted)',
+      toggle: () => upd(p => Object.assign({}, p, { blocks: p.blocks.map((x, j) => j === i ? Object.assign({}, x, { d: !x.d }) : x) }))
+    }));
+    const add = (blk) => () => upd(p => Object.assign({}, p, { blocks: p.blocks.concat([blk]) }));
+    return Object.assign(this.shell('docs'), {
+      tree: tree,
+      crumb: page.group + ' / ' + (page.title || 'Sem título'),
+      page: {
+        title: page.title, meta: page.meta,
+        rename: (e) => { const v = e.target.value; upd(p => Object.assign({}, p, { title: v })); }
+      },
+      inserts: [
+        { label: 'Título', add: add({ t: 'h', x: 'Novo título' }) },
+        { label: 'Texto', add: add({ t: 'p', x: 'Novo parágrafo.' }) },
+        { label: 'Lista', add: add({ t: 'li', x: 'Novo item' }) },
+        { label: 'Checklist', add: add({ t: 'todo', x: 'Nova ação', d: false }) },
+        { label: 'Código', add: add({ t: 'code', x: '// código' }) },
+        { label: 'Tarefa', add: add({ t: 'task', id: 149, x: 'Atalhos de teclado no PDV', s: 'A fazer', tone: 'var(--muted)' }) }
+      ],
+      blocks: blocks,
+      comments: page.comments,
+      noComments: page.comments.length === 0,
+      draft: draft,
+      setDraft: (e) => self.setState({ draft: e.target.value }),
+      sendComment: () => {
+        const t = draft.trim();
+        if (!t) return;
+        self.setState({ draft: '', pages: pages.map(p => p.id === page.id ? Object.assign({}, p, { comments: p.comments.concat([{ who: 'FS', name: 'Felipe de Souza', when: 'agora', anchor: p.title, text: t }]) }) : p) });
+      },
+      newPage: () => {
+        const id = 'n' + pages.length + '-' + Date.now();
+        self.setState({ active: id, pages: pages.concat([{ id: id, group: 'Wiki Azuos', title: '', meta: 'Criada agora por Felipe de Souza', blocks: [{ t: 'p', x: 'Digite / para inserir blocos: título, lista, checklist, código ou tarefa.' }], comments: [] }]) });
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

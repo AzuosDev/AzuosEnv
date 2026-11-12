@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Azuos Env — Planner</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.t-dark{color-scheme:dark;--paper:11 7 20;--paper-2:16 11 28;--surface:20 16 31;--surface-2:28 22 43;--line:44 36 62;--ink:245 243 249;--body:194 186 210;--muted:156 147 173;--accent:167 139 250;--signal:205 190 255;--signal-2:167 139 250;--on-signal:22 10 46;--scene:33 19 66;--scene-line:72 50 124;--dot:167 139 250;--success:34 197 94;--warning:245 158 11;--danger:239 68 68;--info:96 165 250}
+.t-light{color-scheme:light;--paper:248 246 252;--paper-2:240 236 249;--surface:255 255 255;--surface-2:245 241 252;--line:224 217 238;--ink:22 14 38;--body:72 63 94;--muted:101 92 122;--accent:109 40 217;--signal:139 92 246;--signal-2:109 40 217;--on-signal:255 255 255;--scene:236 228 255;--scene-line:212 198 250;--dot:124 58 237;--success:22 163 74;--warning:217 119 6;--danger:220 38 38;--info:37 99 235}
+.app{font-family:'Inter',system-ui,sans-serif;font-size:14px;background:rgb(var(--paper));color:rgb(var(--ink));scrollbar-color:rgb(var(--line)) rgb(var(--paper))}
+.app button,.app input,.app textarea,.app select{font:inherit;color:inherit}
+.app button{cursor:pointer}
+.app button:disabled{cursor:not-allowed;opacity:.45}
+.app ::selection{background:rgb(var(--accent) / .35);color:rgb(var(--ink))}
+.app input,.app textarea{caret-color:rgb(var(--accent))}
+.app :focus-visible{outline:2px solid rgb(var(--accent));outline-offset:2px}
+a{color:rgb(var(--accent))}a:hover{color:rgb(var(--signal))}
+.btn-signal{background-image:linear-gradient(100deg,rgb(var(--signal)) 0%,rgb(var(--signal-2)) 100%);color:rgb(var(--on-signal));box-shadow:0 10px 30px -12px rgb(var(--signal-2) / .7);border:0}
+.ghost{background:transparent;border:1px solid rgb(var(--line));color:rgb(var(--body))}
+.ghost:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.nb{background:transparent;border:0;color:rgb(var(--muted))}
+.nb:hover{background:rgb(var(--surface-2));color:rgb(var(--ink))}
+.card{background:rgb(var(--surface));border:1px solid rgb(var(--line))}
+.heading{font-weight:600;letter-spacing:-0.02em;line-height:1.02;color:rgb(var(--ink))}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ellip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</helmet>
+<div class="app {{themeClass}}" style="min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch;">
+
+<nav aria-label="Navegação global" style="flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; background: rgb(var(--paper-2)); border-right: 1px solid rgb(var(--line)); box-sizing: border-box;">
+<a href="Main.dc.html" class="btn-signal" aria-label="Azuos Env — início" style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; margin-bottom: 10px; text-decoration: none;">&lt;/&gt;</a>
+<sc-for list="{{gnav}}" as="g" hint-placeholder-count="10">
+<a class="nb" href="{{g.href}}" aria-label="{{g.label}}" title="{{g.label}}" aria-current="{{g.current}}" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{g.style}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{g.d}}"></path></svg>
+</a>
+</sc-for>
+<span style="flex: 1;"></span>
+<a class="nb" href="Configuracoes.dc.html" aria-label="Configurações" title="Configurações" style="width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; {{settingsStyle}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{gearIcon}}"></path></svg>
+</a>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid rgb(var(--line));">
+<h1 class="heading" style="margin: 0; font-size: 24px;">Planner</h1>
+<span style="font-size: 11.5px; color: rgb(var(--muted)); border: 1px solid rgb(var(--line)); border-radius: 999px; padding: 2px 8px;">Dados de exemplo</span>
+<span style="flex: 1;"></span>
+<div style="display: flex; gap: 4px;">
+<button class="ghost" aria-label="Semana anterior" style="width: 36px; height: 36px; border-radius: 8px;">‹</button>
+<button class="ghost" style="height: 36px; padding: 0 12px; border-radius: 8px;">Hoje</button>
+<button class="ghost" aria-label="Próxima semana" style="width: 36px; height: 36px; border-radius: 8px;">›</button>
+</div>
+<span style="font-weight: 600;">26 – 30 out 2026</span>
+<div style="display: flex; border: 1px solid rgb(var(--line)); border-radius: 8px; overflow: hidden;">
+<button title="Na versão final" style="height: 34px; padding: 0 12px; background: transparent; border: 0; color: rgb(var(--muted));" aria-pressed="false">Dia</button>
+<button style="height: 34px; padding: 0 12px; background: rgb(var(--accent) / 0.16); border: 0; color: rgb(var(--ink)); font-weight: 600;" aria-pressed="true">Semana</button>
+<button title="Na versão final" style="height: 34px; padding: 0 12px; background: transparent; border: 0; color: rgb(var(--muted));" aria-pressed="false">Mês</button>
+</div>
+<button class="ghost" onClick="{{toggleGoogle}}" style="height: 36px; padding: 0 12px; border-radius: 8px;">{{googleLabel}}</button>
+<button class="ghost" onClick="{{toggleTheme}}" aria-label="{{themeLabel}}" title="{{themeLabel}}" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{themeIcon}}"></path></svg></button>
+<div role="img" aria-label="Felipe de Souza" style="width: 36px; height: 36px; border-radius: 50%; background: rgb(var(--scene)); border: 1px solid rgb(var(--scene-line)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">FS</div>
+</header>
+
+<div style="display: flex; flex-wrap: wrap; gap: 20px; padding: 20px 24px 32px; align-items: flex-start;">
+<section aria-label="Tarefas para agendar" style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 10px;">
+<h2 style="margin: 0; font-size: 15px; font-weight: 600;">Para agendar</h2>
+<p style="margin: 0; font-size: 12.5px; color: rgb(var(--muted));">Tarefas sem horário. "Agendar" reserva o primeiro horário livre a partir de hoje (time-blocking).</p>
+<sc-for list="{{backlog}}" as="b" hint-placeholder-count="3">
+<div class="card" style="border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 11.5px; color: rgb(var(--muted));">{{b.code}} · {{b.est}}</span>
+<span style="font-weight: 500;">{{b.name}}</span>
+<button class="btn-signal" onClick="{{b.schedule}}" style="height: 36px; border-radius: 8px; font-weight: 600; font-size: 13px;">Agendar</button>
+</div>
+</sc-for>
+<sc-if value="{{noBacklog}}" hint-placeholder-val="{{false}}"><p style="margin: 0; font-size: 13px; color: rgb(var(--body));">Tudo agendado nesta semana.</p></sc-if>
+<sc-if value="{{hasSel}}" hint-placeholder-val="{{false}}">
+<div style="margin-top: 8px; border-radius: 12px; padding: 12px; background: rgb(var(--accent) / 0.10); border: 1px solid rgb(var(--scene-line)); display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 11.5px; color: rgb(var(--muted));">Selecionado</span>
+<span style="font-weight: 600;">{{sel.title}}</span>
+<span style="font-size: 12.5px; color: rgb(var(--body));">{{sel.when}}</span>
+<button class="ghost" onClick="{{sel.remove}}" style="height: 34px; border-radius: 8px;">Remover do calendário</button>
+</div>
+</sc-if>
+</section>
+
+<section aria-label="Semana" style="flex: 999 1 640px; min-width: 0; overflow-x: auto;">
+<div style="min-width: 720px; border: 1px solid rgb(var(--line)); border-radius: 12px; overflow: hidden;">
+<div style="display: grid; grid-template-columns: 64px repeat(5, minmax(0, 1fr)); background: rgb(var(--surface-2)); border-bottom: 1px solid rgb(var(--line));">
+<div></div>
+<sc-for list="{{cols}}" as="d" hint-placeholder-count="5">
+<div style="padding: 10px; text-align: center; font-size: 12.5px; border-left: 1px solid rgb(var(--line)); {{d.headStyle}}">{{d.label}}</div>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: 64px repeat(5, minmax(0, 1fr));">
+<div style="position: relative; height: 560px;">
+<sc-for list="{{hours}}" as="h" hint-placeholder-count="10">
+<span style="position: absolute; right: 8px; font-size: 11px; color: rgb(var(--muted)); {{h.style}}">{{h.label}}</span>
+</sc-for>
+</div>
+<sc-for list="{{cols}}" as="d" hint-placeholder-count="5">
+<div style="position: relative; height: 560px; border-left: 1px solid rgb(var(--line)); background-image: linear-gradient(to bottom, rgb(var(--line)) 1px, transparent 1px); background-size: 100% 56px; {{d.bg}}">
+<sc-if value="{{d.isToday}}" hint-placeholder-val="{{false}}"><div aria-hidden="true" style="position: absolute; left: 0; right: 0; height: 2px; background: rgb(var(--danger)); z-index: 2; {{nowStyle}}"></div></sc-if>
+<sc-for list="{{d.events}}" as="ev" hint-placeholder-count="2">
+<button onClick="{{ev.pick}}" style="position: absolute; left: 4px; right: 4px; box-sizing: border-box; border-radius: 8px; padding: 4px 8px; text-align: left; overflow: hidden; display: flex; flex-direction: column; gap: 2px; font-size: 12px; {{ev.style}}">
+<span class="ellip" style="font-weight: 600;">{{ev.title}}</span>
+<span style="font-size: 11px; color: rgb(var(--body));">{{ev.range}}</span>
+</button>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 12px; color: rgb(var(--muted));">
+<span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: rgb(var(--accent) / 0.4);"></span>Bloco de tarefa</span>
+<span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 3px; background: rgb(var(--info) / 0.4);"></span>Evento / reunião</span>
+<span style="display: inline-flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 2px; background: rgb(var(--danger));"></span>Agora</span>
+</div>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["escuro","claro"],"default":"escuro"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  shell(active) {
+    const self = this;
+    const s = this.state || {};
+    let stored = null;
+    try { stored = window.localStorage.getItem('azuos-theme'); } catch (e) {}
+    const theme = s.theme || stored || (this.props.tema === 'claro' ? 'light' : 'dark');
+    const NAV = [
+      ['tarefas', 'Tarefas', 'Main.dc.html', 'M9 11l3 3 8-8M20 12v7H4V5h11'],
+      ['planner', 'Planner', 'Planner.dc.html', 'M4 6h16v15H4zM4 10h16M8 3v4M16 3v4'],
+      ['chat', 'Chat', 'Chat.dc.html', 'M4 5h16v11H9l-5 4z'],
+      ['docs', 'Docs', 'Docs.dc.html', 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7'],
+      ['dash', 'Dashboards', 'Dashboards.dc.html', 'M4 20V10M10 20V4M16 20v-7M2 20h20'],
+      ['time', 'Timesheets', 'Timesheets.dc.html', 'M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z'],
+      ['metas', 'Metas', 'Metas.dc.html', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z'],
+      ['auto', 'Automações', 'Automacoes.dc.html', 'M13 2 4 14h7l-1 8 9-12h-7z'],
+      ['wb', 'Whiteboard', 'Whiteboard.dc.html', 'M3 4h18v12H3zM8 20l4-4 4 4'],
+      ['ia', 'IA', 'IA.dc.html', 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z']
+    ];
+    const on = 'background: rgb(var(--accent) / 0.16); color: rgb(var(--ink));';
+    return {
+      themeClass: theme === 'light' ? 't-light' : 't-dark',
+      themeIcon: theme === 'light' ? 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z' : 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      themeLabel: theme === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro',
+      toggleTheme: () => { const n = theme === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('azuos-theme', n); } catch (e) {} self.setState({ theme: n }); },
+      gnav: NAV.map(i => ({ label: i[1], href: i[2], d: i[3], current: i[0] === active ? 'page' : 'false', style: i[0] === active ? on : '' })),
+      settingsStyle: active === 'config' ? on : '',
+      gearIcon: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z'
+    };
+  }
+  data() {
+    const s = this.state || {};
+    return {
+      events: s.events || [
+        { id: 1, day: 0, start: 9, dur: 0.5, title: 'Daily Azuos', kind: 'event' },
+        { id: 2, day: 1, start: 9, dur: 0.5, title: 'Daily Azuos', kind: 'event' },
+        { id: 3, day: 2, start: 9, dur: 0.5, title: 'Daily Azuos', kind: 'event' },
+        { id: 4, day: 3, start: 9, dur: 0.5, title: 'Daily Azuos', kind: 'event' },
+        { id: 5, day: 4, start: 9, dur: 0.5, title: 'Daily Azuos', kind: 'event' },
+        { id: 6, day: 1, start: 14, dur: 1, title: 'Reunião Cênio Construções', kind: 'event' },
+        { id: 7, day: 2, start: 10, dur: 2, title: 'AZD-143 Sincronização PouchDB', kind: 'task' },
+        { id: 8, day: 2, start: 15, dur: 1, title: 'Central Motos — plano empresarial', kind: 'event' },
+        { id: 9, day: 3, start: 9.5, dur: 3, title: 'AZD-142 Módulo de caixa offline', kind: 'task' },
+        { id: 10, day: 4, start: 16, dur: 1, title: 'Revisão da Sprint 3', kind: 'event' }
+      ],
+      backlog: s.backlog || [
+        { id: 146, name: 'Emissão de cupom não fiscal', dur: 2 },
+        { id: 149, name: 'Atalhos de teclado no PDV', dur: 3 },
+        { id: 151, name: 'Post do Instagram — case MeuGasto', dur: 1 }
+      ],
+      sel: s.sel ?? null,
+      google: !!s.google,
+      nextId: s.nextId || 100
+    };
+  }
+  hm(h) {
+    const hh = Math.floor(h), mm = Math.round((h - hh) * 60);
+    return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+  }
+  renderVals() {
+    const self = this;
+    const d = this.data();
+    const PX = 56;
+    const labels = ['Seg 26', 'Ter 27', 'Qua 28', 'Qui 29', 'Sex 30'];
+    const TODAY = 2;
+    const cols = labels.map((l, i) => ({
+      label: l, isToday: i === TODAY,
+      headStyle: i === TODAY ? 'color: rgb(var(--accent)); font-weight: 700;' : 'color: rgb(var(--muted)); font-weight: 600;',
+      bg: i === TODAY ? 'background-color: rgb(var(--accent) / 0.04);' : '',
+      events: d.events.filter(e => e.day === i).map(e => ({
+        title: e.title,
+        range: self.hm(e.start) + ' – ' + self.hm(e.start + e.dur),
+        style: 'top: ' + ((e.start - 8) * PX + 2) + 'px; height: ' + (e.dur * PX - 4) + 'px; ' +
+          (e.kind === 'task' ? 'background: rgb(var(--accent) / 0.20); border: 1px solid rgb(var(--accent) / 0.6);' : 'background: rgb(var(--info) / 0.16); border: 1px solid rgb(var(--info) / 0.5);') +
+          (d.sel === e.id ? ' outline: 2px solid rgb(var(--accent)); outline-offset: 1px;' : ''),
+        pick: () => self.setState({ sel: e.id })
+      }))
+    }));
+    const hours = [];
+    for (let h = 8; h < 18; h++) hours.push({ label: self.hm(h), style: 'top: ' + ((h - 8) * PX + 4) + 'px;' });
+    const free = (day, start, dur) => !d.events.some(e => e.day === day && start < e.start + e.dur && e.start < start + dur);
+    const backlog = d.backlog.map(b => ({
+      code: 'AZD-' + b.id, name: b.name, est: b.dur + ' h',
+      schedule: () => {
+        for (let day = TODAY; day < 5; day++) {
+          for (let h = 8; h + b.dur <= 18; h += 0.5) {
+            if (day === TODAY && h < 11) continue;
+            if (free(day, h, b.dur)) {
+              const ev = { id: d.nextId, day: day, start: h, dur: b.dur, title: 'AZD-' + b.id + ' ' + b.name, kind: 'task', src: b };
+              self.setState({ events: d.events.concat([ev]), backlog: d.backlog.filter(x => x.id !== b.id), nextId: d.nextId + 1, sel: ev.id });
+              return;
+            }
+          }
+        }
+      }
+    }));
+    const selEv = d.events.find(e => e.id === d.sel);
+    const sel = selEv ? {
+      title: selEv.title,
+      when: labels[selEv.day] + ' · ' + self.hm(selEv.start) + ' – ' + self.hm(selEv.start + selEv.dur),
+      remove: () => self.setState({ events: d.events.filter(e => e.id !== selEv.id), backlog: selEv.src ? d.backlog.concat([selEv.src]) : d.backlog, sel: null })
+    } : {};
+    return Object.assign(this.shell('planner'), {
+      cols: cols, hours: hours, backlog: backlog, noBacklog: backlog.length === 0,
+      hasSel: !!selEv, sel: sel,
+      nowStyle: 'top: ' + Math.round((10.9 - 8) * PX) + 'px;',
+      googleLabel: d.google ? 'Google Agenda conectada' : 'Conectar Google Agenda',
+      toggleGoogle: () => self.setState({ google: !d.google })
+    });
+  }
+}
+</script>
+</body>
+</html>

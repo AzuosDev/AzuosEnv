@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-05T00:00:00.000Z",
+  "title": "Design System: Azuos Env",
+  "extensions": {
+    "themes": {
+      "note": "Escuro é o padrão (:root e :root[data-theme='dark']); claro em :root[data-theme='light']. Os valores do frontmatter são os do tema escuro; o par claro está em colorMeta[*].light.",
+      "default": "dark",
+      "selector": "data-theme",
+      "values": ["dark", "light", "system"]
+    },
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Papel Noturno",
+        "canonical": "rgb(11 7 20)",
+        "light": "rgb(248 246 252)",
+        "tonalRamp": ["rgb(11 7 20)", "rgb(16 11 28)", "rgb(20 16 31)", "rgb(28 22 43)", "rgb(44 36 62)", "rgb(156 147 173)", "rgb(194 186 210)", "rgb(245 243 249)"]
+      },
+      "paper-2": {
+        "role": "neutral",
+        "displayName": "Papel Elevado",
+        "canonical": "rgb(16 11 28)",
+        "light": "rgb(240 236 249)"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Superfície",
+        "canonical": "rgb(20 16 31)",
+        "light": "rgb(255 255 255)"
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Superfície Ativa",
+        "canonical": "rgb(28 22 43)",
+        "light": "rgb(245 241 252)"
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Linha",
+        "canonical": "rgb(44 36 62)",
+        "light": "rgb(224 217 238)"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "rgb(245 243 249)",
+        "light": "rgb(22 14 38)"
+      },
+      "body": {
+        "role": "neutral",
+        "displayName": "Corpo",
+        "canonical": "rgb(194 186 210)",
+        "light": "rgb(72 63 94)"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Apagado",
+        "canonical": "rgb(156 147 173)",
+        "light": "rgb(101 92 122)"
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Violeta Azuos",
+        "canonical": "rgb(167 139 250)",
+        "light": "rgb(109 40 217)",
+        "tonalRamp": ["rgb(33 19 66)", "rgb(49 28 94)", "rgb(72 50 124)", "rgb(109 40 217)", "rgb(124 58 237)", "rgb(139 92 246)", "rgb(167 139 250)", "rgb(205 190 255)"]
+      },
+      "signal": {
+        "role": "primary",
+        "displayName": "Violeta Claro",
+        "canonical": "rgb(205 190 255)",
+        "light": "rgb(139 92 246)"
+      },
+      "signal-2": {
+        "role": "primary",
+        "displayName": "Violeta Sinal",
+        "canonical": "rgb(167 139 250)",
+        "light": "rgb(109 40 217)"
+      },
+      "on-signal": {
+        "role": "primary",
+        "displayName": "Tinta sobre Sinal",
+        "canonical": "rgb(22 10 46)",
+        "light": "rgb(255 255 255)"
+      },
+      "scene": {
+        "role": "secondary",
+        "displayName": "Cena Violeta",
+        "canonical": "rgb(33 19 66)",
+        "light": "rgb(236 228 255)"
+      },
+      "scene-line": {
+        "role": "secondary",
+        "displayName": "Linha da Cena",
+        "canonical": "rgb(72 50 124)",
+        "light": "rgb(212 198 250)"
+      },
+      "dot": {
+        "role": "secondary",
+        "displayName": "Ponto da Malha",
+        "canonical": "rgb(167 139 250)",
+        "light": "rgb(124 58 237)"
+      },
+      "success": {
+        "role": "tertiary",
+        "displayName": "Sucesso",
+        "canonical": "rgb(34 197 94)",
+        "light": "rgb(22 163 74)"
+      },
+      "warning": {
+        "role": "tertiary",
+        "displayName": "Atenção",
+        "canonical": "rgb(245 158 11)",
+        "light": "rgb(217 119 6)"
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Risco",
+        "canonical": "rgb(239 68 68)",
+        "light": "rgb(220 38 38)"
+      },
+      "info": {
+        "role": "tertiary",
+        "displayName": "Informação",
+        "canonical": "rgb(96 165 250)",
+        "light": "rgb(37 99 235)"
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Título de tela, via .heading. Um por vista." },
+      "headline": { "displayName": "Headline", "purpose": "Título de diálogo e de seção principal." },
+      "title": { "displayName": "Title", "purpose": "Título de cartão e de linha de lista." },
+      "body": { "displayName": "Body", "purpose": "Tamanho base do produto (14 px). Texto corrido e valor de campo." },
+      "body-small": { "displayName": "Body small", "purpose": "Apoio, descrição, navegação da sidebar e editor Tiptap." },
+      "label": { "displayName": "Label", "purpose": "Rótulo de seção em caixa alta espaçada." },
+      "fontNote": "--font-display está em Inter como fonte provisória; a definitiva troca só nessa variável."
+    },
+    "shadows": [
+      { "name": "signal-glow", "value": "0 10px 30px -12px rgb(var(--signal-2) / 0.7)", "purpose": "Única sombra colorida do sistema; exclusiva de .btn-signal." },
+      { "name": "modal-veil", "value": "background: rgb(0 0 0 / 0.6); backdrop-filter: blur(4px)", "purpose": "Overlay de diálogo e sheet; a única desfocagem do produto." },
+      { "name": "flat", "value": "none", "purpose": "Repouso de cartão, campo e linha de lista: profundidade por camada tonal e borda de 1 px." }
+    ],
+    "motion": [
+      { "name": "color-only", "value": "transition: color .15s, background-color .15s, border-color .15s", "purpose": "Padrão de estado em botão, campo e linha de navegação." },
+      { "name": "auth-rise", "value": "cubic-bezier(0.16, 1, 0.3, 1) 0.7s", "purpose": "Entrada do painel de apresentação das telas de acesso (.auth-rise)." },
+      { "name": "reduced-motion", "value": "@media (prefers-reduced-motion: reduce) { animation/transition-duration: 0.01ms }", "purpose": "Corte global de movimento; já aplicado em globals.css." }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "360px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ],
+    "responsive": [
+      { "below": "1024px", "behavior": "Sidebar vira drawer (Sheet lateral); painel da tarefa vira tela cheia." },
+      { "below": "768px", "behavior": "Navegação global vira barra inferior fixa; diálogos viram bottom sheet; tabela, Quadro e Gantt rolam dentro do container." },
+      { "always": "A página nunca rola na horizontal; alvo de toque >= 44 px." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão Signal",
+      "kind": "button",
+      "refersTo": "button-signal",
+      "description": "Ação principal da tela. Uma por vista.",
+      "html": "<button class=\"ds-btn-signal\">Nova tarefa</button>",
+      "css": ".ds-btn-signal { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 16px; border: 0; border-radius: 12px; font: 600 14px/1 var(--font-display, Inter, system-ui, sans-serif); color: rgb(var(--on-signal)); background-image: linear-gradient(100deg, rgb(var(--signal)) 0%, rgb(var(--signal-2)) 100%); box-shadow: 0 10px 30px -12px rgb(var(--signal-2) / 0.7); cursor: pointer; transition: filter .15s; } .ds-btn-signal:hover { filter: brightness(1.1); } .ds-btn-signal:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; } @media (min-width: 768px) { .ds-btn-signal { height: 40px; } }"
+    },
+    {
+      "name": "Botão Ghost",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secundário padrão: borda discreta e fundo transparente.",
+      "html": "<button class=\"ds-btn-ghost\">Cancelar</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 16px; border: 1px solid rgb(var(--line)); border-radius: 12px; background: transparent; color: rgb(var(--body)); font: 600 14px/1 var(--font-display, Inter, system-ui, sans-serif); cursor: pointer; transition: background-color .15s, color .15s; } .ds-btn-ghost:hover { background: rgb(var(--surface-2)); color: rgb(var(--ink)); } .ds-btn-ghost:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; } @media (min-width: 768px) { .ds-btn-ghost { height: 40px; } }"
+    },
+    {
+      "name": "Botão Danger",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Ação destrutiva: apagar de vez, encerrar sessões.",
+      "html": "<button class=\"ds-btn-danger\">Apagar de vez</button>",
+      "css": ".ds-btn-danger { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 16px; border: 0; border-radius: 12px; background: rgb(var(--danger)); color: #fff; font: 600 14px/1 var(--font-display, Inter, system-ui, sans-serif); cursor: pointer; transition: filter .15s; } .ds-btn-danger:hover { filter: brightness(1.1); } .ds-btn-danger:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; } @media (min-width: 768px) { .ds-btn-danger { height: 40px; } }"
+    },
+    {
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo padrão com label nativo; foco em anel violeta.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Nome da tarefa</span><input class=\"ds-input\" placeholder=\"Revisar contrato\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; font: 400 14px/1.5 var(--font-display, Inter, system-ui, sans-serif); } .ds-field-label { color: rgb(var(--body)); font-size: 13px; font-weight: 500; } .ds-input { height: 44px; width: 100%; padding: 0 12px; border: 1px solid rgb(var(--line)); border-radius: 12px; background: rgb(var(--surface)); color: rgb(var(--ink)); caret-color: rgb(var(--accent)); outline: none; transition: border-color .15s, box-shadow .15s; } .ds-input::placeholder { color: rgb(var(--muted)); } .ds-input:focus-visible { border-color: rgb(var(--accent)); box-shadow: 0 0 0 2px rgb(var(--accent) / 0.25); } @media (min-width: 768px) { .ds-input { height: 40px; } }"
+    },
+    {
+      "name": "Pílula de status",
+      "kind": "chip",
+      "refersTo": "status-pill",
+      "description": "Estado de tarefa ou de registro; o tom vem sempre de um token.",
+      "html": "<span class=\"ds-pill ds-pill-success\">Concluída</span> <span class=\"ds-pill ds-pill-neutral\">Aberta</span> <span class=\"ds-pill ds-pill-warning\">Atrasada</span>",
+      "css": ".ds-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid; border-radius: 999px; font: 600 12px/1 var(--font-display, Inter, system-ui, sans-serif); } .ds-pill-neutral { border-color: rgb(var(--line)); background: rgb(var(--surface-2)); color: rgb(var(--body)); } .ds-pill-success { border-color: rgb(var(--success) / 0.4); background: rgb(var(--success) / 0.15); color: rgb(var(--success)); } .ds-pill-warning { border-color: rgb(var(--warning) / 0.4); background: rgb(var(--warning) / 0.15); color: rgb(var(--warning)); }"
+    },
+    {
+      "name": "Linha da sidebar",
+      "kind": "nav",
+      "refersTo": "sidebar-row",
+      "description": "Item de navegação do workspace, com ícone e rótulo truncado.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Início\"><span class=\"ds-nav-section\">Início</span><a class=\"ds-nav-row\" href=\"#\" aria-current=\"page\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M22 12h-6l-2 3h-4l-2-3H2\"/><path d=\"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"/></svg><span class=\"ds-nav-text\">Inbox</span><span class=\"ds-nav-badge\">3</span></a><a class=\"ds-nav-row\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M21.8 10A10 10 0 1 1 17 3.3\"/><path d=\"m9 11 3 3L22 4\"/></svg><span class=\"ds-nav-text\">Minhas tarefas</span></a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; width: 264px; padding: 12px; background: rgb(var(--paper-2)); font-family: var(--font-display, Inter, system-ui, sans-serif); } .ds-nav-section { padding: 0 8px 6px; color: rgb(var(--muted)); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; } .ds-nav-row { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 8px; border-radius: 8px; color: rgb(var(--body)); font-size: 13px; text-decoration: none; transition: background-color .15s, color .15s; } .ds-nav-row:hover { background: rgb(var(--surface-2)); color: rgb(var(--ink)); } .ds-nav-row[aria-current='page'] { color: rgb(var(--ink)); } .ds-nav-text { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-nav-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: rgb(var(--accent)); color: rgb(var(--on-signal)); font-size: 11px; font-weight: 700; }"
+    },
+    {
+      "name": "Cartão",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Placa de conteúdo: título, apoio, ações e linhas internas.",
+      "html": "<section class=\"ds-card\"><div class=\"ds-card-head\"><div><h2 class=\"ds-card-title\">Perfil</h2><p class=\"ds-card-sub\">Como seu nome aparece para a equipe.</p></div></div><div class=\"ds-card-row\"><div><p class=\"ds-card-row-title\">Fuso horário</p><p class=\"ds-card-sub\">America/Sao_Paulo</p></div></div><div class=\"ds-card-row ds-card-row-last\"><div><p class=\"ds-card-row-title\">Idioma</p><p class=\"ds-card-sub\">Português (Brasil)</p></div></div></section>",
+      "css": ".ds-card { border: 1px solid rgb(var(--line)); border-radius: 16px; background: rgb(var(--surface)); padding: 16px; font-family: var(--font-display, Inter, system-ui, sans-serif); } .ds-card-head { margin-bottom: 16px; } .ds-card-title { margin: 0; color: rgb(var(--ink)); font-size: 15px; font-weight: 600; } .ds-card-sub { margin: 4px 0 0; color: rgb(var(--muted)); font-size: 13px; } .ds-card-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgb(var(--line)); } .ds-card-row-last { border-bottom: 0; } .ds-card-row-title { margin: 0; color: rgb(var(--ink)); font-size: 13.5px; font-weight: 500; } @media (min-width: 768px) { .ds-card { padding: 20px; } }"
+    },
+    {
+      "name": "Estado vazio",
+      "kind": "custom",
+      "refersTo": "empty-state",
+      "description": "Componente de assinatura: o palco (.stage) com a malha de pontos. Único uso da cena dentro da operação.",
+      "html": "<div class=\"ds-empty\"><div class=\"ds-empty-dots\" aria-hidden=\"true\"></div><p class=\"ds-empty-title\">Nenhuma tarefa por aqui</p><p class=\"ds-empty-sub\">Crie a primeira tarefa desta List para começar.</p><button class=\"ds-btn-signal ds-empty-action\">Nova tarefa</button></div>",
+      "css": ".ds-empty { position: relative; display: flex; min-height: 224px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; overflow: hidden; padding: 32px; border: 1px solid rgb(var(--scene-line)); border-radius: 16px; text-align: center; font-family: var(--font-display, Inter, system-ui, sans-serif); background: radial-gradient(70% 60% at 12% 0%, rgb(var(--scene) / 0.9) 0%, transparent 70%), radial-gradient(120% 90% at 85% 100%, rgb(var(--scene)) 0%, transparent 65%), linear-gradient(160deg, rgb(var(--surface)) 0%, rgb(var(--scene) / 0.55) 55%, rgb(var(--scene) / 0.85) 100%); } .ds-empty-dots { position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(rgb(var(--dot) / 0.22) 1px, transparent 1.2px); background-size: 14px 14px; } .ds-empty-title { position: relative; margin: 0; color: rgb(var(--ink)); font-size: 16px; font-weight: 600; letter-spacing: -0.02em; } .ds-empty-sub { position: relative; margin: 0; max-width: 24rem; color: rgb(var(--muted)); font-size: 13px; } .ds-empty-action { position: relative; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Sala de Controle Noturna",
+    "overview": "O Azuos Env é um painel de operação visto no escuro. O fundo é quase preto com veio violeta (paper), as superfícies de trabalho são placas calmas separadas por uma linha de 1 px, e a cor só acende onde existe decisão: a ação principal, o foco do teclado, o estado que exige atenção. Quem passa o dia aqui precisa varrer muita informação — tabela, Quadro, árvore de Spaces, painel de tarefa — então a interface se comporta como instrumentação: densa, previsível, silenciosa até ter algo a dizer.\n\nA identidade da Azuos Dev entra pelo violeta e por um único gesto cenográfico: o par .stage + .dot-grid, que é a \"cena\" do sistema. Ele aparece nas telas públicas (login, cadastro, convite) e nos estados vazios, e em nenhum outro lugar. Dentro da operação as superfícies são planas e sem brilho; a profundidade vem da escada tonal paper → paper-2 → surface → surface-2, nunca de sombra decorativa.\n\nO tema escuro é o padrão de verdade, não uma variação: ele está em :root. O claro ([data-theme=\"light\"]) é alternativa completa e precisa do mesmo cuidado, com a mesma hierarquia e contraste AA. Nenhuma cor literal entra no código — toda cor vem de um token.",
+    "keyCharacteristics": [
+      "Escuro por padrão, claro como par de igual qualidade, com opção Sistema.",
+      "Paleta fechada em triplets RGB consumidos como rgb(var(--token)).",
+      "Violeta é sinal, não decoração: um gradiente de ação por tela.",
+      "Superfícies planas, borda de 1 px, zero sombra ambiente.",
+      "Densidade de ferramenta: corpo de 14 px, apoio em 13 px, rótulo em 11 px caixa alta.",
+      "Mobile-first real: alvo de 44 px, drawer abaixo de 1024, barra inferior abaixo de 768."
+    ],
+    "rules": [
+      { "name": "A Regra do Token Único", "body": "Nenhuma cor literal no código — nem hex, nem rgb() cru, nem cor do Tailwind. Se a cor não existe em globals.css, ela não existe.", "section": "colors" },
+      { "name": "A Regra do Sinal Raro", "body": "O gradiente .btn-signal aparece uma vez por tela, na ação que a tela existe para provocar. Duas ações em gradiente na mesma vista são um erro de hierarquia, não uma ênfase.", "section": "colors" },
+      { "name": "A Regra dos Dois Temas", "body": "Toda cor nova nasce nos dois blocos (:root e [data-theme='light']) na mesma edição. Um token definido só no escuro quebra o tema claro em silêncio.", "section": "colors" },
+      { "name": "A Regra da Escada Curta", "body": "Seis degraus de 11 a 24 px cobrem o produto inteiro. Um tamanho fora deles precisa de motivo escrito; tipografia de marketing não entra na operação.", "section": "typography" },
+      { "name": "A Regra do Título Apertado", "body": "Título é .heading — peso 600 e -0.02em. Nunca peso 700, nunca caixa alta em título.", "section": "typography" },
+      { "name": "A Regra do Zero Scroll Lateral", "body": "Toda tela nova ganha spec Playwright que abre em 360, 768 e 1280 e falha se document.documentElement.scrollWidth > innerWidth.", "section": "layout" },
+      { "name": "A Regra do Alvo de 44", "body": "Nada clicável abaixo de 44 px no toque. Botão só de ícone é h-11 w-11 (md:h-10 md:w-10) com aria-label.", "section": "layout" },
+      { "name": "A Regra da Placa Plana", "body": "Cartão, diálogo, campo e linha de lista são planos em repouso. Se uma tela parecer rasa, a resposta é trocar o tom da superfície ou reforçar a borda, nunca adicionar box-shadow.", "section": "elevation" },
+      { "name": "A Regra dos Três Raios", "body": "8, 12 e 16 px (mais o pílula de 999). Um raio novo é desalinhamento, não variação.", "section": "shapes" },
+      { "name": "A Regra da Cena Contida", "body": ".stage e .dot-grid só nas telas públicas e no EmptyState. Cena atrás de conteúdo de trabalho tira legibilidade e gasta o gesto.", "section": "components" }
+    ],
+    "dos": [
+      "Do usar rgb(var(--token)) ou a classe Tailwind do token (bg-surface, text-muted, border-line) para toda cor.",
+      "Do definir cor nova nos dois temas, na mesma edição.",
+      "Do manter os três raios (8 / 12 / 16 px) e a borda de 1 px.",
+      "Do dar 44 px de alvo no toque (h-11 md:h-10) e aria-label em botão só de ícone.",
+      "Do deixar a profundidade na escada tonal paper → paper-2 → surface → surface-2.",
+      "Do reservar o gradiente .btn-signal para uma única ação por tela.",
+      "Do envolver texto variável em min-w-0 + truncate e conter rolagem de tabela, Quadro e Gantt no próprio container.",
+      "Do trocar a fonte apenas em --font-display.",
+      "Do escrever a interface em português, com data, número e moeda em pt-BR no fuso do usuário."
+    ],
+    "donts": [
+      "Don't escrever hex, rgb() literal ou cor do Tailwind (bg-violet-500, text-white fora do botão danger).",
+      "Don't adicionar box-shadow a cartão, campo ou linha de lista: a única sombra do sistema é a do .btn-signal.",
+      "Don't usar .stage ou .dot-grid atrás de conteúdo de trabalho.",
+      "Don't colocar dois botões signal na mesma vista.",
+      "Don't remover ou substituir o anel de foco de 2 px em accent.",
+      "Don't criar raio, tamanho de fonte ou tom de cinza fora da escada documentada.",
+      "Don't deixar a página rolar na horizontal em 360, 768 ou 1280.",
+      "Don't usar título em peso 700 ou caixa alta; título é .heading (600, -0.02em).",
+      "Don't confiar em .sheen como padrão: é um brilho provisório sobre os tokens de signal, pendente do globals.css oficial da Azuos."
+    ]
+  }
+}

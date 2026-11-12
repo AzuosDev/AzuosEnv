@@ -1,0 +1,49 @@
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    # Mongo local opcional: em produção aponte MONGODB_URI para o Atlas e suba
+    # somente o serviço backend (docker compose up backend).
+    profiles: [local]
+    environment:
+      MONGO_INITDB_DATABASE: azuos-env
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - '27017:27017'
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+    ports:
+      - '3000:3000'
+    volumes:
+      - uploads:/app/storage/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # A URL da API entra no bundle no build; em produção use o domínio da
+        # API no mesmo site do app (ex.: https://api.azuosdev.com.br).
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '8080:80'
+
+volumes:
+  mongo-data:
+  uploads:
