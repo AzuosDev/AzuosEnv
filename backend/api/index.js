@@ -3,7 +3,7 @@
 // Nada e carregado no escopo do modulo: um require() que falhe aqui derruba a
 // funcao antes de qualquer handler rodar, e a Vercel so devolve
 // FUNCTION_INVOCATION_FAILED sem mensagem. Tudo acontece dentro do try.
-const BUILD = 'probe-4';
+const BUILD = 'probe-5';
 
 function report(response, stage, error) {
   const detail = error && error.stack ? error.stack : String(error);
