@@ -23,6 +23,14 @@ export class AuthUserDto {
   @ApiProperty({ enum: ['dark', 'light', 'system'], example: 'dark' })
   theme: string;
 
+  @ApiProperty({
+    description: 'Formas de entrar nesta conta.',
+    isArray: true,
+    enum: ['password', 'google'],
+    example: ['password'],
+  })
+  authProviders: string[];
+
   @ApiPropertyOptional({ format: 'date-time' })
   lastLoginAt?: string;
 

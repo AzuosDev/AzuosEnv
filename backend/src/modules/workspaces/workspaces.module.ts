@@ -34,6 +34,6 @@ import { WorkspacesService } from './workspaces.service';
     TeamsController,
   ],
   providers: [WorkspacesService, MembersService, InvitesService, TeamsService],
-  exports: [WorkspacesService, MembersService, TeamsService],
+  exports: [WorkspacesService, MembersService, TeamsService, InvitesService],
 })
 export class WorkspacesModule {}

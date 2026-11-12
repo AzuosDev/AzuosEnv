@@ -178,7 +178,74 @@ export class InvitesService {
 
   /** Accepts the invite with an existing account or creates the account on the fly. */
   async accept(dto: AcceptInviteDto): Promise<AcceptedInvite> {
-    const invite = await this.model.findOne({ tokenHash: sha256Hex(dto.token) }).exec();
+    const { invite, workspace } = await this.requirePendingInvite(dto.token);
+
+    let user = await this.usersService.findByEmail(invite.email);
+    let accountCreated = false;
+
+    if (!user) {
+      if (!dto.name || !dto.password) {
+        throw new BadRequestException({
+          code: 'ACCOUNT_REQUIRED',
+          message: 'Informe nome e senha para criar a sua conta.',
+        });
+      }
+
+      user = await this.usersService.create({
+        name: dto.name,
+        email: invite.email,
+        password: dto.password,
+      });
+      accountCreated = true;
+    }
+
+    const member = await this.joinWorkspace(workspace, user._id, invite);
+
+    invite.acceptedAt = new Date();
+    await invite.save();
+
+    return {
+      workspace: { id: String(workspace._id), name: workspace.name, slug: workspace.slug },
+      member,
+      accountCreated,
+    };
+  }
+
+  /**
+   * Accepts the invite for a user who just signed in (Google login). The e-mail has
+   * to match the invite, so a token cannot pull another account into the workspace.
+   */
+  async acceptForUser(
+    token: string,
+    userId: Types.ObjectId,
+    email: string,
+  ): Promise<AcceptedInvite> {
+    const { invite, workspace } = await this.requirePendingInvite(token);
+
+    if (invite.email !== email.trim().toLowerCase()) {
+      throw new BadRequestException({
+        code: 'INVITE_EMAIL_MISMATCH',
+        message: 'Este convite foi enviado para outro e-mail.',
+      });
+    }
+
+    const member = await this.joinWorkspace(workspace, userId, invite);
+
+    invite.acceptedAt = new Date();
+    await invite.save();
+
+    return {
+      workspace: { id: String(workspace._id), name: workspace.name, slug: workspace.slug },
+      member,
+      accountCreated: false,
+    };
+  }
+
+  /** The invite and its workspace, checked for existence, expiry and reuse. */
+  private async requirePendingInvite(
+    token: string,
+  ): Promise<{ invite: InviteDocument; workspace: WorkspaceDocument }> {
+    const invite = await this.model.findOne({ tokenHash: sha256Hex(token) }).exec();
 
     if (!invite) {
       throw new NotFoundException({
@@ -212,35 +279,7 @@ export class InvitesService {
       });
     }
 
-    let user = await this.usersService.findByEmail(invite.email);
-    let accountCreated = false;
-
-    if (!user) {
-      if (!dto.name || !dto.password) {
-        throw new BadRequestException({
-          code: 'ACCOUNT_REQUIRED',
-          message: 'Informe nome e senha para criar a sua conta.',
-        });
-      }
-
-      user = await this.usersService.create({
-        name: dto.name,
-        email: invite.email,
-        password: dto.password,
-      });
-      accountCreated = true;
-    }
-
-    const member = await this.joinWorkspace(workspace, user._id, invite);
-
-    invite.acceptedAt = new Date();
-    await invite.save();
-
-    return {
-      workspace: { id: String(workspace._id), name: workspace.name, slug: workspace.slug },
-      member,
-      accountCreated,
-    };
+    return { invite, workspace };
   }
 
   private async joinWorkspace(

@@ -9,6 +9,8 @@ export interface AuthenticatedUser {
   timezone: string;
   locale: string;
   theme: string;
+  /** Ways this account can sign in: `password`, `google` or both. */
+  authProviders: string[];
   lastLoginAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;

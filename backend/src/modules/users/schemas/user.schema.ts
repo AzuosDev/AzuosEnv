@@ -10,6 +10,9 @@ export const DEFAULT_TIMEZONE = 'America/Fortaleza';
 export const DEFAULT_LOCALE = 'pt-BR';
 export const DEFAULT_THEME: UserTheme = 'dark';
 
+export const AUTH_PROVIDERS = ['password', 'google'] as const;
+export type AuthProvider = (typeof AUTH_PROVIDERS)[number];
+
 @Schema({ collection: 'users', ...baseSchemaOptions })
 export class User {
   @Prop({ required: true, trim: true })
@@ -18,9 +21,17 @@ export class User {
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
 
+  /** Optional: an account created with Google only has a password after setting one. */
   @ApiHideProperty()
-  @Prop({ required: true, select: false })
-  passwordHash: string;
+  @Prop({ select: false })
+  passwordHash?: string;
+
+  /** `sub` of the Google account linked to this user. */
+  @Prop({ unique: true, sparse: true })
+  googleId?: string;
+
+  @Prop({ type: [String], enum: AUTH_PROVIDERS, default: ['password'] })
+  authProviders: AuthProvider[];
 
   @Prop()
   avatarUrl?: string;

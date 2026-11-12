@@ -21,6 +21,10 @@ export const TEST_ENV: Record<string, string> = {
   SMTP_HOST: '',
   // No client id: the CalendarProvider of the suite is always the stub.
   GOOGLE_CLIENT_ID: '',
+  // Login with Google against the fake provider, never the real Google.
+  GOOGLE_MOCK: 'true',
+  GOOGLE_LOGIN_REDIRECT_URI: 'http://localhost:3000/api/v1/auth/google/callback',
+  FRONTEND_URL: 'http://localhost:5173',
   // No key: the AiProvider of the suite is always the stub.
   XAI_API_KEY: '',
   GROK_MODEL: 'grok-test',

@@ -61,6 +61,16 @@ export const envValidationSchema = Joi.object({
     .default('http://localhost:3000/api/v1/integrations/google/callback'),
   // Calendar of the connected account; `primary` is the main one of the user.
   GOOGLE_CALENDAR_ID: Joi.string().default('primary'),
+  // Login with Google (reuses GOOGLE_CLIENT_ID/SECRET of the calendar integration).
+  GOOGLE_LOGIN_REDIRECT_URI: Joi.string()
+    .uri()
+    .default('http://localhost:3000/api/v1/auth/google/callback'),
+  // Where the callback sends the browser back to; also the error redirect.
+  FRONTEND_URL: Joi.string().uri().default('http://localhost:5173'),
+  // Fake Google for development and for the e2e; ignored in production.
+  GOOGLE_MOCK: Joi.boolean()
+    .default(false)
+    .when('NODE_ENV', { is: 'production', then: Joi.valid(false) }),
 })
   .unknown(true)
   .options({ abortEarly: false });

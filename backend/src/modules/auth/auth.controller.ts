@@ -13,12 +13,13 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { CookieOptions, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { AuthenticatedUser, CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
-import { REFRESH_COOKIE_NAME, REFRESH_COOKIE_PATH } from './auth.constants';
+import { REFRESH_COOKIE_NAME } from './auth.constants';
+import { clearRefreshCookie, setRefreshCookie } from './auth-cookies';
 import { SuccessDto } from '../../common/dto/api-error.dto';
 import { AuthService, SessionSummary } from './auth.service';
 import { AuthResponseDto, AuthUserDto, RegisteredUserDto } from './dto/auth-response.dto';
@@ -158,26 +159,10 @@ export class AuthController {
   }
 
   private setRefreshCookie(response: Response, token: string): void {
-    response.cookie(REFRESH_COOKIE_NAME, token, {
-      ...this.cookieOptions(),
-      maxAge: this.refreshTokens.ttlMs,
-    });
+    setRefreshCookie(response, this.config, token, this.refreshTokens.ttlMs);
   }
 
   private clearRefreshCookie(response: Response): void {
-    response.clearCookie(REFRESH_COOKIE_NAME, this.cookieOptions());
-  }
-
-  private cookieOptions(): CookieOptions {
-    const domain = this.config.get<string>('COOKIE_DOMAIN');
-
-    return {
-      httpOnly: true,
-      // lax por padrão; `none` (com COOKIE_SECURE) quando o front está em outro domínio.
-      sameSite: this.config.get<'lax' | 'strict' | 'none'>('COOKIE_SAME_SITE') ?? 'lax',
-      secure: this.config.get<boolean>('COOKIE_SECURE') ?? false,
-      path: REFRESH_COOKIE_PATH,
-      ...(domain ? { domain } : {}),
-    };
+    clearRefreshCookie(response, this.config);
   }
 }

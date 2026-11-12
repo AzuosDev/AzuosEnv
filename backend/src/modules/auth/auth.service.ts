@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Types } from 'mongoose';
 import { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { UsersService, toAuthenticatedUser } from '../users/users.service';
+import { UserDocument } from '../users/schemas/user.schema';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokensService, RequestContext } from './refresh-tokens.service';
@@ -40,6 +41,7 @@ export class AuthService {
   async login(dto: LoginDto, context: RequestContext): Promise<AuthSession> {
     const user = await this.usersService.findByEmailWithPassword(dto.email);
 
+    // An account created with Google has no password: it fails like a wrong one.
     if (!user || !(await this.usersService.verifyPassword(user.passwordHash, dto.password))) {
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
@@ -47,6 +49,11 @@ export class AuthService {
       });
     }
 
+    return this.issueSession(user, context);
+  }
+
+  /** Opens a session for an already identified user (password login and Google login). */
+  async issueSession(user: UserDocument, context: RequestContext): Promise<AuthSession> {
     await this.usersService.registerLogin(user);
 
     const issued = await this.refreshTokens.issue(user._id, context);
