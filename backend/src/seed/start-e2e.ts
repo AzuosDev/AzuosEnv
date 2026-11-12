@@ -44,6 +44,20 @@ async function main(): Promise<void> {
   process.env.CORS_ORIGINS ??= 'http://localhost:5173,http://localhost:4173';
   process.env.APP_URL ??= 'http://localhost:5173';
   process.env.UPLOAD_DIR ??= './storage/e2e-uploads';
+  // O .env de desenvolvimento tem credencial de SMTP real: sem zerar o host, a
+  // suíte manda e-mail de verdade a cada convite e queima a cota do provedor.
+  process.env.SMTP_HOST ??= '';
+  // Sem client id a integração do Google Agenda fica no stub, que é o que a
+  // suíte espera ("Indisponível"); o login com Google usa o provider falso.
+  process.env.GOOGLE_CLIENT_ID ??= '';
+  // Sem chave da xAI o provider de IA é o stub: a suíte não gasta crédito nem
+  // depende da rede.
+  process.env.XAI_API_KEY ??= '';
+  // Login com Google falso: a suíte do front percorre o fluxo inteiro sem sair
+  // do app e sem depender do Google de verdade.
+  process.env.GOOGLE_MOCK ??= 'true';
+  process.env.GOOGLE_LOGIN_REDIRECT_URI = `http://localhost:${String(PORT)}/api/v1/auth/google/callback`;
+  process.env.FRONTEND_URL ??= process.env.APP_URL ?? 'http://localhost:5173';
   // A suíte do front sai toda do mesmo IP: o teto por minuto do rate limit global
   // não pode derrubar as telas no meio da execução.
   process.env.THROTTLE_LIMIT ??= '100000';

@@ -52,6 +52,7 @@ export type NotificationChannels = components['schemas']['NotificationChannelsSt
 export type NotificationKind = keyof NotificationPreferences;
 
 export type UpdateProfileInput = components['schemas']['UpdateProfileDto'];
+export type SetPasswordInput = components['schemas']['SetPasswordDto'];
 export type ChangePasswordInput = components['schemas']['ChangePasswordDto'];
 export type UpdateWorkspaceInput = components['schemas']['UpdateWorkspaceDto'];
 export type CreateInviteInput = components['schemas']['CreateInviteDto'];

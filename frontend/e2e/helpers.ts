@@ -257,3 +257,69 @@ export async function createResource(
 
   return ((await response.json()) as CreatedBody).id;
 }
+
+export interface GoogleIdentity {
+  googleId: string;
+  email: string;
+  name?: string;
+  emailVerified?: boolean;
+}
+
+/** Código que o Google falso do backend aceita (mock-google-login.provider.ts). */
+export function mockGoogleCode(identity: GoogleIdentity): string {
+  const payload = JSON.stringify({ emailVerified: true, ...identity });
+
+  return `mock.${Buffer.from(payload, 'utf8').toString('base64url')}`;
+}
+
+/**
+ * Percorre o login com Google com a identidade pedida: inicia o OAuth (state
+ * assinado + cookie do PKCE) e troca o código do mock pelo nosso, tudo pelo
+ * contexto de API — que divide os cookies com o navegador. A página só abre o
+ * /auth/callback, como o navegador faria depois do 302 do backend, e nenhum
+ * cabeçalho extra sobra para atrapalhar o refresh silencioso.
+ * O X-Forwarded-For novo mantém o teto de 5 callbacks por minuto longe.
+ */
+export async function signInWithGoogle(
+  page: Page,
+  identity: GoogleIdentity,
+  options: { next?: string; invite?: string } = {},
+): Promise<void> {
+  const headers = { 'X-Forwarded-For': nextIp() };
+  const params = new URLSearchParams();
+
+  if (options.next) {
+    params.set('next', options.next);
+  }
+
+  if (options.invite) {
+    params.set('invite', options.invite);
+  }
+
+  const query = params.toString();
+  const start = await page.request.get(`${API_URL}/auth/google${query ? `?${query}` : ''}`, {
+    maxRedirects: 0,
+    headers,
+  });
+
+  expect(start.status(), 'início do login com o Google').toBe(302);
+
+  const consent = new URL(start.headers().location ?? '');
+
+  expect(
+    consent.origin,
+    'a API de e2e precisa do Google falso (GOOGLE_MOCK=true); derrube uma API antiga na porta da suíte',
+  ).toBe(new URL(API_URL).origin);
+
+  consent.searchParams.set('code', mockGoogleCode(identity));
+
+  const callback = await page.request.get(consent.toString(), { maxRedirects: 0, headers });
+
+  expect(callback.status(), 'callback do Google').toBe(302);
+
+  const back = new URL(callback.headers().location ?? '');
+
+  expect(back.pathname, 'destino do callback').toBe('/auth/callback');
+
+  await page.goto(`${back.pathname}${back.search}`);
+}

@@ -9,6 +9,7 @@ import type {
   CreateInviteInput,
   CreateTeamInput,
   NotificationPreferences,
+  SetPasswordInput,
   Team,
   UpdateNotificationSettingsInput,
   UpdateProfileInput,
@@ -29,6 +30,16 @@ export async function updateProfile(body: UpdateProfileInput): Promise<AuthUser>
 
 export async function changePassword(body: ChangePasswordInput): Promise<void> {
   unwrap(await api.PATCH('/api/v1/users/me/password', { body }));
+}
+
+/** Primeira senha de uma conta criada pelo Google; mantém as sessões abertas. */
+export async function setPassword(body: SetPasswordInput): Promise<void> {
+  unwrap(await api.POST('/api/v1/users/me/password/set', { body }));
+}
+
+/** Desfaz o vínculo com o Google; exige senha definida. */
+export async function disconnectGoogle(): Promise<void> {
+  unwrap(await api.DELETE('/api/v1/users/me/google'));
 }
 
 /* Sessões ativas -------------------------------------------------------- */

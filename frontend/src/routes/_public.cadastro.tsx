@@ -12,6 +12,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { login, register as registerAccount } from '@/features/auth/api';
 import { AccessLayout } from '@/features/auth/components/access-layout';
 import { Field, FormAlert } from '@/features/auth/components/field';
+import { GoogleAccess } from '@/features/auth/components/google-access';
 import { IconInput } from '@/features/auth/components/icon-input';
 import { PasswordField } from '@/features/auth/components/password-field';
 import { setSession } from '@/features/auth/session';
@@ -63,6 +64,8 @@ function SignUpPage() {
         </>
       }
     >
+      <GoogleAccess />
+
       <form className="space-y-4" onSubmit={submit} noValidate>
         {formError ? <FormAlert>{formError}</FormAlert> : null}
 

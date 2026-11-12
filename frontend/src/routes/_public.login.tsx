@@ -12,6 +12,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/features/auth/api';
 import { AccessLayout } from '@/features/auth/components/access-layout';
 import { Field, FormAlert } from '@/features/auth/components/field';
+import { GoogleAccess } from '@/features/auth/components/google-access';
 import { IconInput } from '@/features/auth/components/icon-input';
 import { PasswordField } from '@/features/auth/components/password-field';
 import { safeNext } from '@/features/auth/navigation';
@@ -23,7 +24,7 @@ const schema = z.object({ email: emailField, password: currentPasswordField });
 type Values = z.infer<typeof schema>;
 
 function LoginPage() {
-  const { next, expirado } = Route.useSearch();
+  const { next, expirado, erro } = Route.useSearch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [formError, setFormError] = useState<string | null>(null);
@@ -63,9 +64,14 @@ function LoginPage() {
         </>
       }
     >
+      <GoogleAccess next={next} />
+
       <form className="space-y-4" onSubmit={submit} noValidate>
         {formError ? <FormAlert>{formError}</FormAlert> : null}
-        {!formError && expirado ? (
+        {!formError && erro === 'google' ? (
+          <FormAlert>Não foi possível entrar com o Google.</FormAlert>
+        ) : null}
+        {!formError && !erro && expirado ? (
           <FormAlert>Sua sessão expirou. Entre de novo para continuar.</FormAlert>
         ) : null}
 
@@ -104,9 +110,12 @@ function LoginPage() {
 }
 
 export const Route = createFileRoute('/_public/login')({
-  validateSearch: (search: Record<string, unknown>): { next?: string; expirado?: boolean } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { next?: string; expirado?: boolean; erro?: 'google' } => ({
     next: typeof search.next === 'string' ? search.next : undefined,
     expirado: search.expirado === true || search.expirado === 'true' ? true : undefined,
+    erro: search.erro === 'google' ? 'google' : undefined,
   }),
   component: LoginPage,
 });

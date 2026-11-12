@@ -212,6 +212,40 @@ export interface paths {
         patch: operations["UsersController_updateMe"];
         trace?: never;
     };
+    "/api/v1/users/me/password/set": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** First password of an account created with Google; the sessions stay open. */
+        post: operations["UsersController_setPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/me/google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Unlinks Google; refused while the account has no password. */
+        delete: operations["UsersController_unlinkGoogle"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/users/me/password": {
         parameters: {
             query?: never;
@@ -3682,12 +3716,23 @@ export interface components {
              * @enum {string}
              */
             theme: "dark" | "light" | "system";
+            /**
+             * @description Formas de entrar nesta conta.
+             * @example [
+             *       "password"
+             *     ]
+             */
+            authProviders: ("password" | "google")[];
             /** Format: date-time */
             lastLoginAt?: string;
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+        };
+        SetPasswordDto: {
+            /** @example Azuos2026 */
+            password: string;
         };
         ChangePasswordDto: {
             currentPassword: string;
@@ -5918,7 +5963,7 @@ export interface components {
             /** @description RRULE of the series, as in the recurrence of a task. */
             recurrence: string | null;
             /** @enum {string} */
-            source: "local" | "google";
+            source: "google" | "local";
             /** @description Id of the event in the external calendar, when it came from one. */
             externalId: string | null;
         };
@@ -7164,6 +7209,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthUserDto"];
+                };
+            };
+        };
+    };
+    UsersController_setPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPasswordDto"];
+            };
+        };
+        responses: {
+            /** @description Senha definida. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
+            };
+        };
+    };
+    UsersController_unlinkGoogle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conta do Google desvinculada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
                 };
             };
         };
