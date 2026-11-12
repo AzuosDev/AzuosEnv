@@ -696,6 +696,14 @@ Design (Impeccable) na F17: detector mecânico sem achados; a sonda percorreu a 
 Pendência do deploy: `docker compose build` não rodou nesta máquina. O Docker Desktop está instalado mas nunca passou pela configuração inicial — não há serviço `com.docker.service` nem a distro `docker-desktop` no WSL, e o daemon não sobe por linha de comando. O que deu para validar foi `docker compose config`, que resolve as duas imagens (azuosenv-backend e azuosenv-frontend) sem erro. Falta abrir o Docker Desktop uma vez e rodar o build.
 Pendência: docs/ não tem o tailwind.config do site da Azuos Dev, então `--font-display` continua em Inter (o ignore `overused-font=inter` do Impeccable registra o motivo). A gaveta e a página da IA ainda mantêm históricos separados (vem da F15).
 
+### E-mails transacionais (identidade visual)
+`backend/src/modules/mail/templates/`: `email-theme.ts` (tokens Azuos em hex — mail client não resolve CSS var), `email-layout.ts` (`renderEmailHtml`/`renderEmailText` sobre tabelas, tudo inline, faixa `scene` com a marca, painel de detalhes em `surface-2`, botão blindado com VML para Outlook, preheader oculto, media query em 620 px que deixa o CTA de largura cheia), `invite-email.ts` (`buildInviteEmail`) e `notice-email.ts` (`renderNoticeHtml`, invólucro genérico).
+`MailMessage` ganhou `html?`; o `SmtpMailService` envia `message.html` ou, na falta dele, embrulha o texto com `renderNoticeHtml` — então notificação e lembrete saem com a mesma identidade sem o chamador escrever HTML.
+O convite passou a trazer quem convidou (`usersService.namesByIds`), o papel em português (`ROLE_LABELS`), o e-mail convidado, o prazo de `INVITE_TTL_DAYS` e o link em texto como alternativa ao botão.
+Correção junto: `acceptUrl` apontava para `/convites/aceitar?token=…`, rota que não existe no front; agora é `/convite/<token>`, que é o `convite.$token.tsx`.
+Impeccable: detector sem erro; os três avisos são da identidade já decidida (Inter provisório, brilho do `.btn-signal` do DESIGN.md) e do preheader oculto de 1 px.
+Achado ao validar: o `ConfigModule` lê o `.env` também no e2e, então a suíte enviava e-mail de verdade pelo Gmail (e batia em "Daily user sending limit exceeded", derrubando suítes inteiras) e enxergava a integração do Google como disponível. `test/utils/test-env.ts` agora zera `SMTP_HOST` e `GOOGLE_CLIENT_ID`, mantendo LogMailService e o CalendarProvider stub.
+
 ### Rotas do front (lista final)
 Públicas: `/` (redireciona: sem sessão → /login; com sessão, sem workspace → /onboarding, um → /w/$wsId, vários → /workspaces), `/login` (aceita ?next e ?expirado), `/cadastro`, `/convite/$token`, `/f/$token` (formulário público), `/p/doc/$token` (Doc público) e `/_dev/ui` (catálogo, só em dev).
 Com sessão, fora do shell: `/onboarding` e `/workspaces`.

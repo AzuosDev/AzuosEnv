@@ -16,13 +16,23 @@ import {
 } from '../../common/pagination/pagination-query.dto';
 import { sha256Hex } from '../../common/utils/hash';
 import { MailService } from '../mail/mail.service';
+import { buildInviteEmail } from '../mail/templates/invite-email';
 import { UsersService } from '../users/users.service';
 import { AcceptInviteDto, CreateInviteDto } from './dto/invite.dto';
-import { INVITE_TTL_MS, Invite, InviteDocument } from './schemas/invite.schema';
+import { INVITE_TTL_DAYS, INVITE_TTL_MS, Invite, InviteDocument } from './schemas/invite.schema';
 import { WorkspaceMember, WorkspaceMemberDocument } from './schemas/workspace-member.schema';
 import { Workspace, WorkspaceDocument } from './schemas/workspace.schema';
 import { RequestMembership } from './workspace-context';
+import { WorkspaceRole } from './workspace-roles';
 import { MEMBER_INVITED, MemberInvitedEvent } from './workspace-events';
+
+const ROLE_LABELS: Record<WorkspaceRole, string> = {
+  owner: 'Proprietário',
+  admin: 'Administrador',
+  member: 'Membro',
+  limited: 'Acesso limitado',
+  guest: 'Convidado',
+};
 
 export interface CreatedInvite {
   invite: InviteDocument;
@@ -100,11 +110,16 @@ export class InvitesService {
 
     const acceptUrl = this.acceptUrl(token);
 
-    await this.mail.send({
-      to: dto.email,
-      subject: `Convite para o workspace ${workspace.name}`,
-      text: `Você foi convidado para o workspace ${workspace.name}. Acesse ${acceptUrl} para aceitar.`,
-    });
+    await this.mail.send(
+      buildInviteEmail({
+        to: dto.email,
+        workspaceName: workspace.name,
+        roleLabel: ROLE_LABELS[dto.role],
+        acceptUrl,
+        expiresInDays: INVITE_TTL_DAYS,
+        inviterName: await this.inviterName(invitedBy),
+      }),
+    );
 
     if (user) {
       this.events.emit(MEMBER_INVITED, {
@@ -267,9 +282,21 @@ export class InvitesService {
     return member;
   }
 
+  /** The invite reads better signed; a missing name just drops that sentence. */
+  private async inviterName(invitedBy: Types.ObjectId): Promise<string | undefined> {
+    try {
+      const names = await this.usersService.namesByIds([invitedBy]);
+      const name = names.get(String(invitedBy))?.trim();
+
+      return name && name.length > 0 ? name : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
   private acceptUrl(token: string): string {
     const appUrl = this.config.get<string>('APP_URL') ?? 'http://localhost:5173';
 
-    return `${appUrl.replace(/\/+$/, '')}/convites/aceitar?token=${token}`;
+    return `${appUrl.replace(/\/+$/, '')}/convite/${token}`;
   }
 }

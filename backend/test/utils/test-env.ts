@@ -16,6 +16,11 @@ export const TEST_ENV: Record<string, string> = {
   COOKIE_SECURE: 'false',
   COOKIE_DOMAIN: '',
   UPLOAD_DIR: TEST_UPLOAD_DIR,
+  // Empty host keeps the suite on LogMailService; otherwise the .env credentials
+  // make every run send real mail and burn the provider's daily quota.
+  SMTP_HOST: '',
+  // No client id: the CalendarProvider of the suite is always the stub.
+  GOOGLE_CLIENT_ID: '',
   // No key: the AiProvider of the suite is always the stub.
   XAI_API_KEY: '',
   GROK_MODEL: 'grok-test',

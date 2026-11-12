@@ -2,6 +2,7 @@ import { Injectable, Logger, OnApplicationShutdown } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Transporter, createTransport } from 'nodemailer';
 import { MailMessage, MailService } from './mail.service';
+import { renderNoticeHtml } from './templates/notice-email';
 
 /** Sends through the SMTP server configured in SMTP_*. */
 @Injectable()
@@ -31,6 +32,7 @@ export class SmtpMailService extends MailService implements OnApplicationShutdow
       to: message.to,
       subject: message.subject,
       text: message.text,
+      html: message.html ?? renderNoticeHtml(message.subject, message.text),
     });
 
     this.logger.log(`[mail] enviado para ${message.to}: ${message.subject}`);
