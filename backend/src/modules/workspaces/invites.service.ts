@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -15,7 +16,9 @@ import {
   PaginationQueryDto,
 } from '../../common/pagination/pagination-query.dto';
 import { sha256Hex } from '../../common/utils/hash';
+import { describeMailError } from '../mail/mail-error';
 import { MailService } from '../mail/mail.service';
+
 import { buildInviteEmail } from '../mail/templates/invite-email';
 import { UsersService } from '../users/users.service';
 import { AcceptInviteDto, CreateInviteDto } from './dto/invite.dto';
@@ -38,6 +41,8 @@ export interface CreatedInvite {
   invite: InviteDocument;
   token: string;
   acceptUrl: string;
+  /** false quando o convite foi criado mas o e-mail nao saiu. */
+  emailSent: boolean;
 }
 
 export interface AcceptedInvite {
@@ -48,6 +53,8 @@ export interface AcceptedInvite {
 
 @Injectable()
 export class InvitesService {
+  private readonly logger = new Logger(InvitesService.name);
+
   constructor(
     @InjectModel(Invite.name) private readonly model: Model<Invite>,
     @InjectModel(WorkspaceMember.name) private readonly members: Model<WorkspaceMember>,
@@ -110,16 +117,27 @@ export class InvitesService {
 
     const acceptUrl = this.acceptUrl(token);
 
-    await this.mail.send(
-      buildInviteEmail({
-        to: dto.email,
-        workspaceName: workspace.name,
-        roleLabel: ROLE_LABELS[dto.role],
-        acceptUrl,
-        expiresInDays: INVITE_TTL_DAYS,
-        inviterName: await this.inviterName(invitedBy),
-      }),
-    );
+    // O convite ja esta gravado: uma falha de SMTP nao pode derrubar a criacao,
+    // senao sobra convite orfao no banco e o 500 nao diz o que fazer.
+    let emailSent = true;
+
+    try {
+      await this.mail.send(
+        buildInviteEmail({
+          to: dto.email,
+          workspaceName: workspace.name,
+          roleLabel: ROLE_LABELS[dto.role],
+          acceptUrl,
+          expiresInDays: INVITE_TTL_DAYS,
+          inviterName: await this.inviterName(invitedBy),
+        }),
+      );
+    } catch (error) {
+      emailSent = false;
+      this.logger.error(
+        `[invite] e-mail não enviado para ${dto.email}: ${describeMailError(error)}`,
+      );
+    }
 
     if (user) {
       this.events.emit(MEMBER_INVITED, {
@@ -133,7 +151,7 @@ export class InvitesService {
       } satisfies MemberInvitedEvent);
     }
 
-    return { invite, token, acceptUrl };
+    return { invite, token, acceptUrl, emailSent };
   }
 
   /** Invites still waiting for an answer. */

@@ -75,4 +75,9 @@ export class CreatedInviteDto {
 
   @ApiProperty({ description: 'Link enviado por e-mail ao convidado.' })
   acceptUrl: string;
+
+  @ApiProperty({
+    description: 'false quando o convite foi criado mas o e-mail não pôde ser enviado.',
+  })
+  emailSent: boolean;
 }

@@ -171,9 +171,19 @@ export function invitesQuery(wsId: string) {
   });
 }
 
+/** Convite criado: o link vale mesmo quando o e-mail não sai. */
+export interface CreatedInvite {
+  acceptUrl: string;
+  emailSent: boolean;
+}
+
 /** Convidar de novo o mesmo e-mail invalida o convite anterior e manda outro link. */
-export async function createInvite(wsId: string, body: CreateInviteInput): Promise<void> {
-  unwrap(await api.POST('/api/v1/workspaces/{wsId}/invites', { params: { path: { wsId } }, body }));
+export async function createInvite(wsId: string, body: CreateInviteInput): Promise<CreatedInvite> {
+  const created = unwrap(
+    await api.POST('/api/v1/workspaces/{wsId}/invites', { params: { path: { wsId } }, body }),
+  );
+
+  return { acceptUrl: created.acceptUrl, emailSent: created.emailSent };
 }
 
 export async function cancelInvite(wsId: string, inviteId: string): Promise<void> {

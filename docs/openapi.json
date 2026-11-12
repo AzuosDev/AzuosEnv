@@ -16707,12 +16707,17 @@
           "acceptUrl": {
             "type": "string",
             "description": "Link enviado por e-mail ao convidado."
+          },
+          "emailSent": {
+            "type": "boolean",
+            "description": "false quando o convite foi criado mas o e-mail não pôde ser enviado."
           }
         },
         "required": [
           "invite",
           "token",
-          "acceptUrl"
+          "acceptUrl",
+          "emailSent"
         ]
       },
       "AcceptInviteDto": {

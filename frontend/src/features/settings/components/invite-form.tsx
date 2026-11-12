@@ -38,13 +38,29 @@ export function InviteForm({ wsId }: { wsId: string }) {
 
   const invite = useMutation({
     mutationFn: (values: Values) => createInvite(wsId, values),
-    onSuccess: async (_result, values) => {
+    onSuccess: async (created, values) => {
       reset({ email: '', role: values.role });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.invites(wsId) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.members(wsId) }),
       ]);
-      toast.success(`Convite enviado para ${values.email}.`);
+
+      if (created.emailSent) {
+        toast.success(`Convite enviado para ${values.email}.`);
+
+        return;
+      }
+
+      // O convite existe e o link é válido: sem o e-mail, resta entregar o link.
+      toast.warning(`Convite criado, mas o e-mail não pôde ser enviado.`, {
+        description: 'Copie o link e envie para a pessoa.',
+        action: {
+          label: 'Copiar link',
+          onClick: () => {
+            void navigator.clipboard.writeText(created.acceptUrl);
+          },
+        },
+      });
     },
     onError: (error: unknown) => {
       toast.error(errorMessage(error));

@@ -3641,6 +3641,8 @@ export interface components {
             token: string;
             /** @description Link enviado por e-mail ao convidado. */
             acceptUrl: string;
+            /** @description false quando o convite foi criado mas o e-mail não pôde ser enviado. */
+            emailSent: boolean;
         };
         AcceptInviteDto: {
             /** @description Token recebido no convite. */

@@ -470,6 +470,7 @@ describe('Workspaces', () => {
       });
       expect(created.body.invite.tokenHash).toBeUndefined();
       expect(created.body.acceptUrl).toContain(created.body.token);
+      expect(created.body.emailSent).toBe(true);
 
       const pending = await withAuth(
         http().get(`/api/v1/workspaces/${workspace.id}/invites`),
