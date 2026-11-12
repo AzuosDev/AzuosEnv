@@ -93,6 +93,12 @@ export function BoardCanvas({ scene, editable, onChange }: BoardCanvasProps) {
             const selected = (state as { selectedElementIds?: Record<string, boolean> })
               .selectedElementIds;
 
+            // Antes de a cena do servidor entrar, o canvas está vazio: avisar
+            // mudança agora apagaria o quadro de quem abriu junto.
+            if (applied.current !== scene.epoch) {
+              return;
+            }
+
             onChange(
               elements as readonly CanvasElement[],
               Object.keys(selected ?? {}).filter((id) => selected?.[id] === true),

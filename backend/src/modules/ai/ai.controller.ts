@@ -110,7 +110,10 @@ export class AiController {
   }
 
   @Post('summarize')
-  @ApiOkResponse({ description: 'Resumo da tarefa, thread, canal ou Doc.', type: AiSummaryResultDto })
+  @ApiOkResponse({
+    description: 'Resumo da tarefa, thread, canal ou Doc.',
+    type: AiSummaryResultDto,
+  })
   summarize(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: AiSummarizeDto,

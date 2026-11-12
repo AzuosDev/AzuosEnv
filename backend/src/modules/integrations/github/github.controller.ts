@@ -14,6 +14,8 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { SuccessDto } from '../../../common/dto/api-error.dto';
+import { ApiWorkspaceParam } from '../../../common/swagger/api-workspace-param.decorator';
 import { Audit } from '../../audit/audit.decorator';
 import { Public } from '../../../common/decorators/public.decorator';
 import { ParseObjectIdPipe } from '../../../common/pipes/parse-object-id.pipe';
@@ -23,6 +25,7 @@ import { Roles } from '../../workspaces/decorators/roles.decorator';
 import { CurrentMembership } from '../../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../../workspaces/workspace-context';
+import { GithubIntegrationResultDto, GithubIntegrationsResultDto } from './dto/github-result.dto';
 import { CreateGithubIntegrationDto, UpdateGithubIntegrationDto } from './dto/github.dto';
 import { GITHUB_EVENT_HEADER, GITHUB_SIGNATURE_HEADER } from './github-fields';
 import { GithubIntegrationWithSecret, GithubService, GithubWebhookResult } from './github.service';
@@ -30,6 +33,7 @@ import { GithubIntegrationDocument } from './schemas/github-integration.schema';
 
 @ApiTags('integrations')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Roles('admin')
 @Controller('workspaces/:wsId/integrations/github')
@@ -38,7 +42,10 @@ export class GithubIntegrationsController {
 
   @Post()
   @Audit('integration.github.created', 'integration')
-  @ApiCreatedResponse({ description: 'Repositório ligado; o secret aparece só aqui.' })
+  @ApiCreatedResponse({
+    description: 'Repositório ligado; o secret aparece só aqui.',
+    type: GithubIntegrationResultDto,
+  })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateGithubIntegrationDto,
@@ -47,7 +54,10 @@ export class GithubIntegrationsController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Repositórios ligados e a URL do webhook.' })
+  @ApiOkResponse({
+    description: 'Repositórios ligados e a URL do webhook.',
+    type: GithubIntegrationsResultDto,
+  })
   list(
     @CurrentMembership() membership: RequestMembership,
   ): Promise<{ items: GithubIntegrationDocument[]; webhookUrl: string }> {
@@ -56,7 +66,7 @@ export class GithubIntegrationsController {
 
   @Patch(':integrationId')
   @Audit('integration.github.updated', 'integration', 'integrationId')
-  @ApiOkResponse({ description: 'Integração atualizada.' })
+  @ApiOkResponse({ description: 'Integração atualizada.', type: GithubIntegrationResultDto })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('integrationId', ParseObjectIdPipe) integrationId: Types.ObjectId,
@@ -67,7 +77,7 @@ export class GithubIntegrationsController {
 
   @Delete(':integrationId')
   @Audit('integration.github.deleted', 'integration', 'integrationId')
-  @ApiOkResponse({ description: 'Integração removida.' })
+  @ApiOkResponse({ description: 'Integração removida.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('integrationId', ParseObjectIdPipe) integrationId: Types.ObjectId,

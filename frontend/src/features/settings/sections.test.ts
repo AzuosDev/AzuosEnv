@@ -15,6 +15,13 @@ describe('visibleSections', () => {
         'workspace',
         'pessoas',
         'equipes',
+        'clickapps',
+        'campos',
+        'integracoes',
+        'webhooks',
+        'chaves',
+        'auditoria',
+        'dados',
       ]);
     }
   });
@@ -25,6 +32,9 @@ describe('visibleSections', () => {
 
       expect(ids).not.toContain('workspace');
       expect(ids).not.toContain('pessoas');
+      expect(ids).not.toContain('clickapps');
+      expect(ids).not.toContain('webhooks');
+      expect(ids).not.toContain('auditoria');
       expect(ids).toContain('equipes');
       expect(ids).toContain('perfil');
     }
@@ -32,11 +42,15 @@ describe('visibleSections', () => {
 });
 
 describe('groupedSections', () => {
-  it('mantém os dois grupos para admin', () => {
-    expect(groupedSections('admin').map((entry) => entry.group)).toEqual(['pessoal', 'workspace']);
+  it('mantém os três grupos para admin', () => {
+    expect(groupedSections('admin').map((entry) => entry.group)).toEqual([
+      'pessoal',
+      'workspace',
+      'avancado',
+    ]);
   });
 
-  it('para member sobra o grupo do workspace só com Equipes', () => {
+  it('para member sobra o grupo do workspace só com Equipes e nada em Avançado', () => {
     const groups = groupedSections('member');
 
     expect(groups.map((entry) => entry.group)).toEqual(['pessoal', 'workspace']);

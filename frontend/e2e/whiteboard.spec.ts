@@ -24,7 +24,11 @@ interface BoardBody {
   elements: unknown[];
 }
 
-/** Desenha um retângulo no canvas do Excalidraw. */
+/**
+ * Desenha um retângulo no canvas do Excalidraw: a ferramenta vai pela barra
+ * (o atalho de teclado só chega quando o canvas está em foco) e o arrasto é o
+ * mouse de verdade.
+ */
 async function drawRectangle(target: Page, offset = 0): Promise<void> {
   const canvas = target.locator('[data-testid="board-canvas"] canvas').first();
 
@@ -37,11 +41,40 @@ async function drawRectangle(target: Page, offset = 0): Promise<void> {
   const x = (box?.x ?? 0) + 120 + offset;
   const y = (box?.y ?? 0) + 120 + offset;
 
-  await target.keyboard.press('r');
-  await target.mouse.move(x, y);
-  await target.mouse.down();
-  await target.mouse.move(x + 140, y + 90, { steps: 8 });
-  await target.mouse.up();
+  await target.locator('.App-toolbar label[title^="Retângulo"]').click();
+
+  // Um evento por quadro de animação: o Excalidraw aplica o arrasto no rAF, e
+  // tudo no mesmo tick sairia com tamanho zero.
+  const fire = async (type: string, cx: number, cy: number, buttons: number): Promise<void> => {
+    await target.evaluate(
+      ([kind, clientX, clientY, pressed]) => {
+        const node =
+          document.querySelector('.excalidraw__canvas.interactive') ??
+          document.querySelector('.excalidraw');
+
+        node?.dispatchEvent(
+          new PointerEvent(kind as string, {
+            bubbles: true,
+            cancelable: true,
+            clientX: clientX as number,
+            clientY: clientY as number,
+            button: 0,
+            buttons: pressed as number,
+            pointerId: 1,
+            pointerType: 'mouse',
+            isPrimary: true,
+          }),
+        );
+      },
+      [type, cx, cy, buttons] as [string, number, number, number],
+    );
+    await target.waitForTimeout(80);
+  };
+
+  await fire('pointerdown', x, y, 1);
+  await fire('pointermove', x + 70, y + 45, 1);
+  await fire('pointermove', x + 140, y + 90, 1);
+  await fire('pointerup', x + 140, y + 90, 0);
 }
 
 async function readBoard(): Promise<BoardBody> {

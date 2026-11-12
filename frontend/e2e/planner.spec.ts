@@ -122,8 +122,11 @@ test('cria um evento e o remove do calendário', async () => {
   await expect(page.getByRole('button', { name: new RegExp(EVENT) })).toHaveCount(0);
 });
 
-test('o Google Agenda espera a integração e os recortes trocam', async () => {
-  await expect(page.getByRole('button', { name: 'Conectar Google Agenda' })).toBeDisabled();
+test('o Google Agenda leva para Integrações e os recortes trocam', async () => {
+  const connect = page.getByRole('link', { name: 'Conectar Google Agenda' });
+
+  await expect(connect).toBeVisible();
+  await expect(connect).toHaveAttribute('href', /\/configuracoes\/integracoes$/);
 
   const modes = page.getByRole('group', { name: 'Recorte do Planner' });
 

@@ -37,6 +37,7 @@ import {
   type PlannerMode,
 } from '../planner-model';
 import { EventDialog } from './event-dialog';
+import { GoogleCalendarButton } from './google-calendar-button';
 import { PlannerGrid } from './planner-grid';
 import { PlannerMonth } from './planner-month';
 import { UnscheduledPanel, taskOfDragId } from './unscheduled-panel';
@@ -171,14 +172,7 @@ export function PlannerPage({ wsId }: { wsId: string }) {
               </div>
             ) : null}
 
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled
-              title="Disponível quando a integração com o Google entrar"
-            >
-              Conectar Google Agenda
-            </Button>
+            <GoogleCalendarButton wsId={wsId} />
 
             <Button
               size="sm"

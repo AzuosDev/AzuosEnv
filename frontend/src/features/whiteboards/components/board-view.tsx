@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft, ListPlus } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { errorMessage } from '@/api/errors';
 import { queryKeys } from '@/api/keys';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/toast';
 import { ListPicker } from '@/features/tasks/components/list-picker';
 import { elementToTask, renameWhiteboard, whiteboardQuery } from '../api';
+import type { CanvasElement } from '../elements';
 import { useBoardSync } from '../hooks/use-board-sync';
 import { BoardCanvas } from './board-canvas';
 
@@ -27,6 +28,10 @@ const SAVE_LABEL: Record<string, string> = {
   saved: 'Salvo',
   error: 'Falhou ao salvar',
 };
+
+function sameIds(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((id, index) => id === b[index]);
+}
 
 export interface BoardViewProps {
   wsId: string;
@@ -38,10 +43,24 @@ export function BoardView({ wsId, whiteboardId }: BoardViewProps) {
   const client = useQueryClient();
   const board = useQuery(whiteboardQuery(wsId, whiteboardId));
   const sync = useBoardSync(wsId, board.data);
+  const { queue } = sync;
   const [selected, setSelected] = useState<string[]>([]);
   const [converting, setConverting] = useState(false);
   const [listId, setListId] = useState('');
   const [title, setTitle] = useState<string | null>(null);
+
+  /**
+   * O Excalidraw chama onChange a cada render. A seleção só pode virar estado
+   * novo quando muda de verdade: um array novo igual ao anterior realimentaria
+   * o canvas e o React estouraria o limite de updates.
+   */
+  const handleChange = useCallback(
+    (elements: readonly CanvasElement[], selectedIds: string[]) => {
+      setSelected((current) => (sameIds(current, selectedIds) ? current : selectedIds));
+      queue(elements);
+    },
+    [queue],
+  );
 
   const rename = useMutation({
     mutationFn: (next: string) => renameWhiteboard(wsId, whiteboardId, next),
@@ -70,7 +89,7 @@ export function BoardView({ wsId, whiteboardId }: BoardViewProps) {
 
   if (board.isPending) {
     return (
-      <div className="flex flex-1 items-center justify-center">
+      <div className="flex h-full items-center justify-center">
         <Spinner label="Carregando o quadro" />
       </div>
     );
@@ -78,7 +97,7 @@ export function BoardView({ wsId, whiteboardId }: BoardViewProps) {
 
   if (!board.data) {
     return (
-      <div className="flex flex-1 items-center justify-center p-6 text-center text-muted">
+      <div className="flex h-full items-center justify-center p-6 text-center text-muted">
         Este quadro não existe ou você não tem acesso a ele.
       </div>
     );
@@ -87,7 +106,7 @@ export function BoardView({ wsId, whiteboardId }: BoardViewProps) {
   const one = selected.length === 1 ? selected[0] : undefined;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line px-3 py-2 md:px-6">
         <Button variant="ghost" size="icon" aria-label="Voltar aos quadros" asChild>
           <Link to="/w/$wsId/whiteboards" params={{ wsId }}>
@@ -133,14 +152,13 @@ export function BoardView({ wsId, whiteboardId }: BoardViewProps) {
         </Button>
       </header>
 
-      <BoardCanvas
-        scene={sync.scene}
-        editable
-        onChange={(elements, selectedIds) => {
-          setSelected(selectedIds);
-          sync.queue(elements);
-        }}
-      />
+      {sync.scene.epoch > 0 ? (
+        <BoardCanvas scene={sync.scene} editable onChange={handleChange} />
+      ) : (
+        <div className="flex min-h-0 flex-1 items-center justify-center">
+          <Spinner label="Carregando o quadro" />
+        </div>
+      )}
 
       <Dialog open={converting} onOpenChange={setConverting}>
         <DialogContent>

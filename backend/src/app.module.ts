@@ -55,8 +55,16 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
         uri: config.getOrThrow<string>('MONGODB_URI'),
       }),
     }),
-    ThrottlerModule.forRoot({
-      throttlers: [{ ttl: 60_000, limit: 120 }],
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [
+          {
+            ttl: config.get<number>('THROTTLE_TTL') ?? 60_000,
+            limit: config.get<number>('THROTTLE_LIMIT') ?? 120,
+          },
+        ],
+      }),
     }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),

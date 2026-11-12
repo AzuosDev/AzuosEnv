@@ -249,7 +249,8 @@ test('a tarefa da lixeira volta pelo Restaurar', async () => {
 
   await page.goto(`/w/${wsId}/lixeira`);
 
-  const row = page.getByRole('listitem').filter({ hasText: TRASHED });
+  // Dentro do main: o toast de sucesso também é um listitem com o mesmo texto.
+  const row = page.getByRole('main').getByRole('listitem').filter({ hasText: TRASHED });
 
   await expect(row).toBeVisible({ timeout: 20_000 });
   await row.getByRole('button', { name: 'Restaurar' }).click();

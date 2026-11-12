@@ -33,6 +33,8 @@ export const AUDIT_ACTIONS = [
   'webhook.created',
   'webhook.updated',
   'webhook.deleted',
+  'webhook.redelivered',
+  'integration.google.calendar.changed',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

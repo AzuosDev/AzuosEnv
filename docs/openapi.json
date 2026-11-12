@@ -49,7 +49,9 @@
                 "integration.google.disconnected",
                 "webhook.created",
                 "webhook.updated",
-                "webhook.deleted"
+                "webhook.deleted",
+                "webhook.redelivered",
+                "integration.google.calendar.changed"
               ]
             }
           },
@@ -59,6 +61,16 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -1258,7 +1270,14 @@
         },
         "responses": {
           "201": {
-            "description": "Chave criada; o token aparece só nesta resposta."
+            "description": "Chave criada; o token aparece só nesta resposta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedApiKeyResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1275,7 +1294,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Chaves do usuário, mais novas primeiro."
+            "description": "Chaves do usuário, mais novas primeiro.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeysResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1303,7 +1329,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Chave revogada."
+            "description": "Chave revogada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -12738,10 +12771,73 @@
     "/api/v1/workspaces/{wsId}/integrations/google": {
       "get": {
         "operationId": "GoogleIntegrationController_status",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Situação da conta do Google deste usuário."
+            "description": "Situação da conta do Google deste usuário.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleStatusResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "integrations"
+        ]
+      },
+      "patch": {
+        "operationId": "GoogleIntegrationController_chooseCalendar",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChooseCalendarDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agenda escolhida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleStatusResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -12755,10 +12851,28 @@
       },
       "delete": {
         "operationId": "GoogleIntegrationController_disconnect",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Conta desconectada."
+            "description": "Conta desconectada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -12774,10 +12888,65 @@
     "/api/v1/workspaces/{wsId}/integrations/google/auth-url": {
       "post": {
         "operationId": "GoogleIntegrationController_authUrl",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "URL de consentimento do Google."
+            "description": "URL de consentimento do Google.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleAuthUrlResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/integrations/google/calendars": {
+      "get": {
+        "operationId": "GoogleIntegrationController_calendars",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agendas da conta conectada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleCalendarsResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -12821,7 +12990,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Conta conectada."
+            "description": "Conta conectada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleCallbackResultDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -15240,7 +15416,18 @@
     "/api/v1/workspaces/{wsId}/integrations/github": {
       "post": {
         "operationId": "GithubIntegrationsController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -15253,7 +15440,14 @@
         },
         "responses": {
           "201": {
-            "description": "Repositório ligado; o secret aparece só aqui."
+            "description": "Repositório ligado; o secret aparece só aqui.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubIntegrationResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -15267,10 +15461,28 @@
       },
       "get": {
         "operationId": "GithubIntegrationsController_list",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Repositórios ligados e a URL do webhook."
+            "description": "Repositórios ligados e a URL do webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubIntegrationsResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -15294,6 +15506,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -15308,7 +15530,14 @@
         },
         "responses": {
           "200": {
-            "description": "Integração atualizada."
+            "description": "Integração atualizada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubIntegrationResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -15330,11 +15559,28 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Integração removida."
+            "description": "Integração removida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -15364,7 +15610,18 @@
     "/api/v1/workspaces/{wsId}/webhooks": {
       "post": {
         "operationId": "OutgoingWebhooksController_create",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -15377,7 +15634,14 @@
         },
         "responses": {
           "201": {
-            "description": "Webhook criado; o secret aparece só nesta resposta."
+            "description": "Webhook criado; o secret aparece só nesta resposta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutgoingWebhookResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -15391,10 +15655,28 @@
       },
       "get": {
         "operationId": "OutgoingWebhooksController_list",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Webhooks do workspace."
+            "description": "Webhooks do workspace.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutgoingWebhooksResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -15417,6 +15699,16 @@
             "in": "path",
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -15451,6 +15743,16 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "requestBody": {
@@ -15465,7 +15767,14 @@
         },
         "responses": {
           "200": {
-            "description": "Webhook atualizado."
+            "description": "Webhook atualizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutgoingWebhookResultDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -15487,11 +15796,81 @@
             "schema": {
               "$ref": "#/components/schemas/ObjectId"
             }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Webhook removido com o log de entregas."
+            "description": "Webhook removido com o log de entregas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "integrations"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/webhooks/{webhookId}/deliveries/{deliveryId}/redeliver": {
+      "post": {
+        "operationId": "OutgoingWebhooksController_redeliver",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "deliveryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entrega reenviada; o reenvio é uma linha nova do log.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDelivery"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -15534,6 +15913,16 @@
             "description": "Cursor retornado em nextCursor.",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
             }
           }
         ],
@@ -15579,7 +15968,18 @@
     "/api/v1/workspaces/{wsId}/import/clickup": {
       "post": {
         "operationId": "ImportController_clickupCsv",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -15609,52 +16009,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "rows": {
-                      "type": "number"
-                    },
-                    "tasks": {
-                      "type": "number"
-                    },
-                    "lists": {
-                      "type": "number"
-                    },
-                    "folders": {
-                      "type": "number"
-                    },
-                    "tags": {
-                      "type": "number"
-                    },
-                    "skipped": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "line": {
-                            "type": "number"
-                          },
-                          "reason": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    },
-                    "warnings": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "line": {
-                            "type": "number"
-                          },
-                          "reason": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/ImportReportDto"
                 }
               }
             }
@@ -15673,42 +16028,25 @@
     "/api/v1/workspaces/{wsId}/export": {
       "get": {
         "operationId": "ExportController_download",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Workspace inteiro em JSON, sem nenhum segredo.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "exportedAt": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "version": {
-                      "type": "number",
-                      "example": 1
-                    },
-                    "workspace": {
-                      "type": "object"
-                    },
-                    "users": {
-                      "type": "array",
-                      "items": {
-                        "type": "object"
-                      }
-                    },
-                    "collections": {
-                      "type": "object"
-                    },
-                    "truncated": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/WorkspaceExportResultDto"
                 }
               }
             }
@@ -16698,6 +17036,92 @@
           "name"
         ]
       },
+      "ApiKey": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "name": {
+            "type": "string"
+          },
+          "hint": {
+            "type": "string",
+            "description": "`azk_` plus the first characters of the token, to identify it in the listing."
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "read",
+                "write"
+              ]
+            }
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastUsedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "revokedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "hint",
+          "scopes",
+          "expiresAt",
+          "lastUsedAt",
+          "revokedAt"
+        ]
+      },
+      "CreatedApiKeyResultDto": {
+        "type": "object",
+        "properties": {
+          "apiKey": {
+            "description": "Chave criada.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApiKey"
+              }
+            ]
+          },
+          "token": {
+            "type": "string",
+            "description": "Token em claro; só aparece nesta resposta.",
+            "example": "azk_3f0c"
+          }
+        },
+        "required": [
+          "apiKey",
+          "token"
+        ]
+      },
+      "ApiKeysResultDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Chaves do usuário, mais novas primeiro.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiKey"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "ClickAppsOverrideDto": {
         "type": "object",
         "properties": {
@@ -16778,6 +17202,13 @@
       "Space": {
         "type": "object",
         "properties": {
+          "clickApps": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "description": "ClickApps ligados ou desligados só neste Space."
+          },
           "workspaceId": {
             "$ref": "#/components/schemas/ObjectId"
           },
@@ -16795,9 +17226,6 @@
           },
           "statusSetId": {
             "$ref": "#/components/schemas/ObjectId"
-          },
-          "clickApps": {
-            "type": "object"
           },
           "position": {
             "type": "string"
@@ -24308,6 +24736,131 @@
           "end"
         ]
       },
+      "GoogleStatusResultDto": {
+        "type": "object",
+        "properties": {
+          "connected": {
+            "type": "boolean",
+            "description": "Conta do Google conectada neste workspace."
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "pessoa@azuos.dev"
+          },
+          "calendarId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Agenda escolhida.",
+            "example": "primary"
+          },
+          "syncedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "available": {
+            "type": "boolean",
+            "description": "False quando o servidor não tem credencial do Google."
+          }
+        },
+        "required": [
+          "connected",
+          "email",
+          "calendarId",
+          "syncedAt",
+          "available"
+        ]
+      },
+      "GoogleAuthUrlResultDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL da tela de consentimento."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "GoogleCalendarDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "Agenda principal da conta."
+          },
+          "writable": {
+            "type": "boolean",
+            "description": "A conta pode gravar eventos nela."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "primary",
+          "writable"
+        ]
+      },
+      "GoogleCalendarsResultDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Agendas da conta conectada.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GoogleCalendarDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ChooseCalendarDto": {
+        "type": "object",
+        "properties": {
+          "calendarId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 320,
+            "description": "Agenda do Google que a sincronização usa.",
+            "example": "primary"
+          }
+        },
+        "required": [
+          "calendarId"
+        ]
+      },
+      "GoogleCallbackResultDto": {
+        "type": "object",
+        "properties": {
+          "connected": {
+            "type": "boolean",
+            "example": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "pessoa@azuos.dev"
+          },
+          "workspaceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "connected",
+          "email",
+          "workspaceId"
+        ]
+      },
       "CreateGoalFolderDto": {
         "type": "object",
         "properties": {
@@ -26124,6 +26677,92 @@
           "repository"
         ]
       },
+      "GithubIntegration": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "repository": {
+            "type": "string",
+            "description": "`owner/name`, always lowercase: one repository belongs to one workspace."
+          },
+          "reviewStatusName": {
+            "type": "string"
+          },
+          "deployStatusName": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "lastEventAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "workspaceId",
+          "repository",
+          "reviewStatusName",
+          "deployStatusName",
+          "active",
+          "createdBy",
+          "lastEventAt"
+        ]
+      },
+      "GithubIntegrationResultDto": {
+        "type": "object",
+        "properties": {
+          "integration": {
+            "description": "Mapeamento repositório → workspace.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GithubIntegration"
+              }
+            ]
+          },
+          "secret": {
+            "type": "string",
+            "nullable": true,
+            "description": "Secret em claro; só aparece quando o servidor o gera ou o troca.",
+            "example": "a1b2c3"
+          },
+          "webhookUrl": {
+            "type": "string",
+            "description": "URL que o repositório deve chamar."
+          }
+        },
+        "required": [
+          "integration",
+          "secret",
+          "webhookUrl"
+        ]
+      },
+      "GithubIntegrationsResultDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Repositórios ligados.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GithubIntegration"
+            }
+          },
+          "webhookUrl": {
+            "type": "string",
+            "description": "URL que os repositórios devem chamar."
+          }
+        },
+        "required": [
+          "items",
+          "webhookUrl"
+        ]
+      },
       "UpdateGithubIntegrationDto": {
         "type": "object",
         "properties": {
@@ -26228,6 +26867,44 @@
           "lastDeliveryAt"
         ]
       },
+      "OutgoingWebhookResultDto": {
+        "type": "object",
+        "properties": {
+          "webhook": {
+            "description": "Webhook de saída.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OutgoingWebhook"
+              }
+            ]
+          },
+          "secret": {
+            "type": "string",
+            "nullable": true,
+            "description": "Secret em claro; só aparece quando é gerado ou trocado.",
+            "example": "a1b2c3"
+          }
+        },
+        "required": [
+          "webhook",
+          "secret"
+        ]
+      },
+      "OutgoingWebhooksResultDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Webhooks do workspace.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OutgoingWebhook"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "UpdateOutgoingWebhookDto": {
         "type": "object",
         "properties": {
@@ -26279,12 +26956,12 @@
             "additionalProperties": true
           },
           "status": {
-            "type": "string",
             "enum": [
               "success",
               "pending",
               "failed"
-            ]
+            ],
+            "type": "string"
           },
           "attempts": {
             "type": "number"
@@ -26320,6 +26997,122 @@
           "error",
           "nextAttemptAt",
           "deliveredAt"
+        ]
+      },
+      "SkippedRowDto": {
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "number",
+            "description": "Linha do arquivo; o cabeçalho é a linha 1."
+          },
+          "reason": {
+            "type": "string",
+            "example": "LINHA SEM NOME DE TAREFA"
+          }
+        },
+        "required": [
+          "line",
+          "reason"
+        ]
+      },
+      "ImportReportDto": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "number",
+            "description": "Linhas lidas do arquivo."
+          },
+          "tasks": {
+            "type": "number",
+            "description": "Tarefas criadas."
+          },
+          "lists": {
+            "type": "number",
+            "description": "Lists criadas."
+          },
+          "folders": {
+            "type": "number",
+            "description": "Folders criadas."
+          },
+          "tags": {
+            "type": "number",
+            "description": "Tags criadas."
+          },
+          "skipped": {
+            "description": "Linhas que não entraram.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkippedRowDto"
+            }
+          },
+          "warnings": {
+            "description": "Linhas importadas com algum ajuste.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkippedRowDto"
+            }
+          }
+        },
+        "required": [
+          "rows",
+          "tasks",
+          "lists",
+          "folders",
+          "tags",
+          "skipped",
+          "warnings"
+        ]
+      },
+      "WorkspaceExportResultDto": {
+        "type": "object",
+        "properties": {
+          "exportedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "number",
+            "example": 1
+          },
+          "workspace": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "Nome e e-mail de quem participa do workspace."
+          },
+          "collections": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "description": "Documentos de cada coleção do workspace."
+          },
+          "truncated": {
+            "description": "Coleções cortadas no limite do export.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "exportedAt",
+          "version",
+          "workspace",
+          "users",
+          "collections",
+          "truncated"
         ]
       },
       "ApiErrorDto": {

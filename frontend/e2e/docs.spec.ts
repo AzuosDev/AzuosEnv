@@ -137,8 +137,12 @@ test('o menu de comandos insere uma citação', async () => {
   const commands = page.getByRole('listbox', { name: 'Comandos do editor' });
 
   await expect(commands.getByRole('option', { name: /Citação/ })).toBeVisible();
-  await commands.getByRole('option', { name: /Citação/ }).click();
-  await editor.pressSequentially('Cuidado com o prazo.', { delay: 10 });
+
+  // Pelo teclado: clicar na opção tira o foco do editor e o texto não entraria
+  // na citação recém-criada.
+  await page.keyboard.press('Enter');
+  await expect(editor.locator('blockquote')).toBeVisible();
+  await page.keyboard.type('Cuidado com o prazo.', { delay: 10 });
 
   await expect(editor.locator('blockquote')).toContainText('Cuidado com o prazo.');
   await expect(page.getByRole('status', { name: 'Estado do salvamento' })).toContainText('Salvo');

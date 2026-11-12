@@ -1,12 +1,14 @@
 import request from 'supertest';
 import { AddressInfo } from 'node:net';
 import { IncomingMessage, Server, ServerResponse, createServer } from 'node:http';
-import { Types } from 'mongoose';
+import { getModelToken } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 import {
   CALENDAR_PROVIDER,
   ExternalCalendarEvent,
 } from '../src/modules/calendar/calendar-provider';
 import { CalendarSyncService } from '../src/modules/calendar/calendar-sync.service';
+import { CalendarConnection } from '../src/modules/integrations/google/schemas/calendar-connection.schema';
 import { WebhookDeliveryService } from '../src/modules/integrations/webhooks/webhook-delivery.service';
 import { signBody, verifyBody } from '../src/modules/integrations/webhooks/webhook-signature';
 import { Session, createSession } from './utils/auth-client';
@@ -587,6 +589,65 @@ describe('Quadros e integrações', () => {
       expect(settled[0]).toMatchObject({ status: 'success', attempts: 2, statusCode: 200 });
     });
 
+    it('reenvia a entrega e grava uma linha nova no log', async () => {
+      const fixture = await setup();
+      const webhook = await createWebhook(fixture);
+
+      await createTask(fixture);
+
+      const first = await waitFor(async () => {
+        const items = await deliveriesOf(fixture, webhook.id);
+
+        return items.find((item) => item.status === 'success') ?? null;
+      }, 'a primeira entrega do webhook');
+
+      expect(received).toHaveLength(1);
+
+      const resent = await withAuth(
+        http().post(
+          `/api/v1/workspaces/${fixture.workspace.id}/webhooks/${webhook.id}/deliveries/${first.id}/redeliver`,
+        ),
+        fixture.owner,
+      ).expect(200);
+
+      expect(resent.body).toMatchObject({ event: 'task.created', status: 'success', attempts: 1 });
+      expect(resent.body.id).not.toBe(first.id);
+      expect(received).toHaveLength(2);
+      expect(verifyBody(received[1].body, webhook.secret, received[1].signature)).toBe(true);
+
+      const log = await deliveriesOf(fixture, webhook.id);
+
+      expect(log).toHaveLength(2);
+
+      // Entrega de outro workspace não existe para este.
+      const unknown = await withAuth(
+        http().post(
+          `/api/v1/workspaces/${fixture.workspace.id}/webhooks/${webhook.id}/deliveries/${new Types.ObjectId().toString()}/redeliver`,
+        ),
+        fixture.owner,
+      ).expect(404);
+
+      expect(unknown.body.code).toBe('WEBHOOK_DELIVERY_NOT_FOUND');
+
+      const denied = await withAuth(
+        http().post(
+          `/api/v1/workspaces/${fixture.workspace.id}/webhooks/${webhook.id}/deliveries/${first.id}/redeliver`,
+        ),
+        fixture.member,
+      ).expect(403);
+
+      expect(denied.body.code).toBe('FORBIDDEN_ROLE');
+
+      const invalid = await withAuth(
+        http().post(
+          `/api/v1/workspaces/${fixture.workspace.id}/webhooks/${webhook.id}/deliveries/nao-e-id/redeliver`,
+        ),
+        fixture.owner,
+      ).expect(400);
+
+      expect(invalid.body.code).toBe('INVALID_ID');
+    });
+
     it('não entrega evento fora da assinatura e respeita o admin', async () => {
       const fixture = await setup();
       const webhook = await createWebhook(fixture, ['whiteboard.updated']);
@@ -747,6 +808,61 @@ describe('Quadros e integrações', () => {
 
       expect(again).toEqual({ pulled: 1, pushed: 0 });
       expect((events.body.items as unknown[]).length).toBe(2);
+    });
+
+    it('escolhe a agenda da conta conectada e recusa sem conexão', async () => {
+      const fixture = await setup();
+      const path = `/api/v1/workspaces/${fixture.workspace.id}/integrations/google`;
+
+      const missing = await withAuth(http().get(`${path}/calendars`), fixture.owner).expect(404);
+
+      expect(missing.body.code).toBe('CALENDAR_CONNECTION_NOT_FOUND');
+
+      const refused = await withAuth(http().patch(path), fixture.owner)
+        .send({ calendarId: 'equipe@azuos.dev' })
+        .expect(404);
+
+      expect(refused.body.code).toBe('CALENDAR_CONNECTION_NOT_FOUND');
+
+      const connections = ctx.app.get<Model<CalendarConnection>>(
+        getModelToken(CalendarConnection.name),
+      );
+
+      await connections.create({
+        workspaceId: new Types.ObjectId(fixture.workspace.id),
+        userId: new Types.ObjectId(fixture.ownerId),
+        provider: 'google',
+        email: 'dono@azuos.dev',
+        accessToken: 'sem-valor',
+        refreshToken: null,
+        expiresAt: new Date(Date.now() + 3_600_000),
+        calendarId: 'primary',
+      });
+
+      const chosen = await withAuth(http().patch(path), fixture.owner)
+        .send({ calendarId: 'equipe@azuos.dev' })
+        .expect(200);
+
+      expect(chosen.body).toMatchObject({ connected: true, calendarId: 'equipe@azuos.dev' });
+
+      const status = await withAuth(http().get(path), fixture.owner).expect(200);
+
+      expect(status.body.calendarId).toBe('equipe@azuos.dev');
+
+      const invalid = await withAuth(http().patch(path), fixture.owner)
+        .send({ calendarId: '' })
+        .expect(400);
+
+      expect(invalid.body.code).toBe('VALIDATION_ERROR');
+
+      // A conta conectada é de quem conectou: outro membro não vê a agenda.
+      const other = await withAuth(http().get(`${path}/calendars`), fixture.member).expect(404);
+
+      expect(other.body.code).toBe('CALENDAR_CONNECTION_NOT_FOUND');
+
+      await connections
+        .deleteMany({ workspaceId: new Types.ObjectId(fixture.workspace.id) })
+        .exec();
     });
 
     it('não sincroniza quando a conta não está conectada', async () => {

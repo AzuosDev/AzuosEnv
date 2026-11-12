@@ -2771,7 +2771,7 @@ export interface paths {
         delete: operations["GoogleIntegrationController_disconnect"];
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["GoogleIntegrationController_chooseCalendar"];
         trace?: never;
     };
     "/api/v1/workspaces/{wsId}/integrations/google/auth-url": {
@@ -2784,6 +2784,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["GoogleIntegrationController_authUrl"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/integrations/google/calendars": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GoogleIntegrationController_calendars"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3335,6 +3351,22 @@ export interface paths {
         patch: operations["OutgoingWebhooksController_update"];
         trace?: never;
     };
+    "/api/v1/workspaces/{wsId}/webhooks/{webhookId}/deliveries/{deliveryId}/redeliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OutgoingWebhooksController_redeliver"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{wsId}/webhooks/{webhookId}/deliveries": {
         parameters: {
             query?: never;
@@ -3716,6 +3748,32 @@ export interface components {
             /** @description Data de expiração (UTC ISO 8601). */
             expiresAt?: string;
         };
+        ApiKey: {
+            userId: components["schemas"]["ObjectId"];
+            name: string;
+            /** @description `azk_` plus the first characters of the token, to identify it in the listing. */
+            hint: string;
+            scopes: ("read" | "write")[];
+            /** Format: date-time */
+            expiresAt: string | null;
+            /** Format: date-time */
+            lastUsedAt: string | null;
+            /** Format: date-time */
+            revokedAt: string | null;
+        };
+        CreatedApiKeyResultDto: {
+            /** @description Chave criada. */
+            apiKey: components["schemas"]["ApiKey"];
+            /**
+             * @description Token em claro; só aparece nesta resposta.
+             * @example azk_3f0c
+             */
+            token: string;
+        };
+        ApiKeysResultDto: {
+            /** @description Chaves do usuário, mais novas primeiro. */
+            items: components["schemas"]["ApiKey"][];
+        };
         ClickAppsOverrideDto: {
             priority?: boolean;
             tags?: boolean;
@@ -3746,13 +3804,16 @@ export interface components {
             clickApps?: components["schemas"]["ClickAppsOverrideDto"];
         };
         Space: {
+            /** @description ClickApps ligados ou desligados só neste Space. */
+            clickApps?: {
+                [key: string]: boolean;
+            };
             workspaceId: components["schemas"]["ObjectId"];
             name: string;
             color: string;
             icon?: string;
             private: boolean;
             statusSetId: components["schemas"]["ObjectId"];
-            clickApps?: Record<string, never>;
             position: string;
             /** Format: date-time */
             archivedAt: string | null;
@@ -5898,6 +5959,51 @@ export interface components {
             /** @description Fim do bloco em UTC ISO 8601. */
             end: string;
         };
+        GoogleStatusResultDto: {
+            /** @description Conta do Google conectada neste workspace. */
+            connected: boolean;
+            /** @example pessoa@azuos.dev */
+            email: string | null;
+            /**
+             * @description Agenda escolhida.
+             * @example primary
+             */
+            calendarId: string | null;
+            /** Format: date-time */
+            syncedAt: string | null;
+            /** @description False quando o servidor não tem credencial do Google. */
+            available: boolean;
+        };
+        GoogleAuthUrlResultDto: {
+            /** @description URL da tela de consentimento. */
+            url: string;
+        };
+        GoogleCalendarDto: {
+            id: string;
+            name: string;
+            /** @description Agenda principal da conta. */
+            primary: boolean;
+            /** @description A conta pode gravar eventos nela. */
+            writable: boolean;
+        };
+        GoogleCalendarsResultDto: {
+            /** @description Agendas da conta conectada. */
+            items: components["schemas"]["GoogleCalendarDto"][];
+        };
+        ChooseCalendarDto: {
+            /**
+             * @description Agenda do Google que a sincronização usa.
+             * @example primary
+             */
+            calendarId: string;
+        };
+        GoogleCallbackResultDto: {
+            /** @example true */
+            connected: boolean;
+            /** @example pessoa@azuos.dev */
+            email: string | null;
+            workspaceId: string;
+        };
         CreateGoalFolderDto: {
             /** @example Metas 2026 */
             name: string;
@@ -6396,6 +6502,34 @@ export interface components {
             /** @default Deploy */
             deployStatusName: string;
         };
+        GithubIntegration: {
+            workspaceId: components["schemas"]["ObjectId"];
+            /** @description `owner/name`, always lowercase: one repository belongs to one workspace. */
+            repository: string;
+            reviewStatusName: string;
+            deployStatusName: string;
+            active: boolean;
+            createdBy: components["schemas"]["ObjectId"];
+            /** Format: date-time */
+            lastEventAt: string | null;
+        };
+        GithubIntegrationResultDto: {
+            /** @description Mapeamento repositório → workspace. */
+            integration: components["schemas"]["GithubIntegration"];
+            /**
+             * @description Secret em claro; só aparece quando o servidor o gera ou o troca.
+             * @example a1b2c3
+             */
+            secret: string | null;
+            /** @description URL que o repositório deve chamar. */
+            webhookUrl: string;
+        };
+        GithubIntegrationsResultDto: {
+            /** @description Repositórios ligados. */
+            items: components["schemas"]["GithubIntegration"][];
+            /** @description URL que os repositórios devem chamar. */
+            webhookUrl: string;
+        };
         UpdateGithubIntegrationDto: {
             reviewStatusName?: string;
             deployStatusName?: string;
@@ -6421,6 +6555,19 @@ export interface components {
             createdBy: components["schemas"]["ObjectId"];
             /** Format: date-time */
             lastDeliveryAt: string | null;
+        };
+        OutgoingWebhookResultDto: {
+            /** @description Webhook de saída. */
+            webhook: components["schemas"]["OutgoingWebhook"];
+            /**
+             * @description Secret em claro; só aparece quando é gerado ou trocado.
+             * @example a1b2c3
+             */
+            secret: string | null;
+        };
+        OutgoingWebhooksResultDto: {
+            /** @description Webhooks do workspace. */
+            items: components["schemas"]["OutgoingWebhook"][];
         };
         UpdateOutgoingWebhookDto: {
             /** Format: uri */
@@ -6450,6 +6597,49 @@ export interface components {
             /** Format: date-time */
             deliveredAt: string | null;
         };
+        SkippedRowDto: {
+            /** @description Linha do arquivo; o cabeçalho é a linha 1. */
+            line: number;
+            /** @example LINHA SEM NOME DE TAREFA */
+            reason: string;
+        };
+        ImportReportDto: {
+            /** @description Linhas lidas do arquivo. */
+            rows: number;
+            /** @description Tarefas criadas. */
+            tasks: number;
+            /** @description Lists criadas. */
+            lists: number;
+            /** @description Folders criadas. */
+            folders: number;
+            /** @description Tags criadas. */
+            tags: number;
+            /** @description Linhas que não entraram. */
+            skipped: components["schemas"]["SkippedRowDto"][];
+            /** @description Linhas importadas com algum ajuste. */
+            warnings: components["schemas"]["SkippedRowDto"][];
+        };
+        WorkspaceExportResultDto: {
+            /** Format: date-time */
+            exportedAt: string;
+            /** @example 1 */
+            version: number;
+            workspace: {
+                [key: string]: unknown;
+            };
+            /** @description Nome e e-mail de quem participa do workspace. */
+            users: {
+                [key: string]: unknown;
+            }[];
+            /** @description Documentos de cada coleção do workspace. */
+            collections: {
+                [key: string]: {
+                    [key: string]: unknown;
+                }[];
+            };
+            /** @description Coleções cortadas no limite do export. */
+            truncated: string[];
+        };
         ApiErrorDto: {
             /** @example 400 */
             statusCode: number;
@@ -6476,11 +6666,14 @@ export interface operations {
                 limit?: number;
                 /** @description Cursor retornado em nextCursor. */
                 cursor?: string;
-                action?: "workspace.updated" | "workspace.deleted" | "workspace.ownership.transferred" | "workspace.exported" | "workspace.imported" | "member.role.changed" | "member.deactivated" | "invite.created" | "invite.revoked" | "team.deleted" | "resource.purged" | "integration.github.created" | "integration.github.updated" | "integration.github.deleted" | "integration.google.disconnected" | "webhook.created" | "webhook.updated" | "webhook.deleted";
+                action?: "workspace.updated" | "workspace.deleted" | "workspace.ownership.transferred" | "workspace.exported" | "workspace.imported" | "member.role.changed" | "member.deactivated" | "invite.created" | "invite.revoked" | "team.deleted" | "resource.purged" | "integration.github.created" | "integration.github.updated" | "integration.github.deleted" | "integration.google.disconnected" | "webhook.created" | "webhook.updated" | "webhook.deleted" | "webhook.redelivered" | "integration.google.calendar.changed";
                 actorId?: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -7183,7 +7376,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiKeysResultDto"];
+                };
             };
         };
     };
@@ -7205,7 +7400,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CreatedApiKeyResultDto"];
+                };
             };
         };
     };
@@ -7225,7 +7422,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -12838,7 +13037,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -12848,7 +13050,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GoogleStatusResultDto"];
+                };
             };
         };
     };
@@ -12856,7 +13060,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -12866,7 +13073,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
+            };
+        };
+    };
+    GoogleIntegrationController_chooseCalendar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChooseCalendarDto"];
+            };
+        };
+        responses: {
+            /** @description Agenda escolhida. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoogleStatusResultDto"];
+                };
             };
         };
     };
@@ -12874,7 +13110,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -12884,7 +13123,32 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GoogleAuthUrlResultDto"];
+                };
+            };
+        };
+    };
+    GoogleIntegrationController_calendars: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Agendas da conta conectada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoogleCalendarsResultDto"];
+                };
             };
         };
     };
@@ -12906,7 +13170,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GoogleCallbackResultDto"];
+                };
             };
         };
     };
@@ -14165,7 +14431,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -14175,7 +14444,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GithubIntegrationsResultDto"];
+                };
             };
         };
     };
@@ -14183,7 +14454,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -14197,7 +14471,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GithubIntegrationResultDto"];
+                };
             };
         };
     };
@@ -14207,6 +14483,8 @@ export interface operations {
             header?: never;
             path: {
                 integrationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -14217,7 +14495,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -14227,6 +14507,8 @@ export interface operations {
             header?: never;
             path: {
                 integrationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -14241,7 +14523,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GithubIntegrationResultDto"];
+                };
             };
         };
     };
@@ -14267,7 +14551,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -14277,7 +14564,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["OutgoingWebhooksResultDto"];
+                };
             };
         };
     };
@@ -14285,7 +14574,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -14299,7 +14591,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["OutgoingWebhookResultDto"];
+                };
             };
         };
     };
@@ -14309,6 +14603,8 @@ export interface operations {
             header?: never;
             path: {
                 webhookId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -14331,6 +14627,8 @@ export interface operations {
             header?: never;
             path: {
                 webhookId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -14341,7 +14639,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
             };
         };
     };
@@ -14351,6 +14651,8 @@ export interface operations {
             header?: never;
             path: {
                 webhookId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -14365,7 +14667,34 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["OutgoingWebhookResultDto"];
+                };
+            };
+        };
+    };
+    OutgoingWebhooksController_redeliver: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                webhookId: components["schemas"]["ObjectId"];
+                deliveryId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Entrega reenviada; o reenvio é uma linha nova do log. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookDelivery"];
+                };
             };
         };
     };
@@ -14379,6 +14708,8 @@ export interface operations {
             header?: never;
             path: {
                 webhookId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
             };
             cookie?: never;
         };
@@ -14403,7 +14734,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -14422,21 +14756,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        rows?: number;
-                        tasks?: number;
-                        lists?: number;
-                        folders?: number;
-                        tags?: number;
-                        skipped?: {
-                            line?: number;
-                            reason?: string;
-                        }[];
-                        warnings?: {
-                            line?: number;
-                            reason?: string;
-                        }[];
-                    };
+                    "application/json": components["schemas"]["ImportReportDto"];
                 };
             };
         };
@@ -14445,7 +14765,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -14456,16 +14779,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        /** Format: date-time */
-                        exportedAt?: string;
-                        /** @example 1 */
-                        version?: number;
-                        workspace?: Record<string, never>;
-                        users?: Record<string, never>[];
-                        collections?: Record<string, never>;
-                        truncated?: string[];
-                    };
+                    "application/json": components["schemas"]["WorkspaceExportResultDto"];
                 };
             };
         };

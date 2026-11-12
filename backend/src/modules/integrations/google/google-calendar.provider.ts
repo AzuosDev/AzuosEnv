@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
 import {
   CalendarProvider,
@@ -35,10 +34,7 @@ export class GoogleCalendarProvider implements CalendarProvider {
 
   private readonly logger = new Logger(GoogleCalendarProvider.name);
 
-  constructor(
-    private readonly oauth: GoogleOAuthService,
-    private readonly config: ConfigService,
-  ) {}
+  constructor(private readonly oauth: GoogleOAuthService) {}
 
   async isConnected(workspaceId: Types.ObjectId, userId: Types.ObjectId): Promise<boolean> {
     return (await this.oauth.connectionOf(workspaceId, userId)) !== null;
@@ -60,7 +56,7 @@ export class GoogleCalendarProvider implements CalendarProvider {
     });
     const body = await this.request<{ items?: GoogleEvent[] }>(
       token,
-      `/calendars/${this.calendarId()}/events?${params.toString()}`,
+      `/calendars/${await this.calendarId(range)}/events?${params.toString()}`,
       { method: 'GET' },
     );
 
@@ -82,8 +78,8 @@ export class GoogleCalendarProvider implements CalendarProvider {
     }
 
     const path = event.externalId
-      ? `/calendars/${this.calendarId()}/events/${encodeURIComponent(event.externalId)}`
-      : `/calendars/${this.calendarId()}/events`;
+      ? `/calendars/${await this.calendarId(range)}/events/${encodeURIComponent(event.externalId)}`
+      : `/calendars/${await this.calendarId(range)}/events`;
     const body = await this.request<GoogleEvent>(token, path, {
       method: event.externalId ? 'PATCH' : 'POST',
       body: JSON.stringify(this.toGoogle(event)),
@@ -101,7 +97,7 @@ export class GoogleCalendarProvider implements CalendarProvider {
 
     await this.request(
       token,
-      `/calendars/${this.calendarId()}/events/${encodeURIComponent(externalId)}`,
+      `/calendars/${await this.calendarId(range)}/events/${encodeURIComponent(externalId)}`,
       { method: 'DELETE' },
     );
   }
@@ -159,8 +155,9 @@ export class GoogleCalendarProvider implements CalendarProvider {
     return this.oauth.accessTokenFor(range.workspaceId, range.userId);
   }
 
-  private calendarId(): string {
-    return encodeURIComponent(this.config.get<string>('GOOGLE_CALENDAR_ID') ?? 'primary');
+  /** Calendar chosen by the member in the integration; the env is the fallback. */
+  private async calendarId(range: CalendarSyncRange): Promise<string> {
+    return encodeURIComponent(await this.oauth.calendarIdFor(range.workspaceId, range.userId));
   }
 
   /** null on any failure: a calendar out of reach never breaks the sync cycle. */

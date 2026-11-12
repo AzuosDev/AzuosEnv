@@ -13,6 +13,7 @@ import {
 } from '../../../common/pagination/pagination-query.dto';
 import { PermissionContext } from '../../hierarchy/permission.service';
 import { SecretsService } from '../../secrets/secrets.service';
+import { WebhookDeliveryService } from './webhook-delivery.service';
 import { MAX_WEBHOOKS_PER_WORKSPACE, WEBHOOK_SECRET_BYTES } from './webhook-fields';
 import { CreateOutgoingWebhookDto, UpdateOutgoingWebhookDto } from './dto/outgoing-webhook.dto';
 import { OutgoingWebhook, OutgoingWebhookDocument } from './schemas/outgoing-webhook.schema';
@@ -30,6 +31,7 @@ export class OutgoingWebhooksService {
     @InjectModel(OutgoingWebhook.name) private readonly model: Model<OutgoingWebhook>,
     @InjectModel(WebhookDelivery.name) private readonly deliveries: Model<WebhookDelivery>,
     private readonly secrets: SecretsService,
+    private readonly delivery: WebhookDeliveryService,
   ) {}
 
   async create(ctx: PermissionContext, dto: CreateOutgoingWebhookDto): Promise<WebhookWithSecret> {
@@ -137,6 +139,61 @@ export class OutgoingWebhooksService {
       .exec();
 
     return buildCursorPage(docs, limit, (doc) => ({ id: String(doc._id) }));
+  }
+
+  /**
+   * Sends the payload of a delivery again. The attempt chain that already ran is
+   * never rewritten: the reenvio is a new row in the log.
+   */
+  async redeliver(
+    ctx: PermissionContext,
+    webhookId: Types.ObjectId,
+    deliveryId: Types.ObjectId,
+  ): Promise<WebhookDeliveryDocument> {
+    const webhook = await this.get(ctx, webhookId);
+
+    if (!webhook.active) {
+      throw new BadRequestException({
+        code: 'INVALID_WEBHOOK',
+        message: 'Este webhook está desativado.',
+      });
+    }
+
+    const original = await this.deliveries
+      .findOne({ _id: deliveryId, webhookId: webhook._id, workspaceId: ctx.workspaceId })
+      .exec();
+
+    if (!original) {
+      throw new NotFoundException({
+        code: 'WEBHOOK_DELIVERY_NOT_FOUND',
+        message: 'Entrega não encontrada.',
+      });
+    }
+
+    const retry = await this.deliveries.create({
+      workspaceId: ctx.workspaceId,
+      webhookId: webhook._id,
+      event: original.event,
+      payload: original.payload,
+      status: 'pending',
+      attempts: 0,
+    });
+
+    const query = this.model.findOne({ _id: webhook._id, workspaceId: ctx.workspaceId });
+
+    // `select` apart from the chain keeps the document type intact (Mongoose 9).
+    query.select('+secret');
+
+    const withSecret = await query.exec();
+
+    if (!withSecret) {
+      throw new NotFoundException({
+        code: 'WEBHOOK_NOT_FOUND',
+        message: 'Webhook não encontrado.',
+      });
+    }
+
+    return this.delivery.attempt(retry, withSecret);
   }
 
   private newSecret(): string {

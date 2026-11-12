@@ -20,3 +20,6 @@ export const MAX_PUSHED_EVENTS = 100;
 /** Days before and after now the synchronization covers. */
 export const SYNC_PAST_DAYS = 7;
 export const SYNC_FUTURE_DAYS = 30;
+
+/** Calendars read from the account in the picker of the integration. */
+export const MAX_GOOGLE_CALENDARS = 50;

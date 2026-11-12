@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -14,12 +16,18 @@ import { ApiPagedResponse } from '../../../common/swagger/api-paged-response.dec
 import { Types } from 'mongoose';
 import { Audit } from '../../audit/audit.decorator';
 import { CursorPage } from '../../../common/pagination/cursor';
+import { SuccessDto } from '../../../common/dto/api-error.dto';
+import { ApiWorkspaceParam } from '../../../common/swagger/api-workspace-param.decorator';
 import { ParseObjectIdPipe } from '../../../common/pipes/parse-object-id.pipe';
 import { permissionContextFrom } from '../../hierarchy/permission.service';
 import { Roles } from '../../workspaces/decorators/roles.decorator';
 import { CurrentMembership } from '../../workspaces/decorators/workspace-context.decorator';
 import { WorkspaceGuard } from '../../workspaces/guards/workspace.guard';
 import { RequestMembership } from '../../workspaces/workspace-context';
+import {
+  OutgoingWebhookResultDto,
+  OutgoingWebhooksResultDto,
+} from './dto/outgoing-webhook-result.dto';
 import {
   CreateOutgoingWebhookDto,
   DeliveryQueryDto,
@@ -31,6 +39,7 @@ import { WebhookDelivery, WebhookDeliveryDocument } from './schemas/webhook-deli
 
 @ApiTags('integrations')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Roles('admin')
 @Controller('workspaces/:wsId/webhooks')
@@ -39,7 +48,10 @@ export class OutgoingWebhooksController {
 
   @Post()
   @Audit('webhook.created', 'webhook')
-  @ApiCreatedResponse({ description: 'Webhook criado; o secret aparece só nesta resposta.' })
+  @ApiCreatedResponse({
+    description: 'Webhook criado; o secret aparece só nesta resposta.',
+    type: OutgoingWebhookResultDto,
+  })
   create(
     @CurrentMembership() membership: RequestMembership,
     @Body() dto: CreateOutgoingWebhookDto,
@@ -48,7 +60,7 @@ export class OutgoingWebhooksController {
   }
 
   @Get()
-  @ApiOkResponse({ description: 'Webhooks do workspace.' })
+  @ApiOkResponse({ description: 'Webhooks do workspace.', type: OutgoingWebhooksResultDto })
   list(
     @CurrentMembership() membership: RequestMembership,
   ): Promise<{ items: OutgoingWebhookDocument[] }> {
@@ -66,7 +78,7 @@ export class OutgoingWebhooksController {
 
   @Patch(':webhookId')
   @Audit('webhook.updated', 'webhook', 'webhookId')
-  @ApiOkResponse({ description: 'Webhook atualizado.' })
+  @ApiOkResponse({ description: 'Webhook atualizado.', type: OutgoingWebhookResultDto })
   update(
     @CurrentMembership() membership: RequestMembership,
     @Param('webhookId', ParseObjectIdPipe) webhookId: Types.ObjectId,
@@ -77,7 +89,7 @@ export class OutgoingWebhooksController {
 
   @Delete(':webhookId')
   @Audit('webhook.deleted', 'webhook', 'webhookId')
-  @ApiOkResponse({ description: 'Webhook removido com o log de entregas.' })
+  @ApiOkResponse({ description: 'Webhook removido com o log de entregas.', type: SuccessDto })
   async remove(
     @CurrentMembership() membership: RequestMembership,
     @Param('webhookId', ParseObjectIdPipe) webhookId: Types.ObjectId,
@@ -85,6 +97,21 @@ export class OutgoingWebhooksController {
     await this.webhooks.remove(permissionContextFrom(membership), webhookId);
 
     return { success: true };
+  }
+
+  @Post(':webhookId/deliveries/:deliveryId/redeliver')
+  @HttpCode(HttpStatus.OK)
+  @Audit('webhook.redelivered', 'webhook', 'webhookId')
+  @ApiOkResponse({
+    description: 'Entrega reenviada; o reenvio é uma linha nova do log.',
+    type: WebhookDelivery,
+  })
+  redeliver(
+    @CurrentMembership() membership: RequestMembership,
+    @Param('webhookId', ParseObjectIdPipe) webhookId: Types.ObjectId,
+    @Param('deliveryId', ParseObjectIdPipe) deliveryId: Types.ObjectId,
+  ): Promise<WebhookDeliveryDocument> {
+    return this.webhooks.redeliver(permissionContextFrom(membership), webhookId, deliveryId);
   }
 
   @Get(':webhookId/deliveries')

@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 import { ClickAppKey } from '../../workspaces/schemas/workspace.schema';
@@ -28,6 +29,11 @@ export class Space {
   @Prop({ type: Types.ObjectId, ref: 'StatusSet', required: true })
   statusSetId: Types.ObjectId;
 
+  @ApiPropertyOptional({
+    type: 'object',
+    additionalProperties: { type: 'boolean' },
+    description: 'ClickApps ligados ou desligados só neste Space.',
+  })
   @Prop({ type: Object })
   clickApps?: ClickAppsOverride;
 

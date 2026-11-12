@@ -581,3 +581,55 @@ export type ElementTaskResult = Omit<
   components['schemas']['ElementTaskResultDto'],
   'task' | 'whiteboard'
 > & { task: Task; whiteboard: Whiteboard };
+
+/* Configurações avançadas: ClickApps, integrações, webhooks e chaves ------ */
+
+export type ClickApps = components['schemas']['WorkspaceClickApps'];
+export type ClickAppKey = keyof ClickApps;
+/** Override do Space: só as chaves que o Space decidiu. */
+export type ClickAppsOverride = components['schemas']['ClickAppsOverrideDto'];
+export type UpdateSpaceClickAppsInput = { clickApps: ClickAppsOverride };
+
+export type GithubIntegration = Doc<components['schemas']['GithubIntegration']>;
+export type GithubIntegrations = Omit<
+  components['schemas']['GithubIntegrationsResultDto'],
+  'items'
+> & { items: GithubIntegration[] };
+export type GithubIntegrationResult = Omit<
+  components['schemas']['GithubIntegrationResultDto'],
+  'integration'
+> & { integration: GithubIntegration };
+export type CreateGithubIntegrationInput = components['schemas']['CreateGithubIntegrationDto'];
+export type UpdateGithubIntegrationInput = components['schemas']['UpdateGithubIntegrationDto'];
+
+export type GoogleStatus = components['schemas']['GoogleStatusResultDto'];
+export type GoogleCalendar = components['schemas']['GoogleCalendarDto'];
+
+export type OutgoingWebhook = Doc<components['schemas']['OutgoingWebhook']>;
+export type OutgoingWebhookEvent = OutgoingWebhook['events'][number];
+export type OutgoingWebhookResult = Omit<
+  components['schemas']['OutgoingWebhookResultDto'],
+  'webhook'
+> & { webhook: OutgoingWebhook };
+export type CreateOutgoingWebhookInput = components['schemas']['CreateOutgoingWebhookDto'];
+export type UpdateOutgoingWebhookInput = components['schemas']['UpdateOutgoingWebhookDto'];
+export type WebhookDelivery = Doc<FreeJson<components['schemas']['WebhookDelivery'], 'payload'>>;
+export type WebhookDeliveryStatus = WebhookDelivery['status'];
+
+export type ApiKey = Doc<components['schemas']['ApiKey']>;
+export type ApiKeyScope = ApiKey['scopes'][number];
+export type CreateApiKeyInput = components['schemas']['CreateApiKeyDto'];
+export type CreatedApiKey = Omit<components['schemas']['CreatedApiKeyResultDto'], 'apiKey'> & {
+  apiKey: ApiKey;
+};
+
+export type AuditLog = Doc<FreeJson<components['schemas']['AuditLog'], 'details'>>;
+export type AuditEntityType = AuditLog['entityType'];
+export type AuditQuery = NonNullable<
+  paths['/api/v1/workspaces/{wsId}/audit-logs']['get']['parameters']['query']
+>;
+export type AuditAction = NonNullable<AuditQuery['action']>;
+
+export type ImportReport = components['schemas']['ImportReportDto'];
+export type ImportSkippedRow = components['schemas']['SkippedRowDto'];
+export type WorkspaceExportFile = components['schemas']['WorkspaceExportResultDto'];

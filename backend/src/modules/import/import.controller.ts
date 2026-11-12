@@ -16,6 +16,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { Audit } from '../audit/audit.decorator';
 import { permissionContextFrom } from '../hierarchy/permission.service';
 import { Roles } from '../workspaces/decorators/roles.decorator';
@@ -33,12 +34,14 @@ import {
   MAX_IMPORT_BYTES,
 } from './clickup-import.service';
 import { ImportClickUpDto } from './dto/import-clickup.dto';
+import { ImportReportDto, WorkspaceExportResultDto } from './dto/import-result.dto';
 import { WorkspaceExport, WorkspaceExportService } from './workspace-export.service';
 
 const UPLOAD_FIELD = 'file';
 
 @ApiTags('import')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/import')
 export class ImportController {
@@ -66,30 +69,7 @@ export class ImportController {
   })
   @ApiCreatedResponse({
     description: 'Relatório da importação, com as linhas ignoradas e os ajustes feitos.',
-    schema: {
-      type: 'object',
-      properties: {
-        rows: { type: 'number' },
-        tasks: { type: 'number' },
-        lists: { type: 'number' },
-        folders: { type: 'number' },
-        tags: { type: 'number' },
-        skipped: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: { line: { type: 'number' }, reason: { type: 'string' } },
-          },
-        },
-        warnings: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: { line: { type: 'number' }, reason: { type: 'string' } },
-          },
-        },
-      },
-    },
+    type: ImportReportDto,
   })
   clickupCsv(
     @CurrentMembership() membership: RequestMembership,
@@ -108,6 +88,7 @@ export class ImportController {
 
 @ApiTags('export')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/export')
 export class ExportController {
@@ -118,17 +99,7 @@ export class ExportController {
   @Audit('workspace.exported', 'export')
   @ApiOkResponse({
     description: 'Workspace inteiro em JSON, sem nenhum segredo.',
-    schema: {
-      type: 'object',
-      properties: {
-        exportedAt: { type: 'string', format: 'date-time' },
-        version: { type: 'number', example: 1 },
-        workspace: { type: 'object' },
-        users: { type: 'array', items: { type: 'object' } },
-        collections: { type: 'object' },
-        truncated: { type: 'array', items: { type: 'string' } },
-      },
-    },
+    type: WorkspaceExportResultDto,
   })
   download(@CurrentMembership() membership: RequestMembership): Promise<WorkspaceExport> {
     return this.exporter.export(workspaceObjectId(membership));

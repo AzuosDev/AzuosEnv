@@ -6,7 +6,9 @@ import { randomUUID } from 'node:crypto';
 import { SecretsService } from '../../secrets/secrets.service';
 import {
   GOOGLE_AUTH_ENDPOINT,
+  GOOGLE_CALENDAR_API,
   GOOGLE_CALENDAR_SCOPE,
+  MAX_GOOGLE_CALENDARS,
   GOOGLE_TIMEOUT_MS,
   GOOGLE_TOKEN_ENDPOINT,
   GOOGLE_USERINFO_ENDPOINT,
@@ -28,6 +30,24 @@ interface OAuthState {
   workspaceId: string;
   userId: string;
   nonce: string;
+}
+
+/** Entry of the calendarList of Google; only what the picker needs. */
+interface CalendarListEntry {
+  id?: string;
+  summary?: string;
+  summaryOverride?: string;
+  primary?: boolean;
+  accessRole?: string;
+}
+
+/** One calendar of the connected account, as the picker shows it. */
+export interface GoogleCalendar {
+  id: string;
+  name: string;
+  primary: boolean;
+  /** True when the account may write events on it. */
+  writable: boolean;
 }
 
 export interface GoogleStatus {
@@ -146,6 +166,97 @@ export class GoogleOAuthService {
       syncedAt: connection?.syncedAt ?? null,
       available: this.configured,
     };
+  }
+
+  /**
+   * Calendars of the connected account. The list comes from Google, so a token out
+   * of reach answers with an empty list instead of breaking the screen.
+   */
+  async calendars(workspaceId: Types.ObjectId, userId: Types.ObjectId): Promise<GoogleCalendar[]> {
+    await this.requireConnection(workspaceId, userId);
+
+    const token = await this.accessTokenFor(workspaceId, userId);
+
+    if (!token) {
+      return [];
+    }
+
+    const url = `${GOOGLE_CALENDAR_API}/users/me/calendarList?maxResults=${String(
+      MAX_GOOGLE_CALENDARS,
+    )}`;
+
+    try {
+      const response = await fetch(url, {
+        headers: { authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(GOOGLE_TIMEOUT_MS),
+      });
+
+      if (!response.ok) {
+        this.logger.warn(`O Google respondeu ${String(response.status)} na lista de agendas.`);
+
+        return [];
+      }
+
+      const body = (await response.json()) as { items?: CalendarListEntry[] };
+
+      return (body.items ?? [])
+        .filter((item) => typeof item.id === 'string' && item.id.length > 0)
+        .map((item) => ({
+          id: item.id ?? '',
+          name: item.summaryOverride ?? item.summary ?? item.id ?? '',
+          primary: item.primary === true,
+          writable: item.accessRole === 'owner' || item.accessRole === 'writer',
+        }));
+    } catch (error) {
+      this.logger.warn(
+        `Falha ao listar as agendas do Google: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+
+      return [];
+    }
+  }
+
+  /** Calendar the synchronization of this member reads and writes. */
+  async chooseCalendar(
+    workspaceId: Types.ObjectId,
+    userId: Types.ObjectId,
+    calendarId: string,
+  ): Promise<GoogleStatus> {
+    await this.requireConnection(workspaceId, userId);
+    await this.connections
+      .updateOne({ workspaceId, userId, provider: 'google' }, { $set: { calendarId } })
+      .exec();
+
+    return this.status(workspaceId, userId);
+  }
+
+  /** Calendar chosen by the member; the env is only the fallback. */
+  async calendarIdFor(workspaceId: Types.ObjectId, userId: Types.ObjectId): Promise<string> {
+    const connection = await this.connections
+      .findOne({ workspaceId, userId, provider: 'google' })
+      .exec();
+
+    return connection?.calendarId ?? this.config.get<string>('GOOGLE_CALENDAR_ID') ?? 'primary';
+  }
+
+  private async requireConnection(
+    workspaceId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ): Promise<CalendarConnectionDocument> {
+    const connection = await this.connections
+      .findOne({ workspaceId, userId, provider: 'google' })
+      .exec();
+
+    if (!connection) {
+      throw new NotFoundException({
+        code: 'CALENDAR_CONNECTION_NOT_FOUND',
+        message: 'Nenhuma conta do Google conectada.',
+      });
+    }
+
+    return connection;
   }
 
   async disconnect(workspaceId: Types.ObjectId, userId: Types.ObjectId): Promise<void> {

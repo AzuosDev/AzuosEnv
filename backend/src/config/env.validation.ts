@@ -7,6 +7,10 @@ export const envValidationSchema = Joi.object({
     .pattern(/^mongodb(\+srv)?:\/\//)
     .required(),
   CORS_ORIGINS: Joi.string().default('http://localhost:5173'),
+  // Janela e teto do rate limit global, por IP. A API de e2e do front sobe o teto:
+  // a suíte inteira sai de um único IP.
+  THROTTLE_TTL: Joi.number().integer().min(1000).default(60_000),
+  THROTTLE_LIMIT: Joi.number().integer().min(1).default(120),
   // Level of the structured log (nestjs-pino); silent in the test environment.
   LOG_LEVEL: Joi.string()
     .valid('fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent')

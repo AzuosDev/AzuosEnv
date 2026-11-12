@@ -133,4 +133,16 @@ export const queryKeys = {
     ['workspaces', workspaceId, 'whiteboards', locationType ?? 'any', locationId ?? 'any'] as const,
   whiteboard: (workspaceId: string, whiteboardId: string) =>
     ['workspaces', workspaceId, 'whiteboards', 'detail', whiteboardId] as const,
+  githubIntegrations: (workspaceId: string) =>
+    ['workspaces', workspaceId, 'integrations', 'github'] as const,
+  googleIntegration: (workspaceId: string) =>
+    ['workspaces', workspaceId, 'integrations', 'google'] as const,
+  googleCalendars: (workspaceId: string) =>
+    ['workspaces', workspaceId, 'integrations', 'google', 'calendars'] as const,
+  webhooks: (workspaceId: string) => ['workspaces', workspaceId, 'webhooks'] as const,
+  webhookDeliveries: (workspaceId: string, webhookId: string) =>
+    ['workspaces', workspaceId, 'webhooks', webhookId, 'deliveries'] as const,
+  apiKeys: () => ['api-keys'] as const,
+  auditLogs: (workspaceId: string, params: Record<string, unknown>) =>
+    ['workspaces', workspaceId, 'audit-logs', params] as const,
 } as const;

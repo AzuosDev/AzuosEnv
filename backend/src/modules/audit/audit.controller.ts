@@ -1,6 +1,7 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
+import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
 import { CursorPage } from '../../common/pagination/cursor';
 import { Roles } from '../workspaces/decorators/roles.decorator';
 import { CurrentMembership } from '../workspaces/decorators/workspace-context.decorator';
@@ -12,6 +13,7 @@ import { AuditLog, AuditLogDocument } from './schemas/audit-log.schema';
 
 @ApiTags('audit')
 @ApiBearerAuth()
+@ApiWorkspaceParam()
 @UseGuards(WorkspaceGuard)
 @Controller('workspaces/:wsId/audit-logs')
 export class AuditController {

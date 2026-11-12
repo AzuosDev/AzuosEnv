@@ -144,18 +144,21 @@ test('a conversa responde em streaming, com markdown e chip da tarefa', async ()
 
   await expect(chip).toContainText(taskCustomId);
 
-  // A conversa entra no histórico e a conversa nova volta à tela vazia.
+  // A conversa entra no histórico.
   await expect(
     page.getByRole('button', { name: 'O que está atrasado?', exact: true }),
   ).toBeVisible();
 
+  // O chip leva à tarefa citada.
+  await chip.click();
+  await expect(page).toHaveURL(new RegExp(`/t/${taskCustomId}$`));
+
+  // De volta na IA, a conversa nova começa na tela vazia.
+  await page.goto(`/w/${wsId}/ia`);
   await page.getByRole('button', { name: 'Nova conversa' }).click();
   await expect(
     page.getByRole('heading', { name: 'Como posso ajudar no trabalho de hoje?' }),
   ).toBeVisible();
-
-  await chip.click();
-  await expect(page).toHaveURL(new RegExp(`/t/${taskCustomId}$`));
 });
 
 test('o botão Resumir mostra o resumo da tarefa', async () => {

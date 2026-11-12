@@ -44,6 +44,9 @@ async function main(): Promise<void> {
   process.env.CORS_ORIGINS ??= 'http://localhost:5173,http://localhost:4173';
   process.env.APP_URL ??= 'http://localhost:5173';
   process.env.UPLOAD_DIR ??= './storage/e2e-uploads';
+  // A suíte do front sai toda do mesmo IP: o teto por minuto do rate limit global
+  // não pode derrubar as telas no meio da execução.
+  process.env.THROTTLE_LIMIT ??= '100000';
 
   await runSeed();
 
