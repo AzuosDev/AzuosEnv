@@ -30,6 +30,10 @@ export const envValidationSchema = Joi.object({
     .when('COOKIE_SECURE', { is: false, then: Joi.valid('lax', 'strict') }),
   COOKIE_DOMAIN: Joi.string().allow('').default(''),
   UPLOAD_DIR: Joi.string().default('./storage/uploads'),
+  // Com BREVO_API_KEY o envio vai pela API HTTP da Brevo; sem ela cai no SMTP.
+  BREVO_API_KEY: Joi.string().allow('').default(''),
+  // Remetente usado pela Brevo; na falta dele vale o SMTP_FROM.
+  MAIL_FROM: Joi.string().allow('').default(''),
   // Without SMTP_HOST the MailService only logs the message.
   SMTP_HOST: Joi.string().allow('').default(''),
   SMTP_PORT: Joi.number().port().default(587),

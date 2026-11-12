@@ -47,6 +47,7 @@ async function main(): Promise<void> {
   // O .env de desenvolvimento tem credencial de SMTP real: sem zerar o host, a
   // suíte manda e-mail de verdade a cada convite e queima a cota do provedor.
   process.env.SMTP_HOST ??= '';
+  process.env.BREVO_API_KEY ??= '';
   // Sem client id a integração do Google Agenda fica no stub, que é o que a
   // suíte espera ("Indisponível"); o login com Google usa o provider falso.
   process.env.GOOGLE_CLIENT_ID ??= '';

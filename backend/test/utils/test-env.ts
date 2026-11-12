@@ -19,6 +19,8 @@ export const TEST_ENV: Record<string, string> = {
   // Empty host keeps the suite on LogMailService; otherwise the .env credentials
   // make every run send real mail and burn the provider's daily quota.
   SMTP_HOST: '',
+  // Same reason: with a key the suite would spend the Brevo quota for real.
+  BREVO_API_KEY: '',
   // No client id: the CalendarProvider of the suite is always the stub.
   GOOGLE_CLIENT_ID: '',
   // Login with Google against the fake provider, never the real Google.

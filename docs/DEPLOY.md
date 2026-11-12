@@ -46,6 +46,8 @@ Fonte completa: `backend/.env.example`. Obrigatórias e mais relevantes:
 | `COOKIE_DOMAIN` | não | vazio | Domínio do cookie quando front e API não compartilham host. |
 | `UPLOAD_DIR` | não | `./storage/uploads` | Monte um volume; trocar por S3/R2 é só outro provider. |
 | `SMTP_HOST` … `SMTP_FROM` | não | vazio | Sem `SMTP_HOST` o e-mail só vai para o log. |
+| `BREVO_API_KEY` | não | vazio | Com a chave o e-mail sai pela API HTTP da Brevo e o SMTP é ignorado. É o caminho recomendado em serverless. |
+| `MAIL_FROM` | não | vazio | Remetente validado na Brevo (`Nome <conta@dominio>`). Vazio, vale o `SMTP_FROM`. |
 | `XAI_API_KEY` | não | vazio | Vazio mantém o stub de IA (nada sai do processo). |
 | `GROK_MODEL` | com `XAI_API_KEY` | vazio | Nome do modelo da xAI. |
 | `AI_MONTHLY_TOKEN_BUDGET` | não | `1000000` | `0` remove o teto mensal. |
