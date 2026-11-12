@@ -6,6 +6,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "build:vercel": "nest build && node scripts/bundle-serverless.mjs",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "seed": "ts-node src/seed/seed.ts",
     "start": "nest start",
@@ -66,6 +67,7 @@
     "@types/nodemailer": "^8.0.2",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.2.1",
+    "esbuild": "^0.28.2",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.7",

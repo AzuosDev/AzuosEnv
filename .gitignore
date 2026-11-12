@@ -36,3 +36,6 @@ Thumbs.db
 # Misc
 .cache/
 *.pem
+
+# Bundle da funcao serverless (Vercel)
+dist-vercel/

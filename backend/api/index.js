@@ -1,9 +1,9 @@
 'use strict';
 
-// Nada e carregado no escopo do modulo: um require() que falhe aqui derruba a
-// funcao antes de qualquer handler rodar, e a Vercel so devolve
-// FUNCTION_INVOCATION_FAILED sem mensagem. Tudo acontece dentro do try.
-const BUILD = 'probe-5';
+// Funcao da Vercel. O app inteiro vem de um bundle CJS unico: o @nestjs 12 e ESM
+// puro e o runtime da Vercel nao implementa require(ESM), entao nada do Nest pode
+// ser carregado por require externo. Ver scripts/bundle-serverless.mjs.
+const BUILD = 'bundle-1';
 
 function report(response, stage, error) {
   const detail = error && error.stack ? error.stack : String(error);
@@ -14,35 +14,21 @@ function report(response, stage, error) {
 }
 
 module.exports = async function handler(request, response) {
-  // ?probe=1 responde sem tocar no Nest: prova que a funcao em si executa.
+  // ?probe=1 responde sem tocar no Nest: separa "a funcao executa" de "o Nest falha".
   if (request.url && request.url.includes('probe=1')) {
     response.statusCode = 200;
     response.setHeader('content-type', 'text/plain; charset=utf-8');
-    response.end(`FUNCAO VIVA [${BUILD}] node=${process.version} cwd=${process.cwd()}`);
+    response.end(`FUNCAO VIVA [${BUILD}] node=${process.version}`);
 
     return;
-  }
-
-  // Os pacotes que o rastreador da Vercel nao enxerga sozinho, agora protegidos.
-  for (const name of [
-    '@nestjs/core',
-    '@nestjs/platform-express',
-    '@nestjs/websockets',
-    '@nestjs/platform-socket.io',
-  ]) {
-    try {
-      require(name);
-    } catch (error) {
-      return report(response, `require('${name}')`, error);
-    }
   }
 
   let createHandler;
 
   try {
-    ({ createHandler } = require('../dist/serverless'));
+    ({ createHandler } = require('../dist-vercel/serverless.cjs'));
   } catch (error) {
-    return report(response, "require('../dist/serverless')", error);
+    return report(response, 'carga do bundle', error);
   }
 
   let app;

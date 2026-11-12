@@ -2,13 +2,13 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "npm ci --include=dev",
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build:vercel",
   "outputDirectory": "public",
   "functions": {
     "api/index.js": {
       "memory": 1024,
       "maxDuration": 60,
-      "includeFiles": "dist/**"
+      "includeFiles": "node_modules/argon2/**"
     }
   },
   "rewrites": [
