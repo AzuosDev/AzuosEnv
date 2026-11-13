@@ -6,6 +6,7 @@ import { SecretsModule } from '../secrets/secrets.module';
 import { StorageModule } from '../storage/storage.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { Workspace, WorkspaceSchema } from '../workspaces/schemas/workspace.schema';
+import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { MetaGraphProvider } from './graph/meta-graph.provider';
 import { WhatsappGraphProvider } from './graph/whatsapp-graph.provider';
 import { WhatsappDataModule } from './whatsapp-data.module';
@@ -37,6 +38,7 @@ import {
     NotificationsModule,
     HierarchyModule,
     TasksModule,
+    WorkspacesModule,
   ],
   controllers: [
     WhatsappAccessController,

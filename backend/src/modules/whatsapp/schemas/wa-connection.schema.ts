@@ -7,7 +7,7 @@ import { WA_CONNECTION_STATUSES, WaConnectionStatus } from '../whatsapp-fields';
 /** Number of the Cloud API a workspace talks through. One per workspace. */
 @Schema({ collection: 'wa_connections', ...baseSchemaOptions })
 export class WaConnection {
-  @Prop({ type: Types.ObjectId, ref: 'Workspace', required: true, index: true })
+  @Prop({ type: Types.ObjectId, ref: 'Workspace', required: true, unique: true })
   workspaceId: Types.ObjectId;
 
   /** Id of the phone number inside the WABA; routes the webhook to this workspace. */
@@ -57,5 +57,4 @@ export type WaConnectionDocument = HydratedDocument<WaConnection>;
 
 export const WaConnectionSchema = SchemaFactory.createForClass(WaConnection);
 
-WaConnectionSchema.index({ workspaceId: 1 }, { unique: true });
 WaConnectionSchema.index({ phoneNumberId: 1 }, { unique: true });

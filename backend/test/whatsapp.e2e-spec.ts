@@ -451,13 +451,14 @@ describe('WhatsApp', () => {
     ).expect(404);
 
     // O atendente também não assume a conversa para outra pessoa.
+    const brunoId = await userIdOf(fixture.bruno);
     const refused = await withAuth(
       http().post(
         `/api/v1/workspaces/${fixture.workspace.id}/whatsapp/conversations/${conversation.id}/assign`,
       ),
       fixture.ana,
     )
-      .send({ assigneeId: await userIdOf(fixture.bruno) })
+      .send({ assigneeId: brunoId })
       .expect(400);
 
     expect(refused.body.code).toBe('WHATSAPP_ASSIGNEE_NOT_ALLOWED');
