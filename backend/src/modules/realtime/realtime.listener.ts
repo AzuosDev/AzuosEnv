@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { OnEvent } from '@nestjs/event-emitter';
 import {
   COMMENT_CREATED,
@@ -39,6 +40,14 @@ import {
   TaskMovedEvent,
   TaskUpdatedEvent,
 } from '../tasks/task-events';
+import {
+  WA_CONVERSATION_UPDATED,
+  WA_MESSAGE_CREATED,
+  WA_MESSAGE_STATUS,
+  WaConversationUpdatedEvent,
+  WaMessageCreatedEvent,
+  WaMessageStatusEvent,
+} from '../whatsapp/whatsapp-events';
 import {
   WHITEBOARD_CREATED,
   WHITEBOARD_DELETED,
@@ -158,6 +167,41 @@ export class RealtimeListener {
     this.gateway.emitToRooms(boardRooms(event), 'whiteboard.deleted', boardPayload(event));
   }
 
+  @OnEvent(WA_MESSAGE_CREATED)
+  onWaMessageCreated(event: WaMessageCreatedEvent): void {
+    this.gateway.emitToRooms(whatsappRooms(event.workspaceId), 'message.new', {
+      workspaceId: String(event.workspaceId),
+      conversationId: String(event.conversationId),
+      messageId: String(event.messageId),
+      direction: event.direction,
+      type: event.type,
+      preview: event.preview,
+      authorId: event.authorId ? String(event.authorId) : null,
+    });
+  }
+
+  @OnEvent(WA_MESSAGE_STATUS)
+  onWaMessageStatus(event: WaMessageStatusEvent): void {
+    this.gateway.emitToRooms(whatsappRooms(event.workspaceId), 'message.status', {
+      workspaceId: String(event.workspaceId),
+      conversationId: String(event.conversationId),
+      messageId: String(event.messageId),
+      status: event.status,
+      error: event.error,
+    });
+  }
+
+  @OnEvent(WA_CONVERSATION_UPDATED)
+  onWaConversationUpdated(event: WaConversationUpdatedEvent): void {
+    this.gateway.emitToRooms(whatsappRooms(event.workspaceId), 'conversation.updated', {
+      workspaceId: String(event.workspaceId),
+      conversationId: String(event.conversationId),
+      status: event.status,
+      assigneeId: event.assigneeId ? String(event.assigneeId) : null,
+      unreadCount: event.unreadCount,
+    });
+  }
+
   @OnEvent(NOTIFICATION_CREATED)
   onNotificationCreated(event: NotificationCreatedEvent): void {
     this.gateway.emitToRooms([userRoom(String(event.userId))], 'notification.new', {
@@ -171,6 +215,10 @@ export class RealtimeListener {
       data: event.data,
     });
   }
+}
+
+function whatsappRooms(workspaceId: Types.ObjectId): string[] {
+  return [roomName('whatsapp', String(workspaceId))];
 }
 
 function taskRooms(event: TaskEventBase): string[] {

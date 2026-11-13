@@ -54,6 +54,8 @@ export const envValidationSchema = Joi.object({
   // Passphrase of the secrets at rest (OAuth tokens, webhook secrets). Empty falls
   // back to JWT_ACCESS_SECRET, which keeps development and the tests working.
   ENCRYPTION_KEY: Joi.string().allow('').default(''),
+  // Version of the Graph API used by the WhatsApp Cloud API.
+  META_GRAPH_VERSION: Joi.string().default('v21.0'),
   // Without GOOGLE_CLIENT_ID the CalendarProvider stays the stub.
   GOOGLE_CLIENT_ID: Joi.string().allow('').default(''),
   GOOGLE_CLIENT_SECRET: Joi.string()

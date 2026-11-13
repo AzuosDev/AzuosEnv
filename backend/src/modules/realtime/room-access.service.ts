@@ -8,6 +8,7 @@ import { permissionContextFrom } from '../hierarchy/permission.service';
 import { AccessTokenPayload } from '../auth/strategies/jwt.strategy';
 import { TaskAccessService } from '../tasks/task-access.service';
 import { UsersService } from '../users/users.service';
+import { WhatsappAccessService } from '../whatsapp/whatsapp-access.service';
 import { WhiteboardsAccessService } from '../whiteboards/whiteboards-access.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
 import { RoomPayload, isRoomKind, roomName } from './realtime-rooms';
@@ -24,6 +25,7 @@ export class RoomAccessService {
     private readonly docs: DocsAccessService,
     private readonly chat: ChatAccessService,
     private readonly whiteboards: WhiteboardsAccessService,
+    private readonly whatsapp: WhatsappAccessService,
   ) {}
 
   /** Reads the access token of `auth.token` and answers the id of the user. */
@@ -62,6 +64,15 @@ export class RoomAccessService {
       await this.workspaces.resolveContext(id, userId);
 
       return roomName('ws', id);
+    }
+
+    // The whatsapp room is per workspace and only reaches who has the module.
+    if (kind === 'whatsapp') {
+      const resolved = await this.workspaces.resolveContext(id, userId);
+
+      await this.whatsapp.require(permissionContextFrom(resolved.membership), 'atendente');
+
+      return roomName('whatsapp', id);
     }
 
     const wsId = typeof payload.wsId === 'string' ? payload.wsId : undefined;

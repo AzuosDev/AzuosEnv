@@ -103,6 +103,18 @@ export class NotificationTypeSettingsDto implements Partial<Record<NotificationT
   @ValidateNested()
   @Type(() => NotificationChannelsDto)
   aiSummary?: NotificationChannelsDto;
+
+  @ApiPropertyOptional({ type: NotificationChannelsDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => NotificationChannelsDto)
+  whatsappMessage?: NotificationChannelsDto;
+
+  @ApiPropertyOptional({ type: NotificationChannelsDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => NotificationChannelsDto)
+  whatsappAssigned?: NotificationChannelsDto;
 }
 
 export class UpdateNotificationSettingsDto {
@@ -170,4 +182,10 @@ export class NotificationPreferencesDto implements Record<
 
   @ApiProperty({ type: NotificationChannelsStateDto })
   aiSummary: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  whatsappMessage: NotificationChannelsStateDto;
+
+  @ApiProperty({ type: NotificationChannelsStateDto })
+  whatsappAssigned: NotificationChannelsStateDto;
 }

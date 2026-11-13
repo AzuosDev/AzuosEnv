@@ -11,6 +11,8 @@ export const SWAGGER_PATH = 'api/docs';
 export const PUBLIC_FORMS_PATH = `/${API_PREFIX}/public/forms`;
 /** Route whose raw body is kept, to verify the signature of GitHub. */
 export const GITHUB_WEBHOOK_PATH = `/${API_PREFIX}/integrations/github/webhook`;
+/** Route whose raw body is kept, to verify the signature of Meta. */
+export const WHATSAPP_WEBHOOK_PATH = `/${API_PREFIX}/integrations/whatsapp/webhook`;
 const BODY_LIMIT = '1mb';
 
 export interface ConfigureAppOptions {
@@ -29,6 +31,7 @@ export function configureApp(app: NestExpressApplication, options: ConfigureAppO
   // Registered before the JSON parser so the raw bytes of the GitHub webhook are
   // still available when its signature is verified.
   app.use(GITHUB_WEBHOOK_PATH, raw({ type: '*/*', limit: BODY_LIMIT }), keepRawBody);
+  app.use(WHATSAPP_WEBHOOK_PATH, raw({ type: '*/*', limit: BODY_LIMIT }), keepRawBody);
   app.useBodyParser('json', { limit: BODY_LIMIT });
   app.useBodyParser('urlencoded', { limit: BODY_LIMIT, extended: true });
 
