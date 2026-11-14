@@ -258,12 +258,23 @@ export class WhatsappConversationsService {
     this.emitUpdated(conversation);
   }
 
-  /** Records an outbound message; the conversation starts waiting for the answer. */
-  async touchOutbound(conversation: WaConversationDocument, at: Date): Promise<void> {
+  /**
+   * Records an outbound message; the conversation starts waiting for the answer.
+   * `pauseMinutes` above zero is an attendant answering, which holds the bot back.
+   */
+  async touchOutbound(
+    conversation: WaConversationDocument,
+    at: Date,
+    pauseMinutes = 0,
+  ): Promise<void> {
     conversation.lastMessageAt = at;
 
     if (conversation.status !== 'closed') {
       conversation.status = 'waiting';
+    }
+
+    if (pauseMinutes > 0 && conversation.mode === 'bot') {
+      conversation.botPausedUntil = new Date(at.getTime() + pauseMinutes * 60_000);
     }
 
     await conversation.save();

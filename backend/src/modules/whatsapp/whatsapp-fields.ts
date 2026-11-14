@@ -101,3 +101,76 @@ export const MAX_WA_SCAN = 500;
 /** Space and List the lead of a conversation lands in. */
 export const LEAD_SPACE_NAME = 'Comercial';
 export const LEAD_LIST_NAME = 'Leads';
+
+/** Kinds of menu the bot offers; the Cloud API caps buttons at 3 and rows at 10. */
+export const WA_MENU_KINDS = ['buttons', 'list'] as const;
+export type WaMenuKind = (typeof WA_MENU_KINDS)[number];
+
+export const MAX_WA_BUTTONS = 3;
+export const MAX_WA_LIST_ROWS = 10;
+
+/** What makes a bot rule fire. */
+export const WA_BOT_TRIGGERS = [
+  'firstMessage',
+  'keyword',
+  'contains',
+  'regex',
+  'menuOption',
+  'outsideHours',
+] as const;
+export type WaBotTrigger = (typeof WA_BOT_TRIGGERS)[number];
+
+/** Triggers that only make sense at a specific moment, never on a plain match. */
+export const WA_CONTEXT_TRIGGERS: readonly WaBotTrigger[] = ['firstMessage', 'outsideHours'];
+
+/** Shape of the answer a rule sends back. */
+export const WA_BOT_REPLY_KINDS = ['none', 'text', 'media', 'buttons', 'list'] as const;
+export type WaBotReplyKind = (typeof WA_BOT_REPLY_KINDS)[number];
+
+/** Side effects a rule applies to the conversation. */
+export const WA_BOT_ACTION_KINDS = [
+  'transferToHuman',
+  'assign',
+  'tag',
+  'priority',
+  'createLead',
+] as const;
+export type WaBotActionKind = (typeof WA_BOT_ACTION_KINDS)[number];
+
+/** Minutes the bot stays quiet after an attendant answers. */
+export const DEFAULT_WA_BOT_PAUSE_MINUTES = 30;
+export const MAX_WA_BOT_PAUSE_MINUTES = 24 * 60;
+
+/** Ceiling of the knowledge base the AI answer is grounded on. */
+export const MAX_WA_KNOWLEDGE_CHARS = 20_000;
+
+/** Ceiling of one AI answer, so the bot never writes a wall of text. */
+export const DEFAULT_WA_AI_ANSWER_CHARS = 600;
+export const MAX_WA_AI_ANSWER_CHARS = 1500;
+
+/** Word the model answers with when the base does not cover the question. */
+export const WA_AI_HANDOFF_TOKEN = 'TRANSFERIR';
+
+/** Characters of the contact message handed to the model. */
+export const MAX_WA_AI_QUESTION_CHARS = 1000;
+
+/** Text of a message a rule matches against; longer than this is cut. */
+export const MAX_WA_MATCH_CHARS = 2000;
+
+/** Shortcut of a quick reply, as typed after the `/` of the message field. */
+export const WA_SHORTCUT = /^[a-z0-9][a-z0-9._-]{0,39}$/;
+
+export const MAX_WA_QUICK_REPLY_CHARS = 4096;
+
+/** `HH:mm` of a business-hours range. */
+export const WA_TIME_OF_DAY = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+
+/** `YYYY-MM-DD` of a holiday. */
+export const WA_DATE_KEY = /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+
+/** Days a period of the overview may cover. */
+export const MAX_WA_OVERVIEW_DAYS = 366;
+export const DEFAULT_WA_OVERVIEW_DAYS = 30;
+
+/** Conversations one overview reads. */
+export const MAX_WA_OVERVIEW_CONVERSATIONS = 5000;

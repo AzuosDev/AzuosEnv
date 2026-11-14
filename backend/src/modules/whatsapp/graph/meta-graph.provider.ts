@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { GRAPH_TIMEOUT_MS } from '../whatsapp-fields';
 import {
   WaCredentials,
+  WaInteractive,
   WaMediaFile,
   WaMediaInfo,
   WaOutbound,
@@ -267,7 +268,15 @@ function messageBody(message: WaOutbound): Record<string, unknown> {
     return base;
   }
 
-  const media: Record<string, unknown> = { id: message.mediaId };
+  if (message.type === 'interactive' && message.interactive) {
+    base.interactive = interactiveBody(message.interactive);
+
+    return base;
+  }
+
+  const media: Record<string, unknown> = message.mediaId
+    ? { id: message.mediaId }
+    : { link: message.mediaLink ?? '' };
 
   if (message.caption && message.type !== 'audio' && message.type !== 'sticker') {
     media.caption = message.caption;
@@ -280,6 +289,46 @@ function messageBody(message: WaOutbound): Record<string, unknown> {
   base[message.type] = media;
 
   return base;
+}
+
+/** Body of an interactive message: up to 3 buttons, or one list of rows. */
+function interactiveBody(interactive: WaInteractive): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    type: interactive.kind === 'list' ? 'list' : 'button',
+    body: { text: interactive.body },
+  };
+
+  if (interactive.header) {
+    body.header = { type: 'text', text: interactive.header };
+  }
+
+  if (interactive.footer) {
+    body.footer = { text: interactive.footer };
+  }
+
+  body.action =
+    interactive.kind === 'list'
+      ? {
+          button: interactive.buttonLabel ?? 'Ver opções',
+          sections: [
+            {
+              title: interactive.header || 'Opções',
+              rows: interactive.options.map((option) => ({
+                id: option.id,
+                title: option.title,
+                ...(option.description ? { description: option.description } : {}),
+              })),
+            },
+          ],
+        }
+      : {
+          buttons: interactive.options.map((option) => ({
+            type: 'reply',
+            reply: { id: option.id, title: option.title },
+          })),
+        };
+
+  return body;
 }
 
 function countVariables(components: { type?: string; text?: string }[]): number {

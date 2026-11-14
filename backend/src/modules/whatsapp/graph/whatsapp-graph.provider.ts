@@ -1,4 +1,22 @@
-import { WaMessageType } from '../whatsapp-fields';
+import { WaMenuKind, WaMessageType } from '../whatsapp-fields';
+
+/** One button or one list row of an interactive message. */
+export interface WaInteractiveOption {
+  id: string;
+  title: string;
+  description?: string;
+}
+
+/** Buttons or interactive list the bot sends. */
+export interface WaInteractive {
+  kind: WaMenuKind;
+  header?: string;
+  body: string;
+  footer?: string;
+  /** Label that opens the list; required by the Cloud API on a list. */
+  buttonLabel?: string;
+  options: WaInteractiveOption[];
+}
 
 /** Credentials of the connection, already decrypted. */
 export interface WaCredentials {
@@ -14,11 +32,15 @@ export interface WaOutbound {
   type: WaMessageType;
   text?: string;
   mediaId?: string;
+  /** Public link of the file, when it was never uploaded to Meta. */
+  mediaLink?: string;
+  mediaMime?: string;
   caption?: string;
   filename?: string;
   /** waMessageId of the quoted message. */
   replyTo?: string | null;
   template?: { name: string; language: string; variables: string[] };
+  interactive?: WaInteractive;
 }
 
 export interface WaMediaInfo {

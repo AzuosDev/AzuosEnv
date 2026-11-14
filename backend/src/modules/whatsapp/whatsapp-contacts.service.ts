@@ -59,6 +59,14 @@ export class WhatsappContactsService {
     return contact;
   }
 
+  /** Contact of a conversation read outside a request, as the bot does. */
+  async byId(
+    workspaceId: Types.ObjectId,
+    contactId: Types.ObjectId,
+  ): Promise<WaContactDocument | null> {
+    return this.model.findOne({ _id: contactId, workspaceId }).exec();
+  }
+
   async create(ctx: PermissionContext, dto: CreateWaContactDto): Promise<WaContactDocument> {
     const taken = await this.model
       .countDocuments({ workspaceId: ctx.workspaceId, waId: dto.waId })

@@ -11,12 +11,18 @@ import { PermissionContext } from '../hierarchy/permission.service';
 import { StorageService } from '../storage/storage.service';
 import { UploadedFile } from '../collaboration/attachments.service';
 import { MAX_UPLOAD_BYTES } from '../collaboration/collaboration-fields';
-import { WaCredentials, WaTemplate, WhatsappGraphProvider } from './graph/whatsapp-graph.provider';
+import {
+  WaCredentials,
+  WaOutbound,
+  WaTemplate,
+  WhatsappGraphProvider,
+} from './graph/whatsapp-graph.provider';
 import { SendWaMediaDto, SendWaTemplateDto, SendWaTextDto } from './dto/whatsapp.dto';
 import { WaContactDocument } from './schemas/wa-contact.schema';
 import { WaConversationDocument } from './schemas/wa-conversation.schema';
 import { WaMessage, WaMessageDocument } from './schemas/wa-message.schema';
 import { WaInboundMessage, WaInboundStatus } from './whatsapp-payload';
+import { WhatsappBotSettingsService } from './whatsapp-bot-settings.service';
 import { WhatsappConnectionsService } from './whatsapp-connections.service';
 import { WhatsappContactsService } from './whatsapp-contacts.service';
 import { WhatsappConversationsService } from './whatsapp-conversations.service';
@@ -61,6 +67,7 @@ export class WhatsappMessagesService {
     private readonly conversations: WhatsappConversationsService,
     private readonly contacts: WhatsappContactsService,
     private readonly connections: WhatsappConnectionsService,
+    private readonly botSettings: WhatsappBotSettingsService,
     private readonly graph: WhatsappGraphProvider,
     private readonly storage: StorageService,
     private readonly events: EventEmitter2,
@@ -215,6 +222,62 @@ export class WhatsappMessagesService {
       replyTo: null,
       payload: { name: dto.name, language: dto.language, variables },
     });
+  }
+
+  /** Inbound messages of the conversation; 1 means the contact just arrived. */
+  async countInbound(conversation: WaConversationDocument): Promise<number> {
+    return this.model
+      .countDocuments({
+        workspaceId: conversation.workspaceId,
+        conversationId: conversation._id,
+        direction: 'inbound',
+      })
+      .exec();
+  }
+
+  /**
+   * Answer of the bot. It never pauses itself and it stays quiet when the contact
+   * opted out or the 24 h window is closed.
+   */
+  async sendFromBot(
+    conversation: WaConversationDocument,
+    contact: WaContactDocument,
+    credentials: WaCredentials,
+    outbound: Omit<WaOutbound, 'to'>,
+  ): Promise<WaMessageDocument | null> {
+    if (contact.optOut || !isWindowOpen(conversation.lastInboundAt)) {
+      return null;
+    }
+
+    const waMessageId = await this.graph.send(credentials, { ...outbound, to: contact.waId });
+    const sentAt = new Date();
+    const created = await this.model.create({
+      workspaceId: conversation.workspaceId,
+      conversationId: conversation._id,
+      waMessageId,
+      direction: 'outbound',
+      type: outbound.type,
+      body: outbound.text ?? outbound.interactive?.body ?? outbound.caption ?? '',
+      media: outbound.mediaLink
+        ? {
+            mime: outbound.mediaMime ?? '',
+            caption: outbound.caption ?? '',
+            filename: outbound.filename ?? '',
+          }
+        : null,
+      payload: outbound.interactive ? { ...outbound.interactive } : null,
+      replyTo: null,
+      status: 'sent',
+      authorId: null,
+      fromBot: true,
+      sentAt,
+    });
+
+    await this.conversations.touchOutbound(conversation, sentAt);
+    await this.contacts.touch(conversation.contactId, sentAt);
+    this.emitCreated(created);
+
+    return created;
   }
 
   /**
@@ -383,7 +446,12 @@ export class WhatsappMessagesService {
       sentAt,
     });
 
-    await this.conversations.touchOutbound(conversation, sentAt);
+    // An attendant answering holds the bot back for the configured minutes.
+    await this.conversations.touchOutbound(
+      conversation,
+      sentAt,
+      await this.botSettings.pauseMinutesFor(ctx.workspaceId),
+    );
     await this.contacts.touch(conversation.contactId, sentAt);
     this.emitCreated(created);
 

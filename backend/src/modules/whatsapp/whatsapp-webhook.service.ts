@@ -6,6 +6,7 @@ import {
   WaConnectionWithCredentials,
   WhatsappConnectionsService,
 } from './whatsapp-connections.service';
+import { WhatsappBotService } from './whatsapp-bot.service';
 import { WhatsappContactsService } from './whatsapp-contacts.service';
 import { WhatsappConversationsService } from './whatsapp-conversations.service';
 import { WhatsappMessagesService } from './whatsapp-messages.service';
@@ -46,6 +47,7 @@ export class WhatsappWebhookService {
     private readonly contacts: WhatsappContactsService,
     private readonly conversations: WhatsappConversationsService,
     private readonly messages: WhatsappMessagesService,
+    private readonly bot: WhatsappBotService,
   ) {}
 
   /** Handshake of the subscription: the challenge comes back in plain text. */
@@ -164,10 +166,11 @@ export class WhatsappWebhookService {
 
     if (created && !conversation.assigneeId) {
       await this.conversations.notifyNewConversation(conversation);
-
-      return;
+    } else {
+      await this.conversations.notifyInbound(conversation, stored.body);
     }
 
-    await this.conversations.notifyInbound(conversation, stored.body);
+    // The bot answers last, so the message and the notification never wait on it.
+    await this.bot.handleInbound(conversation, stored, credentials);
   }
 }

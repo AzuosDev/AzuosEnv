@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AiModule } from '../ai/ai.module';
 import { HierarchyModule } from '../hierarchy/hierarchy.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { SecretsModule } from '../secrets/secrets.module';
@@ -10,13 +11,22 @@ import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { MetaGraphProvider } from './graph/meta-graph.provider';
 import { WhatsappGraphProvider } from './graph/whatsapp-graph.provider';
 import { WhatsappDataModule } from './whatsapp-data.module';
+import { WhatsappBotSettingsService } from './whatsapp-bot-settings.service';
+import { WhatsappBotService } from './whatsapp-bot.service';
 import { WhatsappConnectionsService } from './whatsapp-connections.service';
 import { WhatsappContactsService } from './whatsapp-contacts.service';
 import { WhatsappConversationsService } from './whatsapp-conversations.service';
 import { WhatsappMessagesService } from './whatsapp-messages.service';
+import { WhatsappMetricsService } from './whatsapp-metrics.service';
+import { WhatsappQuickRepliesService } from './whatsapp-quick-replies.service';
 import { WhatsappTasksService } from './whatsapp-tasks.service';
 import { WhatsappWebhookService } from './whatsapp-webhook.service';
 import { WhatsappWebhookController } from './whatsapp-webhook.controller';
+import {
+  WhatsappBotController,
+  WhatsappOverviewController,
+  WhatsappQuickRepliesController,
+} from './whatsapp-bot.controller';
 import {
   WhatsappAccessController,
   WhatsappConnectionController,
@@ -27,7 +37,8 @@ import {
 
 /**
  * WhatsApp through the official Cloud API: connection, public webhook, contacts,
- * conversations, messages and the bridge with the tasks of the Azuos Env.
+ * conversations, messages, the bot of the attendance and the bridge with the
+ * tasks of the Azuos Env.
  */
 @Module({
   imports: [
@@ -39,6 +50,7 @@ import {
     HierarchyModule,
     TasksModule,
     WorkspacesModule,
+    AiModule,
   ],
   controllers: [
     WhatsappAccessController,
@@ -46,6 +58,9 @@ import {
     WhatsappTemplatesController,
     WhatsappConversationsController,
     WhatsappContactsController,
+    WhatsappBotController,
+    WhatsappQuickRepliesController,
+    WhatsappOverviewController,
     WhatsappWebhookController,
   ],
   providers: [
@@ -54,6 +69,10 @@ import {
     WhatsappContactsService,
     WhatsappConversationsService,
     WhatsappMessagesService,
+    WhatsappBotSettingsService,
+    WhatsappBotService,
+    WhatsappQuickRepliesService,
+    WhatsappMetricsService,
     WhatsappTasksService,
     WhatsappWebhookService,
   ],

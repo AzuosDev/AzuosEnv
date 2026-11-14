@@ -64,6 +64,7 @@ import { WaConnectionDocument } from './schemas/wa-connection.schema';
 import { WaConversation, WaConversationDocument } from './schemas/wa-conversation.schema';
 import { WaMessage, WaMessageDocument } from './schemas/wa-message.schema';
 import { WaAccessEntry, WhatsappAccessService } from './whatsapp-access.service';
+import { WhatsappBotService } from './whatsapp-bot.service';
 import { WhatsappConnectionsService } from './whatsapp-connections.service';
 import { WhatsappContactsService } from './whatsapp-contacts.service';
 import { WhatsappConversationsService } from './whatsapp-conversations.service';
@@ -241,6 +242,7 @@ export class WhatsappConversationsController {
     private readonly conversations: WhatsappConversationsService,
     private readonly messages: WhatsappMessagesService,
     private readonly tasks: WhatsappTasksService,
+    private readonly bot: WhatsappBotService,
   ) {}
 
   @Get()
@@ -345,12 +347,15 @@ export class WhatsappConversationsController {
     @Param('conversationId', ParseObjectIdPipe) conversationId: Types.ObjectId,
   ): Promise<WaConversationDocument> {
     const ctx = ctxOf(membership);
-
-    return this.conversations.close(
+    const conversation = await this.conversations.close(
       ctx,
       await this.access.require(ctx, 'atendente'),
       conversationId,
     );
+
+    await this.bot.onClosed(conversation);
+
+    return conversation;
   }
 
   @Post(':conversationId/reopen')

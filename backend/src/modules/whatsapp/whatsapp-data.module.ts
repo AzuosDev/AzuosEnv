@@ -5,10 +5,13 @@ import {
   WorkspaceMemberSchema,
 } from '../workspaces/schemas/workspace-member.schema';
 import { WaAccess, WaAccessSchema } from './schemas/wa-access.schema';
+import { WaBotRule, WaBotRuleSchema } from './schemas/wa-bot-rule.schema';
+import { WaBotSettings, WaBotSettingsSchema } from './schemas/wa-bot-settings.schema';
 import { WaConnection, WaConnectionSchema } from './schemas/wa-connection.schema';
 import { WaContact, WaContactSchema } from './schemas/wa-contact.schema';
 import { WaConversation, WaConversationSchema } from './schemas/wa-conversation.schema';
 import { WaMessage, WaMessageSchema } from './schemas/wa-message.schema';
+import { WaQuickReply, WaQuickReplySchema } from './schemas/wa-quick-reply.schema';
 import { WhatsappAccessService } from './whatsapp-access.service';
 
 /**
@@ -23,6 +26,9 @@ import { WhatsappAccessService } from './whatsapp-access.service';
       { name: WaContact.name, schema: WaContactSchema },
       { name: WaConversation.name, schema: WaConversationSchema },
       { name: WaMessage.name, schema: WaMessageSchema },
+      { name: WaBotSettings.name, schema: WaBotSettingsSchema },
+      { name: WaBotRule.name, schema: WaBotRuleSchema },
+      { name: WaQuickReply.name, schema: WaQuickReplySchema },
       { name: WorkspaceMember.name, schema: WorkspaceMemberSchema },
     ]),
   ],

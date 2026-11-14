@@ -38,6 +38,9 @@ export const AUDIT_ACTIONS = [
   'whatsapp.connection.saved',
   'whatsapp.connection.tested',
   'whatsapp.access.changed',
+  'whatsapp.bot.saved',
+  'whatsapp.bot.rule.saved',
+  'whatsapp.bot.rule.deleted',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

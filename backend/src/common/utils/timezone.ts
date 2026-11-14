@@ -94,3 +94,21 @@ export function startOfZonedDayKey(dateKey: string, timeZone: string): Date {
 
   return new Date(localMidnight - zoneOffsetMs(guess, timeZone));
 }
+
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/** Weekday (0 = Sunday) and minutes since midnight of the instant in `timeZone`. */
+export function zonedClock(
+  date: Date,
+  timeZone: string,
+): { weekday: number; minutes: number; dateKey: string } {
+  const { hour, minute } = zonedParts(date, timeZone);
+  const label = new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short' }).format(date);
+  const weekday = WEEKDAYS.indexOf(label);
+
+  return {
+    weekday: weekday < 0 ? 0 : weekday,
+    minutes: hour * 60 + minute,
+    dateKey: zonedDateKey(date, timeZone),
+  };
+}

@@ -73,6 +73,6 @@ function aiProviderFactory(config: ConfigService): AiProvider {
     AiAgentRunnerService,
     AiAgentsScheduler,
   ],
-  exports: [AI_PROVIDER, AiAgentsService, AiAgentRunnerService],
+  exports: [AI_PROVIDER, AiUsageService, AiAgentsService, AiAgentRunnerService],
 })
 export class AiModule {}
