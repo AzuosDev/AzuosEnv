@@ -57,6 +57,11 @@ async function main(): Promise<void> {
   // Login com Google falso: a suíte do front percorre o fluxo inteiro sem sair
   // do app e sem depender do Google de verdade.
   process.env.GOOGLE_MOCK ??= 'true';
+  // Cloud API do WhatsApp falsa: a suíte do front recebe e responde mensagem
+  // sem WABA e sem sair do processo.
+  process.env.WHATSAPP_MOCK ??= 'true';
+  // A URL do webhook que a tela mostra é a desta API, não a do front.
+  process.env.API_PUBLIC_URL ??= `http://localhost:${String(PORT)}`;
   process.env.GOOGLE_LOGIN_REDIRECT_URI = `http://localhost:${String(PORT)}/api/v1/auth/google/callback`;
   process.env.FRONTEND_URL ??= process.env.APP_URL ?? 'http://localhost:5173';
   // A suíte do front sai toda do mesmo IP: o teto por minuto do rate limit global

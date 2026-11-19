@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { NAV_ITEMS, SETTINGS_ITEM, type NavItem } from '../nav-items';
+import { useWaAccess } from '@/features/whatsapp/hooks/use-wa-access';
+import { NAV_ITEMS, SETTINGS_ITEM, allowedNavItems, type NavItem } from '../nav-items';
 
 function RailLink({ item, wsId, active }: { item: NavItem; wsId: string; active: boolean }) {
   const Icon = item.icon;
@@ -29,6 +30,9 @@ function RailLink({ item, wsId, active }: { item: NavItem; wsId: string; active:
 
 /** Rail de 64 px com os módulos; abaixo de 768 px dá lugar à barra inferior. */
 export function NavRail({ wsId, activeId }: { wsId: string; activeId: string | null }) {
+  const { level } = useWaAccess(wsId);
+  const items = allowedNavItems([...NAV_ITEMS], level !== null);
+
   return (
     <nav
       aria-label="Navegação global"
@@ -43,7 +47,7 @@ export function NavRail({ wsId, activeId }: { wsId: string; activeId: string | n
         &lt;/&gt;
       </Link>
 
-      {NAV_ITEMS.map((item) => (
+      {items.map((item) => (
         <RailLink key={item.id} item={item} wsId={wsId} active={activeId === item.id} />
       ))}
 

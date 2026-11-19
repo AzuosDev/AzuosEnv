@@ -35,6 +35,12 @@ export const AUDIT_ACTIONS = [
   'webhook.deleted',
   'webhook.redelivered',
   'integration.google.calendar.changed',
+  'whatsapp.connection.saved',
+  'whatsapp.connection.tested',
+  'whatsapp.access.changed',
+  'whatsapp.bot.saved',
+  'whatsapp.bot.rule.saved',
+  'whatsapp.bot.rule.deleted',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import { BOTTOM_NAV_ITEMS, MORE_NAV_ITEMS } from '../nav-items';
+import { useWaAccess } from '@/features/whatsapp/hooks/use-wa-access';
+import { BOTTOM_NAV_ITEMS, MORE_NAV_ITEMS, allowedNavItems } from '../nav-items';
 
 const itemClass =
   'flex min-h-11 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-[11px] text-muted no-underline';
@@ -12,6 +13,8 @@ const itemClass =
 /** Navegação global abaixo de 768 px: quatro módulos e "Mais". */
 export function BottomNav({ wsId, activeId }: { wsId: string; activeId: string | null }) {
   const [moreOpen, setMoreOpen] = useState(false);
+  const { level } = useWaAccess(wsId);
+  const moreItems = allowedNavItems(MORE_NAV_ITEMS, level !== null);
 
   return (
     <>
@@ -55,7 +58,7 @@ export function BottomNav({ wsId, activeId }: { wsId: string; activeId: string |
         <SheetContent side="bottom" aria-describedby={undefined}>
           <SheetTitle className="heading pr-10 text-base">Mais</SheetTitle>
           <ul className="flex flex-col gap-1">
-            {MORE_NAV_ITEMS.map((item) => {
+            {moreItems.map((item) => {
               const Icon = item.icon;
 
               return (

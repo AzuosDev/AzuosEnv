@@ -75,6 +75,12 @@ export const AUDIT_ACTIONS: AuditAction[] = [
   'webhook.updated',
   'webhook.deleted',
   'webhook.redelivered',
+  'whatsapp.connection.saved',
+  'whatsapp.connection.tested',
+  'whatsapp.access.changed',
+  'whatsapp.bot.saved',
+  'whatsapp.bot.rule.saved',
+  'whatsapp.bot.rule.deleted',
 ];
 
 export const AUDIT_ACTION_LABEL: Record<AuditAction, string> = {
@@ -98,6 +104,12 @@ export const AUDIT_ACTION_LABEL: Record<AuditAction, string> = {
   'webhook.updated': 'Webhook alterado',
   'webhook.deleted': 'Webhook removido',
   'webhook.redelivered': 'Entrega reenviada',
+  'whatsapp.connection.saved': 'Conexão do WhatsApp salva',
+  'whatsapp.connection.tested': 'Conexão do WhatsApp testada',
+  'whatsapp.access.changed': 'Acesso ao WhatsApp alterado',
+  'whatsapp.bot.saved': 'Bot do WhatsApp salvo',
+  'whatsapp.bot.rule.saved': 'Regra do bot salva',
+  'whatsapp.bot.rule.deleted': 'Regra do bot removida',
 };
 
 export const AUDIT_ENTITY_LABEL: Record<AuditEntityType, string> = {

@@ -14,6 +14,8 @@ export const NOTIFICATION_TYPES = [
   'chatMessage',
   'formSubmitted',
   'aiSummary',
+  'whatsappMessage',
+  'whatsappAssigned',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -23,6 +25,7 @@ export const NOTIFICATION_ENTITY_TYPES = [
   'workspace',
   'reminder',
   'message',
+  'whatsappConversation',
 ] as const;
 export type NotificationEntityType = (typeof NOTIFICATION_ENTITY_TYPES)[number];
 

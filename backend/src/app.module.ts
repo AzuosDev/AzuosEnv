@@ -39,6 +39,7 @@ import { TrashModule } from './modules/trash/trash.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { UsersModule } from './modules/users/users.module';
 import { ViewsModule } from './modules/views/views.module';
+import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 import { WhiteboardsModule } from './modules/whiteboards/whiteboards.module';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
 
@@ -96,6 +97,7 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     AiModule,
     WhiteboardsModule,
     IntegrationsModule,
+    WhatsappModule,
     ImportModule,
   ],
   providers: [

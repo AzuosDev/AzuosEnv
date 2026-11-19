@@ -1,5 +1,12 @@
 /** Every feature that spends tokens; the usage row is keyed by it. */
-export const AI_FEATURES = ['chat', 'summarize', 'tasksFromText', 'write', 'agent'] as const;
+export const AI_FEATURES = [
+  'chat',
+  'summarize',
+  'tasksFromText',
+  'write',
+  'agent',
+  'whatsappBot',
+] as const;
 export type AiFeature = (typeof AI_FEATURES)[number];
 
 /** Entities the summarize endpoint accepts. */

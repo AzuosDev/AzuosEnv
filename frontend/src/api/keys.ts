@@ -142,6 +142,38 @@ export const queryKeys = {
   webhooks: (workspaceId: string) => ['workspaces', workspaceId, 'webhooks'] as const,
   webhookDeliveries: (workspaceId: string, webhookId: string) =>
     ['workspaces', workspaceId, 'webhooks', webhookId, 'deliveries'] as const,
+  waAccess: (workspaceId: string) => ['workspaces', workspaceId, 'whatsapp', 'access'] as const,
+  waMyAccess: (workspaceId: string) =>
+    ['workspaces', workspaceId, 'whatsapp', 'access', 'me'] as const,
+  waConnection: (workspaceId: string) =>
+    ['workspaces', workspaceId, 'whatsapp', 'connection'] as const,
+  waTemplates: (workspaceId: string) =>
+    ['workspaces', workspaceId, 'whatsapp', 'templates'] as const,
+  waConversations: (workspaceId: string, params: Record<string, unknown>) =>
+    ['workspaces', workspaceId, 'whatsapp', 'conversations', 'list', params] as const,
+  waConversation: (workspaceId: string, conversationId: string) =>
+    ['workspaces', workspaceId, 'whatsapp', 'conversations', 'detail', conversationId] as const,
+  waMessages: (workspaceId: string, conversationId: string) =>
+    [
+      'workspaces',
+      workspaceId,
+      'whatsapp',
+      'conversations',
+      'detail',
+      conversationId,
+      'messages',
+    ] as const,
+  waContacts: (workspaceId: string, term: string) =>
+    ['workspaces', workspaceId, 'whatsapp', 'contacts', term] as const,
+  waQuickReplies: (workspaceId: string, conversationId: string, term: string) =>
+    ['workspaces', workspaceId, 'whatsapp', 'quick-replies', conversationId, term] as const,
+  waQuickRepliesAll: (workspaceId: string, term: string) =>
+    ['workspaces', workspaceId, 'whatsapp', 'quick-replies', 'all', term] as const,
+  waBot: (workspaceId: string) => ['workspaces', workspaceId, 'whatsapp', 'bot'] as const,
+  waBotRules: (workspaceId: string) =>
+    ['workspaces', workspaceId, 'whatsapp', 'bot', 'rules'] as const,
+  waOverview: (workspaceId: string, params: Record<string, unknown>) =>
+    ['workspaces', workspaceId, 'whatsapp', 'overview', params] as const,
   apiKeys: () => ['api-keys'] as const,
   auditLogs: (workspaceId: string, params: Record<string, unknown>) =>
     ['workspaces', workspaceId, 'audit-logs', params] as const,

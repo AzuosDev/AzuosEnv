@@ -5,6 +5,7 @@ import {
   Clock,
   FileText,
   MessageSquare,
+  MessagesSquare,
   Presentation,
   Settings,
   Sparkles,
@@ -30,6 +31,15 @@ export const NAV_ITEMS = [
     ready: true,
   },
   { id: 'metas', label: 'Metas', icon: Target, to: '/w/$wsId/metas', ready: true },
+  {
+    id: 'whatsapp',
+    label: 'WhatsApp',
+    icon: MessagesSquare,
+    to: '/w/$wsId/whatsapp',
+    ready: true,
+    /** Só aparece para quem tem nível no módulo do atendimento. */
+    gated: true,
+  },
   { id: 'timesheets', label: 'Timesheets', icon: Clock, to: '/w/$wsId/timesheets', ready: true },
   { id: 'automacoes', label: 'Automações', icon: Zap, to: '/w/$wsId/automacoes', ready: true },
   {
@@ -65,5 +75,15 @@ export const MORE_NAV_ITEMS: NavItem[] = [
   ...NAV_ITEMS.filter((item) => !(BOTTOM_NAV_IDS as readonly string[]).includes(item.id)),
   SETTINGS_ITEM,
 ];
+
+/** Itens que dependem de acesso próprio, não só do papel no workspace. */
+const GATED_NAV_IDS = NAV_ITEMS.filter((item) => 'gated' in item && item.gated).map(
+  (item) => item.id as string,
+);
+
+/** Navegação visível: o WhatsApp sai da lista de quem não tem acesso. */
+export function allowedNavItems<T extends { id: string }>(items: T[], waAllowed: boolean): T[] {
+  return waAllowed ? items : items.filter((item) => !GATED_NAV_IDS.includes(item.id));
+}
 
 export type { LucideIcon };

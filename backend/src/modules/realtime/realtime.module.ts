@@ -5,6 +5,7 @@ import { DocsDataModule } from '../docs/docs-data.module';
 import { HierarchyModule } from '../hierarchy/hierarchy.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { UsersModule } from '../users/users.module';
+import { WhatsappDataModule } from '../whatsapp/whatsapp-data.module';
 import { WhiteboardsDataModule } from '../whiteboards/whiteboards-data.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { EventsGateway } from './events.gateway';
@@ -21,6 +22,7 @@ import { RoomAccessService } from './room-access.service';
     DocsDataModule,
     ChatDataModule,
     WhiteboardsDataModule,
+    WhatsappDataModule,
   ],
   providers: [RoomAccessService, EventsGateway, RealtimeListener],
 })

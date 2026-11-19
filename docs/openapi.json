@@ -51,7 +51,13 @@
                 "webhook.updated",
                 "webhook.deleted",
                 "webhook.redelivered",
-                "integration.google.calendar.changed"
+                "integration.google.calendar.changed",
+                "whatsapp.connection.saved",
+                "whatsapp.connection.tested",
+                "whatsapp.access.changed",
+                "whatsapp.bot.saved",
+                "whatsapp.bot.rule.saved",
+                "whatsapp.bot.rule.deleted"
               ]
             }
           },
@@ -16029,6 +16035,2050 @@
         ]
       }
     },
+    "/api/v1/workspaces/{wsId}/whatsapp/access": {
+      "get": {
+        "operationId": "WhatsappAccessController_list",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Membros e o nível de cada um.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaAccessListDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/access/me": {
+      "get": {
+        "operationId": "WhatsappAccessController_me",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nível do usuário atual.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaMyAccessDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/access/{userId}": {
+      "put": {
+        "operationId": "WhatsappAccessController_grant",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantWaAccessDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Nível atribuído ao membro.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaAccessListDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "delete": {
+        "operationId": "WhatsappAccessController_revoke",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Acesso removido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/connection": {
+      "put": {
+        "operationId": "WhatsappConnectionController_save",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveWaConnectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conexão salva.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConnectionStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "get": {
+        "operationId": "WhatsappConnectionController_status",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status da conexão.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConnectionStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/test": {
+      "post": {
+        "operationId": "WhatsappConnectionController_test",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conexão testada na Graph API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConnectionStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/templates": {
+      "get": {
+        "operationId": "WhatsappTemplatesController_list",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Templates aprovados no WABA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaTemplateListDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations": {
+      "get": {
+        "operationId": "WhatsappConversationsController_list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Cursor retornado em nextCursor.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "open",
+              "type": "string",
+              "enum": [
+                "open",
+                "unread",
+                "waiting",
+                "mine",
+                "priority",
+                "closed",
+                "all"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Busca por nome, número ou texto da mensagem.",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversas do filtro escolhido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WaConversationItemDto"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Cursor da próxima página; null na última."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}": {
+      "get": {
+        "operationId": "WhatsappConversationsController_get",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversa.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConversationItemDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/read": {
+      "post": {
+        "operationId": "WhatsappConversationsController_read",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversa marcada como lida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConversation"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/assign": {
+      "post": {
+        "operationId": "WhatsappConversationsController_assign",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignWaConversationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Responsável definido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConversation"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/priority": {
+      "post": {
+        "operationId": "WhatsappConversationsController_priority",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaPriorityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Prioridade alterada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConversation"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/mode": {
+      "post": {
+        "operationId": "WhatsappConversationsController_mode",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaModeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Modo bot/humano alterado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConversation"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/close": {
+      "post": {
+        "operationId": "WhatsappConversationsController_close",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversa finalizada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConversation"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/reopen": {
+      "post": {
+        "operationId": "WhatsappConversationsController_reopen",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversa reaberta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConversation"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/messages": {
+      "get": {
+        "operationId": "WhatsappConversationsController_listMessages",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Cursor retornado em nextCursor.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Mensagens da conversa, da mais nova para a mais antiga.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WaMessage"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Cursor da próxima página; null na última."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "post": {
+        "operationId": "WhatsappConversationsController_sendText",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendWaTextDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Texto enviado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaMessage"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/messages/{messageId}/media": {
+      "get": {
+        "operationId": "WhatsappConversationsController_messageMedia",
+        "parameters": [
+          {
+            "name": "messageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bytes do arquivo da mensagem; sem acesso à conversa responde 404."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/messages/media": {
+      "post": {
+        "operationId": "WhatsappConversationsController_sendMedia",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "caption": {
+                    "type": "string"
+                  },
+                  "replyTo": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Mídia enviada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaMessage"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/messages/template": {
+      "post": {
+        "operationId": "WhatsappConversationsController_sendTemplate",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendWaTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Template enviado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaMessage"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/task": {
+      "post": {
+        "operationId": "WhatsappConversationsController_createTask",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaConversationTaskDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tarefa criada a partir da conversa.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/lead": {
+      "post": {
+        "operationId": "WhatsappConversationsController_createLead",
+        "parameters": [
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaConversationLeadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Lead criado em Comercial › Leads.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/contacts": {
+      "get": {
+        "operationId": "WhatsappContactsController_list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Cursor retornado em nextCursor.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Busca por nome ou número.",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contatos do WhatsApp.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "nextCursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WaContact"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Cursor da próxima página; null na última."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "post": {
+        "operationId": "WhatsappContactsController_create",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWaContactDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Contato criado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaContact"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/contacts/{contactId}": {
+      "get": {
+        "operationId": "WhatsappContactsController_get",
+        "parameters": [
+          {
+            "name": "contactId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaContact"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "patch": {
+        "operationId": "WhatsappContactsController_update",
+        "parameters": [
+          {
+            "name": "contactId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWaContactDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contato atualizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaContact"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "delete": {
+        "operationId": "WhatsappContactsController_remove",
+        "parameters": [
+          {
+            "name": "contactId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contato removido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/bot": {
+      "get": {
+        "operationId": "WhatsappBotController_get",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Configurações do bot e do atendimento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaBotSettings"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "put": {
+        "operationId": "WhatsappBotController_save",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveWaBotSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Configurações salvas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaBotSettings"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/bot/rules": {
+      "get": {
+        "operationId": "WhatsappBotController_listRules",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Regras do bot, da maior prioridade para a menor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaBotRuleListDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "post": {
+        "operationId": "WhatsappBotController_createRule",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWaBotRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Regra criada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaBotRule"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/bot/rules/{ruleId}": {
+      "patch": {
+        "operationId": "WhatsappBotController_updateRule",
+        "parameters": [
+          {
+            "name": "ruleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWaBotRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Regra atualizada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaBotRule"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "delete": {
+        "operationId": "WhatsappBotController_removeRule",
+        "parameters": [
+          {
+            "name": "ruleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Regra removida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/quick-replies": {
+      "get": {
+        "operationId": "WhatsappQuickRepliesController_list",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Cursor retornado em nextCursor.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Busca por atalho, título ou texto.",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 60,
+              "type": "string"
+            }
+          },
+          {
+            "name": "conversationId",
+            "required": false,
+            "in": "query",
+            "description": "Resolve as variáveis com os dados da conversa.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Respostas rápidas; com conversationId as variáveis vêm resolvidas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaQuickReplyPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "post": {
+        "operationId": "WhatsappQuickRepliesController_create",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWaQuickReplyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Resposta rápida criada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaQuickReply"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/quick-replies/{quickReplyId}": {
+      "patch": {
+        "operationId": "WhatsappQuickRepliesController_update",
+        "parameters": [
+          {
+            "name": "quickReplyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWaQuickReplyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resposta rápida atualizada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaQuickReply"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "delete": {
+        "operationId": "WhatsappQuickRepliesController_remove",
+        "parameters": [
+          {
+            "name": "quickReplyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta rápida removida.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/overview": {
+      "get": {
+        "operationId": "WhatsappOverviewController_overview",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "UTC ISO 8601; ausente usa os últimos 30 dias.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "UTC ISO 8601; ausente usa agora.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Visão geral do atendimento no período.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaOverviewDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/integrations/whatsapp/webhook": {
+      "get": {
+        "operationId": "WhatsappWebhookController_verify",
+        "parameters": [
+          {
+            "name": "hub.challenge",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "hub.verify_token",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "hub.mode",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Desafio devolvido em texto puro."
+          }
+        },
+        "tags": [
+          "whatsapp"
+        ]
+      },
+      "post": {
+        "operationId": "WhatsappWebhookController_receive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Evento aceito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaWebhookResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
     "/api/v1/workspaces/{wsId}/import/clickup": {
       "post": {
         "operationId": "ImportController_clickupCsv",
@@ -20580,7 +22630,9 @@
               "chatMention",
               "chatMessage",
               "formSubmitted",
-              "aiSummary"
+              "aiSummary",
+              "whatsappMessage",
+              "whatsappAssigned"
             ],
             "type": "string"
           },
@@ -20590,7 +22642,8 @@
               "comment",
               "workspace",
               "task",
-              "reminder"
+              "reminder",
+              "whatsappConversation"
             ],
             "type": "string"
           },
@@ -20771,6 +22824,12 @@
           },
           "aiSummary": {
             "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "whatsappMessage": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "whatsappAssigned": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
           }
         },
         "required": [
@@ -20787,7 +22846,9 @@
           "chatMention",
           "chatMessage",
           "formSubmitted",
-          "aiSummary"
+          "aiSummary",
+          "whatsappMessage",
+          "whatsappAssigned"
         ]
       },
       "NotificationChannelsDto": {
@@ -20845,6 +22906,12 @@
           },
           "aiSummary": {
             "$ref": "#/components/schemas/NotificationChannelsDto"
+          },
+          "whatsappMessage": {
+            "$ref": "#/components/schemas/NotificationChannelsDto"
+          },
+          "whatsappAssigned": {
+            "$ref": "#/components/schemas/NotificationChannelsDto"
           }
         }
       },
@@ -20852,7 +22919,7 @@
         "type": "object",
         "properties": {
           "types": {
-            "description": "Tipos: assigned, mentioned, commented, statusChanged, dueSoon, overdue, reminder, invited, commentAssigned, automation, chatMention, chatMessage, formSubmitted, aiSummary.",
+            "description": "Tipos: assigned, mentioned, commented, statusChanged, dueSoon, overdue, reminder, invited, commentAssigned, automation, chatMention, chatMessage, formSubmitted, aiSummary, whatsappMessage, whatsappAssigned.",
             "allOf": [
               {
                 "$ref": "#/components/schemas/NotificationTypeSettingsDto"
@@ -27094,6 +29161,2064 @@
           "error",
           "nextAttemptAt",
           "deliveredAt"
+        ]
+      },
+      "WaAccessEntryDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "owner",
+              "admin",
+              "member",
+              "limited",
+              "guest"
+            ],
+            "type": "string"
+          },
+          "level": {
+            "nullable": true,
+            "enum": [
+              "atendente",
+              "supervisor",
+              "gestor"
+            ],
+            "type": "string",
+            "description": "null = sem acesso."
+          },
+          "fromRole": {
+            "type": "boolean",
+            "description": "Nível vem do papel: owner e admin são sempre gestor."
+          }
+        },
+        "required": [
+          "userId",
+          "role",
+          "level",
+          "fromRole"
+        ]
+      },
+      "WaAccessListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaAccessEntryDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "WaMyAccessDto": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "nullable": true,
+            "enum": [
+              "atendente",
+              "supervisor",
+              "gestor"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "level"
+        ]
+      },
+      "GrantWaAccessDto": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "enum": [
+              "atendente",
+              "supervisor",
+              "gestor"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "level"
+        ]
+      },
+      "SaveWaConnectionDto": {
+        "type": "object",
+        "properties": {
+          "phoneNumberId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "description": "Id do número dentro da WABA."
+          },
+          "wabaId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "description": "Id da conta do WhatsApp Business."
+          },
+          "accessToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Token permanente da Graph API; guardado criptografado."
+          },
+          "appSecret": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "App Secret que assina o webhook; guardado criptografado."
+          },
+          "verifyToken": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 200,
+            "description": "Token devolvido na verificação do webhook."
+          },
+          "displayPhone": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 40
+          },
+          "verifiedName": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "phoneNumberId",
+          "wabaId",
+          "accessToken",
+          "appSecret",
+          "verifyToken"
+        ]
+      },
+      "WaConnection": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "phoneNumberId": {
+            "type": "string",
+            "description": "Id of the phone number inside the WABA; routes the webhook to this workspace."
+          },
+          "wabaId": {
+            "type": "string"
+          },
+          "displayPhone": {
+            "type": "string"
+          },
+          "verifiedName": {
+            "type": "string"
+          },
+          "verifyToken": {
+            "type": "string",
+            "description": "Echoed back on the GET handshake of the webhook."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "error",
+              "pending",
+              "connected"
+            ]
+          },
+          "qualityRating": {
+            "type": "string"
+          },
+          "lastError": {
+            "type": "string"
+          },
+          "lastEventAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/ObjectId"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "phoneNumberId",
+          "wabaId",
+          "displayPhone",
+          "verifiedName",
+          "verifyToken",
+          "status",
+          "qualityRating",
+          "lastError",
+          "lastEventAt",
+          "createdBy"
+        ]
+      },
+      "WaConnectionStatusDto": {
+        "type": "object",
+        "properties": {
+          "connection": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WaConnection"
+              }
+            ]
+          },
+          "webhookUrl": {
+            "type": "string",
+            "description": "URL que o app da Meta deve chamar."
+          }
+        },
+        "required": [
+          "connection",
+          "webhookUrl"
+        ]
+      },
+      "WaTemplateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string",
+            "example": "pt_BR"
+          },
+          "status": {
+            "type": "string",
+            "example": "APPROVED"
+          },
+          "category": {
+            "type": "string"
+          },
+          "variables": {
+            "type": "number",
+            "description": "Quantas variáveis o corpo espera."
+          }
+        },
+        "required": [
+          "name",
+          "language",
+          "status",
+          "category",
+          "variables"
+        ]
+      },
+      "WaTemplateListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaTemplateDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "WaContact": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "waId": {
+            "type": "string",
+            "description": "Number in the wa_id format of Meta (digits only, with country code)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Name the team gave the contact; falls back to the profile name."
+          },
+          "profileName": {
+            "type": "string",
+            "description": "Name of the WhatsApp profile, as it arrives in the webhook."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "description": "Internal notes; the contact never sees them."
+          },
+          "firstContactAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastInteractionAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "optOut": {
+            "type": "boolean",
+            "description": "The contact asked to stop receiving messages."
+          },
+          "spaceId": {
+            "nullable": true,
+            "description": "Optional link with the Space of the client in the Azuos Env.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          },
+          "folderId": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          }
+        },
+        "required": [
+          "workspaceId",
+          "waId",
+          "name",
+          "profileName",
+          "tags",
+          "notes",
+          "firstContactAt",
+          "lastInteractionAt",
+          "optOut",
+          "spaceId",
+          "folderId"
+        ]
+      },
+      "WaMessageMedia": {
+        "type": "object",
+        "properties": {
+          "mime": {
+            "type": "string"
+          },
+          "caption": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "mediaId": {
+            "type": "string",
+            "description": "Id of the media inside Meta, kept so the file can be fetched again."
+          }
+        },
+        "required": [
+          "mime",
+          "caption",
+          "filename",
+          "size",
+          "mediaId"
+        ]
+      },
+      "WaMessageError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "title",
+          "message"
+        ]
+      },
+      "WaMessage": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "conversationId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "waMessageId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Id of Meta. Unique: it is what makes the webhook idempotent."
+          },
+          "direction": {
+            "enum": [
+              "inbound",
+              "outbound"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "text",
+              "document",
+              "location",
+              "image",
+              "audio",
+              "video",
+              "sticker",
+              "contacts",
+              "interactive",
+              "reaction",
+              "template",
+              "unsupported"
+            ],
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "description": "Text of the message, the caption of the media or the emoji of the reaction."
+          },
+          "media": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WaMessageMedia"
+              }
+            ]
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true,
+            "description": "Everything the type carries beyond the text (location, contacts, button)."
+          },
+          "replyTo": {
+            "type": "string",
+            "nullable": true,
+            "description": "waMessageId of the quoted message."
+          },
+          "status": {
+            "enum": [
+              "read",
+              "pending",
+              "delivered",
+              "failed",
+              "sent"
+            ],
+            "type": "string"
+          },
+          "error": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WaMessageError"
+              }
+            ]
+          },
+          "authorId": {
+            "nullable": true,
+            "description": "Member who sent it; null on an inbound message or on a bot answer.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          },
+          "fromBot": {
+            "type": "boolean"
+          },
+          "sentAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "conversationId",
+          "waMessageId",
+          "direction",
+          "type",
+          "body",
+          "media",
+          "payload",
+          "replyTo",
+          "status",
+          "error",
+          "authorId",
+          "fromBot",
+          "sentAt"
+        ]
+      },
+      "WaConversationItemDto": {
+        "type": "object",
+        "properties": {
+          "contact": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WaContact"
+              }
+            ]
+          },
+          "lastMessage": {
+            "nullable": true,
+            "description": "Última mensagem da conversa, para a prévia da lista.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WaMessage"
+              }
+            ]
+          },
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "contactId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "status": {
+            "enum": [
+              "closed",
+              "open",
+              "waiting"
+            ],
+            "type": "string"
+          },
+          "assigneeId": {
+            "nullable": true,
+            "description": "Attendant responsible; null means the conversation is in the queue.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          },
+          "priority": {
+            "enum": [
+              "urgent",
+              "high",
+              "normal"
+            ],
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "bot",
+              "human"
+            ],
+            "type": "string"
+          },
+          "botPausedUntil": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "While in the future the bot stays quiet even in `bot` mode."
+          },
+          "unreadCount": {
+            "type": "number"
+          },
+          "lastMessageAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastInboundAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "Opens the 24 h window of free text."
+          },
+          "closedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "closedBy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          }
+        },
+        "required": [
+          "contact",
+          "lastMessage",
+          "workspaceId",
+          "contactId",
+          "status",
+          "assigneeId",
+          "priority",
+          "mode",
+          "botPausedUntil",
+          "unreadCount",
+          "lastMessageAt",
+          "lastInboundAt",
+          "closedAt",
+          "closedBy"
+        ]
+      },
+      "WaConversation": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "contactId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "status": {
+            "enum": [
+              "closed",
+              "open",
+              "waiting"
+            ],
+            "type": "string"
+          },
+          "assigneeId": {
+            "nullable": true,
+            "description": "Attendant responsible; null means the conversation is in the queue.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          },
+          "priority": {
+            "enum": [
+              "urgent",
+              "high",
+              "normal"
+            ],
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "bot",
+              "human"
+            ],
+            "type": "string"
+          },
+          "botPausedUntil": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "While in the future the bot stays quiet even in `bot` mode."
+          },
+          "unreadCount": {
+            "type": "number"
+          },
+          "lastMessageAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastInboundAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "Opens the 24 h window of free text."
+          },
+          "closedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "closedBy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          }
+        },
+        "required": [
+          "workspaceId",
+          "contactId",
+          "status",
+          "assigneeId",
+          "priority",
+          "mode",
+          "botPausedUntil",
+          "unreadCount",
+          "lastMessageAt",
+          "lastInboundAt",
+          "closedAt",
+          "closedBy"
+        ]
+      },
+      "AssignWaConversationDto": {
+        "type": "object",
+        "properties": {
+          "assigneeId": {
+            "type": "string",
+            "nullable": true,
+            "description": "null devolve a conversa para a fila."
+          }
+        }
+      },
+      "WaPriorityDto": {
+        "type": "object",
+        "properties": {
+          "priority": {
+            "enum": [
+              "normal",
+              "high",
+              "urgent"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "priority"
+        ]
+      },
+      "WaModeDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "enum": [
+              "bot",
+              "human"
+            ],
+            "type": "string"
+          },
+          "botPausedUntil": {
+            "type": "string",
+            "nullable": true,
+            "description": "UTC ISO 8601; pausa o bot até a data."
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "SendWaTextDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "replyTo": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "waMessageId da mensagem citada."
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "SendWaTemplateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Nome do template aprovado no WABA."
+          },
+          "language": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 20,
+            "example": "pt_BR"
+          },
+          "variables": {
+            "maxItems": 20,
+            "description": "Variáveis do corpo, na ordem.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "language"
+        ]
+      },
+      "WaConversationTaskDto": {
+        "type": "object",
+        "properties": {
+          "listId": {
+            "type": "string",
+            "description": "List onde a tarefa é criada."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Ausente usa o nome do contato."
+          }
+        },
+        "required": [
+          "listId"
+        ]
+      },
+      "WaConversationLeadDto": {
+        "type": "object",
+        "properties": {
+          "listId": {
+            "type": "string",
+            "description": "Ausente usa a List Leads do Space Comercial."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "CreateWaContactDto": {
+        "type": "object",
+        "properties": {
+          "waId": {
+            "type": "string",
+            "description": "Número só com dígitos, com o código do país."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          },
+          "tags": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 4000
+          },
+          "spaceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "folderId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "waId"
+        ]
+      },
+      "UpdateWaContactDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          },
+          "tags": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 4000
+          },
+          "optOut": {
+            "type": "boolean"
+          },
+          "spaceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "folderId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "WaMenuOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Matched against the id of the button or row the contact tapped."
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "description": "Only a list row shows it."
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description"
+        ]
+      },
+      "WaBotMenu": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "list",
+              "buttons"
+            ]
+          },
+          "header": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "footer": {
+            "type": "string"
+          },
+          "buttonLabel": {
+            "type": "string",
+            "description": "Label that opens the list; the Cloud API requires it on a list."
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaMenuOption"
+            }
+          }
+        },
+        "required": [
+          "enabled",
+          "kind",
+          "header",
+          "body",
+          "footer",
+          "buttonLabel",
+          "options"
+        ]
+      },
+      "WaBotAi": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "knowledgeBase": {
+            "type": "string",
+            "description": "Everything the model may state; it never answers beyond this."
+          },
+          "maxAnswerChars": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "knowledgeBase",
+          "maxAnswerChars"
+        ]
+      },
+      "WaHoursRange": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ]
+      },
+      "WaHoursDay": {
+        "type": "object",
+        "properties": {
+          "weekday": {
+            "type": "number",
+            "description": "0 = Sunday."
+          },
+          "ranges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaHoursRange"
+            }
+          }
+        },
+        "required": [
+          "weekday",
+          "ranges"
+        ]
+      },
+      "WaHoliday": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "`YYYY-MM-DD` in the zone of the attendance."
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "name"
+        ]
+      },
+      "WaBotHours": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Empty uses the timezone of the workspace."
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaHoursDay"
+            }
+          },
+          "holidays": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaHoliday"
+            }
+          },
+          "awayMessage": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "timezone",
+          "days",
+          "holidays",
+          "awayMessage"
+        ]
+      },
+      "WaBotSettings": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "welcomeMessage": {
+            "type": "string"
+          },
+          "menu": {
+            "$ref": "#/components/schemas/WaBotMenu"
+          },
+          "handoffMessage": {
+            "type": "string"
+          },
+          "pauseMinutes": {
+            "type": "number",
+            "description": "Minutes the bot stays quiet after an attendant answers."
+          },
+          "closingMessage": {
+            "type": "string",
+            "description": "Sent when an attendant finishes the conversation."
+          },
+          "ai": {
+            "$ref": "#/components/schemas/WaBotAi"
+          },
+          "hours": {
+            "$ref": "#/components/schemas/WaBotHours"
+          },
+          "updatedBy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          }
+        },
+        "required": [
+          "workspaceId",
+          "enabled",
+          "welcomeMessage",
+          "menu",
+          "handoffMessage",
+          "pauseMinutes",
+          "closingMessage",
+          "ai",
+          "hours",
+          "updatedBy"
+        ]
+      },
+      "WaMenuOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "description": "Id devolvido quando o contato escolhe a opção."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 24,
+            "description": "Até 24 caracteres, limite do WhatsApp."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 72,
+            "description": "Só aparece na lista interativa."
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ]
+      },
+      "WaBotMenuDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": [
+              "buttons",
+              "list"
+            ],
+            "type": "string"
+          },
+          "header": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 60
+          },
+          "body": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1024
+          },
+          "footer": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 60
+          },
+          "buttonLabel": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 20,
+            "description": "Rótulo que abre a lista interativa."
+          },
+          "options": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaMenuOptionDto"
+            }
+          }
+        }
+      },
+      "WaBotAiDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "knowledgeBase": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 20000,
+            "description": "Base de conhecimento que a IA pode afirmar."
+          },
+          "maxAnswerChars": {
+            "type": "number",
+            "minimum": 100,
+            "maximum": 1500
+          }
+        }
+      },
+      "WaHoursRangeDto": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "example": "09:00"
+          },
+          "end": {
+            "type": "string",
+            "example": "18:00"
+          }
+        },
+        "required": [
+          "start",
+          "end"
+        ]
+      },
+      "WaHoursDayDto": {
+        "type": "object",
+        "properties": {
+          "weekday": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 6,
+            "description": "0 = domingo."
+          },
+          "ranges": {
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaHoursRangeDto"
+            }
+          }
+        },
+        "required": [
+          "weekday",
+          "ranges"
+        ]
+      },
+      "WaHolidayDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-12-25"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
+      "WaBotHoursDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 60,
+            "description": "Vazio usa o fuso do workspace."
+          },
+          "days": {
+            "maxItems": 7,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaHoursDayDto"
+            }
+          },
+          "holidays": {
+            "maxItems": 60,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaHolidayDto"
+            }
+          },
+          "awayMessage": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1024,
+            "description": "Enviada fora do horário de atendimento."
+          }
+        }
+      },
+      "SaveWaBotSettingsDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "welcomeMessage": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1024,
+            "description": "Primeira resposta da conversa."
+          },
+          "menu": {
+            "$ref": "#/components/schemas/WaBotMenuDto"
+          },
+          "handoffMessage": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1024,
+            "description": "Enviada ao transferir para um humano."
+          },
+          "pauseMinutes": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1440,
+            "default": 30
+          },
+          "closingMessage": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1024,
+            "description": "Enviada quando o atendente finaliza a conversa."
+          },
+          "ai": {
+            "$ref": "#/components/schemas/WaBotAiDto"
+          },
+          "hours": {
+            "$ref": "#/components/schemas/WaBotHoursDto"
+          }
+        }
+      },
+      "WaBotRuleTrigger": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "regex",
+              "contains",
+              "firstMessage",
+              "keyword",
+              "menuOption",
+              "outsideHours"
+            ]
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "value"
+        ]
+      },
+      "WaBotRuleReply": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "list",
+              "none",
+              "media",
+              "buttons"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "description": "Body of the message; accepts the variables of `renderWaText`."
+          },
+          "mediaUrl": {
+            "type": "string",
+            "description": "Public link of the file on a `media` reply; Meta fetches it."
+          },
+          "mediaMime": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "header": {
+            "type": "string"
+          },
+          "footer": {
+            "type": "string"
+          },
+          "buttonLabel": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaMenuOption"
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "text",
+          "mediaUrl",
+          "mediaMime",
+          "filename",
+          "header",
+          "footer",
+          "buttonLabel",
+          "options"
+        ]
+      },
+      "WaBotRuleAction": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "priority",
+              "assign",
+              "transferToHuman",
+              "tag",
+              "createLead"
+            ]
+          },
+          "userId": {
+            "nullable": true,
+            "description": "Member the conversation goes to on `assign`.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          },
+          "tag": {
+            "type": "string",
+            "description": "Tag written on the contact by `tag`."
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "urgent",
+              "high",
+              "normal"
+            ]
+          },
+          "listId": {
+            "nullable": true,
+            "description": "List the lead of `createLead` lands in; empty uses Comercial › Leads.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "userId",
+          "tag",
+          "priority",
+          "listId"
+        ]
+      },
+      "WaBotRule": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "name": {
+            "type": "string"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/WaBotRuleTrigger"
+          },
+          "reply": {
+            "$ref": "#/components/schemas/WaBotRuleReply"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaBotRuleAction"
+            }
+          },
+          "priority": {
+            "type": "number",
+            "description": "Higher wins; ties are broken by the oldest rule."
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/ObjectId"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "name",
+          "trigger",
+          "reply",
+          "actions",
+          "priority",
+          "active",
+          "createdBy"
+        ]
+      },
+      "WaBotRuleListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaBotRule"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "WaBotRuleTriggerDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "firstMessage",
+              "keyword",
+              "contains",
+              "regex",
+              "menuOption",
+              "outsideHours"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 400,
+            "description": "Palavra, trecho, regex ou id da opção do menu."
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "WaBotRuleReplyDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "none",
+              "text",
+              "media",
+              "buttons",
+              "list"
+            ],
+            "type": "string"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 4096
+          },
+          "mediaUrl": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000,
+            "description": "Link público do arquivo; a Meta busca por ele."
+          },
+          "mediaMime": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 120
+          },
+          "filename": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          },
+          "header": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 60
+          },
+          "footer": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 60
+          },
+          "buttonLabel": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 20
+          },
+          "options": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaMenuOptionDto"
+            }
+          }
+        }
+      },
+      "WaBotRuleActionDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "transferToHuman",
+              "assign",
+              "tag",
+              "priority",
+              "createLead"
+            ],
+            "type": "string"
+          },
+          "userId": {
+            "type": "string",
+            "description": "Responsável do assign."
+          },
+          "tag": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "description": "Etiqueta aplicada ao contato."
+          },
+          "priority": {
+            "enum": [
+              "normal",
+              "high",
+              "urgent"
+            ],
+            "type": "string"
+          },
+          "listId": {
+            "type": "string",
+            "description": "List do lead; ausente usa Comercial › Leads."
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "CreateWaBotRuleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/WaBotRuleTriggerDto"
+          },
+          "reply": {
+            "$ref": "#/components/schemas/WaBotRuleReplyDto"
+          },
+          "actions": {
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaBotRuleActionDto"
+            }
+          },
+          "priority": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000,
+            "description": "Maior vence; empate vai para a regra mais antiga."
+          },
+          "active": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "trigger"
+        ]
+      },
+      "UpdateWaBotRuleDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/WaBotRuleTriggerDto"
+          },
+          "reply": {
+            "$ref": "#/components/schemas/WaBotRuleReplyDto"
+          },
+          "actions": {
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaBotRuleActionDto"
+            }
+          },
+          "priority": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "WaQuickReplyItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "shortcut": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string",
+            "description": "Texto cru, com as variáveis."
+          },
+          "rendered": {
+            "type": "string",
+            "description": "Texto com as variáveis resolvidas pela conversa."
+          },
+          "mediaUrl": {
+            "type": "string"
+          },
+          "mediaMime": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "shortcut",
+          "title",
+          "text",
+          "rendered",
+          "mediaUrl",
+          "mediaMime",
+          "filename"
+        ]
+      },
+      "WaQuickReplyPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaQuickReplyItemDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor da próxima página; null na última."
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "CreateWaQuickReplyDto": {
+        "type": "object",
+        "properties": {
+          "shortcut": {
+            "type": "string",
+            "description": "Atalho digitado depois da \"/\"; minúsculas."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 4096,
+            "description": "Aceita variáveis como {nome}."
+          },
+          "mediaUrl": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000,
+            "description": "Link público do arquivo enviado junto."
+          },
+          "mediaMime": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 120
+          },
+          "filename": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "shortcut",
+          "title"
+        ]
+      },
+      "WaQuickReply": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "shortcut": {
+            "type": "string",
+            "description": "Lowercase, unique in the workspace; what comes after the `/`."
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string",
+            "description": "Accepts the variables of `renderWaText`, such as `{nome}`."
+          },
+          "mediaUrl": {
+            "type": "string",
+            "description": "Public link of a file sent along with the text."
+          },
+          "mediaMime": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/ObjectId"
+          }
+        },
+        "required": [
+          "workspaceId",
+          "shortcut",
+          "title",
+          "text",
+          "mediaUrl",
+          "mediaMime",
+          "filename",
+          "createdBy"
+        ]
+      },
+      "UpdateWaQuickReplyDto": {
+        "type": "object",
+        "properties": {
+          "shortcut": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 4096
+          },
+          "mediaUrl": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000
+          },
+          "mediaMime": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 120
+          },
+          "filename": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          }
+        }
+      },
+      "WaStatusCountsDto": {
+        "type": "object",
+        "properties": {
+          "open": {
+            "type": "number"
+          },
+          "waiting": {
+            "type": "number"
+          },
+          "closed": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "open",
+          "waiting",
+          "closed"
+        ]
+      },
+      "WaDayCountDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-11-13"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "count"
+        ]
+      },
+      "WaAgentStatsDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "conversations": {
+            "type": "number",
+            "description": "Conversas atribuídas a essa pessoa no período."
+          },
+          "resolved": {
+            "type": "number",
+            "description": "Conversas dela que foram finalizadas."
+          },
+          "messages": {
+            "type": "number",
+            "description": "Mensagens que ela enviou no período."
+          },
+          "firstResponseAvgSeconds": {
+            "type": "number",
+            "nullable": true,
+            "description": "Média da primeira resposta, em segundos."
+          }
+        },
+        "required": [
+          "userId",
+          "conversations",
+          "resolved",
+          "messages",
+          "firstResponseAvgSeconds"
+        ]
+      },
+      "WaOverviewDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Início do período, em UTC ISO 8601."
+          },
+          "to": {
+            "type": "string",
+            "description": "Fim do período, em UTC ISO 8601."
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Fuso usado para agrupar os dias."
+          },
+          "byStatus": {
+            "$ref": "#/components/schemas/WaStatusCountsDto"
+          },
+          "newPerDay": {
+            "description": "Conversas novas por dia.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaDayCountDto"
+            }
+          },
+          "conversations": {
+            "type": "number"
+          },
+          "resolved": {
+            "type": "number",
+            "description": "Conversas finalizadas no período."
+          },
+          "botResolved": {
+            "type": "number",
+            "description": "Finalizadas sem nenhuma mensagem de atendente."
+          },
+          "botResolvedPercent": {
+            "type": "number",
+            "description": "% das finalizadas que o bot resolveu sozinho."
+          },
+          "firstResponseAvgSeconds": {
+            "type": "number",
+            "nullable": true,
+            "description": "Média da primeira resposta humana, em segundos."
+          },
+          "resolutionAvgSeconds": {
+            "type": "number",
+            "nullable": true,
+            "description": "Média até finalizar, em segundos."
+          },
+          "byAgent": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WaAgentStatsDto"
+            }
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "true quando o período passou do teto de conversas lidas."
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "timezone",
+          "byStatus",
+          "newPerDay",
+          "conversations",
+          "resolved",
+          "botResolved",
+          "botResolvedPercent",
+          "firstResponseAvgSeconds",
+          "resolutionAvgSeconds",
+          "byAgent",
+          "truncated"
+        ]
+      },
+      "WaWebhookResultDto": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "received"
         ]
       },
       "SkippedRowDto": {

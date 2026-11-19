@@ -34,6 +34,7 @@ import { Route as AppWWsIdMinhasTarefasRouteImport } from './routes/_app.w.$wsId
 import { Route as AppWWsIdPlannerRouteImport } from './routes/_app.w.$wsId.planner'
 import { Route as AppWWsIdTimesheetsRouteImport } from './routes/_app.w.$wsId.timesheets'
 import { Route as AppWWsIdTudoRouteImport } from './routes/_app.w.$wsId.tudo'
+import { Route as AppWWsIdWhatsappRouteImport } from './routes/_app.w.$wsId.whatsapp'
 import { Route as AppWWsIdConfiguracoesIndexRouteImport } from './routes/_app.w.$wsId.configuracoes.index'
 import { Route as AppWWsIdConfiguracoesAuditoriaRouteImport } from './routes/_app.w.$wsId.configuracoes.auditoria'
 import { Route as AppWWsIdConfiguracoesCamposRouteImport } from './routes/_app.w.$wsId.configuracoes.campos'
@@ -183,6 +184,11 @@ const AppWWsIdTimesheetsRoute = AppWWsIdTimesheetsRouteImport.update({
 const AppWWsIdTudoRoute = AppWWsIdTudoRouteImport.update({
   id: '/tudo',
   path: '/tudo',
+  getParentRoute: () => AppWWsIdRoute,
+} as any)
+const AppWWsIdWhatsappRoute = AppWWsIdWhatsappRouteImport.update({
+  id: '/whatsapp',
+  path: '/whatsapp',
   getParentRoute: () => AppWWsIdRoute,
 } as any)
 const AppWWsIdConfiguracoesIndexRoute =
@@ -362,6 +368,7 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
   '/w/$wsId/tudo': typeof AppWWsIdTudoRoute
+  '/w/$wsId/whatsapp': typeof AppWWsIdWhatsappRoute
   '/w/$wsId/': typeof AppWWsIdIndexRoute
   '/w/$wsId/configuracoes/auditoria': typeof AppWWsIdConfiguracoesAuditoriaRoute
   '/w/$wsId/configuracoes/campos': typeof AppWWsIdConfiguracoesCamposRoute
@@ -412,6 +419,7 @@ export interface FileRoutesByTo {
   '/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
   '/w/$wsId/tudo': typeof AppWWsIdTudoRoute
+  '/w/$wsId/whatsapp': typeof AppWWsIdWhatsappRoute
   '/w/$wsId': typeof AppWWsIdIndexRoute
   '/w/$wsId/configuracoes/auditoria': typeof AppWWsIdConfiguracoesAuditoriaRoute
   '/w/$wsId/configuracoes/campos': typeof AppWWsIdConfiguracoesCamposRoute
@@ -467,6 +475,7 @@ export interface FileRoutesById {
   '/_app/w/$wsId/planner': typeof AppWWsIdPlannerRoute
   '/_app/w/$wsId/timesheets': typeof AppWWsIdTimesheetsRoute
   '/_app/w/$wsId/tudo': typeof AppWWsIdTudoRoute
+  '/_app/w/$wsId/whatsapp': typeof AppWWsIdWhatsappRoute
   '/_app/w/$wsId/': typeof AppWWsIdIndexRoute
   '/_app/w/$wsId/configuracoes/auditoria': typeof AppWWsIdConfiguracoesAuditoriaRoute
   '/_app/w/$wsId/configuracoes/campos': typeof AppWWsIdConfiguracoesCamposRoute
@@ -521,6 +530,7 @@ export interface FileRouteTypes {
     | '/w/$wsId/planner'
     | '/w/$wsId/timesheets'
     | '/w/$wsId/tudo'
+    | '/w/$wsId/whatsapp'
     | '/w/$wsId/'
     | '/w/$wsId/configuracoes/auditoria'
     | '/w/$wsId/configuracoes/campos'
@@ -571,6 +581,7 @@ export interface FileRouteTypes {
     | '/w/$wsId/planner'
     | '/w/$wsId/timesheets'
     | '/w/$wsId/tudo'
+    | '/w/$wsId/whatsapp'
     | '/w/$wsId'
     | '/w/$wsId/configuracoes/auditoria'
     | '/w/$wsId/configuracoes/campos'
@@ -625,6 +636,7 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/planner'
     | '/_app/w/$wsId/timesheets'
     | '/_app/w/$wsId/tudo'
+    | '/_app/w/$wsId/whatsapp'
     | '/_app/w/$wsId/'
     | '/_app/w/$wsId/configuracoes/auditoria'
     | '/_app/w/$wsId/configuracoes/campos'
@@ -841,6 +853,13 @@ declare module '@tanstack/react-router' {
       path: '/tudo'
       fullPath: '/w/$wsId/tudo'
       preLoaderRoute: typeof AppWWsIdTudoRouteImport
+      parentRoute: typeof AppWWsIdRoute
+    }
+    '/_app/w/$wsId/whatsapp': {
+      id: '/_app/w/$wsId/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/w/$wsId/whatsapp'
+      preLoaderRoute: typeof AppWWsIdWhatsappRouteImport
       parentRoute: typeof AppWWsIdRoute
     }
     '/_app/w/$wsId/configuracoes/': {
@@ -1090,6 +1109,7 @@ interface AppWWsIdRouteChildren {
   AppWWsIdPlannerRoute: typeof AppWWsIdPlannerRoute
   AppWWsIdTimesheetsRoute: typeof AppWWsIdTimesheetsRoute
   AppWWsIdTudoRoute: typeof AppWWsIdTudoRoute
+  AppWWsIdWhatsappRoute: typeof AppWWsIdWhatsappRoute
   AppWWsIdIndexRoute: typeof AppWWsIdIndexRoute
   AppWWsIdDashboardsDashboardIdRoute: typeof AppWWsIdDashboardsDashboardIdRoute
   AppWWsIdDocsDocIdRoute: typeof AppWWsIdDocsDocIdRoute
@@ -1117,6 +1137,7 @@ const AppWWsIdRouteChildren: AppWWsIdRouteChildren = {
   AppWWsIdPlannerRoute: AppWWsIdPlannerRoute,
   AppWWsIdTimesheetsRoute: AppWWsIdTimesheetsRoute,
   AppWWsIdTudoRoute: AppWWsIdTudoRoute,
+  AppWWsIdWhatsappRoute: AppWWsIdWhatsappRoute,
   AppWWsIdIndexRoute: AppWWsIdIndexRoute,
   AppWWsIdDashboardsDashboardIdRoute: AppWWsIdDashboardsDashboardIdRoute,
   AppWWsIdDocsDocIdRoute: AppWWsIdDocsDocIdRoute,
