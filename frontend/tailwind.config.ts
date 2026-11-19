@@ -27,6 +27,23 @@ export default {
         warning: token('warning'),
         danger: token('danger'),
         info: token('info'),
+        /* Exceção dos tokens: paleta do módulo WhatsApp, só dentro dele. */
+        wa: {
+          bg: 'var(--wa-bg)',
+          panel: 'var(--wa-panel)',
+          header: 'var(--wa-header)',
+          chat: 'var(--wa-chat)',
+          out: 'var(--wa-out)',
+          in: 'var(--wa-in)',
+          accent: 'var(--wa-accent)',
+          brand: 'var(--wa-brand)',
+          text: 'var(--wa-text)',
+          muted: 'var(--wa-muted)',
+          line: 'var(--wa-line)',
+          read: 'var(--wa-read)',
+          'quote-in': 'var(--wa-quote-in)',
+          'quote-out': 'var(--wa-quote-out)',
+        },
       },
       fontFamily: {
         sans: ['var(--font-display)', 'Inter', 'system-ui', 'sans-serif'],

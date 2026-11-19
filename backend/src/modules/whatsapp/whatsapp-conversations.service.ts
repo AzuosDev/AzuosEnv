@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CursorPage, buildCursorPage, decodeObjectIdCursor } from '../../common/pagination/cursor';
+import { CursorPage, buildCursorPage, decodeCursor } from '../../common/pagination/cursor';
 import { DEFAULT_PAGE_SIZE } from '../../common/pagination/pagination-query.dto';
 import { escapeRegex } from '../../common/utils/regex';
 import { PermissionContext } from '../hierarchy/permission.service';
@@ -16,11 +16,20 @@ import {
 } from './dto/whatsapp.dto';
 import { WaContactDocument } from './schemas/wa-contact.schema';
 import { WaConversation, WaConversationDocument } from './schemas/wa-conversation.schema';
-import { WaMessage } from './schemas/wa-message.schema';
+import { WaMessage, WaMessageDocument } from './schemas/wa-message.schema';
 import { WhatsappAccessService } from './whatsapp-access.service';
 import { WhatsappContactsService } from './whatsapp-contacts.service';
 import { WA_CONVERSATION_UPDATED, WaConversationUpdatedEvent } from './whatsapp-events';
 import { MAX_WA_SCAN, WaAccessLevel, hasWaLevelAtLeast } from './whatsapp-fields';
+
+/**
+ * Conversation of the list with what a row of the inbox shows: the contact and
+ * the last message. Flat, so the conversation keeps the shape of the document.
+ */
+export interface WaConversationItem extends Record<string, unknown> {
+  contact: WaContactDocument | null;
+  lastMessage: WaMessageDocument | null;
+}
 
 /**
  * Conversations of the module. An `atendente` only reaches what is assigned to
@@ -51,26 +60,78 @@ export class WhatsappConversationsService {
     ctx: PermissionContext,
     level: WaAccessLevel,
     query: WaConversationQueryDto,
-  ): Promise<CursorPage<WaConversationDocument>> {
+  ): Promise<CursorPage<WaConversationItem>> {
     const limit = query.limit ?? DEFAULT_PAGE_SIZE;
-    const filter: Record<string, unknown> = {
-      workspaceId: ctx.workspaceId,
-      ...this.scopeOf(ctx, level),
-      ...this.filterOf(ctx, query.filter ?? 'open'),
-      ...(await this.searchOf(ctx, query.q)),
-    };
+    // Each part is its own clause of the $and: the scope of the level, the
+    // filter, the search and the cursor all use $or and would overwrite each
+    // other in a single object.
+    const clauses = [
+      { workspaceId: ctx.workspaceId },
+      this.scopeOf(ctx, level),
+      this.filterOf(ctx, query.filter ?? 'open'),
+      await this.searchOf(ctx, query.q),
+      ...(query.cursor ? [afterCursor(query.cursor)] : []),
+    ].filter((clause) => Object.keys(clause).length > 0);
+    const filter = { $and: clauses };
 
-    if (query.cursor) {
-      filter._id = { $lt: decodeObjectIdCursor(query.cursor) };
-    }
-
+    // The inbox is ordered by the last message, as any WhatsApp is; the cursor
+    // carries the date plus the id so a tie never repeats or skips a row.
     const docs = await this.model
       .find(filter)
-      .sort({ _id: -1 })
+      .sort({ lastMessageAt: -1, _id: -1 })
       .limit(limit + 1)
       .exec();
+    const page = buildCursorPage(docs, limit, (doc) => ({
+      at: doc.lastMessageAt ? doc.lastMessageAt.toISOString() : '',
+      id: String(doc._id),
+    }));
 
-    return buildCursorPage(docs, limit, (doc) => ({ id: String(doc._id) }));
+    return { items: await this.decorate(ctx.workspaceId, page.items), nextCursor: page.nextCursor };
+  }
+
+  /** Adds to each conversation the contact and the last message of the thread. */
+  async decorate(
+    workspaceId: Types.ObjectId,
+    docs: WaConversationDocument[],
+  ): Promise<WaConversationItem[]> {
+    if (docs.length === 0) {
+      return [];
+    }
+
+    const contacts = await this.contacts.byIds(
+      workspaceId,
+      docs.map((doc) => doc.contactId),
+    );
+    const last = await this.lastMessagesOf(
+      workspaceId,
+      docs.map((doc) => doc._id),
+    );
+
+    return docs.map((doc) => ({
+      ...doc.toJSON(),
+      contact: contacts.get(String(doc.contactId)) ?? null,
+      lastMessage: last.get(String(doc._id)) ?? null,
+    }));
+  }
+
+  /**
+   * Last message of each conversation of the page, in a single aggregation. The
+   * storage key is unset here because the aggregation ignores `select: false`.
+   */
+  private async lastMessagesOf(
+    workspaceId: Types.ObjectId,
+    conversationIds: Types.ObjectId[],
+  ): Promise<Map<string, WaMessageDocument>> {
+    const rows = await this.messages
+      .aggregate<{ _id: Types.ObjectId; last: Record<string, unknown> }>([
+        { $match: { workspaceId, conversationId: { $in: conversationIds } } },
+        { $sort: { _id: -1 } },
+        { $group: { _id: '$conversationId', last: { $first: '$$ROOT' } } },
+        { $unset: 'last.media.storageKey' },
+      ])
+      .exec();
+
+    return new Map(rows.map((row) => [String(row._id), this.messages.hydrate(row.last)]));
   }
 
   /** The conversation plus the level, enforcing the scope of the requester. */
@@ -431,4 +492,30 @@ export class WhatsappConversationsService {
       });
     }
   }
+}
+
+/**
+ * Filter that continues the page after the cursor of `{ at, id }`: either an
+ * older last message, or the same date with a smaller id.
+ */
+function afterCursor(cursor: string): Record<string, unknown> {
+  const payload = decodeCursor(cursor);
+  const id = typeof payload.id === 'string' ? payload.id : '';
+  const at = typeof payload.at === 'string' && payload.at !== '' ? new Date(payload.at) : null;
+
+  if (!Types.ObjectId.isValid(id) || (at !== null && Number.isNaN(at.getTime()))) {
+    throw new BadRequestException({ code: 'INVALID_CURSOR', message: 'Cursor inválido.' });
+  }
+
+  const objectId = new Types.ObjectId(id);
+
+  if (at === null) {
+    return { lastMessageAt: null, _id: { $lt: objectId } };
+  }
+
+  return {
+    $and: [
+      { $or: [{ lastMessageAt: { $lt: at } }, { lastMessageAt: at, _id: { $lt: objectId } }] },
+    ],
+  };
 }

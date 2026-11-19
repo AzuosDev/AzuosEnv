@@ -1,4 +1,11 @@
-import { BadRequestException, ConflictException, Injectable, Logger } from '@nestjs/common';
+import { Readable } from 'node:stream';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -104,6 +111,50 @@ export class WhatsappMessagesService {
       .exec();
 
     return buildCursorPage(docs, limit, (doc) => ({ id: String(doc._id) }));
+  }
+
+  /**
+   * Bytes of the file of a message, so the front can show the image, play the
+   * audio or save the document. The scope of the level is checked through the
+   * conversation, and the storage key never leaves the API.
+   */
+  async media(
+    ctx: PermissionContext,
+    level: WaAccessLevel,
+    messageId: Types.ObjectId,
+  ): Promise<{ stream: Readable; mime: string; filename: string; size: number }> {
+    const message = await this.model
+      .findOne({ _id: messageId, workspaceId: ctx.workspaceId })
+      .select('+media.storageKey')
+      .exec();
+
+    if (!message?.media?.storageKey) {
+      throw this.mediaNotFound();
+    }
+
+    // Reaches the conversation only through `require`: an attendant must not
+    // read the file of a thread that is not theirs.
+    await this.conversations.require(ctx, level, message.conversationId);
+
+    const stream = await this.storage.read(message.media.storageKey).catch(() => null);
+
+    if (!stream) {
+      throw this.mediaNotFound();
+    }
+
+    return {
+      stream,
+      mime: message.media.mime || 'application/octet-stream',
+      filename: message.media.filename || String(message._id),
+      size: message.media.size,
+    };
+  }
+
+  private mediaNotFound(): NotFoundException {
+    return new NotFoundException({
+      code: 'WHATSAPP_MEDIA_NOT_FOUND',
+      message: 'Arquivo da mensagem não encontrado.',
+    });
   }
 
   async templates(workspaceId: Types.ObjectId): Promise<WaTemplate[]> {

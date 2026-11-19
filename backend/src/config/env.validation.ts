@@ -73,8 +73,14 @@ export const envValidationSchema = Joi.object({
     .default('http://localhost:3000/api/v1/auth/google/callback'),
   // Where the callback sends the browser back to; also the error redirect.
   FRONTEND_URL: Joi.string().uri().default('http://localhost:5173'),
+  // Public origin of the API itself; the WhatsApp webhook of the Meta app points here.
+  API_PUBLIC_URL: Joi.string().uri().default('http://localhost:3000'),
   // Fake Google for development and for the e2e; ignored in production.
   GOOGLE_MOCK: Joi.boolean()
+    .default(false)
+    .when('NODE_ENV', { is: 'production', then: Joi.valid(false) }),
+  // Cloud API do WhatsApp falsa para o desenvolvimento e para o e2e; ignorada em produção.
+  WHATSAPP_MOCK: Joi.boolean()
     .default(false)
     .when('NODE_ENV', { is: 'production', then: Joi.valid(false) }),
 })

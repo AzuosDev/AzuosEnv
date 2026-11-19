@@ -18,6 +18,7 @@ const SEGMENT_TO_NAV: Record<string, string> = {
   metas: 'metas',
   timesheets: 'timesheets',
   automacoes: 'automacoes',
+  whatsapp: 'whatsapp',
   whiteboards: 'whiteboards',
   ia: 'ia',
   configuracoes: 'configuracoes',

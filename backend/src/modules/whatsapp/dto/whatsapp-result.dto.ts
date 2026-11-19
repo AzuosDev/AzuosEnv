@@ -1,6 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { WORKSPACE_ROLES, WorkspaceRole } from '../../workspaces/workspace-roles';
 import { WaConnection } from '../schemas/wa-connection.schema';
+import { WaContact } from '../schemas/wa-contact.schema';
+import { WaConversation } from '../schemas/wa-conversation.schema';
+import { WaMessage } from '../schemas/wa-message.schema';
 import { WA_ACCESS_LEVELS, WaAccessLevel } from '../whatsapp-fields';
 
 export class WaAccessEntryDto {
@@ -61,3 +64,22 @@ export class WaWebhookResultDto {
   @ApiProperty({ example: true })
   received: boolean;
 }
+
+/** What a row of the inbox needs beyond the conversation itself. */
+export class WaConversationExtrasDto {
+  @ApiProperty({ type: WaContact, nullable: true })
+  contact: WaContact | null;
+
+  @ApiProperty({
+    type: WaMessage,
+    nullable: true,
+    description: 'Última mensagem da conversa, para a prévia da lista.',
+  })
+  lastMessage: WaMessage | null;
+}
+
+/** Conversation of the list: the document plus the contact and the preview. */
+export class WaConversationItemDto extends IntersectionType(
+  WaConversation,
+  WaConversationExtrasDto,
+) {}

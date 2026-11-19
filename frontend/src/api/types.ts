@@ -634,3 +634,40 @@ export type AuditAction = NonNullable<AuditQuery['action']>;
 export type ImportReport = components['schemas']['ImportReportDto'];
 export type ImportSkippedRow = components['schemas']['SkippedRowDto'];
 export type WorkspaceExportFile = components['schemas']['WorkspaceExportResultDto'];
+
+/* WhatsApp ---------------------------------------------------------------- */
+
+export type WaAccessLevel = NonNullable<components['schemas']['WaMyAccessDto']['level']>;
+export type WaAccessEntry = components['schemas']['WaAccessEntryDto'];
+export type WaConnection = Doc<components['schemas']['WaConnection']>;
+export type WaConnectionStatus = Omit<
+  components['schemas']['WaConnectionStatusDto'],
+  'connection'
+> & { connection: WaConnection | null };
+export type SaveWaConnectionInput = components['schemas']['SaveWaConnectionDto'];
+export type WaTemplate = components['schemas']['WaTemplateDto'];
+export type WaContact = Doc<components['schemas']['WaContact']>;
+export type CreateWaContactInput = components['schemas']['CreateWaContactDto'];
+export type UpdateWaContactInput = components['schemas']['UpdateWaContactDto'];
+/** `payload` é JSON livre no contrato (localização, contato, botão). */
+export type WaMessage = Doc<FreeJson<components['schemas']['WaMessage'], 'payload'>>;
+export type WaMessageType = WaMessage['type'];
+export type WaMessageStatus = WaMessage['status'];
+export type WaConversation = Doc<components['schemas']['WaConversation']>;
+/** Conversa da lista: o documento mais o contato e a prévia da última mensagem. */
+export type WaConversationItem = Doc<
+  Omit<components['schemas']['WaConversationItemDto'], 'contact' | 'lastMessage'>
+> & { contact: WaContact | null; lastMessage: WaMessage | null };
+export type WaConversationStatus = WaConversation['status'];
+export type WaConversationPriority = WaConversation['priority'];
+export type WaConversationMode = WaConversation['mode'];
+export type WaConversationFilter = NonNullable<
+  NonNullable<
+    paths['/api/v1/workspaces/{wsId}/whatsapp/conversations']['get']['parameters']['query']
+  >['filter']
+>;
+export type SendWaTextInput = components['schemas']['SendWaTextDto'];
+export type SendWaTemplateInput = components['schemas']['SendWaTemplateDto'];
+export type WaQuickReply = components['schemas']['WaQuickReplyItemDto'];
+export type WaConversationTaskInput = components['schemas']['WaConversationTaskDto'];
+export type WaConversationLeadInput = components['schemas']['WaConversationLeadDto'];

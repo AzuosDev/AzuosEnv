@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "frontend/src/features/whatsapp/components/whatsapp-page.tsx"
+        ],
+        "createdAt": "2026-11-19T12:45:27.276Z",
+        "reason": "sublinhado da aba ativa e o padrao do design system do projeto: src/components/ui/tabs.tsx usa rounded-t-lg + border-b-2 + border-accent no TabsTrigger"
+      }
+    ]
+  }
+}

@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  StreamableFile,
   UploadedFile as UploadedFileParam,
   UseGuards,
   UseInterceptors,
@@ -40,6 +41,7 @@ import { RequestMembership } from '../workspaces/workspace-context';
 import {
   WaAccessListDto,
   WaConnectionStatusDto,
+  WaConversationItemDto,
   WaMyAccessDto,
   WaTemplateListDto,
 } from './dto/whatsapp-result.dto';
@@ -67,7 +69,7 @@ import { WaAccessEntry, WhatsappAccessService } from './whatsapp-access.service'
 import { WhatsappBotService } from './whatsapp-bot.service';
 import { WhatsappConnectionsService } from './whatsapp-connections.service';
 import { WhatsappContactsService } from './whatsapp-contacts.service';
-import { WhatsappConversationsService } from './whatsapp-conversations.service';
+import { WaConversationItem, WhatsappConversationsService } from './whatsapp-conversations.service';
 import { WhatsappMessagesService } from './whatsapp-messages.service';
 import { WhatsappTasksService } from './whatsapp-tasks.service';
 import { WaTemplate } from './graph/whatsapp-graph.provider';
@@ -246,29 +248,31 @@ export class WhatsappConversationsController {
   ) {}
 
   @Get()
-  @ApiPagedResponse(WaConversation, 'Conversas do filtro escolhido.')
+  @ApiPagedResponse(WaConversationItemDto, 'Conversas do filtro escolhido.')
   async list(
     @CurrentMembership() membership: RequestMembership,
     @Query() query: WaConversationQueryDto,
-  ): Promise<CursorPage<WaConversationDocument>> {
+  ): Promise<CursorPage<WaConversationItem>> {
     const ctx = ctxOf(membership);
 
     return this.conversations.list(ctx, await this.access.require(ctx, 'atendente'), query);
   }
 
   @Get(':conversationId')
-  @ApiOkResponse({ description: 'Conversa.', type: WaConversation })
+  @ApiOkResponse({ description: 'Conversa.', type: WaConversationItemDto })
   async get(
     @CurrentMembership() membership: RequestMembership,
     @Param('conversationId', ParseObjectIdPipe) conversationId: Types.ObjectId,
-  ): Promise<WaConversationDocument> {
+  ): Promise<WaConversationItem> {
     const ctx = ctxOf(membership);
-
-    return this.conversations.require(
+    const conversation = await this.conversations.require(
       ctx,
       await this.access.require(ctx, 'atendente'),
       conversationId,
     );
+    const [item] = await this.conversations.decorate(ctx.workspaceId, [conversation]);
+
+    return item;
   }
 
   @Post(':conversationId/read')
@@ -388,6 +392,28 @@ export class WhatsappConversationsController {
       conversationId,
       query,
     );
+  }
+
+  @Get(':conversationId/messages/:messageId/media')
+  @ApiOkResponse({
+    description: 'Bytes do arquivo da mensagem; sem acesso à conversa responde 404.',
+  })
+  async messageMedia(
+    @CurrentMembership() membership: RequestMembership,
+    @Param('messageId', ParseObjectIdPipe) messageId: Types.ObjectId,
+  ): Promise<StreamableFile> {
+    const ctx = ctxOf(membership);
+    const file = await this.messages.media(
+      ctx,
+      await this.access.require(ctx, 'atendente'),
+      messageId,
+    );
+
+    return new StreamableFile(file.stream, {
+      type: file.mime,
+      disposition: `inline; filename="${encodeURIComponent(file.filename)}"`,
+      ...(file.size > 0 ? { length: file.size } : {}),
+    });
   }
 
   @Post(':conversationId/messages')

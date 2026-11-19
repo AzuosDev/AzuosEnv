@@ -26,10 +26,18 @@ export const NOTIFICATION_VERB: Record<NotificationType, string> = {
   chatMessage: 'mandou mensagem no chat',
   formSubmitted: 'enviou um formulário em',
   aiSummary: 'resumo da IA sobre',
+  whatsappMessage: 'mandou mensagem no WhatsApp',
+  whatsappAssigned: 'atribuiu uma conversa do WhatsApp a você',
 };
 
 /** Entrada sem ator: a frase começa pela tarefa, não por nome de pessoa. */
-export const SYSTEM_TYPES: NotificationType[] = ['dueSoon', 'overdue', 'reminder', 'automation'];
+export const SYSTEM_TYPES: NotificationType[] = [
+  'dueSoon',
+  'overdue',
+  'reminder',
+  'automation',
+  'whatsappMessage',
+];
 
 export interface NotificationCard {
   /** Texto que liga quem fez ao alvo (ou o alvo ao estado, no sistema). */

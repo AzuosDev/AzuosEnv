@@ -376,6 +376,59 @@ describe('WhatsApp', () => {
       .exec();
 
     expect(stored?.media?.storageKey).toContain('/');
+
+    // A tela do front mostra a imagem pela rota autenticada, nunca pela URL da Meta.
+    const bytes = await withAuth(
+      http().get(
+        `/api/v1/workspaces/${fixture.workspace.id}/whatsapp/conversations/${conversation.id}/messages/${message.id}/media`,
+      ),
+      fixture.owner,
+    ).expect(200);
+
+    expect(bytes.headers['content-type']).toContain('image/jpeg');
+    expect(bytes.body.toString()).toBe('conteudo');
+
+    // A conversa está na fila: o atendente alcança o arquivo dela.
+    await withAuth(
+      http().get(
+        `/api/v1/workspaces/${fixture.workspace.id}/whatsapp/conversations/${conversation.id}/messages/${message.id}/media`,
+      ),
+      fixture.ana,
+    ).expect(200);
+
+    // Mensagem sem arquivo e id inexistente respondem 404.
+    const [text] = await messagesOf(fixture, fixture.owner, conversation.id);
+
+    await withAuth(
+      http().get(
+        `/api/v1/workspaces/${fixture.workspace.id}/whatsapp/conversations/${conversation.id}/messages/${conversation.id}/media`,
+      ),
+      fixture.owner,
+    ).expect(404);
+
+    expect(text.id).toBe(message.id);
+  });
+
+  it('a lista da conversa traz o contato e a última mensagem para a prévia', async () => {
+    const fixture = await setup();
+
+    await deliver(envelope(textMessage('wamid.1'))).then((r) => expect(r.status).toBe(200));
+
+    const response = await withAuth(
+      http().get(`/api/v1/workspaces/${fixture.workspace.id}/whatsapp/conversations`),
+      fixture.owner,
+    ).expect(200);
+    const [item] = response.body.items as {
+      id: string;
+      contact: { waId: string; profileName: string } | null;
+      lastMessage: { body: string; direction: string; media: unknown } | null;
+    }[];
+
+    expect(item.contact).toMatchObject({ waId: CONTACT });
+    expect(item.lastMessage).toMatchObject({
+      body: 'Bom dia, preciso de ajuda',
+      direction: 'inbound',
+    });
   });
 
   it('atualiza o status da mensagem enviada e guarda o erro do failed', async () => {

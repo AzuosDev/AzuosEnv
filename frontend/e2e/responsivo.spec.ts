@@ -78,6 +78,7 @@ test.beforeAll(async ({ browser }) => {
     { slug: 'dashboard', path: `${ws}/dashboards/${dashboardId}` },
     { slug: 'automacoes', path: `${ws}/automacoes` },
     { slug: 'timesheets', path: `${ws}/timesheets` },
+    { slug: 'whatsapp', path: `${ws}/whatsapp` },
     { slug: 'arquivados', path: `${ws}/arquivados` },
     { slug: 'lixeira', path: `${ws}/lixeira` },
     { slug: 'space', path: `${ws}/s/${spaceId}` },

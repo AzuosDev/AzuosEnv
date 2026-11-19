@@ -16442,7 +16442,7 @@
                     "items": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/WaConversation"
+                        "$ref": "#/components/schemas/WaConversationItemDto"
                       }
                     },
                     "nextCursor": {
@@ -16495,7 +16495,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WaConversation"
+                  "$ref": "#/components/schemas/WaConversationItemDto"
                 }
               }
             }
@@ -16934,6 +16934,44 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/messages/{messageId}/media": {
+      "get": {
+        "operationId": "WhatsappConversationsController_messageMedia",
+        "parameters": [
+          {
+            "name": "messageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bytes do arquivo da mensagem; sem acesso à conversa responde 404."
           }
         },
         "security": [
@@ -29388,26 +29426,51 @@
           "items"
         ]
       },
-      "WaConversation": {
+      "WaContact": {
         "type": "object",
         "properties": {
           "workspaceId": {
             "$ref": "#/components/schemas/ObjectId"
           },
-          "contactId": {
-            "$ref": "#/components/schemas/ObjectId"
+          "waId": {
+            "type": "string",
+            "description": "Number in the wa_id format of Meta (digits only, with country code)."
           },
-          "status": {
-            "enum": [
-              "closed",
-              "open",
-              "waiting"
-            ],
-            "type": "string"
+          "name": {
+            "type": "string",
+            "description": "Name the team gave the contact; falls back to the profile name."
           },
-          "assigneeId": {
+          "profileName": {
+            "type": "string",
+            "description": "Name of the WhatsApp profile, as it arrives in the webhook."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "description": "Internal notes; the contact never sees them."
+          },
+          "firstContactAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastInteractionAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "optOut": {
+            "type": "boolean",
+            "description": "The contact asked to stop receiving messages."
+          },
+          "spaceId": {
             "nullable": true,
-            "description": "Attendant responsible; null means the conversation is in the queue.",
+            "description": "Optional link with the Space of the client in the Azuos Env.",
             "type": "object",
             "allOf": [
               {
@@ -29415,47 +29478,7 @@
               }
             ]
           },
-          "priority": {
-            "enum": [
-              "urgent",
-              "high",
-              "normal"
-            ],
-            "type": "string"
-          },
-          "mode": {
-            "enum": [
-              "bot",
-              "human"
-            ],
-            "type": "string"
-          },
-          "botPausedUntil": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true,
-            "description": "While in the future the bot stays quiet even in `bot` mode."
-          },
-          "unreadCount": {
-            "type": "number"
-          },
-          "lastMessageAt": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true
-          },
-          "lastInboundAt": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true,
-            "description": "Opens the 24 h window of free text."
-          },
-          "closedAt": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true
-          },
-          "closedBy": {
+          "folderId": {
             "nullable": true,
             "type": "object",
             "allOf": [
@@ -29467,63 +29490,16 @@
         },
         "required": [
           "workspaceId",
-          "contactId",
-          "status",
-          "assigneeId",
-          "priority",
-          "mode",
-          "botPausedUntil",
-          "unreadCount",
-          "lastMessageAt",
-          "lastInboundAt",
-          "closedAt",
-          "closedBy"
-        ]
-      },
-      "AssignWaConversationDto": {
-        "type": "object",
-        "properties": {
-          "assigneeId": {
-            "type": "string",
-            "nullable": true,
-            "description": "null devolve a conversa para a fila."
-          }
-        }
-      },
-      "WaPriorityDto": {
-        "type": "object",
-        "properties": {
-          "priority": {
-            "enum": [
-              "normal",
-              "high",
-              "urgent"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "priority"
-        ]
-      },
-      "WaModeDto": {
-        "type": "object",
-        "properties": {
-          "mode": {
-            "enum": [
-              "bot",
-              "human"
-            ],
-            "type": "string"
-          },
-          "botPausedUntil": {
-            "type": "string",
-            "nullable": true,
-            "description": "UTC ISO 8601; pausa o bot até a data."
-          }
-        },
-        "required": [
-          "mode"
+          "waId",
+          "name",
+          "profileName",
+          "tags",
+          "notes",
+          "firstContactAt",
+          "lastInteractionAt",
+          "optOut",
+          "spaceId",
+          "folderId"
         ]
       },
       "WaMessageMedia": {
@@ -29689,6 +29665,257 @@
           "sentAt"
         ]
       },
+      "WaConversationItemDto": {
+        "type": "object",
+        "properties": {
+          "contact": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WaContact"
+              }
+            ]
+          },
+          "lastMessage": {
+            "nullable": true,
+            "description": "Última mensagem da conversa, para a prévia da lista.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WaMessage"
+              }
+            ]
+          },
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "contactId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "status": {
+            "enum": [
+              "closed",
+              "open",
+              "waiting"
+            ],
+            "type": "string"
+          },
+          "assigneeId": {
+            "nullable": true,
+            "description": "Attendant responsible; null means the conversation is in the queue.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          },
+          "priority": {
+            "enum": [
+              "urgent",
+              "high",
+              "normal"
+            ],
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "bot",
+              "human"
+            ],
+            "type": "string"
+          },
+          "botPausedUntil": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "While in the future the bot stays quiet even in `bot` mode."
+          },
+          "unreadCount": {
+            "type": "number"
+          },
+          "lastMessageAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastInboundAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "Opens the 24 h window of free text."
+          },
+          "closedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "closedBy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          }
+        },
+        "required": [
+          "contact",
+          "lastMessage",
+          "workspaceId",
+          "contactId",
+          "status",
+          "assigneeId",
+          "priority",
+          "mode",
+          "botPausedUntil",
+          "unreadCount",
+          "lastMessageAt",
+          "lastInboundAt",
+          "closedAt",
+          "closedBy"
+        ]
+      },
+      "WaConversation": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "contactId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "status": {
+            "enum": [
+              "closed",
+              "open",
+              "waiting"
+            ],
+            "type": "string"
+          },
+          "assigneeId": {
+            "nullable": true,
+            "description": "Attendant responsible; null means the conversation is in the queue.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          },
+          "priority": {
+            "enum": [
+              "urgent",
+              "high",
+              "normal"
+            ],
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "bot",
+              "human"
+            ],
+            "type": "string"
+          },
+          "botPausedUntil": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "While in the future the bot stays quiet even in `bot` mode."
+          },
+          "unreadCount": {
+            "type": "number"
+          },
+          "lastMessageAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastInboundAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "Opens the 24 h window of free text."
+          },
+          "closedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "closedBy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          }
+        },
+        "required": [
+          "workspaceId",
+          "contactId",
+          "status",
+          "assigneeId",
+          "priority",
+          "mode",
+          "botPausedUntil",
+          "unreadCount",
+          "lastMessageAt",
+          "lastInboundAt",
+          "closedAt",
+          "closedBy"
+        ]
+      },
+      "AssignWaConversationDto": {
+        "type": "object",
+        "properties": {
+          "assigneeId": {
+            "type": "string",
+            "nullable": true,
+            "description": "null devolve a conversa para a fila."
+          }
+        }
+      },
+      "WaPriorityDto": {
+        "type": "object",
+        "properties": {
+          "priority": {
+            "enum": [
+              "normal",
+              "high",
+              "urgent"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "priority"
+        ]
+      },
+      "WaModeDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "enum": [
+              "bot",
+              "human"
+            ],
+            "type": "string"
+          },
+          "botPausedUntil": {
+            "type": "string",
+            "nullable": true,
+            "description": "UTC ISO 8601; pausa o bot até a data."
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
       "SendWaTextDto": {
         "type": "object",
         "properties": {
@@ -29768,82 +29995,6 @@
             "maxLength": 500
           }
         }
-      },
-      "WaContact": {
-        "type": "object",
-        "properties": {
-          "workspaceId": {
-            "$ref": "#/components/schemas/ObjectId"
-          },
-          "waId": {
-            "type": "string",
-            "description": "Number in the wa_id format of Meta (digits only, with country code)."
-          },
-          "name": {
-            "type": "string",
-            "description": "Name the team gave the contact; falls back to the profile name."
-          },
-          "profileName": {
-            "type": "string",
-            "description": "Name of the WhatsApp profile, as it arrives in the webhook."
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "notes": {
-            "type": "string",
-            "description": "Internal notes; the contact never sees them."
-          },
-          "firstContactAt": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true
-          },
-          "lastInteractionAt": {
-            "format": "date-time",
-            "type": "string",
-            "nullable": true
-          },
-          "optOut": {
-            "type": "boolean",
-            "description": "The contact asked to stop receiving messages."
-          },
-          "spaceId": {
-            "nullable": true,
-            "description": "Optional link with the Space of the client in the Azuos Env.",
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ObjectId"
-              }
-            ]
-          },
-          "folderId": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ObjectId"
-              }
-            ]
-          }
-        },
-        "required": [
-          "workspaceId",
-          "waId",
-          "name",
-          "profileName",
-          "tags",
-          "notes",
-          "firstContactAt",
-          "lastInteractionAt",
-          "optOut",
-          "spaceId",
-          "folderId"
-        ]
       },
       "CreateWaContactDto": {
         "type": "object",

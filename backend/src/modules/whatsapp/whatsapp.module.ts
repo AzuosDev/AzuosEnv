@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AiModule } from '../ai/ai.module';
 import { HierarchyModule } from '../hierarchy/hierarchy.module';
@@ -9,6 +10,7 @@ import { TasksModule } from '../tasks/tasks.module';
 import { Workspace, WorkspaceSchema } from '../workspaces/schemas/workspace.schema';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { MetaGraphProvider } from './graph/meta-graph.provider';
+import { MockWhatsappGraphProvider } from './graph/mock-graph.provider';
 import { WhatsappGraphProvider } from './graph/whatsapp-graph.provider';
 import { WhatsappDataModule } from './whatsapp-data.module';
 import { WhatsappBotSettingsService } from './whatsapp-bot-settings.service';
@@ -64,7 +66,23 @@ import {
     WhatsappWebhookController,
   ],
   providers: [
-    { provide: WhatsappGraphProvider, useClass: MetaGraphProvider },
+    MetaGraphProvider,
+    MockWhatsappGraphProvider,
+    {
+      provide: WhatsappGraphProvider,
+      inject: [ConfigService, MetaGraphProvider, MockWhatsappGraphProvider],
+      // WHATSAPP_MOCK (nunca em produção) troca a Cloud API pela falsa, que é
+      // o que o e2e do front usa para receber e responder sem WABA.
+      useFactory: (
+        config: ConfigService,
+        real: MetaGraphProvider,
+        mock: MockWhatsappGraphProvider,
+      ): WhatsappGraphProvider =>
+        config.get<boolean>('WHATSAPP_MOCK') === true &&
+        config.get<string>('NODE_ENV') !== 'production'
+          ? mock
+          : real,
+    },
     WhatsappConnectionsService,
     WhatsappContactsService,
     WhatsappConversationsService,

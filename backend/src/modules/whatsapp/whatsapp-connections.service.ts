@@ -40,8 +40,17 @@ export class WhatsappConnectionsService {
     });
   }
 
+  /**
+   * URL que o app da Meta deve chamar. Sai da origem pública da API, não do
+   * APP_URL: em produção o front e a API ficam em domínios diferentes e o
+   * webhook precisa chegar na API.
+   */
   webhookUrl(): string {
-    const base = (this.config.get<string>('APP_URL') ?? '').replace(/\/$/, '');
+    const base = (
+      this.config.get<string>('API_PUBLIC_URL') ??
+      this.config.get<string>('APP_URL') ??
+      ''
+    ).replace(/\/$/, '');
 
     return `${base}/api/v1/integrations/whatsapp/webhook`;
   }

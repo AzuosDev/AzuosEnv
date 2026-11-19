@@ -3417,6 +3417,470 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{wsId}/whatsapp/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappAccessController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/access/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappAccessController_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/access/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["WhatsappAccessController_grant"];
+        post?: never;
+        delete: operations["WhatsappAccessController_revoke"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappConnectionController_status"];
+        put: operations["WhatsappConnectionController_save"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConnectionController_test"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappTemplatesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappConversationsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappConversationsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConversationsController_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConversationsController_assign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/priority": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConversationsController_priority"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConversationsController_mode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConversationsController_close"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConversationsController_reopen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappConversationsController_listMessages"];
+        put?: never;
+        post: operations["WhatsappConversationsController_sendText"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/messages/{messageId}/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappConversationsController_messageMedia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/messages/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConversationsController_sendMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/messages/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConversationsController_sendTemplate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/task": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConversationsController_createTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/conversations/{conversationId}/lead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConversationsController_createLead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappContactsController_list"];
+        put?: never;
+        post: operations["WhatsappContactsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/contacts/{contactId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappContactsController_get"];
+        put?: never;
+        post?: never;
+        delete: operations["WhatsappContactsController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["WhatsappContactsController_update"];
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/bot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappBotController_get"];
+        put: operations["WhatsappBotController_save"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/bot/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappBotController_listRules"];
+        put?: never;
+        post: operations["WhatsappBotController_createRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/bot/rules/{ruleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["WhatsappBotController_removeRule"];
+        options?: never;
+        head?: never;
+        patch: operations["WhatsappBotController_updateRule"];
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/quick-replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappQuickRepliesController_list"];
+        put?: never;
+        post: operations["WhatsappQuickRepliesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/quick-replies/{quickReplyId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["WhatsappQuickRepliesController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["WhatsappQuickRepliesController_update"];
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappOverviewController_overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/whatsapp/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappWebhookController_verify"];
+        put?: never;
+        post: operations["WhatsappWebhookController_receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{wsId}/import/clickup": {
         parameters: {
             query?: never;
@@ -4781,9 +5245,9 @@ export interface components {
             /** @description Who receives the entry; never the actor. */
             userId: components["schemas"]["ObjectId"];
             /** @enum {string} */
-            type: "invited" | "overdue" | "assigned" | "mentioned" | "commented" | "statusChanged" | "dueSoon" | "reminder" | "commentAssigned" | "automation" | "chatMention" | "chatMessage" | "formSubmitted" | "aiSummary";
+            type: "invited" | "overdue" | "assigned" | "mentioned" | "commented" | "statusChanged" | "dueSoon" | "reminder" | "commentAssigned" | "automation" | "chatMention" | "chatMessage" | "formSubmitted" | "aiSummary" | "whatsappMessage" | "whatsappAssigned";
             /** @enum {string} */
-            entityType: "message" | "comment" | "workspace" | "task" | "reminder";
+            entityType: "message" | "comment" | "workspace" | "task" | "reminder" | "whatsappConversation";
             entityId: components["schemas"]["ObjectId"];
             /** @description Null on entries the system generated by itself (cron, reminders). */
             actorId: components["schemas"]["ObjectId"] | null;
@@ -4860,6 +5324,8 @@ export interface components {
             chatMessage: components["schemas"]["NotificationChannelsStateDto"];
             formSubmitted: components["schemas"]["NotificationChannelsStateDto"];
             aiSummary: components["schemas"]["NotificationChannelsStateDto"];
+            whatsappMessage: components["schemas"]["NotificationChannelsStateDto"];
+            whatsappAssigned: components["schemas"]["NotificationChannelsStateDto"];
         };
         NotificationChannelsDto: {
             inbox?: boolean;
@@ -4880,9 +5346,11 @@ export interface components {
             chatMessage?: components["schemas"]["NotificationChannelsDto"];
             formSubmitted?: components["schemas"]["NotificationChannelsDto"];
             aiSummary?: components["schemas"]["NotificationChannelsDto"];
+            whatsappMessage?: components["schemas"]["NotificationChannelsDto"];
+            whatsappAssigned?: components["schemas"]["NotificationChannelsDto"];
         };
         UpdateNotificationSettingsDto: {
-            /** @description Tipos: assigned, mentioned, commented, statusChanged, dueSoon, overdue, reminder, invited, commentAssigned, automation, chatMention, chatMessage, formSubmitted, aiSummary. */
+            /** @description Tipos: assigned, mentioned, commented, statusChanged, dueSoon, overdue, reminder, invited, commentAssigned, automation, chatMention, chatMessage, formSubmitted, aiSummary, whatsappMessage, whatsappAssigned. */
             types: components["schemas"]["NotificationTypeSettingsDto"];
         };
         CreateReminderDto: {
@@ -6644,6 +7112,570 @@ export interface components {
             /** Format: date-time */
             deliveredAt: string | null;
         };
+        WaAccessEntryDto: {
+            userId: string;
+            /** @enum {string} */
+            role: "owner" | "admin" | "member" | "limited" | "guest";
+            /**
+             * @description null = sem acesso.
+             * @enum {string|null}
+             */
+            level: "atendente" | "supervisor" | "gestor" | null;
+            /** @description Nível vem do papel: owner e admin são sempre gestor. */
+            fromRole: boolean;
+        };
+        WaAccessListDto: {
+            items: components["schemas"]["WaAccessEntryDto"][];
+        };
+        WaMyAccessDto: {
+            /** @enum {string|null} */
+            level: "atendente" | "supervisor" | "gestor" | null;
+        };
+        GrantWaAccessDto: {
+            /** @enum {string} */
+            level: "atendente" | "supervisor" | "gestor";
+        };
+        SaveWaConnectionDto: {
+            /** @description Id do número dentro da WABA. */
+            phoneNumberId: string;
+            /** @description Id da conta do WhatsApp Business. */
+            wabaId: string;
+            /** @description Token permanente da Graph API; guardado criptografado. */
+            accessToken: string;
+            /** @description App Secret que assina o webhook; guardado criptografado. */
+            appSecret: string;
+            /** @description Token devolvido na verificação do webhook. */
+            verifyToken: string;
+            displayPhone?: string;
+            verifiedName?: string;
+        };
+        WaConnection: {
+            workspaceId: components["schemas"]["ObjectId"];
+            /** @description Id of the phone number inside the WABA; routes the webhook to this workspace. */
+            phoneNumberId: string;
+            wabaId: string;
+            displayPhone: string;
+            verifiedName: string;
+            /** @description Echoed back on the GET handshake of the webhook. */
+            verifyToken: string;
+            /** @enum {string} */
+            status: "error" | "pending" | "connected";
+            qualityRating: string;
+            lastError: string;
+            /** Format: date-time */
+            lastEventAt: string | null;
+            createdBy: components["schemas"]["ObjectId"];
+        };
+        WaConnectionStatusDto: {
+            connection: components["schemas"]["WaConnection"] | null;
+            /** @description URL que o app da Meta deve chamar. */
+            webhookUrl: string;
+        };
+        WaTemplateDto: {
+            name: string;
+            /** @example pt_BR */
+            language: string;
+            /** @example APPROVED */
+            status: string;
+            category: string;
+            /** @description Quantas variáveis o corpo espera. */
+            variables: number;
+        };
+        WaTemplateListDto: {
+            items: components["schemas"]["WaTemplateDto"][];
+        };
+        WaContact: {
+            workspaceId: components["schemas"]["ObjectId"];
+            /** @description Number in the wa_id format of Meta (digits only, with country code). */
+            waId: string;
+            /** @description Name the team gave the contact; falls back to the profile name. */
+            name: string;
+            /** @description Name of the WhatsApp profile, as it arrives in the webhook. */
+            profileName: string;
+            tags: string[];
+            /** @description Internal notes; the contact never sees them. */
+            notes: string;
+            /** Format: date-time */
+            firstContactAt: string | null;
+            /** Format: date-time */
+            lastInteractionAt: string | null;
+            /** @description The contact asked to stop receiving messages. */
+            optOut: boolean;
+            /** @description Optional link with the Space of the client in the Azuos Env. */
+            spaceId: components["schemas"]["ObjectId"] | null;
+            folderId: components["schemas"]["ObjectId"] | null;
+        };
+        WaMessageMedia: {
+            mime: string;
+            caption: string;
+            filename: string;
+            size: number;
+            /** @description Id of the media inside Meta, kept so the file can be fetched again. */
+            mediaId: string;
+        };
+        WaMessageError: {
+            code: string;
+            title: string;
+            message: string;
+        };
+        WaMessage: {
+            workspaceId: components["schemas"]["ObjectId"];
+            conversationId: components["schemas"]["ObjectId"];
+            /** @description Id of Meta. Unique: it is what makes the webhook idempotent. */
+            waMessageId: string | null;
+            /** @enum {string} */
+            direction: "inbound" | "outbound";
+            /** @enum {string} */
+            type: "text" | "document" | "location" | "image" | "audio" | "video" | "sticker" | "contacts" | "interactive" | "reaction" | "template" | "unsupported";
+            /** @description Text of the message, the caption of the media or the emoji of the reaction. */
+            body: string;
+            media: components["schemas"]["WaMessageMedia"] | null;
+            /** @description Everything the type carries beyond the text (location, contacts, button). */
+            payload: {
+                [key: string]: unknown;
+            } | null;
+            /** @description waMessageId of the quoted message. */
+            replyTo: string | null;
+            /** @enum {string} */
+            status: "read" | "pending" | "delivered" | "failed" | "sent";
+            error: components["schemas"]["WaMessageError"] | null;
+            /** @description Member who sent it; null on an inbound message or on a bot answer. */
+            authorId: components["schemas"]["ObjectId"] | null;
+            fromBot: boolean;
+            /** Format: date-time */
+            sentAt: string;
+        };
+        WaConversationItemDto: {
+            contact: components["schemas"]["WaContact"] | null;
+            /** @description Última mensagem da conversa, para a prévia da lista. */
+            lastMessage: components["schemas"]["WaMessage"] | null;
+            workspaceId: components["schemas"]["ObjectId"];
+            contactId: components["schemas"]["ObjectId"];
+            /** @enum {string} */
+            status: "closed" | "open" | "waiting";
+            /** @description Attendant responsible; null means the conversation is in the queue. */
+            assigneeId: components["schemas"]["ObjectId"] | null;
+            /** @enum {string} */
+            priority: "urgent" | "high" | "normal";
+            /** @enum {string} */
+            mode: "bot" | "human";
+            /**
+             * Format: date-time
+             * @description While in the future the bot stays quiet even in `bot` mode.
+             */
+            botPausedUntil: string | null;
+            unreadCount: number;
+            /** Format: date-time */
+            lastMessageAt: string | null;
+            /**
+             * Format: date-time
+             * @description Opens the 24 h window of free text.
+             */
+            lastInboundAt: string | null;
+            /** Format: date-time */
+            closedAt: string | null;
+            closedBy: components["schemas"]["ObjectId"] | null;
+        };
+        WaConversation: {
+            workspaceId: components["schemas"]["ObjectId"];
+            contactId: components["schemas"]["ObjectId"];
+            /** @enum {string} */
+            status: "closed" | "open" | "waiting";
+            /** @description Attendant responsible; null means the conversation is in the queue. */
+            assigneeId: components["schemas"]["ObjectId"] | null;
+            /** @enum {string} */
+            priority: "urgent" | "high" | "normal";
+            /** @enum {string} */
+            mode: "bot" | "human";
+            /**
+             * Format: date-time
+             * @description While in the future the bot stays quiet even in `bot` mode.
+             */
+            botPausedUntil: string | null;
+            unreadCount: number;
+            /** Format: date-time */
+            lastMessageAt: string | null;
+            /**
+             * Format: date-time
+             * @description Opens the 24 h window of free text.
+             */
+            lastInboundAt: string | null;
+            /** Format: date-time */
+            closedAt: string | null;
+            closedBy: components["schemas"]["ObjectId"] | null;
+        };
+        AssignWaConversationDto: {
+            /** @description null devolve a conversa para a fila. */
+            assigneeId?: string | null;
+        };
+        WaPriorityDto: {
+            /** @enum {string} */
+            priority: "normal" | "high" | "urgent";
+        };
+        WaModeDto: {
+            /** @enum {string} */
+            mode: "bot" | "human";
+            /** @description UTC ISO 8601; pausa o bot até a data. */
+            botPausedUntil?: string | null;
+        };
+        SendWaTextDto: {
+            text: string;
+            /** @description waMessageId da mensagem citada. */
+            replyTo?: string;
+        };
+        SendWaTemplateDto: {
+            /** @description Nome do template aprovado no WABA. */
+            name: string;
+            /** @example pt_BR */
+            language: string;
+            /** @description Variáveis do corpo, na ordem. */
+            variables?: string[];
+        };
+        WaConversationTaskDto: {
+            /** @description List onde a tarefa é criada. */
+            listId: string;
+            /** @description Ausente usa o nome do contato. */
+            name?: string;
+        };
+        WaConversationLeadDto: {
+            /** @description Ausente usa a List Leads do Space Comercial. */
+            listId?: string;
+            name?: string;
+        };
+        CreateWaContactDto: {
+            /** @description Número só com dígitos, com o código do país. */
+            waId: string;
+            name?: string;
+            tags?: string[];
+            notes?: string;
+            spaceId?: string | null;
+            folderId?: string | null;
+        };
+        UpdateWaContactDto: {
+            name?: string;
+            tags?: string[];
+            notes?: string;
+            optOut?: boolean;
+            spaceId?: string | null;
+            folderId?: string | null;
+        };
+        WaMenuOption: {
+            /** @description Matched against the id of the button or row the contact tapped. */
+            id: string;
+            title: string;
+            /** @description Only a list row shows it. */
+            description: string;
+        };
+        WaBotMenu: {
+            enabled: boolean;
+            /** @enum {string} */
+            kind: "list" | "buttons";
+            header: string;
+            body: string;
+            footer: string;
+            /** @description Label that opens the list; the Cloud API requires it on a list. */
+            buttonLabel: string;
+            options: components["schemas"]["WaMenuOption"][];
+        };
+        WaBotAi: {
+            enabled: boolean;
+            /** @description Everything the model may state; it never answers beyond this. */
+            knowledgeBase: string;
+            maxAnswerChars: number;
+        };
+        WaHoursRange: {
+            start: string;
+            end: string;
+        };
+        WaHoursDay: {
+            /** @description 0 = Sunday. */
+            weekday: number;
+            ranges: components["schemas"]["WaHoursRange"][];
+        };
+        WaHoliday: {
+            /** @description `YYYY-MM-DD` in the zone of the attendance. */
+            date: string;
+            name: string;
+        };
+        WaBotHours: {
+            enabled: boolean;
+            /** @description Empty uses the timezone of the workspace. */
+            timezone: string;
+            days: components["schemas"]["WaHoursDay"][];
+            holidays: components["schemas"]["WaHoliday"][];
+            awayMessage: string;
+        };
+        WaBotSettings: {
+            workspaceId: components["schemas"]["ObjectId"];
+            enabled: boolean;
+            welcomeMessage: string;
+            menu: components["schemas"]["WaBotMenu"];
+            handoffMessage: string;
+            /** @description Minutes the bot stays quiet after an attendant answers. */
+            pauseMinutes: number;
+            /** @description Sent when an attendant finishes the conversation. */
+            closingMessage: string;
+            ai: components["schemas"]["WaBotAi"];
+            hours: components["schemas"]["WaBotHours"];
+            updatedBy: components["schemas"]["ObjectId"] | null;
+        };
+        WaMenuOptionDto: {
+            /** @description Id devolvido quando o contato escolhe a opção. */
+            id: string;
+            /** @description Até 24 caracteres, limite do WhatsApp. */
+            title: string;
+            /** @description Só aparece na lista interativa. */
+            description?: string;
+        };
+        WaBotMenuDto: {
+            enabled?: boolean;
+            /** @enum {string} */
+            kind?: "buttons" | "list";
+            header?: string;
+            body?: string;
+            footer?: string;
+            /** @description Rótulo que abre a lista interativa. */
+            buttonLabel?: string;
+            options?: components["schemas"]["WaMenuOptionDto"][];
+        };
+        WaBotAiDto: {
+            enabled?: boolean;
+            /** @description Base de conhecimento que a IA pode afirmar. */
+            knowledgeBase?: string;
+            maxAnswerChars?: number;
+        };
+        WaHoursRangeDto: {
+            /** @example 09:00 */
+            start: string;
+            /** @example 18:00 */
+            end: string;
+        };
+        WaHoursDayDto: {
+            /** @description 0 = domingo. */
+            weekday: number;
+            ranges: components["schemas"]["WaHoursRangeDto"][];
+        };
+        WaHolidayDto: {
+            /** @example 2026-12-25 */
+            date: string;
+            name?: string;
+        };
+        WaBotHoursDto: {
+            enabled?: boolean;
+            /** @description Vazio usa o fuso do workspace. */
+            timezone?: string;
+            days?: components["schemas"]["WaHoursDayDto"][];
+            holidays?: components["schemas"]["WaHolidayDto"][];
+            /** @description Enviada fora do horário de atendimento. */
+            awayMessage?: string;
+        };
+        SaveWaBotSettingsDto: {
+            enabled?: boolean;
+            /** @description Primeira resposta da conversa. */
+            welcomeMessage?: string;
+            menu?: components["schemas"]["WaBotMenuDto"];
+            /** @description Enviada ao transferir para um humano. */
+            handoffMessage?: string;
+            /** @default 30 */
+            pauseMinutes: number;
+            /** @description Enviada quando o atendente finaliza a conversa. */
+            closingMessage?: string;
+            ai?: components["schemas"]["WaBotAiDto"];
+            hours?: components["schemas"]["WaBotHoursDto"];
+        };
+        WaBotRuleTrigger: {
+            /** @enum {string} */
+            kind: "regex" | "contains" | "firstMessage" | "keyword" | "menuOption" | "outsideHours";
+            value: string;
+        };
+        WaBotRuleReply: {
+            /** @enum {string} */
+            kind: "text" | "list" | "none" | "media" | "buttons";
+            /** @description Body of the message; accepts the variables of `renderWaText`. */
+            text: string;
+            /** @description Public link of the file on a `media` reply; Meta fetches it. */
+            mediaUrl: string;
+            mediaMime: string;
+            filename: string;
+            header: string;
+            footer: string;
+            buttonLabel: string;
+            options: components["schemas"]["WaMenuOption"][];
+        };
+        WaBotRuleAction: {
+            /** @enum {string} */
+            kind: "priority" | "assign" | "transferToHuman" | "tag" | "createLead";
+            /** @description Member the conversation goes to on `assign`. */
+            userId: components["schemas"]["ObjectId"] | null;
+            /** @description Tag written on the contact by `tag`. */
+            tag: string;
+            /** @enum {string} */
+            priority: "urgent" | "high" | "normal";
+            /** @description List the lead of `createLead` lands in; empty uses Comercial › Leads. */
+            listId: components["schemas"]["ObjectId"] | null;
+        };
+        WaBotRule: {
+            workspaceId: components["schemas"]["ObjectId"];
+            name: string;
+            trigger: components["schemas"]["WaBotRuleTrigger"];
+            reply: components["schemas"]["WaBotRuleReply"];
+            actions: components["schemas"]["WaBotRuleAction"][];
+            /** @description Higher wins; ties are broken by the oldest rule. */
+            priority: number;
+            active: boolean;
+            createdBy: components["schemas"]["ObjectId"];
+        };
+        WaBotRuleListDto: {
+            items: components["schemas"]["WaBotRule"][];
+        };
+        WaBotRuleTriggerDto: {
+            /** @enum {string} */
+            kind: "firstMessage" | "keyword" | "contains" | "regex" | "menuOption" | "outsideHours";
+            /** @description Palavra, trecho, regex ou id da opção do menu. */
+            value?: string;
+        };
+        WaBotRuleReplyDto: {
+            /** @enum {string} */
+            kind?: "none" | "text" | "media" | "buttons" | "list";
+            text?: string;
+            /** @description Link público do arquivo; a Meta busca por ele. */
+            mediaUrl?: string;
+            mediaMime?: string;
+            filename?: string;
+            header?: string;
+            footer?: string;
+            buttonLabel?: string;
+            options?: components["schemas"]["WaMenuOptionDto"][];
+        };
+        WaBotRuleActionDto: {
+            /** @enum {string} */
+            kind: "transferToHuman" | "assign" | "tag" | "priority" | "createLead";
+            /** @description Responsável do assign. */
+            userId?: string;
+            /** @description Etiqueta aplicada ao contato. */
+            tag?: string;
+            /** @enum {string} */
+            priority?: "normal" | "high" | "urgent";
+            /** @description List do lead; ausente usa Comercial › Leads. */
+            listId?: string;
+        };
+        CreateWaBotRuleDto: {
+            name: string;
+            trigger: components["schemas"]["WaBotRuleTriggerDto"];
+            reply?: components["schemas"]["WaBotRuleReplyDto"];
+            actions?: components["schemas"]["WaBotRuleActionDto"][];
+            /** @description Maior vence; empate vai para a regra mais antiga. */
+            priority?: number;
+            /** @default true */
+            active: boolean;
+        };
+        UpdateWaBotRuleDto: {
+            name?: string;
+            trigger?: components["schemas"]["WaBotRuleTriggerDto"];
+            reply?: components["schemas"]["WaBotRuleReplyDto"];
+            actions?: components["schemas"]["WaBotRuleActionDto"][];
+            priority?: number;
+            active?: boolean;
+        };
+        WaQuickReplyItemDto: {
+            id: string;
+            shortcut: string;
+            title: string;
+            /** @description Texto cru, com as variáveis. */
+            text: string;
+            /** @description Texto com as variáveis resolvidas pela conversa. */
+            rendered: string;
+            mediaUrl: string;
+            mediaMime: string;
+            filename: string;
+        };
+        WaQuickReplyPageDto: {
+            items: components["schemas"]["WaQuickReplyItemDto"][];
+            /** @description Cursor da próxima página; null na última. */
+            nextCursor: string | null;
+        };
+        CreateWaQuickReplyDto: {
+            /** @description Atalho digitado depois da "/"; minúsculas. */
+            shortcut: string;
+            title: string;
+            /** @description Aceita variáveis como {nome}. */
+            text?: string;
+            /** @description Link público do arquivo enviado junto. */
+            mediaUrl?: string;
+            mediaMime?: string;
+            filename?: string;
+        };
+        WaQuickReply: {
+            workspaceId: components["schemas"]["ObjectId"];
+            /** @description Lowercase, unique in the workspace; what comes after the `/`. */
+            shortcut: string;
+            title: string;
+            /** @description Accepts the variables of `renderWaText`, such as `{nome}`. */
+            text: string;
+            /** @description Public link of a file sent along with the text. */
+            mediaUrl: string;
+            mediaMime: string;
+            filename: string;
+            createdBy: components["schemas"]["ObjectId"];
+        };
+        UpdateWaQuickReplyDto: {
+            shortcut?: string;
+            title?: string;
+            text?: string;
+            mediaUrl?: string;
+            mediaMime?: string;
+            filename?: string;
+        };
+        WaStatusCountsDto: {
+            open: number;
+            waiting: number;
+            closed: number;
+        };
+        WaDayCountDto: {
+            /** @example 2026-11-13 */
+            date: string;
+            count: number;
+        };
+        WaAgentStatsDto: {
+            userId: string;
+            /** @description Conversas atribuídas a essa pessoa no período. */
+            conversations: number;
+            /** @description Conversas dela que foram finalizadas. */
+            resolved: number;
+            /** @description Mensagens que ela enviou no período. */
+            messages: number;
+            /** @description Média da primeira resposta, em segundos. */
+            firstResponseAvgSeconds: number | null;
+        };
+        WaOverviewDto: {
+            /** @description Início do período, em UTC ISO 8601. */
+            from: string;
+            /** @description Fim do período, em UTC ISO 8601. */
+            to: string;
+            /** @description Fuso usado para agrupar os dias. */
+            timezone: string;
+            byStatus: components["schemas"]["WaStatusCountsDto"];
+            /** @description Conversas novas por dia. */
+            newPerDay: components["schemas"]["WaDayCountDto"][];
+            conversations: number;
+            /** @description Conversas finalizadas no período. */
+            resolved: number;
+            /** @description Finalizadas sem nenhuma mensagem de atendente. */
+            botResolved: number;
+            /** @description % das finalizadas que o bot resolveu sozinho. */
+            botResolvedPercent: number;
+            /** @description Média da primeira resposta humana, em segundos. */
+            firstResponseAvgSeconds: number | null;
+            /** @description Média até finalizar, em segundos. */
+            resolutionAvgSeconds: number | null;
+            byAgent: components["schemas"]["WaAgentStatsDto"][];
+            /** @description true quando o período passou do teto de conversas lidas. */
+            truncated: boolean;
+        };
+        WaWebhookResultDto: {
+            /** @example true */
+            received: boolean;
+        };
         SkippedRowDto: {
             /** @description Linha do arquivo; o cabeçalho é a linha 1. */
             line: number;
@@ -6713,7 +7745,7 @@ export interface operations {
                 limit?: number;
                 /** @description Cursor retornado em nextCursor. */
                 cursor?: string;
-                action?: "workspace.updated" | "workspace.deleted" | "workspace.ownership.transferred" | "workspace.exported" | "workspace.imported" | "member.role.changed" | "member.deactivated" | "invite.created" | "invite.revoked" | "team.deleted" | "resource.purged" | "integration.github.created" | "integration.github.updated" | "integration.github.deleted" | "integration.google.disconnected" | "webhook.created" | "webhook.updated" | "webhook.deleted" | "webhook.redelivered" | "integration.google.calendar.changed";
+                action?: "workspace.updated" | "workspace.deleted" | "workspace.ownership.transferred" | "workspace.exported" | "workspace.imported" | "member.role.changed" | "member.deactivated" | "invite.created" | "invite.revoked" | "team.deleted" | "resource.purged" | "integration.github.created" | "integration.github.updated" | "integration.github.deleted" | "integration.google.disconnected" | "webhook.created" | "webhook.updated" | "webhook.deleted" | "webhook.redelivered" | "integration.google.calendar.changed" | "whatsapp.connection.saved" | "whatsapp.connection.tested" | "whatsapp.access.changed" | "whatsapp.bot.saved" | "whatsapp.bot.rule.saved" | "whatsapp.bot.rule.deleted";
                 actorId?: string;
             };
             header?: never;
@@ -14817,6 +15849,1081 @@ export interface operations {
                         /** @description Cursor da próxima página; null na última. */
                         nextCursor: string | null;
                     };
+                };
+            };
+        };
+    };
+    WhatsappAccessController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Membros e o nível de cada um. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaAccessListDto"];
+                };
+            };
+        };
+    };
+    WhatsappAccessController_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Nível do usuário atual. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaMyAccessDto"];
+                };
+            };
+        };
+    };
+    WhatsappAccessController_grant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GrantWaAccessDto"];
+            };
+        };
+        responses: {
+            /** @description Nível atribuído ao membro. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaAccessListDto"];
+                };
+            };
+        };
+    };
+    WhatsappAccessController_revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Acesso removido. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
+            };
+        };
+    };
+    WhatsappConnectionController_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Status da conexão. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConnectionStatusDto"];
+                };
+            };
+        };
+    };
+    WhatsappConnectionController_save: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveWaConnectionDto"];
+            };
+        };
+        responses: {
+            /** @description Conexão salva. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConnectionStatusDto"];
+                };
+            };
+        };
+    };
+    WhatsappConnectionController_test: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conexão testada na Graph API. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConnectionStatusDto"];
+                };
+            };
+        };
+    };
+    WhatsappTemplatesController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Templates aprovados no WABA. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaTemplateListDto"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_list: {
+        parameters: {
+            query?: {
+                limit?: number;
+                /** @description Cursor retornado em nextCursor. */
+                cursor?: string;
+                filter?: "open" | "unread" | "waiting" | "mine" | "priority" | "closed" | "all";
+                /** @description Busca por nome, número ou texto da mensagem. */
+                q?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conversas do filtro escolhido. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["WaConversationItemDto"][];
+                        /** @description Cursor da próxima página; null na última. */
+                        nextCursor: string | null;
+                    };
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conversa. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConversationItemDto"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_read: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conversa marcada como lida. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConversation"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_assign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignWaConversationDto"];
+            };
+        };
+        responses: {
+            /** @description Responsável definido. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConversation"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_priority: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaPriorityDto"];
+            };
+        };
+        responses: {
+            /** @description Prioridade alterada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConversation"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_mode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaModeDto"];
+            };
+        };
+        responses: {
+            /** @description Modo bot/humano alterado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConversation"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_close: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conversa finalizada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConversation"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_reopen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Conversa reaberta. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConversation"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_listMessages: {
+        parameters: {
+            query?: {
+                limit?: number;
+                /** @description Cursor retornado em nextCursor. */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mensagens da conversa, da mais nova para a mais antiga. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["WaMessage"][];
+                        /** @description Cursor da próxima página; null na última. */
+                        nextCursor: string | null;
+                    };
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_sendText: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendWaTextDto"];
+            };
+        };
+        responses: {
+            /** @description Texto enviado. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaMessage"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_messageMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                messageId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bytes do arquivo da mensagem; sem acesso à conversa responde 404. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WhatsappConversationsController_sendMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    caption?: string;
+                    replyTo?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Mídia enviada. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaMessage"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_sendTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendWaTemplateDto"];
+            };
+        };
+        responses: {
+            /** @description Template enviado. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaMessage"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_createTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaConversationTaskDto"];
+            };
+        };
+        responses: {
+            /** @description Tarefa criada a partir da conversa. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Task"];
+                };
+            };
+        };
+    };
+    WhatsappConversationsController_createLead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversationId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaConversationLeadDto"];
+            };
+        };
+        responses: {
+            /** @description Lead criado em Comercial › Leads. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Task"];
+                };
+            };
+        };
+    };
+    WhatsappContactsController_list: {
+        parameters: {
+            query?: {
+                limit?: number;
+                /** @description Cursor retornado em nextCursor. */
+                cursor?: string;
+                /** @description Busca por nome ou número. */
+                q?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contatos do WhatsApp. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["WaContact"][];
+                        /** @description Cursor da próxima página; null na última. */
+                        nextCursor: string | null;
+                    };
+                };
+            };
+        };
+    };
+    WhatsappContactsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWaContactDto"];
+            };
+        };
+        responses: {
+            /** @description Contato criado. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaContact"];
+                };
+            };
+        };
+    };
+    WhatsappContactsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contactId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contato. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaContact"];
+                };
+            };
+        };
+    };
+    WhatsappContactsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contactId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contato removido. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
+            };
+        };
+    };
+    WhatsappContactsController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contactId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateWaContactDto"];
+            };
+        };
+        responses: {
+            /** @description Contato atualizado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaContact"];
+                };
+            };
+        };
+    };
+    WhatsappBotController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Configurações do bot e do atendimento. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaBotSettings"];
+                };
+            };
+        };
+    };
+    WhatsappBotController_save: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveWaBotSettingsDto"];
+            };
+        };
+        responses: {
+            /** @description Configurações salvas. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaBotSettings"];
+                };
+            };
+        };
+    };
+    WhatsappBotController_listRules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Regras do bot, da maior prioridade para a menor. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaBotRuleListDto"];
+                };
+            };
+        };
+    };
+    WhatsappBotController_createRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWaBotRuleDto"];
+            };
+        };
+        responses: {
+            /** @description Regra criada. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaBotRule"];
+                };
+            };
+        };
+    };
+    WhatsappBotController_removeRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ruleId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Regra removida. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
+            };
+        };
+    };
+    WhatsappBotController_updateRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ruleId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateWaBotRuleDto"];
+            };
+        };
+        responses: {
+            /** @description Regra atualizada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaBotRule"];
+                };
+            };
+        };
+    };
+    WhatsappQuickRepliesController_list: {
+        parameters: {
+            query?: {
+                limit?: number;
+                /** @description Cursor retornado em nextCursor. */
+                cursor?: string;
+                /** @description Busca por atalho, título ou texto. */
+                q?: string;
+                /** @description Resolve as variáveis com os dados da conversa. */
+                conversationId?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Respostas rápidas; com conversationId as variáveis vêm resolvidas. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaQuickReplyPageDto"];
+                };
+            };
+        };
+    };
+    WhatsappQuickRepliesController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWaQuickReplyDto"];
+            };
+        };
+        responses: {
+            /** @description Resposta rápida criada. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaQuickReply"];
+                };
+            };
+        };
+    };
+    WhatsappQuickRepliesController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quickReplyId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Resposta rápida removida. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
+            };
+        };
+    };
+    WhatsappQuickRepliesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quickReplyId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateWaQuickReplyDto"];
+            };
+        };
+        responses: {
+            /** @description Resposta rápida atualizada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaQuickReply"];
+                };
+            };
+        };
+    };
+    WhatsappOverviewController_overview: {
+        parameters: {
+            query?: {
+                /** @description UTC ISO 8601; ausente usa os últimos 30 dias. */
+                from?: string;
+                /** @description UTC ISO 8601; ausente usa agora. */
+                to?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Visão geral do atendimento no período. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaOverviewDto"];
+                };
+            };
+        };
+    };
+    WhatsappWebhookController_verify: {
+        parameters: {
+            query?: {
+                "hub.challenge"?: unknown;
+                "hub.verify_token"?: unknown;
+                "hub.mode"?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Desafio devolvido em texto puro. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    WhatsappWebhookController_receive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Evento aceito. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaWebhookResultDto"];
                 };
             };
         };

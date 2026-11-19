@@ -67,6 +67,20 @@ export class WhatsappContactsService {
     return this.model.findOne({ _id: contactId, workspaceId }).exec();
   }
 
+  /** Contacts of a page of conversations, by id, in a single query. */
+  async byIds(
+    workspaceId: Types.ObjectId,
+    contactIds: Types.ObjectId[],
+  ): Promise<Map<string, WaContactDocument>> {
+    if (contactIds.length === 0) {
+      return new Map();
+    }
+
+    const contacts = await this.model.find({ workspaceId, _id: { $in: contactIds } }).exec();
+
+    return new Map(contacts.map((contact) => [String(contact._id), contact]));
+  }
+
   async create(ctx: PermissionContext, dto: CreateWaContactDto): Promise<WaContactDocument> {
     const taken = await this.model
       .countDocuments({ workspaceId: ctx.workspaceId, waId: dto.waId })
