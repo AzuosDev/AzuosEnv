@@ -202,6 +202,7 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - IA do bot: só com o ClickApp ai ligado, ai.enabled e base de conhecimento preenchida. O prompt proíbe prometer preço, prazo ou condição comercial e manda o modelo escrever só TRANSFERIR quando a base não cobre a pergunta; aí a conversa vai para humano. O consumo entra em ai_usage com feature whatsappBot e o orçamento do mês é conferido antes da chamada. Qualquer falha da IA também transfere.
 - A visão geral lê as conversas criadas no período (teto de 5000, com truncated) e tira as médias de uma aggregation sobre wa_messages: primeira resposta é a primeira mensagem de atendente menos a primeira do contato, resolução é closedAt menos createdAt e "resolvida pelo bot" é a conversa finalizada sem nenhuma mensagem com authorId.
 - A porta da Graph ganhou interactive (botões e lista) e mediaLink, então o bot manda menu e mídia por link sem subir arquivo.
+- Endurecimento para produção: o webhook do WhatsApp tem @SkipThrottle (a Meta entrega de poucos IPs e 429 leva à desativação; a assinatura protege a rota) e a fila processa cada status e cada mensagem isolados, então um item com erro só vira log e não derruba o resto da entrega já respondida com 200.
 
 ## Módulos
 - health (src/modules/health) — público

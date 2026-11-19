@@ -124,9 +124,13 @@ export class WhatsappWebhookService {
   ): Promise<void> {
     const workspaceId = found.connection.workspaceId;
 
+    // Each item fails alone: the 200 already went out, so Meta will not resend and
+    // one bad item must not drop the rest of the delivery.
     for (const change of changes) {
       for (const status of change.statuses) {
-        await this.messages.applyStatus(workspaceId, status);
+        await this.isolated(`status ${status.waMessageId}`, () =>
+          this.messages.applyStatus(workspaceId, status),
+        );
       }
 
       const profiles = new Map(
@@ -134,8 +138,22 @@ export class WhatsappWebhookService {
       );
 
       for (const message of change.messages) {
-        await this.ingest(found.credentials, workspaceId, message, profiles);
+        await this.isolated(`mensagem ${message.waMessageId}`, () =>
+          this.ingest(found.credentials, workspaceId, message, profiles),
+        );
       }
+    }
+  }
+
+  private async isolated(label: string, run: () => Promise<unknown>): Promise<void> {
+    try {
+      await run();
+    } catch (error) {
+      this.logger.error(
+        `Falha ao processar ${label} do webhook do WhatsApp: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 

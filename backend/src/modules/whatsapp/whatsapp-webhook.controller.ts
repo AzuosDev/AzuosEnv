@@ -1,6 +1,7 @@
 import { Controller, Get, Headers, HttpCode, HttpStatus, Post, Query, Req } from '@nestjs/common';
 import { Body } from '@nestjs/common';
 import { ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { RawBodyRequest } from '../../app.setup';
 import { Public } from '../../common/decorators/public.decorator';
 import { WaWebhookResultDto } from './dto/whatsapp-result.dto';
@@ -10,7 +11,10 @@ import { WaWebhookResult, WhatsappWebhookService } from './whatsapp-webhook.serv
 /**
  * Public entry point of the Cloud API. The GET answers the handshake of Meta and
  * the POST only accepts a body signed with the App Secret of the connection.
+ * No rate limit: Meta delivers from few IPs and a 429 makes it retry and, in the
+ * end, disable the webhook; the signature is what protects the route.
  */
+@SkipThrottle()
 @ApiTags('whatsapp')
 @Controller('integrations/whatsapp/webhook')
 export class WhatsappWebhookController {
