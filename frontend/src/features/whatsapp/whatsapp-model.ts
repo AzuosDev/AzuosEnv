@@ -1,9 +1,16 @@
 import type {
   WaAccessLevel,
+  WaBotActionKind,
+  WaBotReplyKind,
+  WaBotRule,
+  WaBotTrigger,
   WaConversationFilter,
   WaConversationItem,
+  WaHoursDay,
+  WaMenuKind,
   WaMessage,
   WaMessageStatus,
+  WaOverview,
 } from '@/api/types';
 
 /** Níveis em ordem crescente; o do cargo (owner/admin) já chega como gestor. */
@@ -23,15 +30,15 @@ export function hasWaLevel(level: WaAccessLevel | null, needed: WaAccessLevel): 
   return WA_LEVELS.indexOf(level) >= WA_LEVELS.indexOf(needed);
 }
 
-/** Abas da Central. `ready` separa o que é desta etapa do que entra na F20. */
+/** Abas da Central. `ready` guarda o que ainda não tem tela (nada, na F20). */
 export const WA_TABS = [
-  { id: 'visao-geral', label: 'Visão geral', level: 'supervisor', ready: false },
+  { id: 'visao-geral', label: 'Visão geral', level: 'supervisor', ready: true },
   { id: 'conversas', label: 'Conversas', level: 'atendente', ready: true },
   { id: 'contatos', label: 'Contatos', level: 'atendente', ready: true },
-  { id: 'regras', label: 'Regras do bot', level: 'gestor', ready: false },
-  { id: 'bot', label: 'Bot e mensagens', level: 'gestor', ready: false },
-  { id: 'respostas', label: 'Respostas rápidas', level: 'gestor', ready: false },
-  { id: 'horarios', label: 'Horários', level: 'gestor', ready: false },
+  { id: 'regras', label: 'Regras do bot', level: 'gestor', ready: true },
+  { id: 'bot', label: 'Bot e mensagens', level: 'gestor', ready: true },
+  { id: 'respostas', label: 'Respostas rápidas', level: 'gestor', ready: true },
+  { id: 'horarios', label: 'Horários', level: 'gestor', ready: true },
   { id: 'conexao', label: 'Conexão', level: 'gestor', ready: true },
   { id: 'equipe', label: 'Equipe', level: 'gestor', ready: true },
 ] as const satisfies readonly {
@@ -335,4 +342,251 @@ export function quickReplyTerm(text: string): string | null {
   const term = text.slice(1);
 
   return /\s/.test(term) ? null : term;
+}
+
+/* Bot: gatilho, resposta e ação ------------------------------------------ */
+
+export const WA_TRIGGERS = [
+  'firstMessage',
+  'keyword',
+  'contains',
+  'regex',
+  'menuOption',
+  'outsideHours',
+] as const satisfies readonly WaBotTrigger[];
+
+export const WA_TRIGGER_LABEL: Record<WaBotTrigger, string> = {
+  firstMessage: 'Primeira mensagem da conversa',
+  keyword: 'Palavra exata',
+  contains: 'Contém o trecho',
+  regex: 'Expressão regular',
+  menuOption: 'Opção do menu',
+  outsideHours: 'Fora do horário',
+};
+
+/** Gatilhos que casam por um valor digitado; os outros valem pelo momento. */
+export const WA_VALUE_TRIGGERS: readonly WaBotTrigger[] = [
+  'keyword',
+  'contains',
+  'regex',
+  'menuOption',
+];
+
+export function triggerNeedsValue(kind: WaBotTrigger): boolean {
+  return WA_VALUE_TRIGGERS.includes(kind);
+}
+
+export const WA_REPLY_KINDS = [
+  'none',
+  'text',
+  'media',
+  'buttons',
+  'list',
+] as const satisfies readonly WaBotReplyKind[];
+
+export const WA_REPLY_KIND_LABEL: Record<WaBotReplyKind, string> = {
+  none: 'Sem resposta',
+  text: 'Texto',
+  media: 'Arquivo por link',
+  buttons: 'Botões',
+  list: 'Lista',
+};
+
+export const WA_ACTION_KINDS = [
+  'transferToHuman',
+  'assign',
+  'tag',
+  'priority',
+  'createLead',
+] as const satisfies readonly WaBotActionKind[];
+
+export const WA_ACTION_LABEL: Record<WaBotActionKind, string> = {
+  transferToHuman: 'Transferir para um atendente',
+  assign: 'Atribuir a alguém',
+  tag: 'Aplicar etiqueta',
+  priority: 'Mudar a prioridade',
+  createLead: 'Criar lead',
+};
+
+/** Tetos da Cloud API: três botões ou dez linhas de lista. */
+export const MAX_WA_BUTTONS = 3;
+export const MAX_WA_LIST_ROWS = 10;
+
+export function maxMenuOptions(kind: WaMenuKind): number {
+  return kind === 'list' ? MAX_WA_LIST_ROWS : MAX_WA_BUTTONS;
+}
+
+/** Erro que impede salvar a regra, na mesma ordem do backend. Null é válida. */
+export function waRuleError(rule: {
+  name: string;
+  trigger: { kind: WaBotTrigger; value: string };
+  reply: { kind: WaBotReplyKind; text: string; mediaUrl: string; options: unknown[] };
+}): string | null {
+  if (rule.name.trim() === '') {
+    return 'A regra precisa de um nome.';
+  }
+
+  const value = rule.trigger.value.trim();
+
+  if (triggerNeedsValue(rule.trigger.kind) && value === '') {
+    return 'Este gatilho precisa de um valor.';
+  }
+
+  if (rule.trigger.kind === 'regex') {
+    try {
+      new RegExp(value, 'i');
+    } catch {
+      return 'A expressão regular da regra não é válida.';
+    }
+  }
+
+  if (rule.reply.kind === 'text' && rule.reply.text.trim() === '') {
+    return 'A resposta de texto precisa de conteúdo.';
+  }
+
+  if (rule.reply.kind === 'media' && rule.reply.mediaUrl.trim() === '') {
+    return 'A resposta de mídia precisa de um link.';
+  }
+
+  if (rule.reply.kind === 'buttons' || rule.reply.kind === 'list') {
+    if (rule.reply.options.length === 0) {
+      return 'A resposta interativa precisa de pelo menos uma opção.';
+    }
+
+    const max = maxMenuOptions(rule.reply.kind === 'list' ? 'list' : 'buttons');
+
+    if (rule.reply.options.length > max) {
+      return rule.reply.kind === 'list'
+        ? `A lista interativa aceita no máximo ${String(MAX_WA_LIST_ROWS)} opções.`
+        : `O menu de botões aceita no máximo ${String(MAX_WA_BUTTONS)} opções.`;
+    }
+  }
+
+  return null;
+}
+
+/** Resumo de uma linha da regra, do gatilho para a resposta. */
+export function waRuleSummary(rule: WaBotRule): string {
+  const trigger = triggerNeedsValue(rule.trigger.kind)
+    ? `${WA_TRIGGER_LABEL[rule.trigger.kind]}: "${rule.trigger.value}"`
+    : WA_TRIGGER_LABEL[rule.trigger.kind];
+
+  return `${trigger} → ${WA_REPLY_KIND_LABEL[rule.reply.kind]}`;
+}
+
+/** Variáveis que o backend resolve no envio; a prévia mostra o mesmo texto. */
+export const WA_VARIABLES = ['nome', 'numero'] as const;
+
+export function renderWaPreview(
+  text: string,
+  values: Record<string, string> = { nome: 'Ana', numero: '(31) 98888-0001' },
+): string {
+  return text.replace(/\{([a-z]+)\}/gi, (whole, key: string) => values[key.toLowerCase()] ?? whole);
+}
+
+/* Horários ---------------------------------------------------------------- */
+
+/** Dias da semana na ordem do WhatsApp: 0 é domingo, como no backend. */
+export const WA_WEEKDAYS = [
+  { weekday: 0, label: 'Domingo', short: 'Dom' },
+  { weekday: 1, label: 'Segunda', short: 'Seg' },
+  { weekday: 2, label: 'Terça', short: 'Ter' },
+  { weekday: 3, label: 'Quarta', short: 'Qua' },
+  { weekday: 4, label: 'Quinta', short: 'Qui' },
+  { weekday: 5, label: 'Sexta', short: 'Sex' },
+  { weekday: 6, label: 'Sábado', short: 'Sáb' },
+] as const;
+
+const TIME_OF_DAY = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+
+export function isTimeOfDay(value: string): boolean {
+  return TIME_OF_DAY.test(value.trim());
+}
+
+/** Primeira hora que não serve para salvar, ou null quando tudo confere. */
+export function hoursError(days: WaHoursDay[]): string | null {
+  for (const day of days) {
+    for (const range of day.ranges) {
+      if (!isTimeOfDay(range.start) || !isTimeOfDay(range.end)) {
+        const label = WA_WEEKDAYS.find((one) => one.weekday === day.weekday)?.label ?? '';
+
+        return `Confira as horas de ${label}: use HH:mm entre 00:00 e 23:59.`;
+      }
+    }
+  }
+
+  return null;
+}
+
+/** Só os dias com faixa entram no documento; dia sem faixa é dia fechado. */
+export function usedHoursDays(days: WaHoursDay[]): WaHoursDay[] {
+  return days
+    .filter((day) => day.ranges.length > 0)
+    .map((day) => ({
+      weekday: day.weekday,
+      ranges: day.ranges.map((range) => ({ start: range.start.trim(), end: range.end.trim() })),
+    }));
+}
+
+/* Visão geral ------------------------------------------------------------- */
+
+export const WA_PERIODS = [
+  { days: 7, label: '7 dias' },
+  { days: 30, label: '30 dias' },
+  { days: 90, label: '90 dias' },
+] as const;
+
+export type WaPeriodDays = (typeof WA_PERIODS)[number]['days'];
+
+export function resolveWaPeriod(value: string | undefined): WaPeriodDays {
+  const found = WA_PERIODS.find((period) => String(period.days) === value);
+
+  return found?.days ?? 30;
+}
+
+/** Janela em UTC ISO 8601 que a API espera, do passado para agora. */
+export function waPeriodRange(days: number, now: Date = new Date()): { from: string; to: string } {
+  const from = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
+  return { from: from.toISOString(), to: now.toISOString() };
+}
+
+/** Duração em segundos escrita em pt-BR; null vira travessão. */
+export function durationLabel(seconds: number | null): string {
+  if (seconds === null || !Number.isFinite(seconds) || seconds < 0) {
+    return '—';
+  }
+
+  const total = Math.round(seconds);
+
+  if (total < 60) {
+    return `${String(total)} s`;
+  }
+
+  const minutes = Math.round(total / 60);
+
+  if (minutes < 60) {
+    return `${String(minutes)} min`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+
+  return rest === 0 ? `${String(hours)} h` : `${String(hours)} h ${String(rest)} min`;
+}
+
+/** Altura relativa de cada barra do gráfico de novas por dia. */
+export function dayBars(overview: WaOverview | undefined): {
+  date: string;
+  count: number;
+  ratio: number;
+}[] {
+  const days = overview?.newPerDay ?? [];
+  const top = days.reduce((max, day) => Math.max(max, day.count), 0);
+
+  return days.map((day) => ({
+    date: day.date,
+    count: day.count,
+    ratio: top === 0 ? 0 : day.count / top,
+  }));
 }

@@ -671,3 +671,32 @@ export type SendWaTemplateInput = components['schemas']['SendWaTemplateDto'];
 export type WaQuickReply = components['schemas']['WaQuickReplyItemDto'];
 export type WaConversationTaskInput = components['schemas']['WaConversationTaskDto'];
 export type WaConversationLeadInput = components['schemas']['WaConversationLeadDto'];
+
+/* WhatsApp — bot, respostas rápidas e visão geral (F20) ------------------- */
+
+export type WaBotSettings = Doc<components['schemas']['WaBotSettings']>;
+export type SaveWaBotSettingsInput = components['schemas']['SaveWaBotSettingsDto'];
+export type WaBotMenu = components['schemas']['WaBotMenu'];
+export type WaMenuKind = WaBotMenu['kind'];
+export type WaMenuOption = components['schemas']['WaMenuOption'];
+export type WaBotAi = components['schemas']['WaBotAi'];
+export type WaBotHours = components['schemas']['WaBotHours'];
+export type WaHoursDay = components['schemas']['WaHoursDay'];
+export type WaHoursRange = components['schemas']['WaHoursRange'];
+export type WaHoliday = components['schemas']['WaHoliday'];
+
+export type WaBotRule = Doc<components['schemas']['WaBotRule']>;
+export type WaBotTrigger = components['schemas']['WaBotRuleTrigger']['kind'];
+export type WaBotReplyKind = components['schemas']['WaBotRuleReply']['kind'];
+export type WaBotActionKind = components['schemas']['WaBotRuleAction']['kind'];
+export type CreateWaBotRuleInput = components['schemas']['CreateWaBotRuleDto'];
+export type UpdateWaBotRuleInput = components['schemas']['UpdateWaBotRuleDto'];
+export type WaBotRuleReplyInput = components['schemas']['WaBotRuleReplyDto'];
+export type WaBotRuleActionInput = components['schemas']['WaBotRuleActionDto'];
+
+export type CreateWaQuickReplyInput = components['schemas']['CreateWaQuickReplyDto'];
+export type UpdateWaQuickReplyInput = components['schemas']['UpdateWaQuickReplyDto'];
+
+export type WaOverview = components['schemas']['WaOverviewDto'];
+export type WaAgentStats = components['schemas']['WaAgentStatsDto'];
+export type WaDayCount = components['schemas']['WaDayCountDto'];

@@ -6,12 +6,17 @@ import { cn } from '@/lib/utils';
 import { useSession } from '@/features/auth/session';
 import type { WaConversationFilter } from '@/api/types';
 import { waConnectionQuery, waConversationsQuery } from '../api';
-import { hasWaLevel, visibleWaTabs, type WaTabId } from '../whatsapp-model';
+import { hasWaLevel, visibleWaTabs, type WaPeriodDays, type WaTabId } from '../whatsapp-model';
 import { useWaAccess } from '../hooks/use-wa-access';
 import { useWaRealtime } from '../hooks/use-wa-realtime';
+import { BotRulesTab } from './bot-rules-tab';
+import { BotSettingsTab } from './bot-settings-tab';
 import { ConnectionTab } from './connection-tab';
 import { ContactsTab } from './contacts-tab';
 import { ConversationsTab } from './conversations-tab';
+import { HoursTab } from './hours-tab';
+import { OverviewTab } from './overview-tab';
+import { QuickRepliesTab } from './quick-replies-tab';
 import { TeamTab } from './team-tab';
 import { WaEmpty } from './wa-empty';
 import { WhatsappGlyph } from './whatsapp-glyph';
@@ -23,12 +28,15 @@ export interface WhatsappPageProps {
   filter: WaConversationFilter;
   term: string;
   panelOpen: boolean;
+  /** Janela da Visão geral, em dias. */
+  period: WaPeriodDays;
   onNavigate: (next: {
     aba?: WaTabId;
     conversa?: string;
     filtro?: WaConversationFilter;
     busca?: string;
     painel?: boolean;
+    periodo?: WaPeriodDays;
   }) => void;
 }
 
@@ -43,6 +51,7 @@ export function WhatsappPage({
   filter,
   term,
   panelOpen,
+  period,
   onNavigate,
 }: WhatsappPageProps) {
   const user = useSession();
@@ -166,6 +175,24 @@ export function WhatsappPage({
       {current?.id === 'contatos' ? (
         <ContactsTab wsId={wsId} canCreate={hasWaLevel(level, 'gestor')} />
       ) : null}
+
+      {current?.id === 'visao-geral' ? (
+        <OverviewTab
+          wsId={wsId}
+          period={period}
+          onPeriodChange={(days) => {
+            onNavigate({ aba: 'visao-geral', periodo: days });
+          }}
+        />
+      ) : null}
+
+      {current?.id === 'regras' ? <BotRulesTab wsId={wsId} /> : null}
+
+      {current?.id === 'bot' ? <BotSettingsTab wsId={wsId} /> : null}
+
+      {current?.id === 'respostas' ? <QuickRepliesTab wsId={wsId} /> : null}
+
+      {current?.id === 'horarios' ? <HoursTab wsId={wsId} /> : null}
 
       {current?.id === 'conexao' ? <ConnectionTab wsId={wsId} /> : null}
 

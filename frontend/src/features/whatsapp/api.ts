@@ -4,19 +4,27 @@ import { ApiRequestError, unwrap } from '@/api/errors';
 import { queryKeys } from '@/api/keys';
 import { getAccessToken } from '@/api/token-store';
 import type {
+  CreateWaBotRuleInput,
   CreateWaContactInput,
+  CreateWaQuickReplyInput,
+  SaveWaBotSettingsInput,
   SendWaTemplateInput,
   SendWaTextInput,
   Task,
+  UpdateWaBotRuleInput,
   UpdateWaContactInput,
+  UpdateWaQuickReplyInput,
   WaAccessEntry,
   WaAccessLevel,
+  WaBotRule,
+  WaBotSettings,
   WaConnectionStatus,
   WaContact,
   WaConversationFilter,
   WaConversationItem,
   WaConversationPriority,
   WaMessage,
+  WaOverview,
   WaQuickReply,
   WaTemplate,
 } from '@/api/types';
@@ -529,5 +537,154 @@ export function waQuickRepliesQuery(wsId: string, conversationId: string, term: 
         ) as Page<WaQuickReply>
       ).items,
     staleTime: 30_000,
+  });
+}
+
+/* Bot e regras ----------------------------------------------------------- */
+
+export function waBotSettingsQuery(wsId: string) {
+  return queryOptions({
+    queryKey: queryKeys.waBot(wsId),
+    queryFn: async (): Promise<WaBotSettings> =>
+      unwrap(
+        await api.GET('/api/v1/workspaces/{wsId}/whatsapp/bot', { params: { path: { wsId } } }),
+      ) as WaBotSettings,
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * O PUT é mesclado no backend: o que não vai no corpo fica como está. Cada aba
+ * manda só a sua parte. `pauseMinutes` é obrigatório no contrato (tem default).
+ */
+export async function saveWaBotSettings(
+  wsId: string,
+  body: SaveWaBotSettingsInput,
+): Promise<WaBotSettings> {
+  return unwrap(
+    await api.PUT('/api/v1/workspaces/{wsId}/whatsapp/bot', { params: { path: { wsId } }, body }),
+  ) as WaBotSettings;
+}
+
+export function waBotRulesQuery(wsId: string) {
+  return queryOptions({
+    queryKey: queryKeys.waBotRules(wsId),
+    queryFn: async (): Promise<WaBotRule[]> =>
+      (
+        unwrap(
+          await api.GET('/api/v1/workspaces/{wsId}/whatsapp/bot/rules', {
+            params: { path: { wsId } },
+          }),
+        ) as { items: WaBotRule[] }
+      ).items,
+    staleTime: 30_000,
+  });
+}
+
+export async function createWaBotRule(
+  wsId: string,
+  body: CreateWaBotRuleInput,
+): Promise<WaBotRule> {
+  return unwrap(
+    await api.POST('/api/v1/workspaces/{wsId}/whatsapp/bot/rules', {
+      params: { path: { wsId } },
+      body,
+    }),
+  ) as WaBotRule;
+}
+
+export async function updateWaBotRule(
+  wsId: string,
+  ruleId: string,
+  body: UpdateWaBotRuleInput,
+): Promise<WaBotRule> {
+  return unwrap(
+    await api.PATCH('/api/v1/workspaces/{wsId}/whatsapp/bot/rules/{ruleId}', {
+      params: { path: { wsId, ruleId } },
+      body,
+    }),
+  ) as WaBotRule;
+}
+
+export async function deleteWaBotRule(wsId: string, ruleId: string): Promise<void> {
+  unwrap(
+    await api.DELETE('/api/v1/workspaces/{wsId}/whatsapp/bot/rules/{ruleId}', {
+      params: { path: { wsId, ruleId } },
+    }),
+  );
+}
+
+/* Respostas rápidas: administração --------------------------------------- */
+
+/** Lista sem conversa: o `rendered` volta com as variáveis cruas. */
+export function waQuickRepliesAdminQuery(wsId: string, term = '') {
+  const search = term.trim();
+
+  return infiniteQueryOptions({
+    queryKey: queryKeys.waQuickRepliesAll(wsId, search),
+    queryFn: async ({ pageParam }): Promise<Page<WaQuickReply>> =>
+      unwrap(
+        await api.GET('/api/v1/workspaces/{wsId}/whatsapp/quick-replies', {
+          params: {
+            path: { wsId },
+            query: {
+              limit: 50,
+              ...(search === '' ? {} : { q: search }),
+              ...(pageParam ? { cursor: pageParam } : {}),
+            },
+          },
+        }),
+      ) as Page<WaQuickReply>,
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
+    staleTime: 15_000,
+  });
+}
+
+export async function createWaQuickReply(
+  wsId: string,
+  body: CreateWaQuickReplyInput,
+): Promise<void> {
+  unwrap(
+    await api.POST('/api/v1/workspaces/{wsId}/whatsapp/quick-replies', {
+      params: { path: { wsId } },
+      body,
+    }),
+  );
+}
+
+export async function updateWaQuickReply(
+  wsId: string,
+  quickReplyId: string,
+  body: UpdateWaQuickReplyInput,
+): Promise<void> {
+  unwrap(
+    await api.PATCH('/api/v1/workspaces/{wsId}/whatsapp/quick-replies/{quickReplyId}', {
+      params: { path: { wsId, quickReplyId } },
+      body,
+    }),
+  );
+}
+
+export async function deleteWaQuickReply(wsId: string, quickReplyId: string): Promise<void> {
+  unwrap(
+    await api.DELETE('/api/v1/workspaces/{wsId}/whatsapp/quick-replies/{quickReplyId}', {
+      params: { path: { wsId, quickReplyId } },
+    }),
+  );
+}
+
+/* Visão geral ------------------------------------------------------------ */
+
+export function waOverviewQuery(wsId: string, range: { from: string; to: string }) {
+  return queryOptions({
+    queryKey: queryKeys.waOverview(wsId, range),
+    queryFn: async (): Promise<WaOverview> =>
+      unwrap(
+        await api.GET('/api/v1/workspaces/{wsId}/whatsapp/overview', {
+          params: { path: { wsId }, query: { from: range.from, to: range.to } },
+        }),
+      ) as WaOverview,
+    staleTime: 60_000,
   });
 }

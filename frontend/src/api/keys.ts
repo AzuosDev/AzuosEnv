@@ -167,6 +167,13 @@ export const queryKeys = {
     ['workspaces', workspaceId, 'whatsapp', 'contacts', term] as const,
   waQuickReplies: (workspaceId: string, conversationId: string, term: string) =>
     ['workspaces', workspaceId, 'whatsapp', 'quick-replies', conversationId, term] as const,
+  waQuickRepliesAll: (workspaceId: string, term: string) =>
+    ['workspaces', workspaceId, 'whatsapp', 'quick-replies', 'all', term] as const,
+  waBot: (workspaceId: string) => ['workspaces', workspaceId, 'whatsapp', 'bot'] as const,
+  waBotRules: (workspaceId: string) =>
+    ['workspaces', workspaceId, 'whatsapp', 'bot', 'rules'] as const,
+  waOverview: (workspaceId: string, params: Record<string, unknown>) =>
+    ['workspaces', workspaceId, 'whatsapp', 'overview', params] as const,
   apiKeys: () => ['api-keys'] as const,
   auditLogs: (workspaceId: string, params: Record<string, unknown>) =>
     ['workspaces', workspaceId, 'audit-logs', params] as const,

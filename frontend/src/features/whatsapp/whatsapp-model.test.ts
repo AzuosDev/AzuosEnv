@@ -1,18 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import type { WaContact, WaConversationItem, WaMessage } from '@/api/types';
+import type { WaBotRule, WaContact, WaConversationItem, WaMessage, WaOverview } from '@/api/types';
 import {
   botPauseUntil,
   checkOf,
   contactLabel,
+  dayBars,
+  durationLabel,
   formatWaNumber,
   groupWaMessagesByDay,
+  hoursError,
+  isTimeOfDay,
+  maxMenuOptions,
   mergeWaMessagePages,
   previewOf,
   quickReplyTerm,
   reactionsOf,
+  renderWaPreview,
+  resolveWaPeriod,
   resolveWaTab,
+  usedHoursDays,
   visibleMessages,
   visibleWaTabs,
+  waPeriodRange,
+  waRuleError,
+  waRuleSummary,
   windowOpen,
 } from './whatsapp-model';
 
@@ -214,5 +225,182 @@ describe('atalho das respostas rápidas', () => {
     expect(quickReplyTerm('/horario')).toBe('horario');
     expect(quickReplyTerm('/horario de ')).toBeNull();
     expect(quickReplyTerm('bom dia /horario')).toBeNull();
+  });
+});
+
+describe('regras do bot', () => {
+  const base = {
+    name: 'Preço',
+    trigger: { kind: 'keyword' as const, value: 'preco' },
+    reply: { kind: 'text' as const, text: 'Oi', mediaUrl: '', options: [] as unknown[] },
+  };
+
+  it('aceita a regra completa', () => {
+    expect(waRuleError(base)).toBeNull();
+  });
+
+  it('cobra nome, valor do gatilho e conteúdo da resposta', () => {
+    expect(waRuleError({ ...base, name: '  ' })).toBe('A regra precisa de um nome.');
+    expect(waRuleError({ ...base, trigger: { kind: 'keyword', value: ' ' } })).toBe(
+      'Este gatilho precisa de um valor.',
+    );
+    expect(waRuleError({ ...base, reply: { ...base.reply, text: ' ' } })).toBe(
+      'A resposta de texto precisa de conteúdo.',
+    );
+  });
+
+  it('não cobra valor de gatilho de momento', () => {
+    expect(waRuleError({ ...base, trigger: { kind: 'firstMessage', value: '' } })).toBeNull();
+    expect(waRuleError({ ...base, trigger: { kind: 'outsideHours', value: '' } })).toBeNull();
+  });
+
+  it('recusa expressão regular inválida', () => {
+    expect(waRuleError({ ...base, trigger: { kind: 'regex', value: '(' } })).toBe(
+      'A expressão regular da regra não é válida.',
+    );
+  });
+
+  it('respeita os tetos da Cloud API nas opções', () => {
+    const option = { id: 'a', title: 'A' };
+
+    expect(waRuleError({ ...base, reply: { ...base.reply, kind: 'buttons', options: [] } })).toBe(
+      'A resposta interativa precisa de pelo menos uma opção.',
+    );
+    expect(
+      waRuleError({
+        ...base,
+        reply: { ...base.reply, kind: 'buttons', options: [option, option, option, option] },
+      }),
+    ).toBe('O menu de botões aceita no máximo 3 opções.');
+    expect(maxMenuOptions('buttons')).toBe(3);
+    expect(maxMenuOptions('list')).toBe(10);
+  });
+
+  it('cobra o link da resposta de mídia', () => {
+    expect(waRuleError({ ...base, reply: { ...base.reply, kind: 'media' } })).toBe(
+      'A resposta de mídia precisa de um link.',
+    );
+  });
+
+  it('resume a regra do gatilho para a resposta', () => {
+    expect(
+      waRuleSummary({
+        ...({} as WaBotRule),
+        trigger: { kind: 'keyword', value: 'preco' },
+        reply: {
+          kind: 'text',
+          text: 'Oi',
+          mediaUrl: '',
+          mediaMime: '',
+          filename: '',
+          header: '',
+          footer: '',
+          buttonLabel: '',
+          options: [],
+        },
+      }),
+    ).toBe('Palavra exata: "preco" → Texto');
+  });
+});
+
+describe('variáveis da prévia', () => {
+  it('troca só as variáveis conhecidas', () => {
+    expect(renderWaPreview('Oi, {nome}! Seu número é {numero}.')).toBe(
+      'Oi, Ana! Seu número é (31) 98888-0001.',
+    );
+    expect(renderWaPreview('Oi, {outra}')).toBe('Oi, {outra}');
+  });
+});
+
+describe('horários', () => {
+  it('aceita só HH:mm válido', () => {
+    expect(isTimeOfDay('09:00')).toBe(true);
+    expect(isTimeOfDay('23:59')).toBe(true);
+    expect(isTimeOfDay('24:00')).toBe(false);
+    expect(isTimeOfDay('9:00')).toBe(false);
+  });
+
+  it('aponta o dia da hora errada', () => {
+    expect(hoursError([{ weekday: 1, ranges: [{ start: '09:00', end: '18:00' }] }])).toBeNull();
+    expect(hoursError([{ weekday: 2, ranges: [{ start: '09:00', end: '99:00' }] }])).toBe(
+      'Confira as horas de Terça: use HH:mm entre 00:00 e 23:59.',
+    );
+  });
+
+  it('manda só os dias com faixa', () => {
+    const days = [
+      { weekday: 0, ranges: [] },
+      { weekday: 1, ranges: [{ start: ' 09:00 ', end: '18:00' }] },
+    ];
+
+    expect(usedHoursDays(days)).toEqual([
+      { weekday: 1, ranges: [{ start: '09:00', end: '18:00' }] },
+    ]);
+  });
+});
+
+describe('visão geral', () => {
+  it('resolve o período da query string', () => {
+    expect(resolveWaPeriod('7')).toBe(7);
+    expect(resolveWaPeriod('90')).toBe(90);
+    expect(resolveWaPeriod(undefined)).toBe(30);
+    expect(resolveWaPeriod('365')).toBe(30);
+  });
+
+  it('monta a janela do período em UTC', () => {
+    const now = new Date('2026-11-19T12:00:00.000Z');
+
+    expect(waPeriodRange(7, now)).toEqual({
+      from: '2026-11-12T12:00:00.000Z',
+      to: '2026-11-19T12:00:00.000Z',
+    });
+  });
+
+  it('escreve a duração em pt-BR', () => {
+    expect(durationLabel(null)).toBe('—');
+    expect(durationLabel(42)).toBe('42 s');
+    expect(durationLabel(600)).toBe('10 min');
+    expect(durationLabel(3600)).toBe('1 h');
+    expect(durationLabel(5400)).toBe('1 h 30 min');
+  });
+
+  it('mede as barras pelo maior dia', () => {
+    const bars = dayBars({
+      newPerDay: [
+        { date: '2026-11-17', count: 2 },
+        { date: '2026-11-18', count: 4 },
+        { date: '2026-11-19', count: 0 },
+      ],
+    } as WaOverview);
+
+    expect(bars.map((bar) => bar.ratio)).toEqual([0.5, 1, 0]);
+  });
+});
+
+describe('abas da F20', () => {
+  it('libera as cinco abas novas para o gestor', () => {
+    const ids = visibleWaTabs('gestor').map((tab) => tab.id);
+
+    expect(ids).toEqual([
+      'visao-geral',
+      'conversas',
+      'contatos',
+      'regras',
+      'bot',
+      'respostas',
+      'horarios',
+      'conexao',
+      'equipe',
+    ]);
+    expect(visibleWaTabs('gestor').every((tab) => tab.ready)).toBe(true);
+  });
+
+  it('não entrega as abas do bot ao supervisor nem ao atendente', () => {
+    expect(visibleWaTabs('supervisor').map((tab) => tab.id)).toEqual([
+      'visao-geral',
+      'conversas',
+      'contatos',
+    ]);
+    expect(visibleWaTabs('atendente').map((tab) => tab.id)).toEqual(['conversas', 'contatos']);
   });
 });
