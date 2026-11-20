@@ -11,6 +11,21 @@
         ],
         "createdAt": "2026-11-19T12:45:27.276Z",
         "reason": "sublinhado da aba ativa e o padrao do design system do projeto: src/components/ui/tabs.tsx usa rounded-t-lg + border-b-2 + border-accent no TabsTrigger"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "docs/prototipo/Login.dc.html"
+        ],
+        "createdAt": "2026-11-20T19:17:49.449Z",
+        "reason": "fixture: prototipo .dc.html enviado pelo usuario, salvo literalmente como fonte da verdade da F21; nao e codigo servido"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-11-20T19:17:49.497Z",
+        "reason": "CLAUDE.md e DESIGN.md fixam Inter em --font-display como fonte provisoria da Azuos; a troca acontece nessa variavel quando a definitiva chegar"
       }
     ]
   }
