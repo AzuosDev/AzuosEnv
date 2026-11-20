@@ -8,8 +8,11 @@ const options: { value: Theme; label: string; icon: typeof Sun }[] = [
   { value: 'system', label: 'Sistema', icon: Monitor },
 ];
 
-/** Troca entre escuro, claro e o tema do sistema. */
-export function ThemeToggle({ className }: { className?: string }) {
+/**
+ * Troca entre escuro, claro e o tema do sistema. `touch` sobe os botões para
+ * 44 px no celular (alvo de toque das telas de acesso, como no protótipo).
+ */
+export function ThemeToggle({ className, touch }: { className?: string; touch?: boolean }) {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -30,6 +33,7 @@ export function ThemeToggle({ className }: { className?: string }) {
           }}
           className={cn(
             'flex h-10 w-10 items-center justify-center rounded-lg text-muted hover:bg-surface-2 hover:text-ink',
+            touch && 'h-11 w-11 md:h-10 md:w-10',
             theme === value && 'bg-surface-2 text-ink',
           )}
         >

@@ -28,6 +28,23 @@ export async function acceptInvite(body: AcceptInviteInput): Promise<AcceptedInv
   return unwrap(await api.POST('/api/v1/invites/accept', { body }));
 }
 
+/** Pede o link de redefinição. A resposta é a mesma exista ou não a conta. */
+export async function forgotPassword(email: string): Promise<void> {
+  unwrap(await api.POST('/api/v1/auth/forgot-password', { body: { email } }));
+}
+
+/** Grava a senha nova pelo token do e-mail; o backend encerra as sessões. */
+export async function resetPassword(body: { token: string; password: string }): Promise<void> {
+  unwrap(await api.POST('/api/v1/auth/reset-password', { body }));
+}
+
+/** Diz se o link de redefinição ainda pode ser usado. */
+export async function isResetTokenValid(token: string): Promise<boolean> {
+  return unwrap(
+    await api.GET('/api/v1/auth/reset-password/{token}/valid', { params: { path: { token } } }),
+  ).valid;
+}
+
 /** Encerra a sessão atual e limpa o token da memória. */
 export async function logout(): Promise<void> {
   await api.POST('/api/v1/auth/logout');

@@ -79,6 +79,11 @@ export const envValidationSchema = Joi.object({
   GOOGLE_MOCK: Joi.boolean()
     .default(false)
     .when('NODE_ENV', { is: 'production', then: Joi.valid(false) }),
+  // Caixa de saída em arquivo para o e2e do front ler o link do e-mail.
+  MAIL_CAPTURE: Joi.boolean()
+    .default(false)
+    .when('NODE_ENV', { is: 'production', then: Joi.valid(false) }),
+  MAIL_CAPTURE_FILE: Joi.string().default('./storage/e2e-mailbox.jsonl'),
   // Cloud API do WhatsApp falsa para o desenvolvimento e para o e2e; ignorada em produção.
   WHATSAPP_MOCK: Joi.boolean()
     .default(false)

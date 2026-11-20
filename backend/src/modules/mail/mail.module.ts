@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BrevoMailService } from './brevo-mail.service';
+import { CaptureMailService } from './capture-mail.service';
 import { LogMailService } from './log-mail.service';
 import { MailService } from './mail.service';
 import { SmtpMailService } from './smtp-mail.service';
@@ -16,7 +17,10 @@ import { SmtpMailService } from './smtp-mail.service';
  */
 export function createMailService(config: ConfigService): MailService {
   if (config.get<string>('NODE_ENV') === 'test') {
-    return new LogMailService();
+    // A suíte do front precisa ler o link que o e-mail carrega.
+    return config.get<boolean>('MAIL_CAPTURE')
+      ? new CaptureMailService(config)
+      : new LogMailService();
   }
 
   if (config.get<string>('BREVO_API_KEY')) {

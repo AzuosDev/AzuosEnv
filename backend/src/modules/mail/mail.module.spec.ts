@@ -1,4 +1,7 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { BrevoMailService } from './brevo-mail.service';
+import { CaptureMailService } from './capture-mail.service';
 import { LogMailService } from './log-mail.service';
 import { createMailService } from './mail.module';
 import { SmtpMailService } from './smtp-mail.service';
@@ -32,6 +35,18 @@ describe('createMailService', () => {
 
   it('keeps everything in the log without any transport', () => {
     expect(createMailService(configOf({}))).toBeInstanceOf(LogMailService);
+  });
+
+  it('captures to a file when the front e2e asks for it', () => {
+    const service = createMailService(
+      configOf({
+        NODE_ENV: 'test',
+        MAIL_CAPTURE: 'true',
+        MAIL_CAPTURE_FILE: join(tmpdir(), 'azuos-env-mailbox.jsonl'),
+      }),
+    );
+
+    expect(service).toBeInstanceOf(CaptureMailService);
   });
 
   it('never leaves the log under NODE_ENV=test, even fully configured', () => {

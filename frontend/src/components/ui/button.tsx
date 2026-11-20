@@ -13,6 +13,8 @@ const buttonVariants = cva(
         outline: 'border border-scene-line bg-surface text-ink hover:bg-surface-2',
         danger: 'border-0 bg-danger text-white hover:brightness-110',
         nav: 'border-0 bg-transparent text-muted hover:bg-surface-2 hover:text-ink',
+        /* Vidro: só nas telas de acesso (ver .gbtn em globals.css). */
+        glass: 'gbtn',
       },
       size: {
         sm: 'h-11 px-3 text-[13px] md:h-9',

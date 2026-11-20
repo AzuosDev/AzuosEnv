@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import {
   expect,
   request as playwrightRequest,
@@ -173,10 +175,66 @@ export function uniqueEmail(prefix: string): string {
 }
 
 /**
+ * Caixa de saída da API de e2e (MAIL_CAPTURE do start-e2e): uma mensagem por
+ * linha, em JSON. É daqui que a suíte tira o link que o e-mail carrega.
+ */
+export const MAILBOX_FILE = fileURLToPath(
+  new URL('../../backend/storage/e2e-mailbox.jsonl', import.meta.url),
+);
+
+export interface CapturedMail {
+  to: string;
+  subject: string;
+  text: string;
+  html?: string;
+}
+
+function readMailbox(): CapturedMail[] {
+  try {
+    return readFileSync(MAILBOX_FILE, 'utf8')
+      .split(/\r?\n/)
+      .filter((line) => line.trim() !== '')
+      .map((line) => JSON.parse(line) as CapturedMail);
+  } catch {
+    return [];
+  }
+}
+
+/** Espera o e-mail mais recente enviado para o endereço e devolve a mensagem. */
+export async function waitForMail(to: string): Promise<CapturedMail> {
+  const address = to.toLowerCase();
+  const last = (): CapturedMail | undefined =>
+    readMailbox()
+      .filter((mail) => mail.to.toLowerCase() === address)
+      .at(-1);
+
+  await expect
+    .poll(() => last() !== undefined, {
+      message: `nenhum e-mail para ${to} em ${MAILBOX_FILE} (a API de e2e precisa de MAIL_CAPTURE=true)`,
+      timeout: 15_000,
+    })
+    .toBe(true);
+
+  return last() as CapturedMail;
+}
+
+/** Caminho do link de redefinição que o e-mail traz. */
+export function resetPathFrom(mail: CapturedMail): string {
+  const found = /\/redefinir-senha\/[A-Za-z0-9_-]+/.exec(`${mail.text} ${mail.html ?? ''}`);
+
+  expect(found, `link de redefinição no e-mail: ${mail.text}`).toBeTruthy();
+
+  return found?.[0] ?? '';
+}
+
+/**
  * Falha se a página rolar para os lados em qualquer uma das larguras.
  */
-export async function expectNoHorizontalScroll(page: Page): Promise<void> {
-  for (const width of WIDTHS) {
+export async function expectNoHorizontalScroll(
+  page: Page,
+  widths: readonly number[] = WIDTHS,
+): Promise<void> {
+  for (const width of widths) {
     await page.setViewportSize({ width, height: 900 });
     await page.waitForTimeout(150);
 
