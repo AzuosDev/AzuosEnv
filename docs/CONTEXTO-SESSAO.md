@@ -1,6 +1,7 @@
 # CONTEXTO-SESSAO — Azuos Env
-Backend CONCLUÍDO (Etapas 1 a 20). Front concluído (F0 a F20). Próxima etapa: a definir (a Central do WhatsApp fechou todas as abas).
-Etapa concluída: F20 (Central do WhatsApp — Visão geral, Regras do bot, Bot e mensagens, Respostas rápidas e Horários): typecheck, lint, 459 unitários e 181 e2e verdes no front, sem tocar o backend. Antes dela F19 (Central do WhatsApp — conversas). Backend tocado na F19 (Cloud API falsa, URL pública da API, lista de conversas enriquecida e rota da mídia): build, lint, 208 unitários e 360 e2e verdes; docs/openapi.json com 350 endpoints (339 com schema de resposta).
+Backend CONCLUÍDO (Etapas 1 a 21). Front concluído (F0 a F20). Próxima etapa: front da recuperação de senha (telas /esqueci-senha e /redefinir-senha/:token).
+Etapa 21 (backend): recuperação de senha por e-mail (forgot/reset/validação do token, coleção password_resets). Validação: build, lint, 210 unitários e 368 e2e verdes; docs/openapi.json com 353 endpoints (342 com schema de resposta).
+Etapa anterior: F20 (Central do WhatsApp — Visão geral, Regras do bot, Bot e mensagens, Respostas rápidas e Horários): typecheck, lint, 459 unitários e 181 e2e verdes no front, sem tocar o backend. Antes dela F19 (Central do WhatsApp — conversas). Backend tocado na F19 (Cloud API falsa, URL pública da API, lista de conversas enriquecida e rota da mídia): build, lint, 208 unitários e 360 e2e verdes; docs/openapi.json com 350 endpoints (339 com schema de resposta).
 Fase 1 concluída: auth, workspaces, hierarquia, tarefas, colaboração, campos, views, inbox, tempo real e busca.
 Fase 2 concluída: tempo, timesheets, workload, dashboards (Etapa 10), automações e templates (Etapa 11).
 Fase 3 concluída: Docs com páginas aninhadas (Etapa 12), Chat com canais, DMs e threads (Etapa 13), planner/calendário, metas, formulários públicos e sprints (Etapa 14).
@@ -27,6 +28,8 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - Papel owner só muda por transfer-ownership (o antigo owner vira admin). Convite para e-mail com conta já existente cria member status=invited; sem conta, só o invite até ser aceito.
 - Convite: token opaco (32 bytes base64url) guardado só como sha256; validade 7 dias; POST de criação devolve token/acceptUrl para o admin copiar o link.
 - MailService (abstract em src/modules/mail) com LogMailService (só log). SMTP na Etapa 8.
+- Recuperação de senha: token opaco (32 bytes base64url) só como sha256 em password_resets, validade 30 min (índice TTL em expiresAt), uso único (usedAt). Pedido novo invalida os anteriores. A resposta do forgot-password é sempre a mesma (nunca revela se o e-mail tem conta), e o limite de 3 pedidos por conta em 15 min é silencioso (um 429 por e-mail revelaria a conta); falha no envio do e-mail é só logada. O reset grava argon2, revoga todas as sessões/refresh tokens e adiciona `password` em authProviders (conta criada só com Google passa a ter senha).
+- `npm run test:e2e` roda com --max-old-space-size=4096: a suíte inteira em --runInBand estourava o heap padrão de 2 GB.
 - Filtros Mongoose são montados como literais (ternário) porque Mongoose 9 não exporta FilterQuery.
 - Equipes usam exclusão definitiva (schema sem deletedAt); workspace usa soft delete.
 - Ordem manual com fractional indexing (pacote `fractional-indexing`, ESM-only; require(esm) do Node 24). Helpers em src/common/utils/position.ts e src/modules/hierarchy/ordering.ts. Reordenar envia { previousId?, nextId? } e só reescreve a posição do item movido; lado ausente usa o vizinho do irmão informado. Irmão de outro pai → 400 INVALID_POSITION.
@@ -318,6 +321,9 @@ Recorrência de tarefa com rrule. Tempo real: @nestjs/websockets + @nestjs/platf
 - GET /api/v1/auth/me → usuário autenticado (inclui authProviders: ['password'] | ['google'] | ambos)
 - GET /api/v1/auth/google?next=&invite= (público) → 302 para o consentimento do Google (escopos openid email profile); grava o cookie httpOnly `google_oauth` (JWT de 10 min com nonce + code_verifier do PKCE, path /api/v1/auth/google). `next` só aceita caminho relativo; `next` e `invite` viajam no state assinado
 - GET /api/v1/auth/google/callback?code&state (público, 5/min/IP) → 302 para FRONTEND_URL/auth/callback?next=... com o cookie refresh_token (mesma rotação do login normal; nenhum token na URL). Busca por googleId, senão pelo e-mail (vincula), senão cria a conta com nome e foto do Google; com `invite` aceita o convite. state inválido, cookie ausente, e-mail não verificado ou qualquer falha → 302 para FRONTEND_URL/login?erro=google
+- POST /api/v1/auth/forgot-password (público, 3/15min/IP e 3/15min por conta) { email } → 200 { message } sempre igual, exista ou não a conta; se existir, invalida tokens anteriores e envia FRONTEND_URL/redefinir-senha/{token} pelo MailService
+- POST /api/v1/auth/reset-password (público, 5/15min/IP) { token, password } → { success: true }; grava a senha (regras do cadastro), queima o token, revoga todas as sessões e garante `password` em authProviders; token inválido, usado ou expirado → 400 INVALID_RESET_TOKEN
+- GET /api/v1/auth/reset-password/:token/valid (público) → { valid } para o front decidir se mostra o formulário
 - GET /api/v1/auth/sessions → [{ id, userAgent, ip, current, createdAt, expiresAt }]
 - DELETE /api/v1/auth/sessions/:id → { success: true }; sessão de outro usuário → 404 SESSION_NOT_FOUND
 - PATCH /api/v1/users/me (name, avatarUrl, timezone, locale, theme) → usuário atualizado
