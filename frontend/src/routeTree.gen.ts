@@ -16,10 +16,12 @@ import { Route as AppOnboardingRouteImport } from './routes/_app.onboarding'
 import { Route as AppWorkspacesRouteImport } from './routes/_app.workspaces'
 import { Route as Char91_devChar93UiRouteImport } from './routes/[_dev].ui'
 import { Route as PublicCadastroRouteImport } from './routes/_public.cadastro'
+import { Route as PublicEsqueciSenhaRouteImport } from './routes/_public.esqueci-senha'
 import { Route as PublicLoginRouteImport } from './routes/_public.login'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
 import { Route as FTokenRouteImport } from './routes/f.$token'
+import { Route as RedefinirSenhaTokenRouteImport } from './routes/redefinir-senha.$token'
 import { Route as AppWWsIdRouteImport } from './routes/_app.w.$wsId'
 import { Route as PDocTokenRouteImport } from './routes/p.doc.$token'
 import { Route as AppWWsIdIndexRouteImport } from './routes/_app.w.$wsId.index'
@@ -96,6 +98,11 @@ const PublicCadastroRoute = PublicCadastroRouteImport.update({
   path: '/cadastro',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicEsqueciSenhaRoute = PublicEsqueciSenhaRouteImport.update({
+  id: '/esqueci-senha',
+  path: '/esqueci-senha',
+  getParentRoute: () => PublicRoute,
+} as any)
 const PublicLoginRoute = PublicLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -114,6 +121,11 @@ const ConviteTokenRoute = ConviteTokenRouteImport.update({
 const FTokenRoute = FTokenRouteImport.update({
   id: '/f/$token',
   path: '/f/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedefinirSenhaTokenRoute = RedefinirSenhaTokenRouteImport.update({
+  id: '/redefinir-senha/$token',
+  path: '/redefinir-senha/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppWWsIdRoute = AppWWsIdRouteImport.update({
@@ -351,10 +363,12 @@ export interface FileRoutesByFullPath {
   '/workspaces': typeof AppWorkspacesRoute
   '/_dev/ui': typeof Char91_devChar93UiRoute
   '/cadastro': typeof PublicCadastroRoute
+  '/esqueci-senha': typeof PublicEsqueciSenhaRoute
   '/login': typeof PublicLoginRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/f/$token': typeof FTokenRoute
+  '/redefinir-senha/$token': typeof RedefinirSenhaTokenRoute
   '/w/$wsId': typeof AppWWsIdRouteWithChildren
   '/p/doc/$token': typeof PDocTokenRoute
   '/w/$wsId/arquivados': typeof AppWWsIdArquivadosRoute
@@ -404,10 +418,12 @@ export interface FileRoutesByTo {
   '/workspaces': typeof AppWorkspacesRoute
   '/_dev/ui': typeof Char91_devChar93UiRoute
   '/cadastro': typeof PublicCadastroRoute
+  '/esqueci-senha': typeof PublicEsqueciSenhaRoute
   '/login': typeof PublicLoginRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/f/$token': typeof FTokenRoute
+  '/redefinir-senha/$token': typeof RedefinirSenhaTokenRoute
   '/p/doc/$token': typeof PDocTokenRoute
   '/w/$wsId/arquivados': typeof AppWWsIdArquivadosRoute
   '/w/$wsId/automacoes': typeof AppWWsIdAutomacoesRoute
@@ -458,10 +474,12 @@ export interface FileRoutesById {
   '/_app/workspaces': typeof AppWorkspacesRoute
   '/_dev/ui': typeof Char91_devChar93UiRoute
   '/_public/cadastro': typeof PublicCadastroRoute
+  '/_public/esqueci-senha': typeof PublicEsqueciSenhaRoute
   '/_public/login': typeof PublicLoginRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/f/$token': typeof FTokenRoute
+  '/redefinir-senha/$token': typeof RedefinirSenhaTokenRoute
   '/_app/w/$wsId': typeof AppWWsIdRouteWithChildren
   '/p/doc/$token': typeof PDocTokenRoute
   '/_app/w/$wsId/arquivados': typeof AppWWsIdArquivadosRoute
@@ -513,10 +531,12 @@ export interface FileRouteTypes {
     | '/workspaces'
     | '/_dev/ui'
     | '/cadastro'
+    | '/esqueci-senha'
     | '/login'
     | '/auth/callback'
     | '/convite/$token'
     | '/f/$token'
+    | '/redefinir-senha/$token'
     | '/w/$wsId'
     | '/p/doc/$token'
     | '/w/$wsId/arquivados'
@@ -566,10 +586,12 @@ export interface FileRouteTypes {
     | '/workspaces'
     | '/_dev/ui'
     | '/cadastro'
+    | '/esqueci-senha'
     | '/login'
     | '/auth/callback'
     | '/convite/$token'
     | '/f/$token'
+    | '/redefinir-senha/$token'
     | '/p/doc/$token'
     | '/w/$wsId/arquivados'
     | '/w/$wsId/automacoes'
@@ -619,10 +641,12 @@ export interface FileRouteTypes {
     | '/_app/workspaces'
     | '/_dev/ui'
     | '/_public/cadastro'
+    | '/_public/esqueci-senha'
     | '/_public/login'
     | '/auth/callback'
     | '/convite/$token'
     | '/f/$token'
+    | '/redefinir-senha/$token'
     | '/_app/w/$wsId'
     | '/p/doc/$token'
     | '/_app/w/$wsId/arquivados'
@@ -675,6 +699,7 @@ export interface RootRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
   ConviteTokenRoute: typeof ConviteTokenRoute
   FTokenRoute: typeof FTokenRoute
+  RedefinirSenhaTokenRoute: typeof RedefinirSenhaTokenRoute
   PDocTokenRoute: typeof PDocTokenRoute
 }
 
@@ -729,6 +754,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicCadastroRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/esqueci-senha': {
+      id: '/_public/esqueci-senha'
+      path: '/esqueci-senha'
+      fullPath: '/esqueci-senha'
+      preLoaderRoute: typeof PublicEsqueciSenhaRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_public/login': {
       id: '/_public/login'
       path: '/login'
@@ -755,6 +787,13 @@ declare module '@tanstack/react-router' {
       path: '/f/$token'
       fullPath: '/f/$token'
       preLoaderRoute: typeof FTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redefinir-senha/$token': {
+      id: '/redefinir-senha/$token'
+      path: '/redefinir-senha/$token'
+      fullPath: '/redefinir-senha/$token'
+      preLoaderRoute: typeof RedefinirSenhaTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/w/$wsId': {
@@ -1173,11 +1212,13 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface PublicRouteChildren {
   PublicCadastroRoute: typeof PublicCadastroRoute
+  PublicEsqueciSenhaRoute: typeof PublicEsqueciSenhaRoute
   PublicLoginRoute: typeof PublicLoginRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
   PublicCadastroRoute: PublicCadastroRoute,
+  PublicEsqueciSenhaRoute: PublicEsqueciSenhaRoute,
   PublicLoginRoute: PublicLoginRoute,
 }
 
@@ -1192,6 +1233,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
   ConviteTokenRoute: ConviteTokenRoute,
   FTokenRoute: FTokenRoute,
+  RedefinirSenhaTokenRoute: RedefinirSenhaTokenRoute,
   PDocTokenRoute: PDocTokenRoute,
 }
 export const routeTree = rootRouteImport

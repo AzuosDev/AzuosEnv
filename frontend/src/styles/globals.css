@@ -25,6 +25,10 @@
   --warning: 245 158 11;
   --danger: 239 68 68;
   --info: 96 165 250;
+  /* Vidro das telas de acesso: cor da placa, opacidade dela e das manchas. */
+  --glass: 20 16 31;
+  --glass-a: 0.42;
+  --glow-a: 0.55;
 }
 
 :root[data-theme='light'] {
@@ -48,6 +52,9 @@
   --warning: 217 119 6;
   --danger: 220 38 38;
   --info: 37 99 235;
+  --glass: 255 255 255;
+  --glass-a: 0.56;
+  --glow-a: 0.38;
 }
 
 :root {
@@ -185,14 +192,12 @@
 @keyframes auth-rise {
   0% {
     opacity: 0;
-    transform: translateY(10px);
-    filter: blur(6px);
+    transform: translateY(14px);
   }
 
   100% {
     opacity: 1;
     transform: none;
-    filter: none;
   }
 }
 
@@ -466,5 +471,344 @@
   .wa-tail-in::after {
     left: -7px;
     background: var(--wa-in);
+  }
+}
+
+/* ─── Telas de acesso (F21): vidro sobre a cena ──────────────────────────────
+   Só /login, /cadastro, /convite, /esqueci-senha e /redefinir-senha usam estas
+   classes. Exceção consciente à Regra da Placa Plana: o vidro é o desenho da
+   tela, não decoração de placa de trabalho. Desempenho: as manchas de luz são
+   gradiente estático (nada de filter: blur) e as animações mexem só em
+   transform e opacity — sombra e pulso vivem em pseudo-elemento. */
+@layer components {
+  .auth-scene {
+    position: relative;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Placa de vidro. O branco do brilho interno é luz, não cor de marca: fica
+     neste arquivo e não vaza para os componentes. */
+  .glass {
+    background: rgb(var(--glass) / var(--glass-a));
+    border: 1px solid rgb(var(--ink) / 0.14);
+    box-shadow:
+      0 30px 70px -40px rgb(0 0 0 / 0.65),
+      inset 0 1px 0 rgb(255 255 255 / 0.08);
+  }
+
+  /* backdrop-filter só aqui: o cartão e o monitor. */
+  .glass-blur {
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+  }
+
+  .glass-sheen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(115deg, rgb(255 255 255 / 0.14) 0%, transparent 38%);
+  }
+
+  /* Mancha de luz: radial-gradient estático, sem desfoque de GPU. */
+  .auth-glow {
+    position: absolute;
+    border-radius: 50%;
+    opacity: var(--glow-a);
+    pointer-events: none;
+  }
+
+  .auth-glow-accent {
+    background: radial-gradient(closest-side, rgb(var(--accent) / 0.85), transparent 100%);
+  }
+
+  .auth-glow-signal {
+    background: radial-gradient(closest-side, rgb(var(--signal) / 0.8), transparent 100%);
+  }
+
+  .auth-glow-scene {
+    background: radial-gradient(closest-side, rgb(var(--scene-line) / 0.9), transparent 100%);
+  }
+
+  .auth-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgb(var(--ink) / 0.12);
+    pointer-events: none;
+  }
+
+  /* Campo translúcido do cartão. */
+  .gfield {
+    height: 50px;
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgb(var(--ink) / 0.14);
+    background: rgb(var(--ink) / 0.05);
+    padding: 0 14px;
+    color: rgb(var(--ink));
+    outline: none;
+    transition:
+      border-color 0.15s,
+      background 0.15s;
+  }
+
+  .gfield::placeholder {
+    color: rgb(var(--muted));
+  }
+
+  .gfield:focus {
+    border-color: rgb(var(--accent));
+    background: rgb(var(--ink) / 0.08);
+    box-shadow: 0 0 0 3px rgb(var(--accent) / 0.2);
+  }
+
+  .gfield[aria-invalid='true'] {
+    border-color: rgb(var(--danger));
+  }
+
+  /* Botão secundário de vidro (tema, Google, voltar). */
+  .gbtn {
+    background: rgb(var(--ink) / 0.06);
+    border: 1px solid rgb(var(--ink) / 0.14);
+    color: rgb(var(--ink));
+  }
+
+  .gbtn:hover {
+    background: rgb(var(--ink) / 0.1);
+  }
+
+  /* Entrada das peças da ilustração. */
+  .auth-piece {
+    position: absolute;
+    animation: auth-rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .auth-delay-1 {
+    animation-delay: 0.12s;
+  }
+
+  .auth-delay-2 {
+    animation-delay: 0.2s;
+  }
+
+  .auth-delay-3 {
+    animation-delay: 0.32s;
+  }
+
+  /* Cartão arrastado de "A fazer" para "Concluído" a cada 9 s. */
+  .auth-mover {
+    position: absolute;
+    animation: auth-move 9s cubic-bezier(0.6, 0.05, 0.3, 1) 1.4s infinite both;
+  }
+
+  .auth-mover::before,
+  .auth-mover::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  /* Sombra de "na mão" e tinta de concluído: opacity, nunca box-shadow animado. */
+  .auth-mover::before {
+    box-shadow: 0 18px 32px -14px rgb(0 0 0 / 0.55);
+    animation: auth-lift 9s cubic-bezier(0.6, 0.05, 0.3, 1) 1.4s infinite both;
+  }
+
+  .auth-mover::after {
+    background: rgb(var(--success) / 0.16);
+    border: 1px solid rgb(var(--success) / 0.45);
+    animation: auth-done 9s cubic-bezier(0.6, 0.05, 0.3, 1) 1.4s infinite both;
+  }
+
+  .auth-cursor {
+    animation: auth-cursor 9s ease 1.4s infinite both;
+  }
+
+  /* Ponto do selo "Ao vivo": o anel pulsa em pseudo-elemento. */
+  .auth-live {
+    position: relative;
+  }
+
+  .auth-live::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 2px solid rgb(var(--success));
+    animation: auth-pulse 2s ease-out infinite;
+  }
+
+  /* Barra de progresso: scaleX, nunca width. */
+  .auth-fill {
+    transform-origin: left center;
+    animation: auth-fill 6s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes auth-move {
+  0%,
+  16% {
+    transform: none;
+    opacity: 1;
+  }
+
+  24% {
+    transform: translateY(-6px) rotate(-3deg);
+  }
+
+  48% {
+    transform: translateX(calc(200% + 24px)) translateY(-6px) rotate(2deg);
+  }
+
+  54%,
+  86% {
+    transform: translateX(calc(200% + 24px));
+  }
+
+  91% {
+    transform: translateX(calc(200% + 24px));
+    opacity: 0;
+  }
+
+  92% {
+    transform: none;
+    opacity: 0;
+  }
+
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes auth-lift {
+  0%,
+  16% {
+    opacity: 0;
+  }
+
+  24%,
+  48% {
+    opacity: 1;
+  }
+
+  54%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes auth-done {
+  0%,
+  48% {
+    opacity: 0;
+  }
+
+  54%,
+  86% {
+    opacity: 1;
+  }
+
+  91%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes auth-cursor {
+  0%,
+  12% {
+    opacity: 0;
+    transform: translate(10px, 10px);
+  }
+
+  20%,
+  50% {
+    opacity: 1;
+    transform: none;
+  }
+
+  58%,
+  100% {
+    opacity: 0;
+    transform: translate(6px, 8px);
+  }
+}
+
+@keyframes auth-pulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.55);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes auth-fill {
+  from {
+    transform: scaleX(0.32);
+  }
+
+  to {
+    transform: scaleX(0.78);
+  }
+}
+
+/* Sem movimento: o cursor da ilustração simplesmente não existe. */
+@media (prefers-reduced-motion: reduce) {
+  .auth-cursor {
+    opacity: 0;
+  }
+}
+
+@layer components {
+  /* Caixa da ilustração: tamanho fixo do protótipo, reduzida entre 1100 e
+     1280 px para o monitor não ser cortado pela borda da cena. */
+  .auth-art-box {
+    position: relative;
+    width: 600px;
+    height: 500px;
+    flex: none;
+  }
+}
+
+@media (min-width: 1100px) and (max-width: 1279px) {
+  .auth-art-box {
+    transform: scale(0.8);
+  }
+}
+
+@layer components {
+  /* Monitor de vidro da ilustração: borda e brilho em accent. */
+  .auth-monitor {
+    border: 1px solid rgb(var(--accent) / 0.55);
+    background: linear-gradient(160deg, rgb(var(--glass) / 0.7), rgb(var(--glass) / 0.34));
+    box-shadow:
+      0 0 0 6px rgb(var(--ink) / 0.04),
+      0 50px 120px -36px rgb(var(--accent) / 0.65),
+      inset 0 1px 0 rgb(255 255 255 / 0.12);
+  }
+
+  .auth-screen {
+    border-radius: 12px;
+    background: rgb(var(--paper) / 0.45);
+    border: 1px solid rgb(var(--ink) / 0.08);
+  }
+
+  /* Cartão fictício do quadro. */
+  .auth-mini {
+    border-radius: 10px;
+    background: rgb(var(--ink) / 0.06);
+    border: 1px solid rgb(var(--ink) / 0.1);
+    font-size: 12px;
+    line-height: 1.3;
   }
 }

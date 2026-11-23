@@ -391,6 +391,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/forgot-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PasswordResetController_forgotPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PasswordResetController_resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/reset-password/{token}/valid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PasswordResetController_validateToken"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/users/me/api-keys": {
         parameters: {
             query?: never;
@@ -4246,6 +4294,27 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             expiresAt: string;
+        };
+        ForgotPasswordDto: {
+            /**
+             * Format: email
+             * @example felipe@azuos.dev
+             */
+            email: string;
+        };
+        PasswordResetRequestedDto: {
+            /** @example Se este e-mail tiver uma conta no Azuos Env, enviamos o link para redefinir a senha. */
+            message: string;
+        };
+        ResetPasswordDto: {
+            /** @description Token recebido por e-mail. */
+            token: string;
+            /** @example Azuos2026 */
+            password: string;
+        };
+        PasswordResetTokenDto: {
+            /** @example true */
+            valid: boolean;
         };
         CreateApiKeyDto: {
             /** @example Integração do site */
@@ -8481,6 +8550,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SuccessDto"];
+                };
+            };
+        };
+    };
+    PasswordResetController_forgotPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordDto"];
+            };
+        };
+        responses: {
+            /** @description Pedido recebido; a resposta é a mesma exista ou não a conta. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PasswordResetRequestedDto"];
+                };
+            };
+        };
+    };
+    PasswordResetController_resetPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordDto"];
+            };
+        };
+        responses: {
+            /** @description Senha redefinida; todas as sessões foram encerradas. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessDto"];
+                };
+            };
+        };
+    };
+    PasswordResetController_validateToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Diz se o link ainda pode ser usado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PasswordResetTokenDto"];
                 };
             };
         };

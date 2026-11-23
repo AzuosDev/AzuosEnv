@@ -60,6 +60,9 @@ async function main(): Promise<void> {
   // Cloud API do WhatsApp falsa: a suíte do front recebe e responde mensagem
   // sem WABA e sem sair do processo.
   process.env.WHATSAPP_MOCK ??= 'true';
+  // Caixa de saída em arquivo: a suíte do front abre o link de redefinição de
+  // senha que o e-mail carrega, sem rota de teste na API.
+  process.env.MAIL_CAPTURE ??= 'true';
   // A URL do webhook que a tela mostra é a desta API, não a do front.
   process.env.API_PUBLIC_URL ??= `http://localhost:${String(PORT)}`;
   process.env.GOOGLE_LOGIN_REDIRECT_URI = `http://localhost:${String(PORT)}/api/v1/auth/google/callback`;

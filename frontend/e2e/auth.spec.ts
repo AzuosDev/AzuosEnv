@@ -82,7 +82,7 @@ test.describe('cadastro e onboarding', () => {
     await expectNoHorizontalScroll(page);
     await page.setViewportSize({ width: 1280, height: 900 });
 
-    await page.getByLabel('Nome completo').fill('Teste Cadastro');
+    await page.getByLabel('Nome', { exact: true }).fill('Teste Cadastro');
     await page.getByLabel('E-mail').fill(email);
     await page.getByLabel('Senha', { exact: true }).fill(STRONG_PASSWORD);
     await page.getByRole('button', { name: 'Criar conta' }).click();
@@ -111,7 +111,7 @@ test.describe('convite', () => {
     await page.goto(`/convite/${token}`);
     await expect(page.getByRole('heading', { name: 'Aceitar convite' })).toBeVisible();
 
-    await page.getByLabel('Nome completo').fill('Pessoa Convidada');
+    await page.getByLabel('Nome', { exact: true }).fill('Pessoa Convidada');
     await page.getByLabel('Senha', { exact: true }).fill(STRONG_PASSWORD);
     await page.getByRole('button', { name: 'Aceitar convite' }).click();
 
@@ -151,15 +151,15 @@ test.describe('responsivo', () => {
     }
   }
 
-  test('o painel de apresentação só aparece a partir de 1024 px', async ({ page }) => {
+  test('o cartão de acesso é o mesmo em toda largura', async ({ page }) => {
     await page.goto('/login');
 
-    const showcase = page.getByRole('region', { name: 'Recursos do Azuos Env' });
+    const card = page.getByRole('region', { name: 'Acesso ao Azuos Env' });
 
     await page.setViewportSize({ width: 768, height: 900 });
-    await expect(showcase).toBeHidden();
+    await expect(card).toBeVisible();
 
     await page.setViewportSize({ width: 1280, height: 900 });
-    await expect(showcase).toBeVisible();
+    await expect(card).toBeVisible();
   });
 });

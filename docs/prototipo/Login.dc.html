@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Entrar — Azuos Env</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+.t-dark{color-scheme:dark;--paper:11 7 20;--paper-2:16 11 28;--surface:20 16 31;--surface-2:28 22 43;--line:44 36 62;--ink:245 243 249;--body:194 186 210;--muted:156 147 173;--accent:167 139 250;--signal:205 190 255;--signal-2:167 139 250;--on-signal:22 10 46;--scene:33 19 66;--scene-line:72 50 124;--dot:167 139 250;--success:34 197 94;--warning:245 158 11;--danger:248 113 113;--info:96 165 250;--glass:20 16 31;--glass-a:.42;--orb-a:.55}
+.t-light{color-scheme:light;--paper:248 246 252;--paper-2:240 236 249;--surface:255 255 255;--surface-2:245 241 252;--line:224 217 238;--ink:22 14 38;--body:72 63 94;--muted:101 92 122;--accent:109 40 217;--signal:139 92 246;--signal-2:109 40 217;--on-signal:255 255 255;--scene:236 228 255;--scene-line:212 198 250;--dot:124 58 237;--success:22 163 74;--warning:217 119 6;--danger:220 38 38;--info:37 99 235;--glass:255 255 255;--glass-a:.56;--orb-a:.38}
+.app{font-family:'Inter',system-ui,sans-serif;font-size:15px;background:rgb(var(--paper));color:rgb(var(--ink))}
+.app button,.app input{font:inherit;color:inherit}
+.app button{cursor:pointer}
+.app ::selection{background:rgb(var(--accent) / .35);color:rgb(var(--ink))}
+.app input{caret-color:rgb(var(--accent))}
+.app :focus-visible{outline:2px solid rgb(var(--accent));outline-offset:2px}
+a{color:rgb(var(--accent))}a:hover{color:rgb(var(--signal))}
+.stage{background:radial-gradient(70% 60% at 12% 0%,rgb(var(--scene) / .9) 0%,transparent 70%),radial-gradient(120% 90% at 85% 100%,rgb(var(--scene)) 0%,transparent 65%),linear-gradient(160deg,rgb(var(--paper)) 0%,rgb(var(--scene) / .55) 55%,rgb(var(--scene) / .85) 100%)}
+.dot-grid{background-image:radial-gradient(rgb(var(--dot) / .22) 1px,transparent 1.2px);background-size:14px 14px}
+.btn-signal{background-image:linear-gradient(100deg,rgb(var(--signal)) 0%,rgb(var(--signal-2)) 100%);color:rgb(var(--on-signal));box-shadow:0 10px 30px -12px rgb(var(--signal-2) / .7);border:0}
+.btn-signal:hover{filter:brightness(1.06)}
+.btn-signal:disabled{opacity:.7;cursor:progress}
+.scene{position:relative;min-height:100vh;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:var(--orb-a);pointer-events:none}
+.ring{position:absolute;border-radius:50%;border:1px solid rgb(var(--ink) / .12);pointer-events:none}
+.glass{background:rgb(var(--glass) / var(--glass-a));border:1px solid rgb(var(--ink) / .14);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);box-shadow:0 30px 70px -40px rgb(0 0 0 / .65), inset 0 1px 0 rgb(255 255 255 / .08)}
+.gfield{width:100%;box-sizing:border-box;height:50px;border-radius:12px;border:1px solid rgb(var(--ink) / .14);background:rgb(var(--ink) / .05);padding:0 14px;outline:none;transition:border-color .15s, background .15s}
+.gfield::placeholder{color:rgb(var(--muted))}
+.gfield:focus{border-color:rgb(var(--accent));background:rgb(var(--ink) / .08);box-shadow:0 0 0 3px rgb(var(--accent) / .2)}
+.gfield[aria-invalid="true"]{border-color:rgb(var(--danger))}
+.gbtn{background:rgb(var(--ink) / .06);border:1px solid rgb(var(--ink) / .14);color:rgb(var(--ink))}
+.gbtn:hover{background:rgb(var(--ink) / .1)}
+.topbar{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:28px clamp(16px,4vw,48px)}
+.wrap{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;gap:clamp(32px,5vw,80px);padding:110px clamp(16px,5vw,80px) 56px;box-sizing:border-box}
+.art{flex:1 1 0;min-width:0;max-width:640px;display:flex;justify-content:center}
+.art-box{position:relative;width:600px;height:500px;flex:none}
+.card{flex:0 0 440px;max-width:100%;box-sizing:border-box;padding:44px 40px 36px;border-radius:28px}
+.piece{position:absolute;border-radius:18px;animation:in .8s cubic-bezier(.2,.8,.2,1) both}
+.p1{animation-delay:.05s}.p2{animation-delay:.2s}.p3{animation-delay:.32s}.p4{animation-delay:.12s}
+@keyframes in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.col{display:flex;flex-direction:column;gap:8px;min-width:0}
+.mini{border-radius:10px;padding:8px 10px;background:rgb(var(--ink) / .06);border:1px solid rgb(var(--ink) / .1);font-size:12px;line-height:1.3;box-sizing:border-box}
+.monitor{border:1px solid rgb(var(--accent) / .55);background:linear-gradient(160deg,rgb(var(--glass) / .7),rgb(var(--glass) / .34));box-shadow:0 0 0 6px rgb(var(--ink) / .04),0 50px 120px -36px rgb(var(--accent) / .65),inset 0 1px 0 rgb(255 255 255 / .12)}
+.sheen{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(115deg,rgb(255 255 255 / .14) 0%,transparent 38%);pointer-events:none}
+.screen{position:relative;flex:1;border-radius:12px;background:rgb(var(--paper) / .45);border:1px solid rgb(var(--ink) / .08);padding:14px}
+.mover{position:absolute;left:14px;top:98px;width:calc((100% - 52px) / 3);animation:move 9s cubic-bezier(.6,.05,.3,1) 1.4s infinite both;z-index:2}
+.cursor{position:absolute;right:-18px;bottom:-26px;display:flex;align-items:flex-start;gap:2px;animation:cur 9s ease 1.4s infinite both}
+@keyframes move{0%,16%{transform:none;opacity:1}24%{transform:translateY(-6px) rotate(-3deg);box-shadow:0 18px 32px -14px rgb(0 0 0 / .55)}48%{transform:translateX(calc(200% + 24px)) translateY(-6px) rotate(2deg);box-shadow:0 18px 32px -14px rgb(0 0 0 / .55);background:rgb(var(--ink) / .06)}54%,86%{transform:translateX(calc(200% + 24px));background:rgb(var(--success) / .16);border-color:rgb(var(--success) / .45);opacity:1}91%{transform:translateX(calc(200% + 24px));opacity:0}92%{transform:none;opacity:0}100%{transform:none;opacity:1}}
+@keyframes cur{0%,12%{opacity:0;transform:translate(10px,10px)}20%,50%{opacity:1;transform:none}58%,100%{opacity:0;transform:translate(6px,8px)}}
+.live{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgb(var(--success) / .55)}50%{box-shadow:0 0 0 6px rgb(var(--success) / 0)}}
+.fill{animation:fill 6s ease-in-out infinite alternate}
+@keyframes fill{from{width:32%}to{width:78%}}
+@media (max-width: 1099px){.art{display:none}}
+@media (max-width: 520px){
+.wrap{padding:92px 14px 28px;align-items:flex-start}
+.card{padding:32px 22px 28px;border-radius:24px}
+.topbar{padding:22px 16px}
+}
+@media (prefers-reduced-motion: reduce){.piece,.mover,.cursor,.live,.fill{animation:none}.cursor{opacity:0}*{transition:none !important}}
+</style>
+</helmet>
+<div class="app {{themeClass}}">
+<div class="scene stage">
+<div class="dot-grid" aria-hidden="true" style="position: absolute; inset: 0; opacity: .35;"></div>
+<div class="orb" aria-hidden="true" style="width: 460px; height: 460px; left: 6%; top: 14%; background: rgb(var(--accent));"></div>
+<div class="orb" aria-hidden="true" style="width: 320px; height: 320px; right: 18%; bottom: -80px; background: rgb(var(--signal));"></div>
+<div class="orb" aria-hidden="true" style="width: 240px; height: 240px; right: 4%; top: 6%; background: rgb(var(--scene-line));"></div>
+<div class="ring" aria-hidden="true" style="width: 380px; height: 380px; right: -120px; top: -150px;"></div>
+<div class="ring" aria-hidden="true" style="width: 240px; height: 240px; left: 47%; bottom: -130px;"></div>
+<div class="ring" aria-hidden="true" style="width: 120px; height: 120px; left: 34%; top: -60px; background: rgb(var(--ink) / .05); border-color: transparent;"></div>
+<div class="ring" aria-hidden="true" style="width: 300px; height: 210px; left: -70px; top: -90px;"></div>
+
+<header class="topbar">
+<div style="display: flex; align-items: center; gap: 10px;">
+<div class="btn-signal" aria-hidden="true" style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; box-shadow: none;">&lt;/&gt;</div>
+<span style="display: flex; flex-direction: column; line-height: 1.15;"><span style="font-weight: 600; font-size: 17px; letter-spacing: -0.01em;">Azuos Env</span><span style="font-size: 12px; color: rgb(var(--muted));">por Azuos Dev</span></span>
+</div>
+<button type="button" class="gbtn" onClick="{{toggleTheme}}" aria-label="{{themeLabel}}" title="{{themeLabel}}" style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px);">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{themeIcon}}"></path></svg>
+</button>
+</header>
+
+<main class="wrap">
+
+<div class="art" aria-hidden="true">
+<div class="art-box">
+
+<div class="piece monitor p4" style="left: 6px; top: 40px; width: 568px; height: 356px; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; backdrop-filter: blur(22px) saturate(150%); -webkit-backdrop-filter: blur(22px) saturate(150%);">
+<div class="sheen"></div>
+<div style="display: flex; align-items: center; gap: 7px; padding: 0 4px;">
+<span style="width: 10px; height: 10px; border-radius: 50%; background: rgb(var(--danger) / .85);"></span><span style="width: 10px; height: 10px; border-radius: 50%; background: rgb(var(--warning) / .85);"></span><span style="width: 10px; height: 10px; border-radius: 50%; background: rgb(var(--success) / .85);"></span>
+<span style="margin-left: 8px; font-size: 13px; font-weight: 600;">App Vitrine Aurora — Sprint 4</span>
+<span style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+<span style="display: flex;"><span style="width: 24px; height: 24px; border-radius: 50%; background: rgb(var(--accent)); color: rgb(var(--on-signal)); border: 2px solid rgb(var(--surface)); display: inline-flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 700;">LA</span><span style="width: 24px; height: 24px; margin-left: -7px; border-radius: 50%; background: rgb(var(--info)); color: white; border: 2px solid rgb(var(--surface)); display: inline-flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 700;">MC</span></span>
+<span style="display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 9px; border-radius: 999px; background: rgb(var(--success) / .14); font-size: 11px; font-weight: 600;"><span class="live" style="width: 7px; height: 7px; border-radius: 50%; background: rgb(var(--success));"></span>Ao vivo</span>
+</span>
+</div>
+<div class="screen">
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+<div class="col">
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: rgb(var(--body)); height: 18px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: rgb(var(--muted));"></span>A fazer<span style="margin-left: auto; color: rgb(var(--muted)); font-weight: 500;">2</span></span>
+<div class="mini" style="height: 50px;"><span style="color: rgb(var(--muted));">AZD-214</span><br>Catálogo de produtos</div>
+<div style="height: 50px; border-radius: 10px; border: 1px dashed rgb(var(--ink) / .14);"></div>
+<div class="mini" style="height: 50px;"><span style="color: rgb(var(--muted));">AZD-221</span><br>Banner de Natal</div>
+</div>
+<div class="col">
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: rgb(var(--body)); height: 18px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: rgb(var(--info));"></span>Em andamento<span style="margin-left: auto; color: rgb(var(--muted)); font-weight: 500;">2</span></span>
+<div class="mini" style="height: 50px; border-color: rgb(var(--accent) / .5); background: rgb(var(--accent) / .14);"><span style="color: rgb(var(--muted));">AZD-212</span><br>Checkout por Pix</div>
+<div style="height: 4px; margin-top: -4px; border-radius: 999px; background: rgb(var(--ink) / .1); overflow: hidden;"><div class="fill" style="width: 50%; height: 4px; border-radius: 999px; background: rgb(var(--accent));"></div></div>
+<div class="mini" style="height: 50px;"><span style="color: rgb(var(--danger)); font-weight: 600;">Urgente</span><br>Frete grátis quebrado</div>
+</div>
+<div class="col">
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: rgb(var(--body)); height: 18px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: rgb(var(--success));"></span>Concluído<span style="margin-left: auto; color: rgb(var(--muted)); font-weight: 500;">1</span></span>
+<div class="mini" style="height: 50px; color: rgb(var(--muted));"><span>AZD-207</span><br><span style="text-decoration: line-through;">Login com e-mail</span></div>
+</div>
+</div>
+<div class="mini mover" style="height: 50px; background: rgb(var(--ink) / .06);"><span style="color: rgb(var(--muted));">AZD-219</span><br>Cupons de desconto
+<span class="cursor"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3l16 8-7 2-3 7z" fill="rgb(var(--accent))" stroke="white" stroke-width="1.5" stroke-linejoin="round"></path></svg><span style="margin-top: 12px; padding: 2px 7px; border-radius: 6px; background: rgb(var(--accent)); color: rgb(var(--on-signal)); font-size: 10.5px; font-weight: 600; white-space: nowrap;">Lia</span></span>
+</div>
+</div>
+</div>
+<div class="piece p4" style="left: 281px; top: 396px; width: 18px; height: 40px; border-radius: 0 0 4px 4px; background: linear-gradient(rgb(var(--ink) / .18), rgb(var(--ink) / .08));"></div>
+<div class="piece glass p4" style="left: 190px; top: 434px; width: 200px; height: 12px; border-radius: 999px;"></div>
+
+<div class="piece glass p2" style="right: -6px; top: 0; width: 210px; padding: 14px 16px; box-sizing: border-box;">
+<div style="display: flex; align-items: baseline; justify-content: space-between;"><span style="font-size: 12.5px; font-weight: 600;">Burndown</span><span style="font-size: 11.5px; color: rgb(var(--muted));">7 de 8 abertas</span></div>
+<svg width="178" height="70" viewBox="0 0 178 70" style="display: block; margin-top: 10px;">
+<path d="M2 8 L176 64" stroke="rgb(var(--ink) / .3)" stroke-width="1.5" stroke-dasharray="4 4" fill="none"></path>
+<polyline points="2,8 32,9 62,20 92,23 122,36 150,40" stroke="rgb(var(--accent))" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"></polyline>
+<circle cx="150" cy="40" r="4" fill="rgb(var(--accent))"></circle>
+</svg>
+</div>
+
+<div class="piece glass p3" style="left: -10px; bottom: 6px; width: 230px; padding: 14px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 9px;">
+<span style="font-size: 12.5px; font-weight: 600;">Hoje</span>
+<span style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgb(var(--muted));"><span style="width: 15px; height: 15px; border-radius: 5px; background: rgb(var(--success)); display: inline-flex; align-items: center; justify-content: center;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span style="text-decoration: line-through;">Revisar PR do checkout</span></span>
+<span style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgb(var(--body));"><span style="width: 13px; height: 13px; border-radius: 5px; border: 1.5px solid rgb(var(--ink) / .35);"></span>Reunião com Café Horizonte</span>
+<span style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgb(var(--body));"><span style="width: 13px; height: 13px; border-radius: 5px; border: 1.5px solid rgb(var(--ink) / .35);"></span>Proposta para Ótica Lumen</span>
+</div>
+
+</div>
+</div>
+
+<section class="card glass" aria-label="Acesso ao Azuos Env">
+
+<sc-if value="{{isForm}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 24px;">
+<div style="display: flex; flex-direction: column; gap: 14px;">
+<h1 style="margin: 0; font-size: 40px; line-height: 1; font-weight: 650; letter-spacing: -0.035em;">{{title}}</h1>
+<span aria-hidden="true" style="width: 64px; height: 3px; border-radius: 999px; background: rgb(var(--accent));"></span>
+<p style="margin: 0; font-size: 17px; color: rgb(var(--body));">{{greeting}}</p>
+</div>
+
+<form onSubmit="{{submit}}" style="display: flex; flex-direction: column; gap: 16px;">
+<sc-if value="{{isSignup}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<label for="l-nome" style="font-size: 14px; font-weight: 500;">Nome</label>
+<input id="l-nome" class="gfield" autocomplete="name" placeholder="Como a equipe te chama" value="{{nome}}" onInput="{{setNome}}" aria-invalid="{{nomeInvalid}}">
+</div>
+</sc-if>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<label for="l-email" style="font-size: 14px; font-weight: 500;">E-mail</label>
+<input id="l-email" class="gfield" type="text" inputmode="email" autocomplete="email" placeholder="voce@azuosdev.com.br" value="{{email}}" onInput="{{setEmail}}" aria-invalid="{{emailInvalid}}" aria-describedby="l-erro">
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<label for="l-senha" style="font-size: 14px; font-weight: 500;">Senha</label>
+<div style="position: relative;">
+<input id="l-senha" class="gfield" type="{{passType}}" autocomplete="{{passAuto}}" placeholder="Sua senha" value="{{senha}}" onInput="{{setSenha}}" aria-invalid="{{senhaInvalid}}" aria-describedby="l-erro" style="padding-right: 52px;">
+<button type="button" onClick="{{toggleShow}}" aria-label="{{showLabel}}" aria-pressed="{{showPressed}}" style="position: absolute; right: 4px; top: 4px; width: 42px; height: 42px; border: 0; border-radius: 10px; background: transparent; color: rgb(var(--muted)); display: flex; align-items: center; justify-content: center;">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{eyeIcon}}"></path></svg>
+</button>
+</div>
+<sc-if value="{{isLogin}}" hint-placeholder-val="{{true}}"><a href="#" onClick="{{forgot}}" style="align-self: flex-end; font-size: 13.5px; text-decoration: none; color: rgb(var(--body)); padding: 4px 0;">Esqueci minha senha</a></sc-if>
+</div>
+<p id="l-erro" role="alert" aria-live="polite" style="margin: 0; min-height: 20px; font-size: 14px; color: rgb(var(--danger));">{{error}}</p>
+<button type="submit" class="btn-signal" disabled="{{loading}}" style="height: 52px; border-radius: 14px; font-weight: 600; font-size: 15.5px;">{{submitLabel}}</button>
+</form>
+
+<div style="display: flex; align-items: center; gap: 14px; color: rgb(var(--muted)); font-size: 13.5px;">
+<span style="flex: 1; height: 1px; background: rgb(var(--ink) / .14);"></span>ou<span style="flex: 1; height: 1px; background: rgb(var(--ink) / .14);"></span>
+</div>
+
+<a href="Main.dc.html" class="gbtn" style="height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 12px; text-decoration: none; font-weight: 500;">
+<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"></path><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"></path><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"></path><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"></path></svg>
+<span style="color: rgb(var(--ink));">Continuar com Google</span>
+</a>
+
+<p style="margin: 0; text-align: center; color: rgb(var(--body)); font-size: 14.5px;">{{switchText}} <button type="button" onClick="{{switchMode}}" style="background: none; border: 0; padding: 4px 2px; color: rgb(var(--ink)); font-weight: 650;">{{switchAction}}</button></p>
+</div>
+</sc-if>
+
+<sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+<div role="status" style="display: flex; flex-direction: column; gap: 20px;">
+<div style="width: 52px; height: 52px; border-radius: 16px; background: rgb(var(--success) / .18); color: rgb(var(--success)); display: flex; align-items: center; justify-content: center;">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+</div>
+<h1 style="margin: 0; font-size: 36px; line-height: 1.05; font-weight: 650; letter-spacing: -0.03em;">{{doneTitle}}</h1>
+<p style="margin: 0; color: rgb(var(--body)); line-height: 1.55;">Suas tarefas, conversas e docs estão onde você deixou.</p>
+<a href="Main.dc.html" class="btn-signal" style="height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 600; color: rgb(var(--on-signal));">Abrir o Azuos Env</a>
+<button type="button" class="gbtn" onClick="{{reset}}" style="height: 48px; border-radius: 14px; font-weight: 500;">Sair desta conta</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isForgot}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 20px;">
+<h1 style="margin: 0; font-size: 36px; line-height: 1.05; font-weight: 650; letter-spacing: -0.03em;">Confira seu e-mail</h1>
+<span aria-hidden="true" style="width: 64px; height: 3px; border-radius: 999px; background: rgb(var(--accent));"></span>
+<p style="margin: 0; color: rgb(var(--body)); line-height: 1.55;">Enviamos um link para {{forgotEmail}}. Ele vale por 30 minutos.</p>
+<button type="button" class="gbtn" onClick="{{backToLogin}}" style="height: 48px; border-radius: 14px; font-weight: 500;">Voltar para entrar</button>
+</div>
+</sc-if>
+
+</section>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema":{"editor":"enum","options":["escuro","claro"],"default":"escuro"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const self = this;
+    const s = this.state || {};
+    let stored = null;
+    try { stored = window.localStorage.getItem('azuos-theme'); } catch (e) {}
+    const theme = s.theme ?? stored ?? (this.props.tema === 'claro' ? 'light' : 'dark');
+    const mode = s.mode ?? 'login';
+    const view = s.view ?? 'form';
+    const email = s.email ?? '';
+    const senha = s.senha ?? '';
+    const nome = s.nome ?? '';
+    const show = !!s.show;
+    const loading = !!s.loading;
+    const errField = s.errField ?? '';
+    const isSignup = mode === 'signup';
+    const P = {
+      sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+      moon: 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z',
+      eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+      eyeOff: 'M3 3l18 18M10.6 5.1A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.9 8.4 2 12 2 12s3.5 7 10 7c1.7 0 3.2-.5 4.5-1.2M9.9 9.9a3 3 0 0 0 4.2 4.2'
+    };
+    const first = (nome.trim().split(' ')[0]) || (email.split('@')[0] || '');
+    const clear = (field) => ({ error: errField === field ? '' : (s.error ?? ''), errField: errField === field ? '' : errField });
+    const validEmail = /^\S+@\S+\.\S+$/.test(email.trim());
+    const submit = (e) => {
+      if (e && e.preventDefault) e.preventDefault();
+      if (isSignup && nome.trim().length < 2) { self.setState({ error: 'Digite seu nome.', errField: 'nome' }); return; }
+      if (!validEmail) { self.setState({ error: 'Digite um e-mail válido, como voce@azuosdev.com.br.', errField: 'email' }); return; }
+      if (senha.length < 8) { self.setState({ error: 'A senha tem pelo menos 8 caracteres.', errField: 'senha' }); return; }
+      self.setState({ loading: true, error: '', errField: '' });
+      setTimeout(() => {
+        if (!isSignup && email.trim().toLowerCase() === 'erro@azuosdev.com.br') {
+          self.setState({ loading: false, error: 'E-mail ou senha incorretos. Confira e tente de novo.', errField: 'senha' });
+        } else {
+          self.setState({ loading: false, view: 'done' });
+        }
+      }, 900);
+    };
+    return {
+      themeClass: theme === 'light' ? 't-light' : 't-dark',
+      themeIcon: theme === 'light' ? P.moon : P.sun,
+      themeLabel: theme === 'light' ? 'Mudar para tema escuro' : 'Mudar para tema claro',
+      toggleTheme: () => { const n = theme === 'light' ? 'dark' : 'light'; try { window.localStorage.setItem('azuos-theme', n); } catch (e) {} self.setState({ theme: n }); },
+      isForm: view === 'form', isDone: view === 'done', isForgot: view === 'forgot',
+      isSignup: isSignup, isLogin: !isSignup,
+      title: isSignup ? 'Criar conta' : 'Entrar',
+      greeting: isSignup ? 'Recebeu um convite? Crie seu acesso.' : 'Bem-vindo de volta à Azuos.',
+      email: email, senha: senha, nome: nome,
+      setEmail: (e) => self.setState(Object.assign({ email: e.target.value }, clear('email'))),
+      setSenha: (e) => self.setState(Object.assign({ senha: e.target.value }, clear('senha'))),
+      setNome: (e) => self.setState(Object.assign({ nome: e.target.value }, clear('nome'))),
+      emailInvalid: errField === 'email' ? 'true' : 'false',
+      senhaInvalid: errField === 'senha' ? 'true' : 'false',
+      nomeInvalid: errField === 'nome' ? 'true' : 'false',
+      error: s.error ?? '',
+      passType: show ? 'text' : 'password',
+      passAuto: isSignup ? 'new-password' : 'current-password',
+      eyeIcon: show ? P.eyeOff : P.eye,
+      showLabel: show ? 'Ocultar senha' : 'Mostrar senha',
+      showPressed: show ? 'true' : 'false',
+      toggleShow: () => self.setState({ show: !show }),
+      loading: loading,
+      submitLabel: loading ? (isSignup ? 'Criando conta…' : 'Entrando…') : (isSignup ? 'Criar conta' : 'Entrar'),
+      submit: submit,
+      switchText: isSignup ? 'Já tem conta?' : 'Novo na Azuos?',
+      switchAction: isSignup ? 'Entrar' : 'Criar conta',
+      switchMode: () => self.setState({ mode: isSignup ? 'login' : 'signup', error: '', errField: '' }),
+      forgot: (e) => { if (e && e.preventDefault) e.preventDefault(); if (!validEmail) { self.setState({ error: 'Digite seu e-mail para receber o link de redefinição.', errField: 'email' }); return; } self.setState({ view: 'forgot', error: '', errField: '' }); },
+      forgotEmail: email.trim(),
+      backToLogin: () => self.setState({ view: 'form', mode: 'login' }),
+      doneTitle: isSignup ? ('Conta criada' + (first ? ', ' + first : '') + '.') : ('Bem-vindo de volta' + (first ? ', ' + first : '') + '.'),
+      reset: () => self.setState({ view: 'form', mode: 'login', senha: '', show: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

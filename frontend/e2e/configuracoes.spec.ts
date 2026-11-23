@@ -197,7 +197,7 @@ test('o convite aceito em outro contexto aparece em Pessoas', async ({ browser }
   const guestPage = await guest.newPage();
 
   await guestPage.goto(`/convite/${token}`);
-  await guestPage.getByLabel('Nome completo').fill('Convidada Config');
+  await guestPage.getByLabel('Nome', { exact: true }).fill('Convidada Config');
   await guestPage.getByLabel('Senha', { exact: true }).fill(STRONG_PASSWORD);
   await guestPage.getByRole('button', { name: 'Aceitar convite' }).click();
 

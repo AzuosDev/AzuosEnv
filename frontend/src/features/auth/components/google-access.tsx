@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { GlassDivider } from '@/features/auth/components/glass-field';
 import { googleLoginUrl } from '@/features/auth/api';
 import { GoogleLogo } from '@/features/auth/components/google-logo';
 import { cn } from '@/lib/utils';
@@ -26,9 +27,9 @@ export function GoogleButton({
   return (
     <Button
       asChild
-      variant="outline"
+      variant="glass"
       size="lg"
-      className={cn('w-full rounded-full border-line', className)}
+      className={cn('h-[52px] w-full gap-3 rounded-[14px] text-[15px] font-medium', className)}
     >
       <a href={googleLoginUrl({ next, invite })} data-testid="google-login" rel="nofollow">
         <GoogleLogo />
@@ -38,17 +39,12 @@ export function GoogleButton({
   );
 }
 
-/** O botão do Google acima do formulário, com o divisor "ou". */
+/** O divisor "ou" e o botão do Google, abaixo do formulário do cartão. */
 export function GoogleAccess(props: GoogleAccessProps) {
   return (
-    <div className="mb-6 flex flex-col gap-6">
+    <>
+      <GlassDivider />
       <GoogleButton {...props} />
-
-      <div className="flex items-center gap-3" aria-hidden="true">
-        <span className="h-px flex-1 bg-line" />
-        <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">ou</span>
-        <span className="h-px flex-1 bg-line" />
-      </div>
-    </div>
+    </>
   );
 }

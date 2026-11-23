@@ -134,6 +134,22 @@ export class UsersService {
     await user.save();
   }
 
+  /**
+   * Password written by the recovery flow: there is no current password to
+   * check, and an account created with Google gains the password provider.
+   */
+  async replacePassword(id: string | Types.ObjectId, password: string): Promise<void> {
+    const user = await this.model.findById(id).select('+passwordHash').exec();
+
+    if (!user) {
+      throw new NotFoundException({ code: 'USER_NOT_FOUND', message: 'Usuário não encontrado.' });
+    }
+
+    user.passwordHash = await this.hashPassword(password);
+    user.authProviders = withProvider(user.authProviders, 'password');
+    await user.save();
+  }
+
   /** Unlinks Google; refused while the password is the only other way in. */
   async unlinkGoogle(id: string): Promise<void> {
     const user = await this.model.findById(id).select('+passwordHash').exec();

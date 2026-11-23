@@ -1324,6 +1324,98 @@
         ]
       }
     },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "operationId": "PasswordResetController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pedido recebido; a resposta é a mesma exista ou não a conta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetRequestedDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "operationId": "PasswordResetController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha redefinida; todas as sessões foram encerradas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/reset-password/{token}/valid": {
+      "get": {
+        "operationId": "PasswordResetController_validateToken",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diz se o link ainda pode ser usado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetTokenDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/v1/users/me/api-keys": {
       "post": {
         "operationId": "ApiKeysController_create",
@@ -19148,6 +19240,64 @@
           "id",
           "current",
           "expiresAt"
+        ]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email",
+            "example": "felipe@azuos.dev"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "PasswordResetRequestedDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Se este e-mail tiver uma conta no Azuos Env, enviamos o link para redefinir a senha."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 200,
+            "description": "Token recebido por e-mail."
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "example": "Azuos2026"
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ]
+      },
+      "PasswordResetTokenDto": {
+        "type": "object",
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "valid"
         ]
       },
       "CreateApiKeyDto": {
