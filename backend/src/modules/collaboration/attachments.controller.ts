@@ -1,5 +1,6 @@
 import {
   Controller,
+  Header,
   Delete,
   Get,
   HttpCode,
@@ -34,7 +35,7 @@ import { Attachment, AttachmentDocument } from './schemas/attachment.schema';
 
 const UPLOAD_FIELD = 'file';
 
-/** Multipart with a single `file` field, capped at 25 MB, filename read as UTF-8. */
+/** Multipart with a single `file` field, any MIME type, capped by UPLOAD_MAX_MB. */
 const UploadFile = () =>
   UseInterceptors(
     FileInterceptor(UPLOAD_FIELD, {
@@ -145,6 +146,7 @@ export class AttachmentsController {
   constructor(private readonly attachments: AttachmentsService) {}
 
   @Get(':attachmentId/download')
+  @Header('X-Content-Type-Options', 'nosniff')
   @ApiOkResponse({ description: 'Bytes do anexo; sem permissão na tarefa responde 404.' })
   async download(
     @CurrentMembership() membership: RequestMembership,

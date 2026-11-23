@@ -804,19 +804,21 @@ describe('Chat (canais, DMs e threads)', () => {
         .expect(404);
     });
 
-    it('recusa o anexo sem arquivo e o MIME fora da lista', async () => {
+    it('recusa o anexo sem arquivo e aceita qualquer tipo', async () => {
       const fixture = await setup();
       const channel = (await createChannel(fixture, { name: 'geral' }).expect(201))
         .body as ChannelBody;
       const url = `/api/v1/workspaces/${fixture.workspace.id}/channels/${channel.id}/attachments`;
 
       await withAuth(http().post(url), fixture.owner).expect(400);
-      await withAuth(http().post(url), fixture.owner)
+      const exotic = await withAuth(http().post(url), fixture.owner)
         .attach('file', Buffer.from('MZ'), {
-          filename: 'virus.exe',
+          filename: 'instalador.exe',
           contentType: 'application/x-msdownload',
         })
-        .expect(400);
+        .expect(201);
+
+      expect(exotic.body.mimeType).toBe('application/x-msdownload');
     });
   });
 });

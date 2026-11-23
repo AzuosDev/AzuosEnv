@@ -45,6 +45,7 @@ Fonte completa: `backend/.env.example`. Obrigatórias e mais relevantes:
 | `COOKIE_SECURE` | não | `false` | **`true` em produção** (cookie do refresh por HTTPS). |
 | `COOKIE_DOMAIN` | não | vazio | Domínio do cookie quando front e API não compartilham host. |
 | `UPLOAD_DIR` | não | `./storage/uploads` | Monte um volume; trocar por S3/R2 é só outro provider. |
+| `UPLOAD_MAX_MB` | não | `50` | Teto por arquivo (1 a 512). Qualquer tipo de arquivo é aceito. |
 | `SMTP_HOST` … `SMTP_FROM` | não | vazio | Sem `SMTP_HOST` o e-mail só vai para o log. |
 | `BREVO_API_KEY` | não | vazio | Com a chave o e-mail sai pela API HTTP da Brevo e o SMTP é ignorado. É o caminho recomendado em serverless. |
 | `MAIL_FROM` | não | vazio | Remetente validado na Brevo (`Nome <conta@dominio>`). Vazio, vale o `SMTP_FROM`. |

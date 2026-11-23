@@ -17,7 +17,7 @@ import {
 import { PermissionContext } from '../hierarchy/permission.service';
 import { StorageService } from '../storage/storage.service';
 import { UploadedFile } from '../collaboration/attachments.service';
-import { MAX_UPLOAD_BYTES } from '../collaboration/collaboration-fields';
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from '../collaboration/collaboration-fields';
 import {
   WaCredentials,
   WaOutbound,
@@ -204,7 +204,7 @@ export class WhatsappMessagesService {
     if (file.size > MAX_UPLOAD_BYTES) {
       throw new BadRequestException({
         code: 'FILE_TOO_LARGE',
-        message: 'O arquivo passa do limite de 25 MB.',
+        message: `O arquivo passa do limite de ${MAX_UPLOAD_MB} MB.`,
       });
     }
 

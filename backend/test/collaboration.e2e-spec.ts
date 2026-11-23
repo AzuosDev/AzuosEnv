@@ -709,17 +709,26 @@ describe('Colaboração na tarefa', () => {
       ).expect(404);
     });
 
-    it('recusa o MIME fora da lista e a requisição sem arquivo', async () => {
+    it('aceita qualquer tipo de arquivo e recusa a requisição sem arquivo', async () => {
       const { owner, workspace, task } = await setup();
 
-      const invalid = await withAuth(http().post(taskUrl(workspace, task, '/attachments')), owner)
+      const exotic = await withAuth(http().post(taskUrl(workspace, task, '/attachments')), owner)
         .attach('file', Buffer.from('MZ'), {
-          filename: 'virus.exe',
+          filename: 'instalador.exe',
           contentType: 'application/x-msdownload',
         })
-        .expect(400);
+        .expect(201);
 
-      expect(invalid.body.code).toBe('INVALID_FILE_TYPE');
+      expect(exotic.body.mimeType).toBe('application/x-msdownload');
+
+      const unknown = await withAuth(http().post(taskUrl(workspace, task, '/attachments')), owner)
+        .attach('file', Buffer.from('conteudo'), {
+          filename: 'projeto.dwg',
+          contentType: 'application/octet-stream',
+        })
+        .expect(201);
+
+      expect(unknown.body.mimeType).toBe('application/octet-stream');
 
       const empty = await withAuth(http().post(taskUrl(workspace, task, '/attachments')), owner)
         .field('nome', 'sem arquivo')
