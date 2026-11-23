@@ -53,6 +53,42 @@
         ],
         "createdAt": "2026-11-23T13:24:04.828Z",
         "reason": "fixture: HTML enviado pelo usuario no chat, salvo literalmente como referencia do produto Azuos PDV; nao e codigo servido do AzuosEnv"
+      },
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "docs/referencias/azuos-pdv/landing.html"
+        ],
+        "createdAt": "2026-11-23T13:24:41.117Z",
+        "reason": "fixture: HTML enviado pelo usuario no chat, salvo literalmente como referencia do produto Azuos PDV; nao e codigo servido do AzuosEnv"
+      },
+      {
+        "rule": "all-caps-body",
+        "value": "*",
+        "files": [
+          "docs/referencias/azuos-pdv/landing.html"
+        ],
+        "createdAt": "2026-11-23T13:24:41.357Z",
+        "reason": "fixture: HTML enviado pelo usuario no chat, salvo literalmente como referencia do produto Azuos PDV; nao e codigo servido do AzuosEnv"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          "docs/referencias/azuos-pdv/landing.html"
+        ],
+        "createdAt": "2026-11-23T13:24:41.612Z",
+        "reason": "fixture: HTML enviado pelo usuario no chat, salvo literalmente como referencia do produto Azuos PDV; nao e codigo servido do AzuosEnv"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "docs/referencias/azuos-pdv/landing.html"
+        ],
+        "createdAt": "2026-11-23T13:24:41.858Z",
+        "reason": "fixture: HTML enviado pelo usuario no chat, salvo literalmente como referencia do produto Azuos PDV; nao e codigo servido do AzuosEnv"
       }
     ]
   }
