@@ -4,8 +4,9 @@ import type { WorkspaceMemberItem, WorkspaceRole } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { SummarizeButton } from '@/features/ai/components/summarize-button';
 import { Spinner } from '@/components/ui/spinner';
-import { channelAttachmentsQuery, messagesQuery, repliesQuery } from '../api';
-import { mergeMessagePages, mergeReplyPages } from '../chat-model';
+import { channelAttachmentsQuery, channelReadsQuery, messagesQuery, repliesQuery } from '../api';
+import { mergeMessagePages, mergeReplyPages, otherMemberIds } from '../chat-model';
+import type { ChannelReceipts } from '../chat-model';
 import { useMessages } from '../hooks/use-messages';
 import { MessageComposer } from './message-composer';
 import { MessageItem } from './message-item';
@@ -19,6 +20,10 @@ export interface ThreadPanelProps {
   currentUserId: string | undefined;
   role: WorkspaceRole;
   canWrite: boolean;
+  /** Conversa de mais de duas pessoas: cada autor ganha nome e tonalidade. */
+  group?: boolean;
+  /** Participantes do canal, para o tique de lida das minhas mensagens. */
+  channelMemberIds?: string[];
   onClose: () => void;
 }
 
@@ -34,16 +39,23 @@ export function ThreadPanel({
   currentUserId,
   role,
   canWrite,
+  group = false,
+  channelMemberIds,
   onClose,
 }: ThreadPanelProps) {
   const replies = useInfiniteQuery(repliesQuery(wsId, rootId));
   const conversation = useInfiniteQuery(messagesQuery(wsId, channelId));
   const attachments = useQuery(channelAttachmentsQuery(wsId, channelId));
+  const reads = useQuery(channelReadsQuery(wsId, channelId));
   const items = mergeReplyPages(replies.data?.pages);
   // A raiz já está na conversa carregada; a thread não a busca de novo.
   const root =
     mergeMessagePages(conversation.data?.pages).find((message) => message.id === rootId) ?? null;
   const actions = useMessages(wsId, channelId);
+  const receipts: ChannelReceipts = {
+    readers: reads.data?.items ?? [],
+    others: otherMemberIds(channelMemberIds, currentUserId),
+  };
 
   return (
     <section
@@ -71,6 +83,8 @@ export function ThreadPanel({
             canWrite={canWrite}
             actions={actions}
             leading
+            group={group}
+            receipts={receipts}
             reply
           />
         </div>
@@ -96,6 +110,8 @@ export function ThreadPanel({
           onLoadMore={() => {
             void replies.fetchNextPage();
           }}
+          group={group}
+          receipts={receipts}
           reply
         />
       )}

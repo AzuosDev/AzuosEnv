@@ -105,6 +105,14 @@ test('dois navegadores conversando em tempo real', async ({ browser }) => {
     // A mensagem chega na sala channel:{id} do outro navegador.
     await expect(other.getByText(mine)).toBeVisible({ timeout: 25_000 });
 
+    // O outro navegador abriu o canal: a minha mensagem ganha o tique de lida.
+    await expect(
+      page
+        .getByRole('article', { name: `Mensagem de ${ADMIN_NAME}` })
+        .filter({ hasText: mine })
+        .getByRole('img', { name: /^Lida/ }),
+    ).toBeVisible({ timeout: 25_000 });
+
     const theirs = `Confirmo com a Cênio ${stamp}`;
 
     await type(other, `Mensagem para ${CHANNEL}`, theirs);

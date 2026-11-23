@@ -11,6 +11,21 @@ export class ChannelReadDto {
   lastReadAt: string;
 }
 
+/** One participant of the channel and the moment they read it up to. */
+export class ChannelReaderDto {
+  @ApiProperty()
+  userId: string;
+
+  @ApiProperty({ format: 'date-time' })
+  lastReadAt: string;
+}
+
+/** Answer of GET /channels/:channelId/reads. */
+export class ChannelReadsDto {
+  @ApiProperty({ type: [ChannelReaderDto] })
+  items: ChannelReaderDto[];
+}
+
 /** One line of the chat activity of the Sidebar Home. */
 export class ChannelActivityDto {
   @ApiProperty()

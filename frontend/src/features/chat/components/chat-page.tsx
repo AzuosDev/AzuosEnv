@@ -149,6 +149,8 @@ export function ChatPage({ wsId, channelId, threadId }: ChatPageProps) {
           currentUserId={user?.id}
           role={role}
           canWrite={canWriteChannel(active, role, user?.id)}
+          group={active.type !== 'dm'}
+          channelMemberIds={active.memberIds.map(String)}
           onClose={() => {
             go({ canal: active.id });
           }}

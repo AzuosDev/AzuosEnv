@@ -1799,6 +1799,47 @@ export interface paths {
         patch: operations["RemindersController_update"];
         trace?: never;
     };
+    "/api/v1/users/me/push-subscriptions/public-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Chave pública VAPID
+         * @description Vazia quando o servidor não tem push configurado; o front esconde a opção.
+         */
+        get: operations["PushController_publicKey"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/me/push-subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registra este navegador para receber push
+         * @description O endpoint é a identidade da inscrição: reinscrever o mesmo não duplica.
+         */
+        post: operations["PushController_subscribe"];
+        /** Para de receber push neste navegador */
+        delete: operations["PushController_unsubscribe"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{wsId}/search": {
         parameters: {
             query?: never;
@@ -2674,6 +2715,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["ChannelsController_read"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/channels/{channelId}/reads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ChannelsController_reads"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5377,6 +5434,7 @@ export interface components {
         NotificationChannelsStateDto: {
             inbox: boolean;
             email: boolean;
+            push: boolean;
         };
         NotificationPreferencesDto: {
             assigned: components["schemas"]["NotificationChannelsStateDto"];
@@ -5399,6 +5457,8 @@ export interface components {
         NotificationChannelsDto: {
             inbox?: boolean;
             email?: boolean;
+            /** @description Notificação do sistema por Web Push. */
+            push?: boolean;
         };
         NotificationTypeSettingsDto: {
             assigned?: components["schemas"]["NotificationChannelsDto"];
@@ -5458,6 +5518,30 @@ export interface components {
             taskId?: string | null;
             /** @description true conclui o lembrete; false reabre. */
             done?: boolean;
+        };
+        PushPublicKeyDto: {
+            /** @description Chave pública VAPID; vazia quando o push não está configurado no servidor. */
+            publicKey: string;
+        };
+        PushSubscriptionKeysDto: {
+            /** @description Chave pública do navegador (p256dh). */
+            p256dh: string;
+            /** @description Segredo de autenticação do navegador. */
+            auth: string;
+        };
+        CreatePushSubscriptionDto: {
+            /**
+             * Format: uri
+             * @description Endpoint do serviço de push do navegador.
+             */
+            endpoint: string;
+            keys: components["schemas"]["PushSubscriptionKeysDto"];
+            /** @description Identificação do dispositivo, para a tela de ajustes. */
+            userAgent?: string;
+        };
+        PushSubscriptionResultDto: {
+            /** @description Id da inscrição guardada. */
+            id: string;
         };
         SearchTaskHitDto: {
             /** @enum {string} */
@@ -6389,6 +6473,14 @@ export interface components {
             channelId: string;
             /** Format: date-time */
             lastReadAt: string;
+        };
+        ChannelReaderDto: {
+            userId: string;
+            /** Format: date-time */
+            lastReadAt: string;
+        };
+        ChannelReadsDto: {
+            items: components["schemas"]["ChannelReaderDto"][];
         };
         CreateMessageDto: {
             /** @example Subi o build do PDV */
@@ -7573,7 +7665,7 @@ export interface components {
         };
         WaBotRuleAction: {
             /** @enum {string} */
-            kind: "priority" | "assign" | "transferToHuman" | "tag" | "createLead";
+            kind: "priority" | "assign" | "tag" | "transferToHuman" | "createLead";
             /** @description Member the conversation goes to on `assign`. */
             userId: components["schemas"]["ObjectId"] | null;
             /** @description Tag written on the contact by `tag`. */
@@ -11848,6 +11940,67 @@ export interface operations {
             };
         };
     };
+    PushController_publicKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushPublicKeyDto"];
+                };
+            };
+        };
+    };
+    PushController_subscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePushSubscriptionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushSubscriptionResultDto"];
+                };
+            };
+        };
+    };
+    PushController_unsubscribe: {
+        parameters: {
+            query: {
+                endpoint: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     SearchController_run: {
         parameters: {
             query: {
@@ -13882,6 +14035,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChannelReadDto"];
+                };
+            };
+        };
+    };
+    ChannelsController_reads: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Quem já leu o canal e até quando. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelReadsDto"];
                 };
             };
         };

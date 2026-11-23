@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
-import { channelAttachmentsQuery, messagesQuery } from '../api';
+import { channelAttachmentsQuery, channelReadsQuery, messagesQuery } from '../api';
 import {
   canManageChannel,
   canWriteChannel,
@@ -19,8 +19,10 @@ import {
   isChannelMember,
   mergeMessagePages,
   memberUser,
+  otherMemberIds,
   typingLabel,
 } from '../chat-model';
+import type { ChannelReceipts } from '../chat-model';
 import { useMarkRead, type ChannelActions } from '../hooks/use-channels';
 import { useTyping } from '../hooks/use-chat-realtime';
 import { useMessages } from '../hooks/use-messages';
@@ -73,6 +75,7 @@ export function ChannelConversation({
   const [membersOpen, setMembersOpen] = useState(false);
   const messages = useInfiniteQuery(messagesQuery(wsId, channel.id));
   const attachments = useQuery(channelAttachmentsQuery(wsId, channel.id));
+  const reads = useQuery(channelReadsQuery(wsId, channel.id));
   const items = mergeMessagePages(messages.data?.pages);
   const actionsOfMessage = useMessages(wsId, channel.id);
   const typing = useTyping(wsId, channel.id, currentUserId);
@@ -80,6 +83,10 @@ export function ChannelConversation({
   const inside = isChannelMember(channel, currentUserId);
   const canWrite = canWriteChannel(channel, role, currentUserId);
   const canManage = canManageChannel(channel, role, currentUserId);
+  const receipts: ChannelReceipts = {
+    readers: reads.data?.items ?? [],
+    others: otherMemberIds(channel.memberIds, currentUserId),
+  };
   const names = typing.userIds
     .map((userId) => memberUser(members, userId)?.name)
     .filter((name): name is string => Boolean(name));
@@ -194,6 +201,8 @@ export function ChannelConversation({
           onLoadMore={() => {
             void messages.fetchNextPage();
           }}
+          group={channel.type !== 'dm'}
+          receipts={receipts}
           onOpenThread={onOpenThread}
           onCreateTask={onCreateTask}
         />

@@ -1,6 +1,8 @@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
+  Check,
+  CheckCheck,
   CornerDownRight,
   ListPlus,
   MessageSquare,
@@ -26,12 +28,16 @@ import { saveFile, formatBytes } from '@/features/tasks/components/attachments-s
 import { RichTextView } from '@/features/tasks/components/rich-text-view';
 import { cn } from '@/lib/utils';
 import {
+  AUTHOR_TONE_COUNT,
   QUICK_REACTIONS,
+  authorToneIndex,
   canDeleteMessage,
   isAuthor,
   memberUser,
   messageReactions,
+  messageReceipt,
 } from '../chat-model';
+import type { ChannelReceipts, MessageReceipt } from '../chat-model';
 import type { MessageActions } from '../hooks/use-messages';
 import { MessageComposer } from './message-composer';
 
@@ -48,10 +54,38 @@ export interface MessageItemProps {
   actions: MessageActions;
   /** Primeira mensagem do bloco: só ela mostra avatar e nome. */
   leading: boolean;
+  /** Conversa de mais de duas pessoas: cada autor ganha nome e tonalidade. */
+  group?: boolean;
+  /** Leituras do canal: dão o tique de entrega das minhas mensagens. */
+  receipts?: ChannelReceipts;
   /** Resposta da thread: sem botão de thread e sem "Criar tarefa". */
   reply?: boolean;
   onOpenThread?: (messageId: string) => void;
   onCreateTask?: (message: Message) => void;
+}
+
+/** Tons do nome de quem escreve no grupo, todos tokens com contraste AA. */
+const AUTHOR_TONES = [
+  'text-tone-1',
+  'text-tone-2',
+  'text-tone-3',
+  'text-tone-4',
+  'text-tone-5',
+  'text-tone-6',
+] as const;
+
+function receiptTitle(receipt: MessageReceipt | null): string {
+  if (!receipt) {
+    return '';
+  }
+
+  if (receipt.tick === 'sent') {
+    return 'Enviada';
+  }
+
+  return receipt.tick === 'read'
+    ? 'Lida por todos'
+    : `Lida por ${String(receipt.readBy)} ${receipt.readBy === 1 ? 'pessoa' : 'pessoas'}`;
 }
 
 function timeOf(iso: string): { short: string; exact: string } {
@@ -74,7 +108,7 @@ function AttachmentChip({ wsId, attachment }: { wsId: string; attachment: Attach
     <button
       type="button"
       disabled={saving}
-      className="flex min-h-11 max-w-full items-center gap-1.5 rounded-xl border border-line px-2.5 text-[12.5px] text-body hover:bg-surface-2 hover:text-ink md:min-h-9"
+      className="flex min-h-11 max-w-full items-center gap-1.5 rounded-xl border border-line bg-paper/40 px-2.5 text-[12.5px] text-body hover:bg-surface-2 hover:text-ink md:min-h-9"
       onClick={() => {
         setSaving(true);
         void saveFile(wsId, attachment).finally(() => {
@@ -90,7 +124,10 @@ function AttachmentChip({ wsId, attachment }: { wsId: string; attachment: Attach
   );
 }
 
-/** Uma mensagem da conversa ou da thread, com reações e as ações de quem pode. */
+/**
+ * Uma mensagem da conversa ou da thread, em bolha: a minha à direita e as dos
+ * outros à esquerda, com reações e as ações de quem pode.
+ */
 export function MessageItem({
   wsId,
   channelId,
@@ -102,6 +139,8 @@ export function MessageItem({
   canWrite,
   actions,
   leading,
+  group = false,
+  receipts,
   reply = false,
   onOpenThread,
   onCreateTask,
@@ -113,6 +152,12 @@ export function MessageItem({
   const busy = actions.busyId === message.id;
   const mine = isAuthor(message, currentUserId);
   const parentId = message.parentMessageId === null ? null : String(message.parentMessageId);
+  const tone =
+    AUTHOR_TONES[authorToneIndex(message.authorId, AUTHOR_TONE_COUNT)] ?? AUTHOR_TONES[0];
+  const receipt = mine
+    ? messageReceipt(message, receipts?.readers ?? [], currentUserId, receipts?.others ?? [])
+    : null;
+  const receiptLabel = receiptTitle(receipt);
   const files = message.attachmentIds
     .map((id) => attachments.find((one) => one.id === String(id)))
     .filter((one): one is Attachment => one !== undefined);
@@ -144,7 +189,8 @@ export function MessageItem({
   return (
     <article
       className={cn(
-        'group flex min-w-0 gap-2.5 rounded-xl px-1 py-1 hover:bg-surface-2',
+        'group flex min-w-0 items-start gap-2 px-1 py-0.5',
+        mine ? 'flex-row-reverse' : 'flex-row',
         leading && 'mt-2',
       )}
       aria-label={`Mensagem de ${author?.name ?? 'pessoa removida'}`}
@@ -156,44 +202,74 @@ export function MessageItem({
           className={reply ? 'h-7 w-7 shrink-0' : 'h-8 w-8 shrink-0'}
         />
       ) : (
-        <span
-          className="w-7 shrink-0 self-start pt-0.5 text-right text-[11px] text-muted opacity-0 group-hover:opacity-100 md:w-8"
-          aria-hidden="true"
-        >
-          {stamp.short}
-        </span>
+        <span className={cn('shrink-0', reply ? 'w-7' : 'w-8')} aria-hidden="true" />
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        {leading ? (
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2">
-            <span className="truncate text-[13px] font-semibold text-ink">
+      <div
+        className={cn(
+          'flex min-w-0 max-w-[85%] flex-col gap-1 md:max-w-[75%] lg:max-w-[66%]',
+          mine ? 'items-end' : 'items-start',
+        )}
+      >
+        <div
+          className={cn(
+            'min-w-0 max-w-full rounded-2xl border px-3 py-2',
+            mine ? 'border-scene-line bg-scene' : 'border-line bg-surface',
+            leading && (mine ? 'rounded-tr-sm' : 'rounded-tl-sm'),
+          )}
+        >
+          {leading ? (
+            <span
+              className={cn(
+                'mb-0.5 block truncate text-[12.5px] font-semibold',
+                group && !mine ? tone : 'text-ink',
+              )}
+            >
               {author?.name ?? 'Pessoa removida'}
             </span>
-            <span className="text-[12px] text-muted" title={stamp.exact}>
+          ) : null}
+
+          <RichTextView value={message.body} text={message.bodyText} />
+
+          {files.length > 0 ? (
+            <ul className="mt-1.5 flex flex-wrap gap-1.5">
+              {files.map((attachment) => (
+                <li key={attachment.id} className="min-w-0">
+                  <AttachmentChip wsId={wsId} attachment={attachment} />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          <span className="mt-0.5 flex items-center justify-end gap-1 text-[11px] text-muted">
+            {message.editedAt ? <span>editada ·</span> : null}
+            <time dateTime={message.createdAt} title={stamp.exact}>
               {stamp.short}
-            </span>
-            {message.editedAt ? <span className="text-[12px] text-muted">· editada</span> : null}
-          </div>
-        ) : null}
+            </time>
 
-        {!leading && message.editedAt ? (
-          <span className="text-[11.5px] text-muted">editada</span>
-        ) : null}
+            {receipt ? (
+              <span
+                role="img"
+                aria-label={receiptLabel}
+                title={receiptLabel}
+                className={receipt.tick === 'read' ? 'text-accent' : 'text-muted'}
+              >
+                {receipt.tick === 'sent' ? (
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                )}
+              </span>
+            ) : null}
+          </span>
+        </div>
 
-        <RichTextView value={message.body} text={message.bodyText} />
-
-        {files.length > 0 ? (
-          <ul className="flex flex-wrap gap-1.5">
-            {files.map((attachment) => (
-              <li key={attachment.id} className="min-w-0">
-                <AttachmentChip wsId={wsId} attachment={attachment} />
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        <div className="flex flex-wrap items-center gap-1">
+        <div
+          className={cn(
+            'flex flex-wrap items-center gap-1',
+            mine ? 'flex-row-reverse' : 'flex-row',
+          )}
+        >
           {reactions.map((reaction) => (
             <button
               key={reaction.emoji}
@@ -243,7 +319,7 @@ export function MessageItem({
                   <SmilePlus className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="w-auto">
+              <PopoverContent align={mine ? 'end' : 'start'} className="w-auto">
                 <div className="flex gap-1">
                   {QUICK_REACTIONS.map((emoji) => (
                     <button
@@ -289,7 +365,7 @@ export function MessageItem({
                   <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align={mine ? 'start' : 'end'}>
                 {!reply && onCreateTask ? (
                   <DropdownMenuItem
                     onSelect={() => {

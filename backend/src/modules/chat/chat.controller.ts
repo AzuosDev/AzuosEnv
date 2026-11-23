@@ -36,7 +36,12 @@ import {
   CreateDmDto,
   UpdateChannelDto,
 } from './dto/channel.dto';
-import { ChannelReadDto, ChatActivityDto, MessageToTaskResultDto } from './dto/chat-result.dto';
+import {
+  ChannelReadDto,
+  ChannelReadsDto,
+  ChatActivityDto,
+  MessageToTaskResultDto,
+} from './dto/chat-result.dto';
 import {
   CreateMessageDto,
   MessageReactionDto,
@@ -179,6 +184,17 @@ export class ChannelsController {
     const read = await this.channels.markRead(permissionContextFrom(membership), channelId);
 
     return { channelId: String(read.channelId), lastReadAt: read.lastReadAt.toISOString() };
+  }
+
+  @Get(':channelId/reads')
+  @ApiOkResponse({ description: 'Quem já leu o canal e até quando.', type: ChannelReadsDto })
+  async reads(
+    @CurrentMembership() membership: RequestMembership,
+    @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
+  ): Promise<ChannelReadsDto> {
+    const items = await this.channels.readers(permissionContextFrom(membership), channelId);
+
+    return { items };
   }
 
   @Post(':channelId/messages')

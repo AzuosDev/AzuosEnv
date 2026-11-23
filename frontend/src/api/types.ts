@@ -50,6 +50,7 @@ export type UserSession = components['schemas']['SessionDto'];
 export type NotificationPreferences = components['schemas']['NotificationPreferencesDto'];
 export type NotificationChannels = components['schemas']['NotificationChannelsStateDto'];
 export type NotificationKind = keyof NotificationPreferences;
+export type PushSubscriptionInput = components['schemas']['CreatePushSubscriptionDto'];
 
 export type UpdateProfileInput = components['schemas']['UpdateProfileDto'];
 export type SetPasswordInput = components['schemas']['SetPasswordDto'];
@@ -417,6 +418,8 @@ export type CreateMessageInput = components['schemas']['CreateMessageDto'];
 export type UpdateMessageInput = components['schemas']['UpdateMessageDto'];
 export type ChannelRead = components['schemas']['ChannelReadDto'];
 export type ChatActivity = components['schemas']['ChatActivityDto'];
+export type ChannelReader = components['schemas']['ChannelReaderDto'];
+export type ChannelReads = components['schemas']['ChannelReadsDto'];
 export type ChannelActivity = components['schemas']['ChannelActivityDto'];
 export type MessageToTaskResult = Omit<components['schemas']['MessageToTaskResultDto'], 'task'> & {
   task: Task;

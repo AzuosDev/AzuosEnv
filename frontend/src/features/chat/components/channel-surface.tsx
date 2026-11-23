@@ -152,6 +152,8 @@ export function ChannelSurface({ wsId, locationType, locationId, role }: Channel
             currentUserId={user?.id}
             role={role}
             canWrite={canWriteChannel(active, role, user?.id)}
+            group={active.type !== 'dm'}
+            channelMemberIds={active.memberIds.map(String)}
             onClose={() => {
               setThreadId(null);
             }}

@@ -27,6 +27,12 @@ export default {
         warning: token('warning'),
         danger: token('danger'),
         info: token('info'),
+        'tone-1': token('tone-1'),
+        'tone-2': token('tone-2'),
+        'tone-3': token('tone-3'),
+        'tone-4': token('tone-4'),
+        'tone-5': token('tone-5'),
+        'tone-6': token('tone-6'),
         /* Exceção dos tokens: paleta do módulo WhatsApp, só dentro dele. */
         wa: {
           bg: 'var(--wa-bg)',
