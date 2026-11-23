@@ -106,6 +106,41 @@ Sem `COOKIE_DOMAIN` o cookie fica preso em `api.azuosdev.com.br` e o refresh sil
 falha — a sessão cai no primeiro reload. Domínios de sites diferentes (por exemplo
 `app.azuos.dev` com `api.outracoisa.com`) exigiriam `SameSite=None`, fora do escopo.
 
+### Vercel (dois projetos `*.vercel.app`)
+
+Hoje o app está em `azuosenv.vercel.app` e a API em `azuosenv-api.vercel.app`. Como
+`vercel.app` está na Public Suffix List, **cada subdomínio é um site diferente**: o
+cookie de refresh gravado pela API é cookie de terceiros para o app e o navegador não
+o envia no `POST /api/v1/auth/refresh`. O login por senha parece funcionar (o access
+token vem no corpo), mas o refresh silencioso falha e o login com Google morre em
+`/login?erro=google`, porque ele depende só do cookie.
+
+A saída sem domínio próprio é fazer a API responder **na mesma origem do app**, pelo
+rewrite de `frontend/vercel.json`:
+
+```json
+{ "source": "/api/:path*", "destination": "https://azuosenv-api.vercel.app/api/:path*" }
+```
+
+Com isso nada mais é terceira parte. As variáveis mudam assim:
+
+| Onde | Variável | Valor |
+| --- | --- | --- |
+| Vercel → frontend | `VITE_API_URL` | `https://azuosenv.vercel.app` (a própria origem do app) |
+| Vercel → backend | `GOOGLE_LOGIN_REDIRECT_URI` | `https://azuosenv.vercel.app/api/v1/auth/google/callback` |
+| Vercel → backend | `CORS_ORIGINS`, `APP_URL`, `FRONTEND_URL` | `https://azuosenv.vercel.app` |
+| Vercel → backend | `COOKIE_SECURE` / `COOKIE_SAME_SITE` / `COOKIE_DOMAIN` | `true` / `none` (ou `lax`, já que agora é mesma origem) / vazio |
+
+A URI nova do login tem que entrar em "URIs de redirecionamento autorizados" do client
+OAuth no Console do Google; a antiga (`azuosenv-api.vercel.app/...`) pode ficar.
+
+O tempo real (Socket.IO) **não funciona nessa hospedagem** com ou sem o rewrite: função
+serverless não mantém WebSocket. O rewrite de `/ws/:path*` fica pronto para quando a API
+rodar em um host que aceite conexão longa.
+
+O rewrite não cria limite novo de upload: o backend já é uma Vercel Function, então o
+teto de 4,5 MB de corpo vale igual com ou sem proxy.
+
 ### PWA
 
 `vite-plugin-pwa` gera `sw.js` e `manifest.webmanifest` no build. O Service Worker

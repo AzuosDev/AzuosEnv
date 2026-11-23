@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req, Res } from '@nestjs/common';
+import { Controller, Get, Logger, Query, Req, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
@@ -15,9 +15,16 @@ import {
 
 const CALLBACK_THROTTLE = { default: { limit: 5, ttl: 60_000 } };
 
+/** Motivo da falha para o log; o usuário continua só com o redirect de erro. */
+function reasonOf(error: unknown): string {
+  return error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+}
+
 @ApiTags('auth')
 @Controller('auth/google')
 export class GoogleLoginController {
+  private readonly logger = new Logger(GoogleLoginController.name);
+
   constructor(
     private readonly google: GoogleLoginService,
     private readonly refreshTokens: RefreshTokensService,
@@ -45,7 +52,8 @@ export class GoogleLoginController {
         maxAge: GOOGLE_STATE_TTL_SECONDS * 1000,
       });
       response.redirect(started.url);
-    } catch {
+    } catch (error) {
+      this.logger.warn(`Início do login com o Google falhou: ${reasonOf(error)}`);
       response.redirect(this.google.errorUrl());
     }
   }
@@ -78,7 +86,8 @@ export class GoogleLoginController {
 
       setRefreshCookie(response, this.config, result.refreshToken, this.refreshTokens.ttlMs);
       response.redirect(this.google.successUrl(result.next));
-    } catch {
+    } catch (error) {
+      this.logger.warn(`Callback do login com o Google falhou: ${reasonOf(error)}`);
       response.redirect(this.google.errorUrl());
     }
   }
