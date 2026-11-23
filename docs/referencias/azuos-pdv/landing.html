@@ -1,0 +1,626 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Azuos PDV</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: faixas inteiras alternando papel claro e "chassi" escuro do caixa; a tela de venda é a peça central do hero. */
+:root {
+  --bg: #ffffff;
+  --panel: #f3f3f6;
+  --fg: #111114;
+  --muted: #66666f;
+  --line: #e5e5ea;
+  --brand: #7c3aed;
+  --brand-deep: #6d28d9;
+  --brand-soft: #efe7fd;
+  --chassi: #1c1c21;
+  --chassi-fg: #f3f3f6;
+  --chassi-muted: #9c9ca6;
+  --chassi-line: #333339;
+  --ok: #15803d;
+  --ok-soft: #e3f4e8;
+  --warn: #b45309;
+  --warn-soft: #fdf1e1;
+  --danger: #c81e2a;
+  --shadow: 0 1px 2px rgba(17,17,20,.06), 0 8px 24px rgba(17,17,20,.08);
+  --f-head: "Work Sans", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111114; --panel: #1b1b20; --fg: #f8f8fa; --muted: #95959f; --line: #2c2c33;
+    --brand: #9d6bf5; --brand-deep: #8b5cf6; --brand-soft: #251a3d;
+    --chassi: #18181d; --chassi-fg: #f8f8fa; --chassi-muted: #95959f; --chassi-line: #303037;
+    --ok: #4ade80; --ok-soft: #12291a; --warn: #f59e0b; --warn-soft: #2d2010; --danger: #f87171;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111114; --panel: #1b1b20; --fg: #f8f8fa; --muted: #95959f; --line: #2c2c33;
+  --brand: #9d6bf5; --brand-deep: #8b5cf6; --brand-soft: #251a3d;
+  --chassi: #18181d; --chassi-fg: #f8f8fa; --chassi-muted: #95959f; --chassi-line: #303037;
+  --ok: #4ade80; --ok-soft: #12291a; --warn: #f59e0b; --warn-soft: #2d2010; --danger: #f87171;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 16px; line-height: 1.55; }
+h1, h2, h3 { font-family: var(--f-head); text-wrap: balance; margin: 0; letter-spacing: -.02em; }
+p { margin: 0; }
+a { color: inherit; }
+.num { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.band { padding-block: 88px; }
+.band.alt { background: var(--panel); }
+.band.dark { background: var(--chassi); color: var(--chassi-fg); }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--brand); }
+.dark .eyebrow { color: #b794f6; }
+.lead { color: var(--muted); font-size: 18px; max-width: 62ch; }
+.dark .lead { color: var(--chassi-muted); }
+.sec-head { display: grid; gap: 12px; margin-bottom: 44px; }
+.sec-head h2 { font-size: clamp(28px, 3.6vw, 40px); font-weight: 700; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: 6px; }
+
+/* Cabeçalho */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 64px; }
+.logo { display: flex; align-items: center; gap: 10px; font-family: var(--f-head); font-weight: 800; font-size: 19px; text-decoration: none; }
+.logo .mark { width: 30px; height: 30px; border-radius: 8px; background: var(--brand-deep); color: #fff; display: grid; place-items: center; font-size: 15px; }
+nav.links { display: flex; gap: 24px; font-size: 15px; color: var(--muted); }
+nav.links a { text-decoration: none; }
+nav.links a:hover { color: var(--fg); }
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 22px; border-radius: 10px; font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid transparent; transition: transform .15s ease, background .15s ease; }
+.btn.primary { background: var(--brand-deep); color: #fff; }
+.btn.primary:hover { background: var(--brand); transform: translateY(-1px); }
+.btn.ghost { border-color: var(--line); color: var(--fg); }
+.btn.ghost:hover { border-color: var(--muted); }
+.btn.sm { height: 38px; padding: 0 16px; font-size: 14px; }
+
+/* Hero */
+.hero { padding-block: 64px 80px; }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px; align-items: center; }
+.hero h1 { font-size: clamp(36px, 5vw, 58px); font-weight: 800; line-height: 1.04; }
+.hero h1 em { font-style: normal; color: var(--brand); }
+.hero .lead { margin-top: 20px; }
+.hero .ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.hero .facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 32px; font-size: 14px; color: var(--muted); }
+.hero .facts span::before { content: "●"; color: var(--ok); font-size: 9px; vertical-align: 2px; margin-right: 7px; }
+
+/* Tela de venda (mockup) */
+.screen { background: var(--chassi); color: var(--chassi-fg); border-radius: 16px; box-shadow: var(--shadow), 0 30px 60px -20px rgba(76,29,149,.35); overflow: hidden; font-size: 13px; border: 1px solid var(--chassi-line); }
+.screen .bar { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--chassi-line); color: var(--chassi-muted); font-size: 12px; gap: 10px; }
+.screen .bar b { color: var(--chassi-fg); font-weight: 600; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+.pill.ok { background: rgba(74,222,128,.14); color: #4ade80; }
+.pill.ok::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.screen .body { display: grid; grid-template-columns: minmax(0, 1fr) 210px; }
+.items { background: #fff; color: #111114; padding: 14px; min-width: 0; }
+:root[data-theme="dark"] .items { background: #202026; color: #f8f8fa; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .items { background: #202026; color: #f8f8fa; } }
+.scan { display: flex; align-items: center; gap: 8px; border: 2px solid var(--brand); border-radius: 9px; padding: 8px 10px; margin-bottom: 10px; color: var(--muted); }
+.scan .caret { width: 2px; height: 15px; background: var(--brand); animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.items table { width: 100%; border-collapse: collapse; }
+.items th { text-align: left; font-weight: 500; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding: 4px 6px; }
+.items td { padding: 7px 6px; border-top: 1px solid var(--line); white-space: nowrap; }
+.items td:first-child { white-space: normal; }
+.items td.r, .items th.r { text-align: right; }
+.items tr.sel td { background: var(--brand-soft); }
+.tag-atk { font-size: 10px; font-weight: 600; color: var(--brand); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+.total { padding: 16px; display: flex; flex-direction: column; gap: 10px; border-left: 1px solid var(--chassi-line); }
+.total .lbl { color: var(--chassi-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.total .big { font-size: 30px; font-weight: 600; line-height: 1.1; }
+.total .row { display: flex; justify-content: space-between; color: var(--chassi-muted); font-size: 12px; }
+.total .row .num { color: var(--chassi-fg); }
+.total .cli { margin-top: auto; border: 1px solid var(--chassi-line); border-radius: 9px; padding: 9px; font-size: 12px; }
+.total .cli b { display: block; color: var(--chassi-fg); }
+.rail { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; border-top: 1px solid var(--chassi-line); }
+.key { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--chassi-muted); }
+.key kbd { font-family: var(--f-num); font-size: 10px; font-weight: 600; background: #2c2c33; color: var(--chassi-fg); border-radius: 5px; padding: 2px 5px; border-bottom: 2px solid #111; }
+.key.hot kbd { background: #7c3aed; border-bottom-color: #4c1d95; color: #fff; }
+.key.hot { color: var(--chassi-fg); }
+
+/* Offline */
+.offline { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 56px; align-items: center; }
+.diagram { background: #24242a; border: 1px solid var(--chassi-line); border-radius: 16px; padding: 22px; overflow-x: auto; }
+.diagram svg { display: block; width: 100%; min-width: 420px; height: auto; }
+.points { display: grid; gap: 22px; margin-top: 30px; }
+.point { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; }
+.point .ico { width: 40px; height: 40px; border-radius: 10px; background: #2a2a31; display: grid; place-items: center; color: #b794f6; }
+.point h3 { font-size: 17px; font-weight: 600; margin-bottom: 3px; }
+.point p { color: var(--chassi-muted); font-size: 15px; }
+
+/* Recursos */
+.features { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px; }
+.feat { background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px; min-width: 0; grid-column: span 2; }
+.feat.wide { grid-column: span 3; }
+.feat h3 { font-size: 20px; font-weight: 700; }
+.feat > p { color: var(--muted); font-size: 15px; }
+.feat ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+.feat ul li { padding-left: 20px; position: relative; }
+.feat ul li::before { content: ""; position: absolute; left: 3px; top: 8px; width: 8px; height: 5px; border-left: 2px solid var(--brand); border-bottom: 2px solid var(--brand); transform: rotate(-45deg); }
+.mini { margin-top: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; font-size: 13px; }
+.mini.dk { background: var(--chassi); color: var(--chassi-fg); border-color: var(--chassi-line); }
+.mini .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 8px; }
+.mini.dk .t { color: var(--chassi-muted); }
+.spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--chassi-line); border-top-color: #9d6bf5; animation: spin 1s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.weigh { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.weigh .kg { font-size: 34px; font-weight: 600; }
+.chat { display: grid; gap: 8px; }
+.bubble { background: #d9fdd3; color: #111b21; border-radius: 10px 10px 2px 10px; padding: 9px 11px; max-width: 92%; justify-self: end; font-size: 13px; line-height: 1.45; }
+.bubble small { display: block; text-align: right; color: #667781; font-size: 10px; margin-top: 3px; }
+.phone-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 20px; align-items: center; }
+.phone { width: 150px; border-radius: 22px; background: var(--chassi); padding: 8px; box-shadow: var(--shadow); }
+.phone .scr { background: #fff; color: #111114; border-radius: 16px; overflow: hidden; font-size: 10px; }
+.phone .cam { height: 92px; background: #2a2a31; position: relative; display: grid; place-items: center; }
+.phone .cam .frame { width: 92px; height: 46px; border: 2px solid #fff; border-radius: 6px; position: relative; }
+.phone .cam .frame::after { content: ""; position: absolute; left: 6px; right: 6px; top: 50%; height: 2px; background: #f43f5e; box-shadow: 0 0 8px #f43f5e; animation: scanln 1.6s ease-in-out infinite alternate; }
+@keyframes scanln { from { transform: translateY(-14px); } to { transform: translateY(14px); } }
+.phone .f { padding: 8px; display: grid; gap: 5px; }
+.phone .f div { border: 1px solid #e5e5ea; border-radius: 5px; padding: 4px 6px; }
+.phone .f div span { display: block; color: #66666f; font-size: 8px; }
+.phone .f .save { background: #6d28d9; color: #fff; text-align: center; font-weight: 600; border: 0; }
+.client { display: grid; gap: 6px; }
+.client .rowx { display: flex; justify-content: space-between; gap: 10px; }
+.client .rowx span:first-child { color: var(--muted); }
+.lvl { font-size: 11px; font-weight: 600; color: var(--brand); background: var(--brand-soft); padding: 1px 8px; border-radius: 99px; }
+.bars { display: flex; align-items: flex-end; gap: 8px; height: 92px; padding-top: 6px; border-bottom: 1px solid var(--line); }
+.bars div { flex: 1; background: color-mix(in srgb, var(--brand) 30%, transparent); border-radius: 4px 4px 0 0; }
+.bars div.today { background: var(--brand); }
+.bars-x { display: flex; gap: 8px; margin-top: 5px; font-size: 10px; color: var(--muted); }
+.bars-x span { flex: 1; text-align: center; }
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+.kpis div { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; }
+.kpis span { display: block; font-size: 10px; color: var(--muted); }
+.kpis b { font-size: 15px; }
+.chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+.chip.ok { background: var(--ok-soft); color: var(--ok); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); }
+
+/* Planos */
+.plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: stretch; }
+.plan { background: var(--bg); border: 1px solid var(--line); border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 18px; position: relative; min-width: 0; }
+.plan.top { border: 2px solid var(--brand); box-shadow: var(--shadow); }
+.plan .badge { position: absolute; top: -13px; left: 28px; background: var(--brand-deep); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 99px; }
+.plan h3 { font-size: 22px; font-weight: 700; }
+.plan .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.price { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.price .cur { font-size: 18px; color: var(--muted); }
+.price .val { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-size: 44px; font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.price .per { color: var(--muted); font-size: 15px; }
+.plus-inst { font-size: 13px; font-weight: 600; color: var(--warn); background: var(--warn-soft); border-radius: 8px; padding: 7px 10px; }
+.plan ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 15px; }
+.plan li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 8px; }
+.plan li .y { color: var(--ok); font-weight: 700; }
+.plan li.no { color: var(--muted); }
+.plan li.no .y { color: var(--muted); }
+.plan .btn { margin-top: auto; justify-content: center; }
+
+/* Instalação */
+.install { margin-top: 36px; border: 2px dashed var(--warn); background: var(--warn-soft); border-radius: 18px; padding: 30px; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px; }
+.install h3 { font-size: 24px; font-weight: 700; }
+.install p { margin-top: 10px; color: var(--fg); }
+.install .who { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.install .who div { background: var(--bg); border-radius: 10px; padding: 12px 14px; font-size: 14px; border: 1px solid var(--line); }
+.install .who b { display: block; font-size: 15px; margin-bottom: 2px; }
+.install .who span { color: var(--muted); }
+
+/* Passos */
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; counter-reset: s; }
+.step { border-top: 2px solid var(--brand); padding-top: 16px; }
+.step::before { counter-increment: s; content: "Passo " counter(s); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--brand); }
+.step h3 { font-size: 18px; font-weight: 600; margin: 6px 0 6px; }
+.step p { color: var(--muted); font-size: 15px; }
+
+/* CTA final */
+.final { text-align: left; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 24px; }
+.final h2 { font-size: clamp(26px, 3.4vw, 38px); font-weight: 700; max-width: 22ch; }
+footer { border-top: 1px solid var(--chassi-line); padding-block: 22px; background: var(--chassi); color: var(--chassi-muted); font-size: 13px; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+
+@media (max-width: 980px) {
+  .hero .wrap, .offline, .install { grid-template-columns: minmax(0, 1fr); }
+  .features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .feat, .feat.wide { grid-column: span 1; }
+  .plans { grid-template-columns: minmax(0, 1fr); max-width: 520px; }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  nav.links { display: none; }
+}
+@media (max-width: 640px) {
+  .band { padding-block: 60px; }
+  .features, .steps, .install .who { grid-template-columns: minmax(0, 1fr); }
+  .screen .body { grid-template-columns: minmax(0, 1fr); }
+  .total { border-left: 0; border-top: 1px solid var(--chassi-line); }
+  .items .hide-sm { display: none; }
+  .phone-row { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .install { padding: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#inicio"><span class="mark">A</span>Azuos PDV</a>
+    <nav class="links" aria-label="Seções">
+      <a href="#offline">Offline</a>
+      <a href="#recursos">Recursos</a>
+      <a href="#planos">Planos</a>
+      <a href="#instalacao">Instalação</a>
+    </nav>
+    <a class="btn primary sm" href="#planos">Ver planos</a>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">PDV para depósito de material de construção</div>
+        <h1 style="margin-top:14px">O caixa que <em>continua vendendo</em> quando a internet cai.</h1>
+        <p class="lead">Venda no teclado, maquininha integrada, peso direto da balança, fiado com aviso no WhatsApp e cadastro de produto pelo celular. Tudo em um sistema feito para o balcão do depósito.</p>
+        <div class="ctas">
+          <a class="btn primary" href="#planos">Conhecer os planos</a>
+          <a class="btn ghost" href="#recursos">Ver o sistema</a>
+        </div>
+        <div class="facts">
+          <span>Funciona sem internet</span>
+          <span>Dois caixas sincronizados</span>
+          <span>Backup em nuvem</span>
+        </div>
+      </div>
+
+      <div class="screen" role="img" aria-label="Tela de venda do Azuos PDV com itens, total e teclas de função">
+        <div class="bar">
+          <span><b>Caixa 1</b> · Operador: Marcos</span>
+          <span class="pill ok">Sincronizado</span>
+        </div>
+        <div class="body">
+          <div class="items">
+            <div class="scan"><span class="caret"></span>Bipe ou digite o código do produto…</div>
+            <table>
+              <thead><tr><th>Produto</th><th class="r">Qtd</th><th class="r hide-sm">Unit.</th><th class="r">Total</th></tr></thead>
+              <tbody>
+                <tr><td>Cimento CP II 50 kg<span class="tag-atk">ATACADO</span></td><td class="r num">20 sc</td><td class="r num hide-sm">34,90</td><td class="r num">698,00</td></tr>
+                <tr><td>Areia média</td><td class="r num">2 m³</td><td class="r num hide-sm">135,00</td><td class="r num">270,00</td></tr>
+                <tr><td>Vergalhão CA-50 10 mm</td><td class="r num">12 br</td><td class="r num hide-sm">42,50</td><td class="r num">510,00</td></tr>
+                <tr class="sel"><td>Prego 18×27 (balança)</td><td class="r num">2,350 kg</td><td class="r num hide-sm">18,90</td><td class="r num">44,42</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="total">
+            <div>
+              <div class="lbl">Total da venda</div>
+              <div class="big num">R$ 1.522,42</div>
+            </div>
+            <div class="row"><span>Itens</span><span class="num">4</span></div>
+            <div class="row"><span>Desconto</span><span class="num">R$ 0,00</span></div>
+            <div class="cli"><span style="color:var(--chassi-muted)">Cliente</span><b>José Carlos (Zé da Obra)</b><span style="color:var(--chassi-muted)">CPF ***.482.***-10</span></div>
+          </div>
+        </div>
+        <div class="rail">
+          <span class="key"><kbd>F1</kbd>Preço</span>
+          <span class="key"><kbd>F2</kbd>Buscar</span>
+          <span class="key"><kbd>F4</kbd>Qtd</span>
+          <span class="key"><kbd>F6</kbd>Desconto</span>
+          <span class="key"><kbd>F7</kbd>Cliente</span>
+          <span class="key"><kbd>F11</kbd>Pesar</span>
+          <span class="key hot"><kbd>F12</kbd>Receber</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band dark" id="offline">
+    <div class="wrap offline">
+      <div>
+        <div class="eyebrow">Funcionamento offline</div>
+        <h2 style="font-size:clamp(28px,3.6vw,40px);font-weight:700;margin-top:12px">A internet caiu? O balcão nem percebe.</h2>
+        <p class="lead" style="margin-top:14px">Os dados ficam na própria loja. Os caixas conversam pela rede interna e a nuvem só guarda a cópia de segurança.</p>
+        <div class="points">
+          <div class="point">
+            <div class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div><h3>Vende sem internet</h3><p>Venda, caixa, estoque e fiado funcionam normalmente, mesmo sem conexão.</p></div>
+          </div>
+          <div class="point">
+            <div class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 7h10v10M17 7 7 17"/></svg></div>
+            <div><h3>Dois caixas em tempo real</h3><p>O que um caixa vende baixa o estoque do outro na hora, pela rede da loja e com conexão protegida.</p></div>
+          </div>
+          <div class="point">
+            <div class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8H7z"/></svg></div>
+            <div><h3>Backup em nuvem</h3><p>Quando a internet volta, a cópia de segurança é atualizada sozinha. Se um computador quebrar, os dados voltam.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="diagram">
+        <svg viewBox="0 0 460 330" role="img" aria-label="Caixa 1 e Caixa 2 ligados pela rede da loja, celular sincronizado e nuvem de backup">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#9d6bf5"/></marker>
+          </defs>
+          <rect x="10" y="10" width="440" height="215" rx="14" fill="none" stroke="#3a3a42" stroke-dasharray="4 4"/>
+          <text x="26" y="34" fill="#9c9ca6" font-family="IBM Plex Sans, sans-serif" font-size="12" letter-spacing="1">REDE DA LOJA</text>
+          <rect x="30" y="58" width="150" height="92" rx="10" fill="#2c2c33" stroke="#7c3aed" stroke-width="2"/>
+          <text x="105" y="94" text-anchor="middle" fill="#f3f3f6" font-family="Work Sans, sans-serif" font-weight="700" font-size="16">Caixa 1</text>
+          <text x="105" y="116" text-anchor="middle" fill="#9c9ca6" font-family="IBM Plex Sans, sans-serif" font-size="12">banco principal</text>
+          <rect x="280" y="58" width="150" height="92" rx="10" fill="#2c2c33" stroke="#4a4a52"/>
+          <text x="355" y="94" text-anchor="middle" fill="#f3f3f6" font-family="Work Sans, sans-serif" font-weight="700" font-size="16">Caixa 2</text>
+          <text x="355" y="116" text-anchor="middle" fill="#9c9ca6" font-family="IBM Plex Sans, sans-serif" font-size="12">cópia sincronizada</text>
+          <line x1="186" y1="104" x2="274" y2="104" stroke="#9d6bf5" stroke-width="2" marker-start="url(#ah)" marker-end="url(#ah)"/>
+          <text x="230" y="94" text-anchor="middle" fill="#b794f6" font-family="IBM Plex Sans, sans-serif" font-size="11">tempo real</text>
+          <rect x="180" y="168" width="100" height="40" rx="10" fill="#2c2c33" stroke="#4a4a52"/>
+          <text x="230" y="193" text-anchor="middle" fill="#f3f3f6" font-family="IBM Plex Sans, sans-serif" font-size="13">Celular</text>
+          <line x1="140" y1="152" x2="186" y2="172" stroke="#9d6bf5" stroke-width="1.5" marker-end="url(#ah)" marker-start="url(#ah)"/>
+          <path d="M105 228 V270 H170" fill="none" stroke="#6b6b75" stroke-width="1.5" stroke-dasharray="5 5" marker-end="url(#ah)"/>
+          <rect x="176" y="250" width="200" height="44" rx="22" fill="#24242a" stroke="#6b6b75" stroke-dasharray="5 5"/>
+          <text x="276" y="277" text-anchor="middle" fill="#f3f3f6" font-family="IBM Plex Sans, sans-serif" font-size="13">Nuvem · backup</text>
+          <text x="230" y="318" text-anchor="middle" fill="#9c9ca6" font-family="IBM Plex Sans, sans-serif" font-size="11">envia quando houver internet</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="recursos">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">O que vem no sistema</div>
+        <h2>Feito para o dia a dia do depósito</h2>
+        <p class="lead">Telas pensadas para o balcão: rápidas, legíveis e operadas pelo teclado.</p>
+      </div>
+
+      <div class="features">
+        <article class="feat wide">
+          <h3>Vendas no teclado</h3>
+          <p>Cada ação tem uma tecla de função visível na tela. O operador vende sem tirar a mão do teclado.</p>
+          <ul>
+            <li>Leitor de código de barras e busca por nome</li>
+            <li>Preço de atacado automático pela quantidade</li>
+            <li>Dinheiro com troco, Pix com QR na tela, cartão e fiado</li>
+            <li>Cancelamento com motivo, que fica registrado no histórico</li>
+          </ul>
+          <div class="mini dk">
+            <div class="t">Recebimento · F12</div>
+            <div class="client">
+              <div class="rowx"><span style="color:var(--chassi-muted)">Total</span><span class="num">R$ 1.522,42</span></div>
+              <div class="rowx"><span style="color:var(--chassi-muted)">Recebido em dinheiro</span><span class="num">R$ 1.550,00</span></div>
+              <div class="rowx"><span style="color:var(--chassi-muted)">Troco</span><span class="num" style="color:#4ade80;font-weight:600">R$ 27,58</span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="feat wide">
+          <h3>Maquininha integrada</h3>
+          <p>O valor vai do caixa direto para a maquininha. Sem digitar duas vezes e sem erro de valor.</p>
+          <ul>
+            <li>Mercado Pago Point Smart e Cielo Smart</li>
+            <li>Débito e crédito parcelado</li>
+            <li>Estorno na maquininha ao cancelar a venda</li>
+            <li>Funciona pela internet, sem cabo no caixa</li>
+          </ul>
+          <div class="mini dk" style="display:flex;gap:14px;align-items:center">
+            <div class="spinner" aria-hidden="true"></div>
+            <div style="min-width:0">
+              <div class="t" style="margin-bottom:2px">Aguardando a maquininha</div>
+              <div><span class="num" style="font-size:18px;font-weight:600">R$ 1.522,42</span> <span style="color:var(--chassi-muted)">· crédito 3×</span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="feat">
+          <h3>Balança no caixa</h3>
+          <p>O peso entra direto na quantidade do item, sem digitar.</p>
+          <ul>
+            <li>Toledo, Filizola e compatíveis</li>
+            <li>Também lê etiqueta de balança</li>
+          </ul>
+          <div class="mini dk">
+            <div class="t">Pesando · F11</div>
+            <div class="weigh"><span class="kg num">2,350</span><span style="color:var(--chassi-muted)">kg · estável</span></div>
+          </div>
+        </article>
+
+        <article class="feat">
+          <h3>WhatsApp automático</h3>
+          <p>O cliente recebe pelo WhatsApp o que levou no fiado e o lembrete do vencimento.</p>
+          <ul>
+            <li>Aviso de compra no fiado</li>
+            <li>Lembrete no dia do vencimento</li>
+            <li>Aviso de cancelamento</li>
+          </ul>
+          <div class="mini" style="background:#efeae2;border-color:#e2dcd2">
+            <div class="chat">
+              <div class="bubble">Olá, José Carlos! Sua compra de <b>R$ 1.522,42</b> no fiado foi registrada. Vencimento: 10/12.<small>14:32 ✓✓</small></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="feat">
+          <h3>Relatórios</h3>
+          <p>Vendas, caixa e estoque em telas claras, com exportação para Excel.</p>
+          <ul>
+            <li>Fechamento de caixa conferido</li>
+            <li>Estoque e movimentações</li>
+            <li>Auditoria de quem fez o quê</li>
+          </ul>
+          <div class="mini">
+            <div class="kpis">
+              <div><span>Hoje</span><b class="num">R$ 8,4 mil</b></div>
+              <div><span>Vendas</span><b class="num">37</b></div>
+              <div><span>Fiado</span><b class="num">R$ 2,1 mil</b></div>
+            </div>
+            <div class="bars" aria-hidden="true">
+              <div style="height:52%"></div><div style="height:68%"></div><div style="height:45%"></div><div style="height:80%"></div><div style="height:62%"></div><div style="height:74%"></div><div class="today" style="height:92%"></div>
+            </div>
+            <div class="bars-x"><span>sáb</span><span>dom</span><span>seg</span><span>ter</span><span>qua</span><span>qui</span><span>sex</span></div>
+          </div>
+        </article>
+
+        <article class="feat wide">
+          <h3>Produtos pelo celular</h3>
+          <p>O app Android vira mais um terminal da loja. O repositor cadastra e confere produto no corredor.</p>
+          <div class="phone-row">
+            <div class="phone" aria-hidden="true">
+              <div class="scr">
+                <div class="cam"><div class="frame"></div></div>
+                <div class="f">
+                  <div><span>Código</span>7891234567895</div>
+                  <div><span>Descrição</span>Argamassa AC-II 20 kg</div>
+                  <div><span>Preço</span><b class="num">R$ 27,90</b></div>
+                  <div class="save">Salvar produto</div>
+                </div>
+              </div>
+            </div>
+            <ul>
+              <li>Lê o código pela câmera ou por bipador</li>
+              <li>Consulta preço e estoque na hora</li>
+              <li>Cadastra e edita produto conforme a permissão do usuário</li>
+              <li>Funciona sem Wi-Fi e envia quando a rede volta</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="feat wide">
+          <h3>Clientes e fiado</h3>
+          <p>Ficha do cliente com limite, saldo devedor e histórico, calculados na hora. Também dá para cadastrar e consultar pelo celular.</p>
+          <ul>
+            <li>Cadastro rápido no balcão ou cadastro completo</li>
+            <li>CPF protegido na tela, conforme a LGPD</li>
+            <li>Níveis de fidelidade por volume de compra</li>
+          </ul>
+          <div class="mini">
+            <div class="client">
+              <div class="rowx"><b>José Carlos · “Zé da Obra”</b><span class="lvl">Ouro</span></div>
+              <div class="rowx"><span>Limite de fiado</span><span class="num">R$ 5.000,00</span></div>
+              <div class="rowx"><span>Em aberto</span><span class="num">R$ 2.140,00 <span class="chip warn">vence 10/12</span></span></div>
+              <div class="rowx"><span>Último pagamento</span><span class="num">R$ 1.200,00 <span class="chip ok">pago</span></span></div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="planos">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Planos</div>
+        <h2>Escolha o plano da sua loja</h2>
+        <p class="lead">Assinatura mensal. A instalação é cobrada à parte e o valor depende da estrutura de cada loja.</p>
+      </div>
+
+      <div class="plans">
+        <article class="plan">
+          <div>
+            <h3>Sistema</h3>
+            <p class="sub">O PDV completo no balcão.</p>
+          </div>
+          <div class="price"><span class="cur">R$</span><span class="val">69,90</span><span class="per">/mês</span></div>
+          <div class="plus-inst">+ taxa de instalação</div>
+          <ul>
+            <li><span class="y">✓</span>Vendas, caixa e estoque</li>
+            <li><span class="y">✓</span>Funcionamento offline</li>
+            <li><span class="y">✓</span>Maquininha e balança integradas</li>
+            <li><span class="y">✓</span>Clientes, fiado e relatórios</li>
+            <li><span class="y">✓</span>Backup em nuvem</li>
+            <li class="no"><span class="y">–</span>App mobile</li>
+            <li class="no"><span class="y">–</span>WhatsApp automático</li>
+          </ul>
+          <a class="btn ghost" href="#instalacao">Quero este plano</a>
+        </article>
+
+        <article class="plan">
+          <div>
+            <h3>Sistema + App Mobile</h3>
+            <p class="sub">O balcão e o corredor conectados.</p>
+          </div>
+          <div class="price"><span class="cur">R$</span><span class="val">99,90</span><span class="per">/mês</span></div>
+          <div class="plus-inst">+ taxa de instalação</div>
+          <ul>
+            <li><span class="y">✓</span>Tudo do plano Sistema</li>
+            <li><span class="y">✓</span>App Android para a equipe</li>
+            <li><span class="y">✓</span>Cadastro de produto pelo celular</li>
+            <li><span class="y">✓</span>Consulta de preço e estoque</li>
+            <li><span class="y">✓</span>Clientes pelo celular</li>
+            <li class="no"><span class="y">–</span>WhatsApp automático</li>
+          </ul>
+          <a class="btn ghost" href="#instalacao">Quero este plano</a>
+        </article>
+
+        <article class="plan top">
+          <span class="badge">Mais completo</span>
+          <div>
+            <h3>Sistema + WhatsApp + App Mobile</h3>
+            <p class="sub">Tudo o que o Azuos PDV oferece.</p>
+          </div>
+          <div class="price"><span class="cur">R$</span><span class="val">149,90</span><span class="per">/mês</span></div>
+          <div class="plus-inst">+ taxa de instalação</div>
+          <ul>
+            <li><span class="y">✓</span>Tudo do plano Sistema + App Mobile</li>
+            <li><span class="y">✓</span>Aviso de compra no fiado pelo WhatsApp</li>
+            <li><span class="y">✓</span>Lembrete de vencimento automático</li>
+            <li><span class="y">✓</span>Aviso de cancelamento</li>
+            <li><span class="y">✓</span>Central de notificações no caixa</li>
+          </ul>
+          <a class="btn primary" href="#instalacao">Quero este plano</a>
+        </article>
+      </div>
+
+      <div class="install" id="instalacao">
+        <div>
+          <div class="eyebrow" style="color:var(--warn)">Importante</div>
+          <h3 style="margin-top:8px">A instalação é obrigatória e cobrada à parte</h3>
+          <p>Todo plano começa com a instalação na loja. O valor é definido depois de avaliar a estrutura de que a sua loja precisa para receber o sistema.</p>
+          <p style="color:var(--muted);font-size:15px">O orçamento da instalação é passado antes de qualquer contratação.</p>
+        </div>
+        <div>
+          <p style="margin:0 0 12px;font-weight:600">O que entra no cálculo da instalação</p>
+          <div class="who">
+            <div><b>Quantidade de caixas</b><span>Um ou dois terminais no balcão</span></div>
+            <div><b>Rede da loja</b><span>Ligação entre os caixas e acesso à internet</span></div>
+            <div><b>Computadores</b><span>Preparação de cada máquina que vai rodar o PDV</span></div>
+            <div><b>Equipamentos</b><span>Maquininha, balança, leitor e impressora</span></div>
+            <div><b>Celulares</b><span>Instalação do app na equipe (planos com mobile)</span></div>
+            <div><b>Dados iniciais</b><span>Importação de produtos e clientes de planilha</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">Como começar</div>
+        <h2>Da conversa ao primeiro cupom</h2>
+      </div>
+      <div class="steps">
+        <div class="step"><h3>Avaliação</h3><p>Vemos os caixas, a rede e os equipamentos da loja.</p></div>
+        <div class="step"><h3>Orçamento</h3><p>Você recebe o valor da instalação e escolhe o plano.</p></div>
+        <div class="step"><h3>Instalação</h3><p>Instalamos o PDV, ligamos os equipamentos e importamos os produtos.</p></div>
+        <div class="step"><h3>Treinamento</h3><p>A equipe aprende a vender e a loja já começa a usar.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band dark">
+    <div class="wrap final">
+      <h2>Vamos montar o Azuos PDV na sua loja?</h2>
+      <a class="btn primary" href="#planos">Escolher meu plano</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Azuos PDV · Prévia de apresentação</span>
+    <span>Valores mensais por loja. Instalação cobrada à parte.</span>
+  </div>
+</footer>
+
+</body></html>

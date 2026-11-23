@@ -26,6 +26,33 @@
         "value": "inter",
         "createdAt": "2026-11-20T19:17:49.497Z",
         "reason": "CLAUDE.md e DESIGN.md fixam Inter em --font-display como fonte provisoria da Azuos; a troca acontece nessa variavel quando a definitiva chegar"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "docs/referencias/azuos-pdv/landing.html"
+        ],
+        "createdAt": "2026-11-23T13:24:04.377Z",
+        "reason": "fixture: HTML enviado pelo usuario no chat, salvo literalmente como referencia do produto Azuos PDV; nao e codigo servido do AzuosEnv"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "docs/referencias/azuos-pdv/landing.html"
+        ],
+        "createdAt": "2026-11-23T13:24:04.590Z",
+        "reason": "fixture: HTML enviado pelo usuario no chat, salvo literalmente como referencia do produto Azuos PDV; nao e codigo servido do AzuosEnv"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          "docs/referencias/azuos-pdv/landing.html"
+        ],
+        "createdAt": "2026-11-23T13:24:04.828Z",
+        "reason": "fixture: HTML enviado pelo usuario no chat, salvo literalmente como referencia do produto Azuos PDV; nao e codigo servido do AzuosEnv"
       }
     ]
   }
