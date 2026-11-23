@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import { CursorPage, buildCursorPage, decodeObjectIdCursor } from '../../common/pagination/cursor';
 import { DEFAULT_PAGE_SIZE } from '../../common/pagination/pagination-query.dto';
 import { MailService } from '../mail/mail.service';
+import { PushService } from '../push/push.service';
 import { UsersService } from '../users/users.service';
 import { InboxQueryDto } from './dto/inbox.dto';
 import {
@@ -34,6 +35,8 @@ export interface DeliverNotificationInput {
   /** Extra match that, when a row already exists, skips the recipient. */
   dedupe?: Record<string, unknown>;
   mail?: { subject: string; text: string };
+  /** Sobrescreve o aviso do push; na falta dele vale o texto do e-mail. */
+  push?: { title: string; body: string; url: string; tag?: string };
 }
 
 export interface InboxCounts {
@@ -55,6 +58,7 @@ export class NotificationsService {
     private readonly settings: NotificationSettingsService,
     private readonly users: UsersService,
     private readonly mail: MailService,
+    private readonly push: PushService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -79,6 +83,7 @@ export class NotificationsService {
     const preferences = await this.settings.forUsers(recipients.map((one) => one.userId));
     const created: NotificationDocument[] = [];
     const mailTo: Types.ObjectId[] = [];
+    const pushTo: Types.ObjectId[] = [];
 
     for (const recipient of recipients) {
       const channels = preferences.get(String(recipient.userId));
@@ -90,9 +95,14 @@ export class NotificationsService {
       if (channels?.[input.type].email && input.mail) {
         mailTo.push(recipient.userId);
       }
+
+      if (channels?.[input.type].push) {
+        pushTo.push(recipient.userId);
+      }
     }
 
     await this.sendMail(input, mailTo);
+    await this.sendPush(input, pushTo);
 
     return created;
   }
@@ -298,4 +308,38 @@ export class NotificationsService {
       }
     }
   }
+
+  /**
+   * Push do sistema para quem ligou o canal. Sem aviso próprio vale o texto do
+   * e-mail, e o clique abre o Inbox do workspace: é o destino certo para todo
+   * tipo. O PushService nunca lança.
+   */
+  private async sendPush(
+    input: DeliverNotificationInput,
+    userIds: Types.ObjectId[],
+  ): Promise<void> {
+    const notice =
+      input.push ??
+      (input.mail
+        ? {
+            title: input.mail.subject,
+            body: input.mail.text,
+            url: `/w/${String(input.workspaceId)}/inbox`,
+            tag: `${input.type}:${String(input.entityId)}`,
+          }
+        : null);
+
+    if (userIds.length === 0 || !notice) {
+      return;
+    }
+
+    await this.push.sendToUsers(userIds, { ...notice, body: trimBody(notice.body) });
+  }
+}
+
+/** A notificação do sistema mostra poucas linhas; o resto só pesa o envio. */
+function trimBody(body: string): string {
+  const flat = body.replace(/s+/g, ' ').trim();
+
+  return flat.length > 180 ? `${flat.slice(0, 179)}…` : flat;
 }

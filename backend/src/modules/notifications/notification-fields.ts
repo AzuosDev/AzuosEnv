@@ -42,14 +42,16 @@ export type ReminderRecurrence = (typeof REMINDER_RECURRENCES)[number];
 export interface NotificationChannels {
   inbox: boolean;
   email: boolean;
+  /** Notificação do sistema no navegador, por Web Push. */
+  push: boolean;
 }
 
 export type NotificationPreferences = Record<NotificationType, NotificationChannels>;
 
-/** Inbox on, e-mail off: the user opts into mail per type. */
+/** Inbox on, mail and push off: the user opts into each one per type. */
 export function defaultPreferences(): NotificationPreferences {
   return Object.fromEntries(
-    NOTIFICATION_TYPES.map((type) => [type, { inbox: true, email: false }]),
+    NOTIFICATION_TYPES.map((type) => [type, { inbox: true, email: false, push: false }]),
   ) as NotificationPreferences;
 }
 

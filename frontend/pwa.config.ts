@@ -36,6 +36,8 @@ export const pwaOptions: Partial<VitePWAOptions> = {
     ],
   },
   workbox: {
+    // Handler de push e de clique na notificacao, fora do codigo gerado.
+    importScripts: ['push-sw.js'],
     // Shell e assets do build entram no precache.
     globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
     maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,

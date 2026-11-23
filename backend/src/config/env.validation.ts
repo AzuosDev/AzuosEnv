@@ -45,6 +45,14 @@ export const envValidationSchema = Joi.object({
     .allow('')
     .default('')
     .when('S3_BUCKET', { is: Joi.string().min(1), then: Joi.string().min(1).required() }),
+  // Web Push (VAPID). Sem as duas chaves o push fica desligado e a tela esconde
+  // a opção; gere o par com `npx web-push generate-vapid-keys`.
+  VAPID_PUBLIC_KEY: Joi.string().allow('').default(''),
+  VAPID_PRIVATE_KEY: Joi.string()
+    .allow('')
+    .default('')
+    .when('VAPID_PUBLIC_KEY', { is: Joi.string().min(1), then: Joi.string().min(1).required() }),
+  VAPID_SUBJECT: Joi.string().allow('').default('mailto:no-reply@azuos.dev'),
   // Com BREVO_API_KEY o envio vai pela API HTTP da Brevo; sem ela cai no SMTP.
   BREVO_API_KEY: Joi.string().allow('').default(''),
   // Remetente usado pela Brevo; na falta dele vale o SMTP_FROM.

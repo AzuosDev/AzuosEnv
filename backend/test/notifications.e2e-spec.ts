@@ -1,6 +1,8 @@
+import { Types } from 'mongoose';
 import request from 'supertest';
 import { NotificationsScheduler } from '../src/modules/notifications/notifications.scheduler';
 import { RemindersService } from '../src/modules/notifications/reminders.service';
+import { PushService } from '../src/modules/push/push.service';
 import { Session, createSession } from './utils/auth-client';
 import { TestApp, createTestApp } from './utils/e2e-app';
 
@@ -373,10 +375,10 @@ describe('Inbox, lembretes e notificações', () => {
           http().get('/api/v1/users/me/notification-settings'),
           fixture.member.session,
         ).expect(200)
-      ).body as Record<string, { inbox: boolean; email: boolean }>;
+      ).body as Record<string, { inbox: boolean; email: boolean; push: boolean }>;
 
-      expect(settings.assigned).toEqual({ inbox: false, email: false });
-      expect(settings.mentioned).toEqual({ inbox: true, email: false });
+      expect(settings.assigned).toEqual({ inbox: false, email: false, push: false });
+      expect(settings.mentioned).toEqual({ inbox: true, email: false, push: false });
 
       await createTask(fixture, fixture.owner, {
         name: 'Corrigir fechamento de caixa',
@@ -491,6 +493,99 @@ describe('Inbox, lembretes e notificações', () => {
       )
         .send({ text: 'Sem data', remindAt: 'ontem' })
         .expect(400);
+    });
+  });
+  describe('push', () => {
+    const subscription = (id: string) => ({
+      endpoint: `https://fcm.googleapis.com/fcm/send/${id}`,
+      keys: { p256dh: 'chave-publica-do-navegador', auth: 'segredo-do-navegador' },
+      userAgent: 'Chrome no Windows',
+    });
+
+    it('registra o navegador, não duplica o mesmo endpoint e remove', async () => {
+      const fixture = await setup();
+      const push = ctx.app.get(PushService);
+      const userId = new Types.ObjectId(fixture.member.userId);
+      const device = subscription('aparelho-1');
+
+      const created = (
+        await withAuth(http().post('/api/v1/users/me/push-subscriptions'), fixture.member.session)
+          .send(device)
+          .expect(201)
+      ).body as { id: string };
+
+      expect(created.id).toHaveLength(24);
+
+      // Reinscrever o mesmo navegador atualiza a linha em vez de criar outra.
+      await withAuth(http().post('/api/v1/users/me/push-subscriptions'), fixture.member.session)
+        .send({ ...device, userAgent: 'Edge no Windows' })
+        .expect(201);
+
+      const saved = await push.forUser(userId);
+
+      expect(saved).toHaveLength(1);
+      expect(saved[0].userAgent).toBe('Edge no Windows');
+
+      await withAuth(
+        http().delete('/api/v1/users/me/push-subscriptions').query({ endpoint: device.endpoint }),
+        fixture.member.session,
+      ).expect(204);
+
+      expect(await push.forUser(userId)).toHaveLength(0);
+    });
+
+    it('recusa inscrição sem as chaves do navegador e com endpoint inválido', async () => {
+      const fixture = await setup();
+
+      await withAuth(http().post('/api/v1/users/me/push-subscriptions'), fixture.member.session)
+        .send({ endpoint: 'https://fcm.googleapis.com/fcm/send/sem-chaves' })
+        .expect(400);
+
+      await withAuth(http().post('/api/v1/users/me/push-subscriptions'), fixture.member.session)
+        .send({ ...subscription('qualquer'), endpoint: 'nao-e-url' })
+        .expect(400);
+    });
+
+    it('não registra nem apaga inscrição sem sessão', async () => {
+      await setup();
+
+      await http()
+        .post('/api/v1/users/me/push-subscriptions')
+        .send(subscription('sem-sessao'))
+        .expect(401);
+
+      await http().get('/api/v1/users/me/push-subscriptions/public-key').expect(401);
+    });
+
+    it('não remove a inscrição de outra pessoa', async () => {
+      const fixture = await setup();
+      const push = ctx.app.get(PushService);
+      const device = subscription('aparelho-do-membro');
+
+      await withAuth(http().post('/api/v1/users/me/push-subscriptions'), fixture.member.session)
+        .send(device)
+        .expect(201);
+
+      // O dono manda o endpoint do outro: a remoção filtra pelo usuário.
+      await withAuth(
+        http().delete('/api/v1/users/me/push-subscriptions').query({ endpoint: device.endpoint }),
+        fixture.owner,
+      ).expect(204);
+
+      expect(await push.forUser(new Types.ObjectId(fixture.member.userId))).toHaveLength(1);
+    });
+
+    it('devolve a chave pública vazia quando o servidor não tem VAPID', async () => {
+      const fixture = await setup();
+
+      const body = (
+        await withAuth(
+          http().get('/api/v1/users/me/push-subscriptions/public-key'),
+          fixture.member.session,
+        ).expect(200)
+      ).body as { publicKey: string };
+
+      expect(body.publicKey).toBe('');
     });
   });
 });

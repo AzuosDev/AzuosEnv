@@ -18,7 +18,10 @@ export const NOTIFICATION_KINDS: { id: NotificationKind; label: string }[] = [
   { id: 'aiSummary', label: 'Resumo da IA' },
 ];
 
-export const NOTIFICATION_CHANNELS: { id: 'inbox' | 'email'; label: string }[] = [
+export const NOTIFICATION_CHANNELS: { id: NotificationChannel; label: string }[] = [
   { id: 'inbox', label: 'Inbox' },
   { id: 'email', label: 'E-mail' },
+  { id: 'push', label: 'Push' },
 ];
+
+export type NotificationChannel = 'inbox' | 'email' | 'push';

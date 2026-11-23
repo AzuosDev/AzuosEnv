@@ -5,10 +5,14 @@ import type { NotificationKind, NotificationPreferences } from '@/api/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from '@/components/ui/toast';
 import { notificationSettingsQuery, updateNotificationSettings } from '../api';
-import { NOTIFICATION_CHANNELS, NOTIFICATION_KINDS } from '../notification-kinds';
+import {
+  NOTIFICATION_CHANNELS,
+  NOTIFICATION_KINDS,
+  type NotificationChannel,
+} from '../notification-kinds';
 import { SettingsCard } from './settings-card';
 
-type Channel = 'inbox' | 'email';
+type Channel = NotificationChannel;
 
 /** Matriz tipo × canal das notification_settings. */
 export function NotificationsMatrix() {
@@ -47,7 +51,7 @@ export function NotificationsMatrix() {
   return (
     <SettingsCard
       title="Canais por tipo"
-      description="Escolha onde cada aviso chega. O Inbox mostra dentro do app; o e-mail sai para a sua caixa."
+      description="Escolha onde cada aviso chega. O Inbox mostra dentro do app, o e-mail sai para a sua caixa e o push aparece no sistema com o app fechado."
     >
       <div className="overflow-x-auto">
         <table className="w-full min-w-[260px] border-collapse text-[13px]">
