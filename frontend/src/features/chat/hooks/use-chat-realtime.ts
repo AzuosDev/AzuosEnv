@@ -15,6 +15,14 @@ export interface MessageEvent {
   preview: string;
 }
 
+/** O que `channel.read` manda: alguém leu o canal até aquele instante. */
+export interface ChannelReadEvent {
+  workspaceId: string;
+  channelId: string;
+  userId: string;
+  lastReadAt: string;
+}
+
 /** Sinal efêmero de digitação relaído pelo gateway. */
 interface TypingEvent {
   channelId: string;
@@ -24,6 +32,25 @@ interface TypingEvent {
 
 /** Salas de canal assinadas de uma vez; a lateral não precisa de mais. */
 export const MAX_CHAT_ROOMS = 30;
+
+/** Ritmo do recarregamento quando a conexão em tempo real não está de pé. */
+const FALLBACK_POLL_MS = 4000;
+
+/**
+ * Casa as queries que o tempo real atualizaria: mensagens do canal e respostas
+ * da thread. Só as montadas recarregam, então na prática é a conversa aberta.
+ */
+export function isChatPollKey(key: readonly unknown[], wsId: string): boolean {
+  if (key[0] !== 'workspaces' || key[1] !== wsId) {
+    return false;
+  }
+
+  if (key[2] === 'channels' && key[3] === 'detail' && key[5] === 'messages') {
+    return true;
+  }
+
+  return key[2] === 'messages' && key[4] === 'replies';
+}
 
 /** Depois de quanto tempo sem sinal a pessoa deixa de constar como digitando. */
 const TYPING_TIMEOUT_MS = 6000;
@@ -77,6 +104,20 @@ export function useChatRealtime(wsId: string, channelIds: string[]): void {
     [queryClient, wsId],
   );
 
+  const refreshReads = useCallback(
+    (event: ChannelReadEvent) => {
+      if (event.workspaceId !== wsId) {
+        return;
+      }
+
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.channelReads(wsId, event.channelId),
+      });
+    },
+    [queryClient, wsId],
+  );
+
+  useSocketEvent<ChannelReadEvent>('channel.read', refreshReads);
   useSocketEvent<MessageEvent>('message.new', refresh);
   useSocketEvent<MessageEvent>('message.updated', refresh);
   useSocketEvent<MessageEvent>('message.deleted', refresh);
@@ -91,6 +132,33 @@ export function useChatRealtime(wsId: string, channelIds: string[]): void {
     }
 
     wasConnected.current = connected;
+  }, [connected, queryClient, wsId]);
+
+  // Sem socket (a API serverless não mantém conexão longa) o chat volta a
+  // buscar sozinho; com o socket conectado nada disso roda.
+  useEffect(() => {
+    if (connected) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
+
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.chatActivity(wsId),
+        refetchType: 'active',
+      });
+      void queryClient.invalidateQueries({
+        refetchType: 'active',
+        predicate: (query) => isChatPollKey(query.queryKey, wsId),
+      });
+    }, FALLBACK_POLL_MS);
+
+    return () => {
+      clearInterval(timer);
+    };
   }, [connected, queryClient, wsId]);
 }
 

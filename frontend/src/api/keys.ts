@@ -4,6 +4,7 @@ export const queryKeys = {
   me: () => ['me'] as const,
   sessions: () => ['sessions'] as const,
   notificationSettings: () => ['notification-settings'] as const,
+  pushPublicKey: () => ['push-public-key'] as const,
   workspaces: () => ['workspaces'] as const,
   workspace: (workspaceId: string) => ['workspaces', workspaceId] as const,
   tree: (workspaceId: string) => ['workspaces', workspaceId, 'tree'] as const,
@@ -95,6 +96,8 @@ export const queryKeys = {
     ['workspaces', workspaceId, 'channels', 'detail', channelId, 'messages'] as const,
   channelAttachments: (workspaceId: string, channelId: string) =>
     ['workspaces', workspaceId, 'channels', 'detail', channelId, 'attachments'] as const,
+  channelReads: (workspaceId: string, channelId: string) =>
+    ['workspaces', workspaceId, 'channels', 'detail', channelId, 'reads'] as const,
   messageReplies: (workspaceId: string, messageId: string) =>
     ['workspaces', workspaceId, 'messages', messageId, 'replies'] as const,
   chatActivity: (workspaceId: string) => ['workspaces', workspaceId, 'chat-activity'] as const,

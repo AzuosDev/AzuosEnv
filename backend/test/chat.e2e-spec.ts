@@ -24,6 +24,10 @@ interface MessageBody extends IdBody {
   editedAt: string | null;
 }
 
+interface ChannelReadsBody {
+  items: { userId: string; lastReadAt: string }[];
+}
+
 interface ChatActivityBody {
   items: { channelId: string; unread: number; lastMessageAt: string | null }[];
   unread: number;
@@ -605,6 +609,61 @@ describe('Chat (canais, DMs e threads)', () => {
       expect(author.unread).toBe(0);
     });
 
+    it('lista quem leu o canal para os tiques de leitura', async () => {
+      const fixture = await setup();
+      const channel = (
+        await createChannel(fixture, { name: 'Geral', memberIds: [fixture.memberId] }).expect(201)
+      ).body as ChannelBody;
+
+      await sendMessage(fixture, channel.id, { bodyText: 'Primeira' }).expect(201);
+
+      const empty = (
+        await withAuth(
+          http().get(`/api/v1/workspaces/${fixture.workspace.id}/channels/${channel.id}/reads`),
+          fixture.owner,
+        ).expect(200)
+      ).body as ChannelReadsBody;
+
+      expect(empty.items.some((one) => one.userId === fixture.memberId)).toBe(false);
+
+      await withAuth(
+        http().post(`/api/v1/workspaces/${fixture.workspace.id}/channels/${channel.id}/read`),
+        fixture.member,
+      ).expect(200);
+
+      const after = (
+        await withAuth(
+          http().get(`/api/v1/workspaces/${fixture.workspace.id}/channels/${channel.id}/reads`),
+          fixture.owner,
+        ).expect(200)
+      ).body as ChannelReadsBody;
+      const read = after.items.find((one) => one.userId === fixture.memberId);
+
+      expect(read).toBeDefined();
+      expect(Number.isNaN(Date.parse(read?.lastReadAt ?? ''))).toBe(false);
+    });
+
+    it('recusa as leituras de quem não vê o canal e o id inválido', async () => {
+      const fixture = await setup();
+      const secret = (
+        await createChannel(fixture, { name: 'Diretoria', private: true }).expect(201)
+      ).body as ChannelBody;
+
+      const denied = await withAuth(
+        http().get(`/api/v1/workspaces/${fixture.workspace.id}/channels/${secret.id}/reads`),
+        fixture.outsider,
+      ).expect(404);
+
+      expect((denied.body as { code: string }).code).toBe('CHANNEL_NOT_FOUND');
+
+      const invalid = await withAuth(
+        http().get(`/api/v1/workspaces/${fixture.workspace.id}/channels/nao-e-id/reads`),
+        fixture.owner,
+      ).expect(400);
+
+      expect((invalid.body as { code: string }).code).toBe('INVALID_ID');
+    });
+
     it('a busca global encontra a mensagem e esconde o canal privado', async () => {
       const fixture = await setup();
       const open = (await createChannel(fixture, { name: 'Geral' }).expect(201))
@@ -804,19 +863,21 @@ describe('Chat (canais, DMs e threads)', () => {
         .expect(404);
     });
 
-    it('recusa o anexo sem arquivo e o MIME fora da lista', async () => {
+    it('recusa o anexo sem arquivo e aceita qualquer tipo', async () => {
       const fixture = await setup();
       const channel = (await createChannel(fixture, { name: 'geral' }).expect(201))
         .body as ChannelBody;
       const url = `/api/v1/workspaces/${fixture.workspace.id}/channels/${channel.id}/attachments`;
 
       await withAuth(http().post(url), fixture.owner).expect(400);
-      await withAuth(http().post(url), fixture.owner)
+      const exotic = await withAuth(http().post(url), fixture.owner)
         .attach('file', Buffer.from('MZ'), {
-          filename: 'virus.exe',
+          filename: 'instalador.exe',
           contentType: 'application/x-msdownload',
         })
-        .expect(400);
+        .expect(201);
+
+      expect(exotic.body.mimeType).toBe('application/x-msdownload');
     });
   });
 });

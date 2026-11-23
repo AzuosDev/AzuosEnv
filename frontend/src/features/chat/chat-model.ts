@@ -1,5 +1,6 @@
 import type {
   Channel,
+  ChannelReader,
   ChannelActivity,
   ChatActivity,
   Message,
@@ -319,4 +320,88 @@ export function messagePreview(message: Message, max = 80): string {
   const text = message.bodyText.replace(/\s+/g, ' ').trim();
 
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+/* Tom do autor ----------------------------------------------------------- */
+
+/** Quantos tons a conversa em grupo alterna entre os autores. */
+export const AUTHOR_TONE_COUNT = 6;
+
+/**
+ * Tonalidade do autor na conversa em grupo: índice estável tirado do id, para
+ * a mesma pessoa ter sempre a mesma cor de bolha em qualquer sessão.
+ */
+export function authorToneIndex(
+  authorId: string | null | undefined,
+  total: number = AUTHOR_TONE_COUNT,
+): number {
+  if (total <= 0) {
+    return 0;
+  }
+
+  const id = String(authorId ?? '');
+  let hash = 0;
+
+  for (let index = 0; index < id.length; index += 1) {
+    hash = (hash * 31 + id.charCodeAt(index)) % 100_003;
+  }
+
+  return hash % total;
+}
+
+/* Tiques de entrega ------------------------------------------------------ */
+
+/** Estado da minha mensagem: no servidor, lida por alguém ou lida por todos. */
+export type MessageTick = 'sent' | 'delivered' | 'read';
+
+export interface MessageReceipt {
+  tick: MessageTick;
+  /** Quantas outras pessoas já leram a mensagem. */
+  readBy: number;
+}
+
+/** Quem leu o canal e quem ainda deve ler, para os tiques das minhas mensagens. */
+export interface ChannelReceipts {
+  readers: ChannelReader[];
+  /** Participantes do canal fora o próprio usuário. */
+  others: string[];
+}
+
+/** Participantes do canal fora o próprio usuário. */
+export function otherMemberIds(
+  memberIds: (string | number)[] | undefined,
+  currentUserId: string | undefined,
+): string[] {
+  return (memberIds ?? []).map(String).filter((id) => id !== String(currentUserId ?? ''));
+}
+
+/**
+ * Tique da mensagem a partir de quem já abriu o canal depois dela: um tique
+ * enquanto ninguém leu, dois quando parte leu e dois em destaque quando todos
+ * os outros participantes leram.
+ */
+export function messageReceipt(
+  message: Message,
+  readers: ChannelReader[],
+  currentUserId: string | undefined,
+  others: string[] = [],
+): MessageReceipt {
+  const sentAt = new Date(message.createdAt).getTime();
+  const me = String(currentUserId ?? '');
+
+  if (Number.isNaN(sentAt)) {
+    return { tick: 'sent', readBy: 0 };
+  }
+
+  const readBy = readers.filter((reader) => {
+    const at = new Date(reader.lastReadAt).getTime();
+
+    return String(reader.userId) !== me && !Number.isNaN(at) && at >= sentAt;
+  }).length;
+
+  if (readBy === 0) {
+    return { tick: 'sent', readBy: 0 };
+  }
+
+  return { tick: readBy >= Math.max(others.length, 1) ? 'read' : 'delivered', readBy };
 }

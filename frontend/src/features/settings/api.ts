@@ -9,6 +9,7 @@ import type {
   CreateInviteInput,
   CreateTeamInput,
   NotificationPreferences,
+  PushSubscriptionInput,
   SetPasswordInput,
   Team,
   UpdateNotificationSettingsInput,
@@ -74,6 +75,25 @@ export async function updateNotificationSettings(
   body: UpdateNotificationSettingsInput,
 ): Promise<NotificationPreferences> {
   return unwrap(await api.PATCH('/api/v1/users/me/notification-settings', { body }));
+}
+
+/** Chave VAPID do servidor; vazia quando o push não está configurado lá. */
+export const pushPublicKeyQuery = queryOptions({
+  queryKey: queryKeys.pushPublicKey(),
+  queryFn: async (): Promise<string> =>
+    unwrap(await api.GET('/api/v1/users/me/push-subscriptions/public-key')).publicKey,
+  staleTime: Infinity,
+});
+
+/** Registra este navegador; reinscrever o mesmo endpoint não duplica. */
+export async function subscribeToPush(body: PushSubscriptionInput): Promise<void> {
+  unwrap(await api.POST('/api/v1/users/me/push-subscriptions', { body }));
+}
+
+export async function unsubscribeFromPush(endpoint: string): Promise<void> {
+  unwrap(
+    await api.DELETE('/api/v1/users/me/push-subscriptions', { params: { query: { endpoint } } }),
+  );
 }
 
 /* Workspace ------------------------------------------------------------- */

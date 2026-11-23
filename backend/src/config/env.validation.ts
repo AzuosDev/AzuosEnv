@@ -30,6 +30,29 @@ export const envValidationSchema = Joi.object({
     .when('COOKIE_SECURE', { is: false, then: Joi.valid('lax', 'strict') }),
   COOKIE_DOMAIN: Joi.string().allow('').default(''),
   UPLOAD_DIR: Joi.string().default('./storage/uploads'),
+  UPLOAD_MAX_MB: Joi.number().integer().min(1).max(512).default(50),
+  // Com S3_BUCKET os anexos vão para o bucket (R2, S3, MinIO); sem ele, disco local.
+  // Host serverless não tem disco durável, então em produção o bucket é obrigatório.
+  S3_BUCKET: Joi.string().allow('').default(''),
+  S3_ENDPOINT: Joi.string().allow('').default(''),
+  S3_REGION: Joi.string().allow('').default('auto'),
+  S3_FORCE_PATH_STYLE: Joi.boolean().default(true),
+  S3_ACCESS_KEY_ID: Joi.string()
+    .allow('')
+    .default('')
+    .when('S3_BUCKET', { is: Joi.string().min(1), then: Joi.string().min(1).required() }),
+  S3_SECRET_ACCESS_KEY: Joi.string()
+    .allow('')
+    .default('')
+    .when('S3_BUCKET', { is: Joi.string().min(1), then: Joi.string().min(1).required() }),
+  // Web Push (VAPID). Sem as duas chaves o push fica desligado e a tela esconde
+  // a opção; gere o par com `npx web-push generate-vapid-keys`.
+  VAPID_PUBLIC_KEY: Joi.string().allow('').default(''),
+  VAPID_PRIVATE_KEY: Joi.string()
+    .allow('')
+    .default('')
+    .when('VAPID_PUBLIC_KEY', { is: Joi.string().min(1), then: Joi.string().min(1).required() }),
+  VAPID_SUBJECT: Joi.string().allow('').default('mailto:no-reply@azuos.dev'),
   // Com BREVO_API_KEY o envio vai pela API HTTP da Brevo; sem ela cai no SMTP.
   BREVO_API_KEY: Joi.string().allow('').default(''),
   // Remetente usado pela Brevo; na falta dele vale o SMTP_FROM.

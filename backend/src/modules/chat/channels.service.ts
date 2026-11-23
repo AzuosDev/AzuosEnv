@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CursorPage, paginateByIdDesc } from '../../common/pagination/cursor';
@@ -6,6 +7,7 @@ import { DEFAULT_PAGE_SIZE } from '../../common/pagination/pagination-query.dto'
 import { PermissionContext } from '../hierarchy/permission.service';
 import { MembersService } from '../workspaces/members.service';
 import { ChatAccessService } from './chat-access.service';
+import { CHANNEL_READ, ChannelReadEvent } from './chat-events';
 import { ChannelLocationType, MAX_ACTIVITY_CHANNELS } from './chat-fields';
 import { dmMemberIds, isOpenChannel } from './chat-rules';
 import {
@@ -29,6 +31,12 @@ export interface ChannelActivity {
   lastReadAt: string | null;
 }
 
+/** One participant of the channel and the moment they read it up to. */
+export interface ChannelReader {
+  userId: string;
+  lastReadAt: string;
+}
+
 export interface ChatActivity {
   items: ChannelActivity[];
   /** Sum of the unread messages of every visible channel. */
@@ -43,6 +51,7 @@ export class ChannelsService {
     @InjectModel(ChannelRead.name) private readonly reads: Model<ChannelRead>,
     private readonly access: ChatAccessService,
     private readonly members: MembersService,
+    private readonly events: EventEmitter2,
   ) {}
 
   async create(ctx: PermissionContext, dto: CreateChannelDto): Promise<ChannelDocument> {
@@ -227,14 +236,38 @@ export class ChannelsService {
   async markRead(ctx: PermissionContext, channelId: Types.ObjectId): Promise<ChannelReadDocument> {
     const channel = await this.access.requireChannel(ctx, channelId, 'view');
     const lastReadAt = new Date();
-
-    return this.reads
+    const read = await this.reads
       .findOneAndUpdate(
         { channelId: channel._id, userId: ctx.userId },
         { $set: { workspaceId: ctx.workspaceId, lastReadAt } },
         { new: true, upsert: true },
       )
       .exec();
+
+    this.events.emit(CHANNEL_READ, {
+      workspaceId: ctx.workspaceId,
+      channelId: channel._id,
+      userId: ctx.userId,
+      lastReadAt,
+    } satisfies ChannelReadEvent);
+
+    return read;
+  }
+
+  /**
+   * Who read the channel and up to when, which gives the author of each
+   * message its read tick. Only who already opened the channel is listed.
+   */
+  async readers(ctx: PermissionContext, channelId: Types.ObjectId): Promise<ChannelReader[]> {
+    const channel = await this.access.requireChannel(ctx, channelId, 'view');
+    const reads = await this.reads
+      .find({ workspaceId: ctx.workspaceId, channelId: channel._id })
+      .exec();
+
+    return reads.map((read) => ({
+      userId: String(read.userId),
+      lastReadAt: read.lastReadAt.toISOString(),
+    }));
   }
 
   /** Unread messages per visible channel, for the Sidebar Home. */

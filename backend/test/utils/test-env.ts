@@ -27,6 +27,10 @@ export const TEST_ENV: Record<string, string> = {
   GOOGLE_MOCK: 'true',
   GOOGLE_LOGIN_REDIRECT_URI: 'http://localhost:3000/api/v1/auth/google/callback',
   FRONTEND_URL: 'http://localhost:5173',
+  // Empty VAPID keys: the suite never signs a real push, and the public-key
+  // route answers empty like a server without push configured.
+  VAPID_PUBLIC_KEY: '',
+  VAPID_PRIVATE_KEY: '',
   // No key: the AiProvider of the suite is always the stub.
   XAI_API_KEY: '',
   GROK_MODEL: 'grok-test',

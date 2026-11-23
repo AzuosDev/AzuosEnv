@@ -25,6 +25,13 @@
   --warning: 245 158 11;
   --danger: 239 68 68;
   --info: 96 165 250;
+  /* Tons dos nomes no chat em grupo (AA sobre surface nos dois temas). */
+  --tone-1: 167 139 250;
+  --tone-2: 125 211 252;
+  --tone-3: 110 231 183;
+  --tone-4: 252 211 77;
+  --tone-5: 244 164 220;
+  --tone-6: 252 165 165;
   /* Vidro das telas de acesso: cor da placa, opacidade dela e das manchas. */
   --glass: 20 16 31;
   --glass-a: 0.42;
@@ -52,6 +59,12 @@
   --warning: 217 119 6;
   --danger: 220 38 38;
   --info: 37 99 235;
+  --tone-1: 109 40 217;
+  --tone-2: 2 132 199;
+  --tone-3: 4 120 87;
+  --tone-4: 180 83 9;
+  --tone-5: 190 24 93;
+  --tone-6: 185 28 28;
   --glass: 255 255 255;
   --glass-a: 0.56;
   --glow-a: 0.38;

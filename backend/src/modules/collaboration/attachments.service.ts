@@ -11,7 +11,12 @@ import { ChatAccessService } from '../chat/chat-access.service';
 import { PermissionContext } from '../hierarchy/permission.service';
 import { TaskAccessService } from '../tasks/task-access.service';
 import { StorageService } from '../storage/storage.service';
-import { AttachmentEntityType, MAX_UPLOAD_BYTES, isAllowedMimeType } from './collaboration-fields';
+import {
+  AttachmentEntityType,
+  MAX_UPLOAD_BYTES,
+  MAX_UPLOAD_MB,
+  normalizeMimeType,
+} from './collaboration-fields';
 import { CommentsService } from './comments.service';
 import { Attachment, AttachmentDocument } from './schemas/attachment.schema';
 
@@ -175,18 +180,11 @@ export class AttachmentsService {
     if (file.buffer.length > MAX_UPLOAD_BYTES) {
       throw new PayloadTooLargeException({
         code: 'FILE_TOO_LARGE',
-        message: 'O arquivo excede 25 MB.',
+        message: `O arquivo excede ${MAX_UPLOAD_MB} MB.`,
       });
     }
 
-    if (!isAllowedMimeType(file.mimetype)) {
-      throw new BadRequestException({
-        code: 'INVALID_FILE_TYPE',
-        message: 'Tipo de arquivo não permitido.',
-      });
-    }
-
-    return file;
+    return { ...file, mimetype: normalizeMimeType(file.mimetype) };
   }
 
   /** Permission of the file: the channel on a chat attachment, the task otherwise. */

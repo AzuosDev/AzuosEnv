@@ -8,9 +8,11 @@ import {
   CommentUpdatedEvent,
 } from '../collaboration/collaboration-events';
 import {
+  CHANNEL_READ,
   MESSAGE_CREATED,
   MESSAGE_DELETED,
   MESSAGE_UPDATED,
+  ChannelReadEvent,
   MessageCreatedEvent,
   MessageDeletedEvent,
   MessageEventBase,
@@ -147,6 +149,16 @@ export class RealtimeListener {
   @OnEvent(MESSAGE_DELETED)
   onMessageDeleted(event: MessageDeletedEvent): void {
     this.gateway.emitToRooms(messageRooms(event), 'message.deleted', messagePayload(event));
+  }
+
+  @OnEvent(CHANNEL_READ)
+  onChannelRead(event: ChannelReadEvent): void {
+    this.gateway.emitToRooms([roomName('channel', String(event.channelId))], 'channel.read', {
+      workspaceId: String(event.workspaceId),
+      channelId: String(event.channelId),
+      userId: String(event.userId),
+      lastReadAt: event.lastReadAt.toISOString(),
+    });
   }
 
   @OnEvent(WHITEBOARD_CREATED)

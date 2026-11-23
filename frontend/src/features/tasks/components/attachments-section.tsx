@@ -18,7 +18,8 @@ import {
 } from '../collaboration-api';
 
 /** Teto do upload no backend: 25 MB por arquivo. */
-export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+/** Teto por arquivo; acompanha o UPLOAD_MAX_MB do backend (padrao 50 MB). */
+export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 
 /**
  * Quantas prévias o painel baixa sozinho. A prévia precisa dos bytes

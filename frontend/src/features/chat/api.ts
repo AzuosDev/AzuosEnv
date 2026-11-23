@@ -8,6 +8,7 @@ import type {
   Channel,
   ChannelLocationType,
   ChannelRead,
+  ChannelReads,
   ChatActivity,
   CreateChannelInput,
   CreateMessageInput,
@@ -271,6 +272,20 @@ export async function messageToTask(
 }
 
 /* Anexos do canal -------------------------------------------------------- */
+
+/** Quem já leu o canal e até quando: é o que dá o tique de lida do autor. */
+export function channelReadsQuery(wsId: string, channelId: string) {
+  return queryOptions({
+    queryKey: queryKeys.channelReads(wsId, channelId),
+    queryFn: async (): Promise<ChannelReads> =>
+      unwrap(
+        await api.GET('/api/v1/workspaces/{wsId}/channels/{channelId}/reads', {
+          params: { path: { wsId, channelId } },
+        }),
+      ) as ChannelReads,
+    staleTime: 15_000,
+  });
+}
 
 export function channelAttachmentsQuery(wsId: string, channelId: string) {
   return queryOptions({

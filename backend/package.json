@@ -22,6 +22,7 @@
     "start:e2e": "ts-node -T -O \"{\\\"rootDir\\\":\\\"./src\\\",\\\"declaration\\\":false}\" src/seed/start-e2e.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1175.0",
     "@nestjs/common": "^12.3.2",
     "@nestjs/config": "^12.0.1",
     "@nestjs/core": "^12.3.2",
@@ -54,7 +55,8 @@
     "reflect-metadata": "^0.2.2",
     "rrule": "^2.8.1",
     "rxjs": "^7.8.2",
-    "socket.io": "^4.8.4"
+    "socket.io": "^4.8.4",
+    "web-push": "^4.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^12.0.11",
@@ -67,6 +69,7 @@
     "@types/nodemailer": "^8.0.2",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.2.1",
+    "@types/web-push": "^3.6.4",
     "esbuild": "^0.28.2",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",

@@ -24,34 +24,28 @@ export const ACTIVITY_ACTIONS = [
 ] as const;
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number];
 
-export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+/** Upload ceiling in MB; UPLOAD_MAX_MB tunes it, clamped to 1..512. */
+function uploadMaxMb(): number {
+  const parsed = Number(process.env.UPLOAD_MAX_MB);
 
-/** MIME types accepted on upload. */
-export const ALLOWED_UPLOAD_MIME_TYPES = [
-  'image/png',
-  'image/jpeg',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml',
-  'application/pdf',
-  'application/zip',
-  'application/x-zip-compressed',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.ms-powerpoint',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  'text/plain',
-  'text/csv',
-  'text/markdown',
-  'application/json',
-  'video/mp4',
-  'audio/mpeg',
-] as const;
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 50;
+  }
 
-export function isAllowedMimeType(mimeType: string): boolean {
-  return (ALLOWED_UPLOAD_MIME_TYPES as readonly string[]).includes(mimeType);
+  return Math.min(Math.max(Math.trunc(parsed), 1), 512);
+}
+
+export const MAX_UPLOAD_MB = uploadMaxMb();
+export const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
+
+/** Every MIME type is accepted; empty or unknown ones are stored as this. */
+export const DEFAULT_UPLOAD_MIME_TYPE = 'application/octet-stream';
+
+/** Upload MIME type as it is stored: whatever the client sent, never empty. */
+export function normalizeMimeType(mimeType: string | undefined): string {
+  const trimmed = (mimeType ?? '').trim().toLowerCase();
+
+  return trimmed || DEFAULT_UPLOAD_MIME_TYPE;
 }
 
 /** Deepest checklist item nesting (a parent item plus its children). */

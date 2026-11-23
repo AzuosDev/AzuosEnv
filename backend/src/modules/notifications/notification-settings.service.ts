@@ -51,6 +51,7 @@ export class NotificationSettingsService {
       current[type] = {
         inbox: change.inbox ?? current[type].inbox,
         email: change.email ?? current[type].email,
+        push: change.push ?? current[type].push,
       };
     }
 
@@ -76,6 +77,7 @@ function merge(stored: Record<string, unknown> | undefined): NotificationPrefere
       preferences[type] = {
         inbox: channels.inbox ?? preferences[type].inbox,
         email: channels.email ?? preferences[type].email,
+        push: channels.push ?? preferences[type].push,
       };
     }
   }

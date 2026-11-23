@@ -5,6 +5,7 @@ import type { Attachment, Message, WorkspaceMemberItem, WorkspaceRole } from '@/
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { groupMessages } from '../chat-model';
+import type { ChannelReceipts } from '../chat-model';
 import type { MessageActions } from '../hooks/use-messages';
 import { MessageItem } from './message-item';
 
@@ -22,6 +23,10 @@ export interface MessageListProps {
   hasMore: boolean;
   loadingMore: boolean;
   onLoadMore: () => void;
+  /** Conversa de mais de duas pessoas: cada autor ganha nome e tonalidade. */
+  group?: boolean;
+  /** Leituras do canal: dão o tique de entrega das minhas mensagens. */
+  receipts?: ChannelReceipts;
   reply?: boolean;
   onOpenThread?: (messageId: string) => void;
   onCreateTask?: (message: Message) => void;
@@ -68,6 +73,8 @@ export function MessageList({
   hasMore,
   loadingMore,
   onLoadMore,
+  group = false,
+  receipts,
   reply = false,
   onOpenThread,
   onCreateTask,
@@ -157,6 +164,8 @@ export function MessageList({
                 canWrite={canWrite}
                 actions={actions}
                 leading={index === 0}
+                group={group}
+                {...(receipts ? { receipts } : {})}
                 reply={reply}
                 {...(onOpenThread ? { onOpenThread } : {})}
                 {...(onCreateTask ? { onCreateTask } : {})}

@@ -23,8 +23,10 @@ yarn-debug.log*
 yarn-error.log*
 
 # Uploads
-uploads/
-storage/
+/uploads/
+# Ancorado: sem a barra inicial a regra tambem ignorava src/modules/storage.
+/storage/
+/backend/storage/
 
 # Editor / OS
 .vscode/*

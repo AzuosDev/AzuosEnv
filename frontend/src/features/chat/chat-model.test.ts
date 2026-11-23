@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Channel, ChatActivity, Message, WorkspaceMemberItem } from '@/api/types';
 import {
+  AUTHOR_TONE_COUNT,
   appendReply,
+  authorToneIndex,
+  messageReceipt,
+  otherMemberIds,
   canDeleteMessage,
   channelTitle,
   groupMessages,
@@ -216,5 +220,59 @@ describe('typingLabel e messagePreview', () => {
   it('corta a prévia no tamanho pedido', () => {
     expect(messagePreview(message('m1', { bodyText: 'oi   tudo\nbem' }))).toBe('oi tudo bem');
     expect(messagePreview(message('m1', { bodyText: 'abcdef' }), 4)).toBe('abc…');
+  });
+});
+
+describe('authorToneIndex', () => {
+  it('dá sempre o mesmo tom para o mesmo autor, dentro da paleta', () => {
+    const ids = ['u1', 'u2', 'u3', '65f0c1f0c1f0c1f0c1f0c1f0'];
+
+    for (const id of ids) {
+      const tone = authorToneIndex(id);
+
+      expect(tone).toBe(authorToneIndex(id));
+      expect(tone).toBeGreaterThanOrEqual(0);
+      expect(tone).toBeLessThan(AUTHOR_TONE_COUNT);
+    }
+  });
+
+  it('separa autores vizinhos em tons diferentes', () => {
+    expect(authorToneIndex('u1')).not.toBe(authorToneIndex('u2'));
+    expect(authorToneIndex(null)).toBe(0);
+    expect(authorToneIndex('u1', 0)).toBe(0);
+  });
+});
+
+describe('messageReceipt', () => {
+  const mine = message('m1', { authorId: 'u1', createdAt: '2026-11-23T12:00:00.000Z' });
+  const reader = (userId: string, lastReadAt: string) => ({ userId, lastReadAt });
+
+  it('fica em um tique enquanto ninguém abriu o canal depois da mensagem', () => {
+    expect(messageReceipt(mine, [], 'u1', ['u2'])).toEqual({ tick: 'sent', readBy: 0 });
+    expect(messageReceipt(mine, [reader('u2', '2026-11-23T11:59:00.000Z')], 'u1', ['u2'])).toEqual({
+      tick: 'sent',
+      readBy: 0,
+    });
+  });
+
+  it('dois tiques quando parte leu e destaque quando todos leram', () => {
+    const readers = [reader('u2', '2026-11-23T12:01:00.000Z')];
+
+    expect(messageReceipt(mine, readers, 'u1', ['u2', 'u3'])).toEqual({
+      tick: 'delivered',
+      readBy: 1,
+    });
+    expect(messageReceipt(mine, readers, 'u1', ['u2'])).toEqual({ tick: 'read', readBy: 1 });
+  });
+
+  it('ignora a minha própria leitura', () => {
+    const readers = [reader('u1', '2026-11-23T12:05:00.000Z')];
+
+    expect(messageReceipt(mine, readers, 'u1', ['u2'])).toEqual({ tick: 'sent', readBy: 0 });
+  });
+
+  it('tira o próprio usuário da lista de participantes', () => {
+    expect(otherMemberIds(['u1', 'u2'], 'u1')).toEqual(['u2']);
+    expect(otherMemberIds(undefined, 'u1')).toEqual([]);
   });
 });

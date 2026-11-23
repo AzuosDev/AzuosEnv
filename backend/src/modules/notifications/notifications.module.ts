@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MailModule } from '../mail/mail.module';
+import { PushModule } from '../push/push.module';
 import { TasksDataModule } from '../tasks/tasks-data.module';
 import { TasksModule } from '../tasks/tasks.module';
 import { UsersModule } from '../users/users.module';
@@ -31,6 +32,7 @@ import { Reminder, ReminderSchema } from './schemas/reminder.schema';
     WorkspacesModule,
     UsersModule,
     MailModule,
+    PushModule,
   ],
   controllers: [InboxController, NotificationSettingsController, RemindersController],
   providers: [

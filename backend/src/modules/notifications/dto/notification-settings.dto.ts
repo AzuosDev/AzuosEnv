@@ -13,6 +13,11 @@ export class NotificationChannelsDto {
   @IsOptional()
   @IsBoolean()
   email?: boolean;
+
+  @ApiPropertyOptional({ description: 'Notificação do sistema por Web Push.' })
+  @IsOptional()
+  @IsBoolean()
+  push?: boolean;
 }
 
 /**
@@ -127,13 +132,16 @@ export class UpdateNotificationSettingsDto {
   types: NotificationTypeSettingsDto;
 }
 
-/** Canais resolvidos de um tipo: o GET sempre devolve os dois. */
+/** Canais resolvidos de um tipo: o GET sempre devolve os três. */
 export class NotificationChannelsStateDto {
   @ApiProperty()
   inbox: boolean;
 
   @ApiProperty()
   email: boolean;
+
+  @ApiProperty()
+  push: boolean;
 }
 
 /** Preferências completas: um par de canais para cada tipo de notificação. */
