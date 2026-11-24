@@ -278,13 +278,13 @@ export function auditLogsQuery(wsId: string, query: AuditQuery) {
  */
 export async function importClickUpCsv(
   wsId: string,
-  spaceId: string,
+  spaceId: string | undefined,
   file: File,
 ): Promise<ImportReport> {
   const form = new FormData();
 
   form.append('file', file, file.name);
-  form.append('spaceId', spaceId);
+  if (spaceId) form.append('spaceId', spaceId);
 
   const response = await apiFetch(
     new Request(`${API_BASE_URL}/api/v1/workspaces/${wsId}/import/clickup`, {

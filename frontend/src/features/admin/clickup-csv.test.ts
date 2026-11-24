@@ -33,10 +33,11 @@ describe('previewClickUpCsv', () => {
     const preview = previewClickUpCsv(CSV);
 
     expect(preview.rows).toBe(4);
+    expect(preview.taskCount).toBe(3);
     expect(preview.lists).toEqual(['Entregas', FALLBACK_LIST_NAME]);
     expect(preview.folders).toEqual(['Clientes']);
     expect(preview.statuses).toEqual(['Em andamento', 'Aberto', 'Concluído']);
-    expect(preview.emails).toEqual(['ana@azuos.dev', 'bruno@azuos.dev']);
+    expect(preview.people).toEqual(['ana@azuos.dev', 'bruno@azuos.dev']);
     expect(preview.tags).toEqual(['bug', 'contrato', 'juridico']);
     expect(preview.skipped).toEqual([{ line: 4, reason: 'Linha sem nome de tarefa' }]);
     expect(preview.ignoredColumns).toEqual(['Comentarios']);

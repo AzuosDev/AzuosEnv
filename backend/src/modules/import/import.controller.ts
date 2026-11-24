@@ -64,7 +64,7 @@ export class ImportController {
         [UPLOAD_FIELD]: { type: 'string', format: 'binary' },
         spaceId: { type: 'string' },
       },
-      required: [UPLOAD_FIELD, 'spaceId'],
+      required: [UPLOAD_FIELD],
     },
   })
   @ApiCreatedResponse({

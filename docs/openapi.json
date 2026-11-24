@@ -18373,8 +18373,7 @@
                   }
                 },
                 "required": [
-                  "file",
-                  "spaceId"
+                  "file"
                 ]
               }
             }
@@ -20534,6 +20533,13 @@
             "maxLength": 500,
             "example": "Corrigir fechamento de caixa"
           },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Identificador estável importado do sistema de origem."
+          },
           "description": {
             "type": "object",
             "additionalProperties": true,
@@ -20714,6 +20720,10 @@
           "customId": {
             "type": "string"
           },
+          "externalId": {
+            "type": "string",
+            "nullable": true
+          },
           "name": {
             "type": "string"
           },
@@ -20839,6 +20849,7 @@
           "listIds",
           "parentTaskId",
           "customId",
+          "externalId",
           "name",
           "descriptionText",
           "statusId",
@@ -20930,6 +20941,10 @@
           },
           "customId": {
             "type": "string"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true
           },
           "name": {
             "type": "string"
@@ -21058,6 +21073,7 @@
           "listIds",
           "parentTaskId",
           "customId",
+          "externalId",
           "name",
           "descriptionText",
           "statusId",
@@ -21552,6 +21568,10 @@
           "customId": {
             "type": "string"
           },
+          "externalId": {
+            "type": "string",
+            "nullable": true
+          },
           "name": {
             "type": "string"
           },
@@ -21684,6 +21704,7 @@
           "listIds",
           "parentTaskId",
           "customId",
+          "externalId",
           "name",
           "descriptionText",
           "statusId",
@@ -22837,14 +22858,14 @@
               "team",
               "list",
               "doc",
-              "chat",
               "activity",
+              "workload",
+              "chat",
               "board",
               "calendar",
               "table",
               "gantt",
               "timeline",
-              "workload",
               "form",
               "whiteboard",
               "embed",
@@ -25192,8 +25213,8 @@
           "type": {
             "type": "string",
             "enum": [
-              "workload",
               "billable",
+              "workload",
               "tasksByStatus",
               "tasksByAssignee",
               "burndown",
@@ -26794,31 +26815,19 @@
           },
           "lastReadAt": {
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "nullable": true,
+            "format": "date-time"
           },
           "lastDeliveredAt": {
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "nullable": true,
+            "format": "date-time"
           }
         },
         "required": [
           "userId",
           "lastReadAt",
           "lastDeliveredAt"
-        ]
-      },
-      "ChannelDeliveryDto": {
-        "type": "object",
-        "properties": {
-          "messageId": {
-            "type": "string",
-            "format": "ObjectId"
-          }
-        },
-        "required": [
-          "messageId"
         ]
       },
       "ChannelReadsDto": {
@@ -26833,6 +26842,18 @@
         },
         "required": [
           "items"
+        ]
+      },
+      "ChannelDeliveryDto": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "format": "ObjectId"
+          }
+        },
+        "required": [
+          "messageId"
         ]
       },
       "CreateMessageDto": {
@@ -29448,8 +29469,8 @@
                 "task.updated",
                 "task.moved",
                 "task.deleted",
-                "message.created",
                 "comment.created",
+                "message.created",
                 "whiteboard.updated"
               ]
             }
@@ -30058,8 +30079,8 @@
           "status": {
             "enum": [
               "read",
-              "pending",
               "delivered",
+              "pending",
               "failed",
               "sent"
             ],
@@ -30985,8 +31006,8 @@
               "text",
               "list",
               "none",
-              "media",
-              "buttons"
+              "buttons",
+              "media"
             ]
           },
           "text": {
@@ -31701,6 +31722,10 @@
             "type": "number",
             "description": "Folders criadas."
           },
+          "spaces": {
+            "type": "number",
+            "description": "Spaces criados."
+          },
           "tags": {
             "type": "number",
             "description": "Tags criadas."
@@ -31725,6 +31750,7 @@
           "tasks",
           "lists",
           "folders",
+          "spaces",
           "tags",
           "skipped",
           "warnings"

@@ -48,6 +48,15 @@ export class CreateTaskDto {
   @Length(1, 500)
   name: string;
 
+  @ApiPropertyOptional({
+    description: 'Identificador estável importado do sistema de origem.',
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  @Length(1, 200)
+  externalId?: string | null;
+
   @ApiPropertyOptional({ description: 'JSON do editor.' })
   @IsOptional()
   @IsObject()
@@ -142,7 +151,7 @@ export class CreateTaskDto {
 }
 
 export class UpdateTaskDto extends PartialType(
-  OmitType(CreateTaskDto, ['parentTaskId'] as const),
+  OmitType(CreateTaskDto, ['parentTaskId', 'externalId'] as const),
 ) {}
 
 export class MoveTaskDto {

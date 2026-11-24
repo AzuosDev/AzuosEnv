@@ -1,193 +1,175 @@
-/**
- * Prévia do CSV do ClickUp antes de importar. Lê as mesmas colunas que o
- * backend lê (src/modules/import/clickup-csv.ts) para mostrar o que vai virar
- * List, status e responsável — o import de verdade continua no servidor.
- */
-
 export interface CsvTable {
   headers: string[];
   rows: Record<string, string>[];
 }
-
 export interface ImportPreview {
-  /** Linhas de dados do arquivo, sem o cabeçalho. */
   rows: number;
-  /** Nomes de List encontrados, em ordem de aparição. */
+  taskCount: number;
   lists: string[];
   folders: string[];
+  spaces: string[];
   statuses: string[];
-  /** E-mails de responsável; o servidor casa cada um com a conta do workspace. */
-  emails: string[];
+  people: string[];
   tags: string[];
-  /** Linhas que o servidor vai ignorar: sem nome de tarefa. */
   skipped: { line: number; reason: string }[];
-  /** Colunas do arquivo que a importação não usa. */
   ignoredColumns: string[];
 }
-
-const COLUMNS = {
-  name: ['task name', 'name', 'nome', 'nome da tarefa'],
-  content: ['task content', 'description', 'content', 'descrição'],
-  status: ['status'],
-  priority: ['priority', 'prioridade'],
-  assignees: ['assignees', 'assignee', 'responsáveis', 'responsavel'],
-  tags: ['tags', 'etiquetas'],
-  due: ['due date', 'due date text', 'duedate', 'data de entrega'],
-  start: ['start date', 'start date text', 'startdate', 'data de início'],
-  estimate: ['time estimate', 'time estimate text', 'estimate'],
-  points: ['points', 'sprint points', 'story points'],
-  list: ['list name', 'list', 'lists', 'lista'],
-  folder: ['folder name', 'folder', 'pasta'],
-} as const;
-
-const KNOWN_COLUMNS = Object.values(COLUMNS).flat() as string[];
-
-const EMAIL = /[\w.+-]+@[\w-]+\.[\w.-]+/g;
-
+const C = {
+  name: 'task name',
+  status: 'status',
+  assignees: 'assignees',
+  tags: 'tags',
+  list: 'list name',
+  folder: 'folder name/path',
+  space: 'space name',
+};
+const KNOWN = new Set([
+  'task id',
+  C.name,
+  'task content',
+  C.status,
+  'date created',
+  'due date',
+  'start date',
+  'parent id',
+  'subtasks ids',
+  'attachments',
+  C.assignees,
+  C.tags,
+  'priority',
+  C.list,
+  C.folder,
+  'folder name',
+  C.space,
+  'checklists',
+  'comments',
+  'time spent',
+  'home location',
+]);
 export const FALLBACK_LIST_NAME = 'Importado do ClickUp';
 export const MAX_IMPORT_ROWS = 5000;
 export const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
 
-/** CSV com vírgula, aspas duplas e aspas escapadas por duplicação. */
 export function parseCsv(content: string): CsvTable {
   const text = content.replace(/^\uFEFF/u, '');
   const rows: string[][] = [];
   let row: string[] = [];
   let value = '';
   let quoted = false;
-
-  for (let index = 0; index < text.length; index += 1) {
-    const char = text[index];
-
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
     if (quoted) {
       if (char === '"') {
-        if (text[index + 1] === '"') {
+        if (text[i + 1] === '"') {
           value += '"';
-          index += 1;
-        } else {
-          quoted = false;
-        }
-      } else {
-        value += char;
-      }
-
+          i += 1;
+        } else quoted = false;
+      } else value += char;
       continue;
     }
-
     if (char === '"') {
       quoted = true;
-
       continue;
     }
-
     if (char === ',') {
       row.push(value);
       value = '';
-
       continue;
     }
-
     if (char === '\n' || char === '\r') {
-      if (char === '\r' && text[index + 1] === '\n') {
-        index += 1;
-      }
-
+      if (char === '\r' && text[i + 1] === '\n') i += 1;
       row.push(value);
       rows.push(row);
       row = [];
       value = '';
-
       continue;
     }
-
     value += char;
   }
-
-  if (value.length > 0 || row.length > 0) {
+  if (value || row.length) {
     row.push(value);
     rows.push(row);
   }
-
-  const [header = [], ...body] = rows.filter(
-    (line) => line.length > 1 || (line[0] ?? '').trim().length > 0,
-  );
-  const headers = header.map((cell) => cell.trim());
-
+  const [head = [], ...body] = rows.filter((cells) => cells.length > 1 || (cells[0] ?? '').trim());
+  const headers = head.map((cell) => cell.trim());
   return {
     headers,
-    rows: body.map((line) => {
-      const record: Record<string, string> = {};
-
-      headers.forEach((key, index) => {
-        record[key.toLowerCase()] = (line[index] ?? '').trim();
-      });
-
-      return record;
-    }),
+    rows: body.map(
+      (cells) =>
+        Object.fromEntries(
+          headers.map((key, i) => [key.toLowerCase(), (cells[i] ?? '').trim()]),
+        ) as Record<string, string>,
+    ),
   };
 }
-
-function pick(row: Record<string, string>, names: readonly string[]): string {
-  for (const name of names) {
-    const value = row[name];
-
-    if (value !== undefined && value.length > 0) {
-      return value;
-    }
+function arrayValue(value: string): string[] {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (Array.isArray(parsed))
+      return parsed
+        .map(String)
+        .map((s) => s.trim())
+        .filter(Boolean);
+  } catch {
+    /* ClickUp Assignees and Tags are bracketed text, not JSON. */
   }
-
-  return '';
+  return value
+    .replace(/^\s*\[/, '')
+    .replace(/\]\s*$/, '')
+    .split(',')
+    .map((part) => part.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean);
 }
-
-function push(into: string[], value: string): void {
-  if (value.length > 0 && !into.includes(value)) {
-    into.push(value);
-  }
+function add(into: string[], value: string): void {
+  if (value && !into.includes(value)) into.push(value);
 }
-
-/** O que o arquivo vai criar, para a pessoa conferir antes de importar. */
 export function previewClickUpCsv(content: string): ImportPreview {
   const table = parseCsv(content);
   const preview: ImportPreview = {
     rows: table.rows.length,
+    taskCount: 0,
     lists: [],
     folders: [],
+    spaces: [],
     statuses: [],
-    emails: [],
+    people: [],
     tags: [],
     skipped: [],
-    ignoredColumns: table.headers.filter(
-      (header) => header.length > 0 && !KNOWN_COLUMNS.includes(header.toLowerCase()),
-    ),
+    ignoredColumns: table.headers.filter((header) => header && !KNOWN.has(header.toLowerCase())),
   };
-
   table.rows.forEach((row, index) => {
     const line = index + 2;
-
     if (index >= MAX_IMPORT_ROWS) {
       preview.skipped.push({ line, reason: 'Acima do limite de 5000 linhas' });
-
       return;
     }
-
-    if (pick(row, COLUMNS.name).length === 0) {
+    if (!row[C.name]) {
       preview.skipped.push({ line, reason: 'Linha sem nome de tarefa' });
-
       return;
     }
-
-    push(preview.lists, pick(row, COLUMNS.list) || FALLBACK_LIST_NAME);
-    push(preview.folders, pick(row, COLUMNS.folder));
-    push(preview.statuses, pick(row, COLUMNS.status));
-
-    for (const email of pick(row, COLUMNS.assignees).match(EMAIL) ?? []) {
-      push(preview.emails, email.toLowerCase());
+    preview.taskCount += 1;
+    add(preview.lists, row[C.list] || FALLBACK_LIST_NAME);
+    add(preview.spaces, row[C.space] ?? '');
+    add(preview.statuses, row[C.status] ?? '');
+    const folder = row[C.folder] ?? row['folder name'] ?? '';
+    try {
+      const parsed: unknown = JSON.parse(folder);
+      const path = Array.isArray(parsed)
+        ? parsed
+        : parsed && typeof parsed === 'object'
+          ? ((parsed as Record<string, unknown>).path ??
+            (parsed as Record<string, unknown>).names ??
+            (parsed as Record<string, unknown>).name ??
+            (parsed as Record<string, unknown>).folderName)
+          : parsed;
+      if (Array.isArray(path)) path.forEach((part) => add(preview.folders, String(part)));
+      else if (typeof path === 'string')
+        path.split('/').forEach((part) => add(preview.folders, part.trim()));
+    } catch {
+      folder.split('/').forEach((part) => add(preview.folders, part.trim()));
     }
-
-    for (const tag of pick(row, COLUMNS.tags).split(',')) {
-      push(preview.tags, tag.trim());
-    }
+    arrayValue(row[C.assignees] ?? '').forEach((person) => add(preview.people, person));
+    arrayValue(row[C.tags] ?? '').forEach((tag) => add(preview.tags, tag));
   });
-
   return preview;
 }

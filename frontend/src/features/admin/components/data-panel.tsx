@@ -8,6 +8,7 @@ import { SelectNative } from '@/components/ui/select-native';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toast } from '@/components/ui/toast';
 import { SettingsCard, SettingsRow } from '@/features/settings/components/settings-card';
+import { membersQuery } from '@/features/settings/api';
 import { treeQuery } from '@/features/shell/api';
 import { MAX_IMPORT_BYTES, previewClickUpCsv, type ImportPreview } from '../clickup-csv';
 import { exportWorkspace, importClickUpCsv } from '../api';
@@ -24,19 +25,37 @@ function listLine(label: string, values: string[]): string {
     : `${label}: ${shown}`;
 }
 
+function normalizePerson(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLocaleLowerCase();
+}
+
 /** Importação do ClickUp por CSV, com prévia, e exportação do workspace. */
 export function DataPanel({ wsId }: { wsId: string }) {
   const spaceId = useId();
   const fileId = useId();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const tree = useQuery(treeQuery(wsId));
+  const members = useQuery(membersQuery(wsId));
   const [space, setSpace] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [report, setReport] = useState<ImportReport | null>(null);
 
   const spaces = tree.data?.spaces ?? [];
-  const target = space || (spaces[0]?.id ?? '');
+  const target = space;
+  const unmatchedPeople = (preview?.people ?? []).filter((person) => {
+    const key = normalizePerson(person);
+    return !members.data?.some(
+      (member) =>
+        member.status === 'active' &&
+        [member.userId.name, member.userId.email].some((value) => normalizePerson(value) === key),
+    );
+  });
 
   const runImport = useMutation({
     mutationFn: () => {
@@ -44,7 +63,7 @@ export function DataPanel({ wsId }: { wsId: string }) {
         throw new Error('Escolha o arquivo CSV.');
       }
 
-      return importClickUpCsv(wsId, target, file);
+      return importClickUpCsv(wsId, target || undefined, file);
     },
     onSuccess: (result) => {
       setReport(result);
@@ -115,7 +134,7 @@ export function DataPanel({ wsId }: { wsId: string }) {
       >
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor={spaceId}>Space que recebe</Label>
+            <Label htmlFor={spaceId}>Space que recebe (opcional)</Label>
             <SelectNative
               id={spaceId}
               value={target}
@@ -123,6 +142,7 @@ export function DataPanel({ wsId }: { wsId: string }) {
                 setSpace(event.target.value);
               }}
             >
+              <option value="">Usar Space do arquivo</option>
               {spaces.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
@@ -152,14 +172,36 @@ export function DataPanel({ wsId }: { wsId: string }) {
               role="group"
             >
               <p className="text-[13px] font-semibold text-ink">
-                Prévia: {String(preview.rows)} linhas
+                Prévia: {String(preview.taskCount)} tarefas · {String(preview.spaces.length)} Spaces
+                · {String(preview.lists.length)} Lists
               </p>
-              <p className="text-[12.5px] text-muted">{listLine('Lists', preview.lists)}</p>
+              <p className="text-[12.5px] text-muted">
+                {listLine('Spaces', preview.spaces)} · {listLine('Lists', preview.lists)}
+              </p>
               <p className="text-[12.5px] text-muted">{listLine('Folders', preview.folders)}</p>
               <p className="text-[12.5px] text-muted">{listLine('Statuses', preview.statuses)}</p>
               <p className="text-[12.5px] text-muted">
-                {listLine('Responsáveis por e-mail', preview.emails)}
+                {listLine('Pessoas no arquivo', preview.people)}
               </p>
+              <p className="text-[12.5px] text-muted">
+                {listLine(
+                  'Responsáveis por e-mail',
+                  preview.people.filter((person) => /^[\w.+-]+@[\w-]+\.[\w.-]+$/i.test(person)),
+                )}
+              </p>
+              {members.isSuccess ? (
+                <p className="text-[12.5px] text-warning">
+                  {listLine('Pessoas não encontradas', unmatchedPeople)}
+                </p>
+              ) : null}
+              {members.isLoading ? (
+                <p className="text-[12.5px] text-muted">Validando responsáveis no workspace…</p>
+              ) : null}
+              {members.isError ? (
+                <p className="text-[12.5px] text-danger">
+                  Não foi possível validar os responsáveis. Tente novamente antes de confirmar.
+                </p>
+              ) : null}
               <p className="text-[12.5px] text-muted">{listLine('Etiquetas', preview.tags)}</p>
               {preview.ignoredColumns.length > 0 ? (
                 <p className="text-[12.5px] text-muted">
@@ -177,8 +219,8 @@ export function DataPanel({ wsId }: { wsId: string }) {
                 </p>
               ) : null}
               <p className="text-[12px] text-muted">
-                Status que não existir no Space entra como o primeiro status aberto; e-mail sem
-                conta no workspace fica sem responsável.
+                Statuses do arquivo são mantidos na List. Pessoas não encontradas ficam sem
+                responsável e constam no relatório.
               </p>
             </div>
           ) : null}
@@ -186,12 +228,12 @@ export function DataPanel({ wsId }: { wsId: string }) {
           <Button
             variant="signal"
             className="self-start"
-            disabled={!file || !target || runImport.isPending}
+            disabled={!file || !preview || !members.isSuccess || runImport.isPending}
             onClick={() => {
               runImport.mutate();
             }}
           >
-            Importar
+            Confirmar importação
           </Button>
 
           {report ? (

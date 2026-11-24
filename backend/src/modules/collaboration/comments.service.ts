@@ -91,6 +91,32 @@ export class CommentsService {
     return comment;
   }
 
+  async createImported(
+    ctx: PermissionContext,
+    idOrCustomId: string,
+    dto: CreateCommentDto,
+    authorId: Types.ObjectId,
+    createdAt: Date | null,
+    resolved: boolean,
+  ): Promise<CommentDocument> {
+    const comment = await this.create(ctx, idOrCustomId, dto);
+    const originalDate = createdAt ?? new Date();
+
+    await this.model.collection.updateOne(
+      { _id: comment._id, workspaceId: ctx.workspaceId },
+      {
+        $set: {
+          createdBy: authorId,
+          createdAt: originalDate,
+          resolvedAt: resolved ? originalDate : null,
+          resolvedBy: resolved ? authorId : null,
+        },
+      },
+    );
+
+    return comment;
+  }
+
   /** Root comments of the task, each one with the replies of its thread. */
   async list(
     ctx: PermissionContext,

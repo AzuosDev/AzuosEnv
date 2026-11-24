@@ -21,6 +21,9 @@ export class ImportReportDto {
   @ApiProperty({ description: 'Folders criadas.' })
   folders: number;
 
+  @ApiProperty({ description: 'Spaces criados.' })
+  spaces: number;
+
   @ApiProperty({ description: 'Tags criadas.' })
   tags: number;
 
