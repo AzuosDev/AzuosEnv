@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { colorSwatch, toneFromColor } from './colors';
+import { colorSwatch, colorText, toneFromColor } from './colors';
 
 describe('toneFromColor', () => {
   it('mapeia a cor escolhida para o token mais próximo', () => {
@@ -26,5 +26,15 @@ describe('colorSwatch', () => {
   it('devolve a classe do token', () => {
     expect(colorSwatch('#22C55E')).toBe('bg-success');
     expect(colorSwatch(undefined)).toBe('bg-accent');
+  });
+});
+
+describe('colorText', () => {
+  it('mapeia a cor escolhida para o token de texto correspondente', () => {
+    expect(colorText('#A78BFA')).toBe('text-accent');
+    expect(colorText('#2563EB')).toBe('text-info');
+    expect(colorText('#16A34A')).toBe('text-success');
+    expect(colorText('#F59E0B')).toBe('text-warning');
+    expect(colorText('#DC2626')).toBe('text-danger');
   });
 });

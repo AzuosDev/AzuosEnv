@@ -1,8 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsMongoId } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsMongoId, IsOptional } from 'class-validator';
 
 export class ImportClickUpDto {
-  @ApiProperty({ description: 'Space que recebe as Lists e tarefas importadas.' })
+  @ApiPropertyOptional({
+    description: 'Space de destino; ausente usa o Space indicado em cada linha.',
+  })
+  @IsOptional()
   @IsMongoId()
-  spaceId: string;
+  spaceId?: string;
 }

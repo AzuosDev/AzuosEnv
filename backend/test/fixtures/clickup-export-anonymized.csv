@@ -1,0 +1,11 @@
+Task ID,Task Name,Task Content,Status,Date Created,Due Date,Start Date,Parent ID,Subtasks IDs,Attachments,Assignees,Tags,Priority,List Name,Folder Name/Path,Space Name,Checklists,Comments,Time Spent,Home Location
+cu-001,Tarefa 1,Descrição 1,to do,1735689600000,1736035200000,1735776000000,,[cu-002],"[{""title"":""Guia"",""url"":""https://example.invalid/1""}]","[Pessoa Um]","[planejamento]",3,Backlog,"[""Produto"",""Planejamento""]",Espaço A,"{""Revisão"":[""Escopo"",""Prazo""]}","[{""text"":""Comentário anonimizado"",""by(e-mail)"":""pessoa@example.invalid"",""date"":""2025-01-01T10:00:00Z"",""resolved"":true}]",3600000,Desktop
+cu-002,Tarefa 2,Descrição 2,in progress,1735689600000,,,cu-001,[],[],"[Pessoa Dois]",[],2,Backlog,"[""Produto"",""Planejamento""]",Espaço A,{},[],1800000,Mobile
+cu-003,Tarefa 3,,complete,1735689600000,,,,[],[],[],[],1,Entregas,[],Espaço B,{},[],600000,Web
+cu-004,Tarefa 4,Descrição 4,to do,1735689600000,,,,[],[],"[pessoa@example.invalid]","[defeito, urgente]",4,Entregas,"[""Operação""]",Espaço B,{},[],0,Desktop
+cu-005,Tarefa 5,,active,1735689600000,,,,[],[],[],[],null,Triagem,[],Espaço C,{},[],900000,Mobile
+cu-006,Tarefa 6,Descrição 6,blocked,1735689600000,,,,[],[],[],[],2,Triagem,"[""Suporte""]",Espaço C,{},[],1200000,Web
+cu-007,Tarefa 7,,to do,1735689600000,,,,[],[],[],[],3,Melhorias,[],Espaço A,{},[],300000,Desktop
+cu-008,Tarefa 8,Descrição 8,complete,1735689600000,,,,[],[],[],[],1,Melhorias,"[""Produto""]",Espaço A,{},[],2400000,Mobile
+cu-009,Tarefa 9,,in progress,1735689600000,,,,[],[],[],[],4,Backlog,"[""Produto""]",Espaço B,{},[],0,Web
+cu-010,Tarefa 10,Descrição 10,to do,1735689600000,,,,[],[],[],[],null,Triagem,[],Espaço C,{},[],600000,Desktop

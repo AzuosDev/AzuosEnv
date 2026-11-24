@@ -61,6 +61,9 @@ export class Task {
   @Prop({ required: true })
   customId: string;
 
+  @Prop({ type: String, default: null, index: true })
+  externalId: string | null;
+
   @Prop({ required: true, trim: true })
   name: string;
 
@@ -144,6 +147,10 @@ export type TaskDocument = HydratedDocument<Task>;
 export const TaskSchema = SchemaFactory.createForClass(Task);
 
 TaskSchema.index({ workspaceId: 1, customId: 1 }, { unique: true });
+TaskSchema.index(
+  { workspaceId: 1, externalId: 1 },
+  { unique: true, partialFilterExpression: { externalId: { $type: 'string' } } },
+);
 TaskSchema.index({ workspaceId: 1, listIds: 1, statusId: 1, position: 1 });
 TaskSchema.index({ workspaceId: 1, assigneeIds: 1, dueAt: 1 });
 TaskSchema.index({ workspaceId: 1, 'customFields.fieldId': 1 });

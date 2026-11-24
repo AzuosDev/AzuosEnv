@@ -100,8 +100,14 @@ export class CreateSpaceDto {
 }
 
 export class UpdateSpaceDto extends PartialType(
-  OmitType(CreateSpaceDto, ['statusTemplate'] as const),
-) {}
+  OmitType(CreateSpaceDto, ['statusTemplate', 'icon'] as const),
+) {
+  @ApiPropertyOptional({ example: 'users', nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 40)
+  icon?: string | null;
+}
 
 export class SpaceQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ default: false })

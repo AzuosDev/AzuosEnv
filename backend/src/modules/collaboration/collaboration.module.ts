@@ -58,6 +58,6 @@ import { DependenciesService } from './dependencies.service';
     ActivitiesService,
     ActivitiesListener,
   ],
-  exports: [ChecklistsService, CommentsService],
+  exports: [ChecklistsService, CommentsService, AttachmentsService],
 })
 export class CollaborationModule {}

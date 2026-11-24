@@ -163,14 +163,14 @@ test('o CSV do ClickUp mostra a prévia e importa', async () => {
 
   const preview = page.getByRole('group', { name: 'Prévia do mapeamento' });
 
-  await expect(preview.getByText('Prévia: 3 linhas')).toBeVisible();
+  await expect(preview.getByText(/Prévia: 2 tarefas/)).toBeVisible();
   await expect(preview.getByText('Lists: Suporte')).toBeVisible();
   await expect(preview.getByText('Statuses: Aberto')).toBeVisible();
   await expect(preview.getByText(/Responsáveis por e-mail: admin@azuos\.dev/)).toBeVisible();
   await expect(preview.getByText(/1 linha\(s\) serão ignoradas: linha 4/)).toBeVisible();
 
   await page.getByLabel('Space que recebe').selectOption(spaceId);
-  await page.getByRole('button', { name: 'Importar' }).click();
+  await page.getByRole('button', { name: 'Confirmar importação' }).click();
 
   const report = page.getByRole('status', { name: 'Relatório da importação' });
 

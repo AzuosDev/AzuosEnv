@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Folder as FolderIcon, Lock } from 'lucide-react';
+import { Folder as FolderIcon, List as ListIcon, Lock } from 'lucide-react';
 import { useState } from 'react';
 import type { TreeFolder, TreeList } from '@/api/types';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { workspaceQuery } from '@/features/settings/api';
 import { treeQuery } from '@/features/shell/api';
 import { PageHeader } from '@/features/shell/components/page-header';
 import { crumbsOf, findLocation, type TreeNodeKind } from '@/features/shell/tree-path';
-import { colorSwatch } from '@/lib/colors';
+import { colorText } from '@/lib/colors';
 import { cn } from '@/lib/utils';
 import { refFromLocation } from '../node-ref';
 import { iconOf, NODE_LABEL } from '../node-kinds';
@@ -35,13 +35,12 @@ function openLabel(count: number): string {
 }
 
 function ListCard({ wsId, list }: { wsId: string; list: TreeList }) {
+  const Icon = iconOf(list.icon) ?? ListIcon;
+
   return (
     <Link to="/w/$wsId/l/$listId" params={{ wsId, listId: list.id }} className={cardClass}>
       <span className="flex items-start gap-2">
-        <span
-          className={cn('mt-1 h-2.5 w-2.5 shrink-0 rounded-[3px]', colorSwatch(list.color))}
-          aria-hidden="true"
-        />
+        <Icon className={cn('mt-0.5 h-4 w-4 shrink-0', colorText(list.color))} aria-hidden="true" />
         <span className="min-w-0 text-[14px] font-semibold text-ink">{list.name}</span>
       </span>
       <StatusPill tone={list.openTaskCount > 0 ? 'info' : 'neutral'}>

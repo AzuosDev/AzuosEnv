@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { HierarchyModule } from '../hierarchy/hierarchy.module';
+import { CollaborationModule } from '../collaboration/collaboration.module';
+import { FieldsModule } from '../fields/fields.module';
 import { TasksDataModule } from '../tasks/tasks-data.module';
 import { TasksModule } from '../tasks/tasks.module';
+import { TimeModule } from '../time/time.module';
 import { UsersModule } from '../users/users.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { ClickUpImportService } from './clickup-import.service';
@@ -9,7 +12,16 @@ import { ExportController, ImportController } from './import.controller';
 import { WorkspaceExportService } from './workspace-export.service';
 
 @Module({
-  imports: [HierarchyModule, TasksDataModule, TasksModule, UsersModule, WorkspacesModule],
+  imports: [
+    HierarchyModule,
+    TasksDataModule,
+    TasksModule,
+    UsersModule,
+    WorkspacesModule,
+    CollaborationModule,
+    FieldsModule,
+    TimeModule,
+  ],
   controllers: [ImportController, ExportController],
   providers: [ClickUpImportService, WorkspaceExportService],
 })

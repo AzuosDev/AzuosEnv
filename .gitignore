@@ -24,6 +24,7 @@ yarn-error.log*
 
 # Uploads
 /uploads/
+/imports/
 # Ancorado: sem a barra inicial a regra tambem ignorava src/modules/storage.
 /storage/
 /backend/storage/

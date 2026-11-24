@@ -1,8 +1,14 @@
 import request from 'supertest';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { Notification } from '../src/modules/notifications/schemas/notification.schema';
+import { Checklist } from '../src/modules/collaboration/schemas/checklist.schema';
+import { Comment } from '../src/modules/collaboration/schemas/comment.schema';
+import { CustomField } from '../src/modules/fields/schemas/custom-field.schema';
 import { Task } from '../src/modules/tasks/schemas/task.schema';
+import { TimeEntry } from '../src/modules/time/schemas/time-entry.schema';
 import { Session, createSession } from './utils/auth-client';
 import { TestApp, createTestApp } from './utils/e2e-app';
 
@@ -293,6 +299,77 @@ describe('Hardening, auditoria e importação', () => {
   });
 
   describe('importação do ClickUp', () => {
+    it('importa a fixture anonimizada de dez tarefas e ignora a reimportação', async () => {
+      const fixture = await setup();
+      const csv = Buffer.from(
+        readFileSync(
+          join(process.cwd(), 'test/fixtures/clickup-export-anonymized.csv'),
+          'utf8',
+        ).replaceAll('pessoa@example.invalid', fixture.member.credentials.email),
+        'utf8',
+      );
+      const endpoint = `/api/v1/workspaces/${fixture.workspace.id}/import/clickup`;
+      const first = await withAuth(http().post(endpoint), fixture.owner)
+        .attach('file', csv, 'clickup-anonymizado.csv')
+        .expect(201);
+
+      expect(first.body).toMatchObject({ rows: 10, tasks: 10, spaces: 3, lists: 8, folders: 5 });
+
+      const workspaceId = new Types.ObjectId(fixture.workspace.id);
+      const taskModel = ctx.app.get<Model<Task>>(getModelToken(Task.name));
+      const tasks = await taskModel.find({ workspaceId }).exec();
+      const parent = tasks.find((task) => task.externalId === 'cu-001');
+      const child = tasks.find((task) => task.externalId === 'cu-002');
+      expect(tasks).toHaveLength(10);
+      expect(parent?.get('createdAt')).toEqual(new Date('2025-01-01T00:00:00.000Z'));
+      expect(child?.parentTaskId?.toString()).toBe(parent?._id.toString());
+      expect(parent?.statusGroup).toBe('notStarted');
+      expect(tasks.find((task) => task.externalId === 'cu-003')?.statusGroup).toBe('done');
+
+      const customFieldModel = ctx.app.get<Model<CustomField>>(getModelToken(CustomField.name));
+      const clickupField = await customFieldModel
+        .findOne({ workspaceId, name: 'ID ClickUp' })
+        .exec();
+      expect(parent?.customFields).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ fieldId: clickupField?._id, value: 'cu-001' }),
+        ]),
+      );
+      const checklistModel = ctx.app.get<Model<Checklist>>(getModelToken(Checklist.name));
+      const checklists = await checklistModel.find({ workspaceId }).exec();
+      expect(checklists[0]?.items.map((item) => item.text)).toEqual(['Escopo', 'Prazo']);
+      const commentModel = ctx.app.get<Model<Comment>>(getModelToken(Comment.name));
+      const comments = await commentModel.find({ workspaceId }).exec();
+      expect(comments.map((comment) => comment.bodyText)).toEqual(
+        expect.arrayContaining([
+          'Comentário anonimizado',
+          expect.stringContaining('https://example.invalid/1'),
+        ]),
+      );
+      expect(
+        comments.find((comment) => comment.bodyText === 'Comentário anonimizado')?.get('createdAt'),
+      ).toEqual(new Date('2025-01-01T10:00:00.000Z'));
+      expect(
+        comments.find((comment) => comment.bodyText === 'Comentário anonimizado')?.resolvedAt,
+      ).toEqual(new Date('2025-01-01T10:00:00.000Z'));
+      expect(
+        comments
+          .find((comment) => comment.bodyText === 'Comentário anonimizado')
+          ?.createdBy.toString(),
+      ).toBe(fixture.memberId);
+      const timeModel = ctx.app.get<Model<TimeEntry>>(getModelToken(TimeEntry.name));
+      expect(await timeModel.countDocuments({ workspaceId })).toBe(8);
+
+      const second = await withAuth(http().post(endpoint), fixture.owner)
+        .attach('file', csv, 'clickup-anonymizado.csv')
+        .expect(201);
+
+      expect(second.body.tasks).toBe(0);
+      expect(second.body.warnings).toEqual(
+        expect.arrayContaining([{ line: 2, reason: 'JÁ IMPORTADA: cu-001' }]),
+      );
+    });
+
     it('recria Folder, Lists, statuses, tags e responsáveis e relata o que ignorou', async () => {
       const fixture = await setup();
       const csv = CLICKUP_CSV.replace('ASSIGNEE_EMAIL', fixture.member.credentials.email);
@@ -312,10 +389,7 @@ describe('Hardening, auditoria e importação', () => {
       expect(report.tags).toBe(3);
       expect(report.skipped).toEqual([{ line: 4, reason: 'LINHA SEM NOME DE TAREFA' }]);
       expect(report.warnings).toEqual(
-        expect.arrayContaining([
-          { line: 3, reason: 'STATUS DESCONHECIDO: Status Inexistente' },
-          { line: 3, reason: 'RESPONSAVEL SEM CONTA: ninguem@fora.dev' },
-        ]),
+        expect.arrayContaining([{ line: 3, reason: 'RESPONSAVEL SEM CONTA: ninguem@fora.dev' }]),
       );
 
       const tasks = await withAuth(

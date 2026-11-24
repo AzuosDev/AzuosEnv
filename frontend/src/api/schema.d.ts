@@ -4478,13 +4478,13 @@ export interface components {
             name?: string;
             /** @example #2563EB */
             color?: string;
-            /** @example users */
-            icon?: string;
             /** @description Space privado: só aparece para quem for convidado. */
             private?: boolean;
             /** @description Conjunto de statuses existente. */
             statusSetId?: string;
             clickApps?: components["schemas"]["ClickAppsOverrideDto"];
+            /** @example users */
+            icon?: string | null;
         };
         ReorderDto: {
             /** @description Irmão que fica antes do item. */
@@ -4535,6 +4535,8 @@ export interface components {
             name: string;
             /** @example #2563EB */
             color?: string;
+            /** @example code */
+            icon?: string;
             description?: string;
             statusSetId?: string | null;
         };
@@ -4544,6 +4546,7 @@ export interface components {
             folderId: components["schemas"]["ObjectId"] | null;
             name: string;
             color?: string;
+            icon?: string;
             description?: string;
             statusSetId: components["schemas"]["ObjectId"] | null;
             position: string;
@@ -4595,6 +4598,8 @@ export interface components {
             color?: string;
             description?: string;
             statusSetId?: string | null;
+            /** @example code */
+            icon?: string | null;
         };
         MoveListDto: {
             spaceId?: string;
@@ -4666,6 +4671,8 @@ export interface components {
             name: string;
             /** @example #A78BFA */
             color?: string;
+            /** @example code */
+            icon?: string;
             /** @description Ordem manual (fractional indexing). */
             position: string;
             /**
@@ -4717,6 +4724,8 @@ export interface components {
         CreateTaskDto: {
             /** @example Corrigir fechamento de caixa */
             name: string;
+            /** @description Identificador estável importado do sistema de origem. */
+            externalId?: string | null;
             /** @description JSON do editor. */
             description?: {
                 [key: string]: unknown;
@@ -4771,6 +4780,7 @@ export interface components {
             listIds: components["schemas"]["ObjectId"][];
             parentTaskId: components["schemas"]["ObjectId"] | null;
             customId: string;
+            externalId: string | null;
             name: string;
             descriptionText: string;
             statusId: components["schemas"]["ObjectId"];
@@ -4828,6 +4838,7 @@ export interface components {
             listIds: components["schemas"]["ObjectId"][];
             parentTaskId: components["schemas"]["ObjectId"] | null;
             customId: string;
+            externalId: string | null;
             name: string;
             descriptionText: string;
             statusId: components["schemas"]["ObjectId"];
@@ -4992,6 +5003,7 @@ export interface components {
             listIds: components["schemas"]["ObjectId"][];
             parentTaskId: components["schemas"]["ObjectId"] | null;
             customId: string;
+            externalId: string | null;
             name: string;
             descriptionText: string;
             statusId: components["schemas"]["ObjectId"];
@@ -5358,7 +5370,7 @@ export interface components {
             /** @description null only when `locationType` is `everything`. */
             locationId: components["schemas"]["ObjectId"] | null;
             /** @enum {string} */
-            type: "map" | "team" | "list" | "doc" | "chat" | "activity" | "board" | "calendar" | "table" | "gantt" | "timeline" | "workload" | "form" | "whiteboard" | "embed" | "dashboard" | "mindmap";
+            type: "map" | "team" | "list" | "doc" | "activity" | "workload" | "chat" | "board" | "calendar" | "table" | "gantt" | "timeline" | "form" | "whiteboard" | "embed" | "dashboard" | "mindmap";
             name: string;
             /** @description Visible only to `ownerId`. */
             private: boolean;
@@ -6027,7 +6039,7 @@ export interface components {
         DashboardCard: {
             id: string;
             /** @enum {string} */
-            type: "workload" | "billable" | "tasksByStatus" | "tasksByAssignee" | "burndown" | "burnup" | "timeByClient" | "timeByUser" | "overdueList" | "taskTable" | "calculator";
+            type: "billable" | "workload" | "tasksByStatus" | "tasksByAssignee" | "burndown" | "burnup" | "timeByClient" | "timeByUser" | "overdueList" | "taskTable" | "calculator";
             config: {
                 [key: string]: unknown;
             };
@@ -6497,12 +6509,12 @@ export interface components {
             /** Format: date-time */
             lastDeliveredAt: string | null;
         };
+        ChannelReadsDto: {
+            items: components["schemas"]["ChannelReaderDto"][];
+        };
         ChannelDeliveryDto: {
             /** Format: ObjectId */
             messageId: string;
-        };
-        ChannelReadsDto: {
-            items: components["schemas"]["ChannelReaderDto"][];
         };
         CreateMessageDto: {
             /** @example Subi o build do PDV */
@@ -7248,7 +7260,7 @@ export interface components {
         OutgoingWebhook: {
             workspaceId: components["schemas"]["ObjectId"];
             url: string;
-            events: ("*" | "task.created" | "task.updated" | "task.moved" | "task.deleted" | "message.created" | "comment.created" | "whiteboard.updated")[];
+            events: ("*" | "task.created" | "task.updated" | "task.moved" | "task.deleted" | "comment.created" | "message.created" | "whiteboard.updated")[];
             active: boolean;
             createdBy: components["schemas"]["ObjectId"];
             /** Format: date-time */
@@ -7420,7 +7432,7 @@ export interface components {
             /** @description waMessageId of the quoted message. */
             replyTo: string | null;
             /** @enum {string} */
-            status: "read" | "pending" | "delivered" | "failed" | "sent";
+            status: "read" | "delivered" | "pending" | "failed" | "sent";
             error: components["schemas"]["WaMessageError"] | null;
             /** @description Member who sent it; null on an inbound message or on a bot answer. */
             authorId: components["schemas"]["ObjectId"] | null;
@@ -7673,7 +7685,7 @@ export interface components {
         };
         WaBotRuleReply: {
             /** @enum {string} */
-            kind: "text" | "list" | "none" | "media" | "buttons";
+            kind: "text" | "list" | "none" | "buttons" | "media";
             /** @description Body of the message; accepts the variables of `renderWaText`. */
             text: string;
             /** @description Public link of the file on a `media` reply; Meta fetches it. */
@@ -7874,6 +7886,8 @@ export interface components {
             lists: number;
             /** @description Folders criadas. */
             folders: number;
+            /** @description Spaces criados. */
+            spaces: number;
             /** @description Tags criadas. */
             tags: number;
             /** @description Linhas que não entraram. */
@@ -17307,7 +17321,7 @@ export interface operations {
                 "multipart/form-data": {
                     /** Format: binary */
                     file: string;
-                    spaceId: string;
+                    spaceId?: string;
                 };
             };
         };

@@ -53,7 +53,7 @@ export function ColorPicker({
   );
 }
 
-/** Escolha de ícone do Space; "Sem ícone" devolve string vazia. */
+/** Escolha de ícone do Space ou List; "Sem ícone" devolve string vazia. */
 export function IconPicker({
   value,
   onChange,

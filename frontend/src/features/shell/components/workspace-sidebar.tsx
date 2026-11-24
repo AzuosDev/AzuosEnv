@@ -48,7 +48,7 @@ export function WorkspaceSidebar({ wsId, workspaces, active, onNavigate }: Works
   const expanded = useExpanded(wsId, active ? [...ancestorIds(location), active.id] : []);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
       <WorkspaceSwitcher
         wsId={wsId}
         workspaces={workspaces}

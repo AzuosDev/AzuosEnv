@@ -105,7 +105,7 @@ export class SpacesService {
     }
 
     if (dto.icon !== undefined) {
-      space.icon = dto.icon;
+      space.icon = dto.icon ?? undefined;
     }
 
     if (dto.private !== undefined) {

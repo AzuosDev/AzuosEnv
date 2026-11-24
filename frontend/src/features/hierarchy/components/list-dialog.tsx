@@ -20,11 +20,12 @@ import { toast } from '@/components/ui/toast';
 import { Field, FormAlert } from '@/features/auth/components/field';
 import { createList, listQuery, updateList } from '../api';
 import { useTreeRefresh } from '../hooks/use-hierarchy-actions';
-import { ColorPicker } from './pickers';
+import { ColorPicker, IconPicker } from './pickers';
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Dê um nome à List.').max(120, 'Nome muito longo.'),
   color: z.string(),
+  icon: z.string(),
   description: z.string().trim().max(2000, 'Descrição muito longa.'),
 });
 
@@ -55,7 +56,7 @@ function ListForm({
   const editing = listId !== undefined;
   const refresh = useTreeRefresh(wsId);
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: initial });
-  const color = form.watch('color');
+  const [color, icon] = form.watch(['color', 'icon']);
 
   const save = useMutation({
     mutationFn: async (data: Values) => {
@@ -63,6 +64,7 @@ function ListForm({
         await updateList(wsId, listId, {
           name: data.name,
           color: data.color,
+          icon: data.icon || null,
           description: data.description,
         });
       } else if (parent) {
@@ -71,6 +73,7 @@ function ListForm({
           folderId: parent.folderId,
           name: data.name,
           color: data.color,
+          ...(data.icon ? { icon: data.icon } : {}),
           ...(data.description ? { description: data.description } : {}),
         });
       }
@@ -110,6 +113,13 @@ function ListForm({
         value={color}
         onChange={(next) => {
           form.setValue('color', next, { shouldDirty: true });
+        }}
+      />
+
+      <IconPicker
+        value={icon}
+        onChange={(next) => {
+          form.setValue('icon', next, { shouldDirty: true });
         }}
       />
 
@@ -158,6 +168,7 @@ export function ListDialog({ wsId, listId, parent, onClose }: ListDialogProps) {
             initial={{
               name: current.data?.name ?? '',
               color: current.data?.color ?? '#2563EB',
+              icon: current.data?.icon ?? '',
               description: current.data?.description ?? '',
             }}
             onClose={onClose}

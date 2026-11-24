@@ -18373,8 +18373,7 @@
                   }
                 },
                 "required": [
-                  "file",
-                  "spaceId"
+                  "file"
                 ]
               }
             }
@@ -19734,12 +19733,6 @@
             "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$",
             "example": "#2563EB"
           },
-          "icon": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 40,
-            "example": "users"
-          },
           "private": {
             "type": "boolean",
             "description": "Space privado: só aparece para quem for convidado."
@@ -19750,6 +19743,13 @@
           },
           "clickApps": {
             "$ref": "#/components/schemas/ClickAppsOverrideDto"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 40,
+            "example": "users"
           }
         }
       },
@@ -19910,6 +19910,12 @@
             "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$",
             "example": "#2563EB"
           },
+          "icon": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "example": "code"
+          },
           "description": {
             "type": "string",
             "minLength": 0,
@@ -19947,6 +19953,9 @@
             "type": "string"
           },
           "color": {
+            "type": "string"
+          },
+          "icon": {
             "type": "string"
           },
           "description": {
@@ -20108,6 +20117,13 @@
           "statusSetId": {
             "type": "string",
             "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 40,
+            "example": "code"
           }
         }
       },
@@ -20366,6 +20382,10 @@
             "type": "string",
             "example": "#A78BFA"
           },
+          "icon": {
+            "type": "string",
+            "example": "code"
+          },
           "position": {
             "type": "string",
             "description": "Ordem manual (fractional indexing)."
@@ -20533,6 +20553,13 @@
             "minLength": 1,
             "maxLength": 500,
             "example": "Corrigir fechamento de caixa"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Identificador estável importado do sistema de origem."
           },
           "description": {
             "type": "object",
@@ -20714,6 +20741,10 @@
           "customId": {
             "type": "string"
           },
+          "externalId": {
+            "type": "string",
+            "nullable": true
+          },
           "name": {
             "type": "string"
           },
@@ -20839,6 +20870,7 @@
           "listIds",
           "parentTaskId",
           "customId",
+          "externalId",
           "name",
           "descriptionText",
           "statusId",
@@ -20930,6 +20962,10 @@
           },
           "customId": {
             "type": "string"
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true
           },
           "name": {
             "type": "string"
@@ -21058,6 +21094,7 @@
           "listIds",
           "parentTaskId",
           "customId",
+          "externalId",
           "name",
           "descriptionText",
           "statusId",
@@ -21552,6 +21589,10 @@
           "customId": {
             "type": "string"
           },
+          "externalId": {
+            "type": "string",
+            "nullable": true
+          },
           "name": {
             "type": "string"
           },
@@ -21684,6 +21725,7 @@
           "listIds",
           "parentTaskId",
           "customId",
+          "externalId",
           "name",
           "descriptionText",
           "statusId",
@@ -22837,14 +22879,14 @@
               "team",
               "list",
               "doc",
-              "chat",
               "activity",
+              "workload",
+              "chat",
               "board",
               "calendar",
               "table",
               "gantt",
               "timeline",
-              "workload",
               "form",
               "whiteboard",
               "embed",
@@ -25192,8 +25234,8 @@
           "type": {
             "type": "string",
             "enum": [
-              "workload",
               "billable",
+              "workload",
               "tasksByStatus",
               "tasksByAssignee",
               "burndown",
@@ -26794,31 +26836,19 @@
           },
           "lastReadAt": {
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "nullable": true,
+            "format": "date-time"
           },
           "lastDeliveredAt": {
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "nullable": true,
+            "format": "date-time"
           }
         },
         "required": [
           "userId",
           "lastReadAt",
           "lastDeliveredAt"
-        ]
-      },
-      "ChannelDeliveryDto": {
-        "type": "object",
-        "properties": {
-          "messageId": {
-            "type": "string",
-            "format": "ObjectId"
-          }
-        },
-        "required": [
-          "messageId"
         ]
       },
       "ChannelReadsDto": {
@@ -26833,6 +26863,18 @@
         },
         "required": [
           "items"
+        ]
+      },
+      "ChannelDeliveryDto": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "format": "ObjectId"
+          }
+        },
+        "required": [
+          "messageId"
         ]
       },
       "CreateMessageDto": {
@@ -29448,8 +29490,8 @@
                 "task.updated",
                 "task.moved",
                 "task.deleted",
-                "message.created",
                 "comment.created",
+                "message.created",
                 "whiteboard.updated"
               ]
             }
@@ -30058,8 +30100,8 @@
           "status": {
             "enum": [
               "read",
-              "pending",
               "delivered",
+              "pending",
               "failed",
               "sent"
             ],
@@ -30985,8 +31027,8 @@
               "text",
               "list",
               "none",
-              "media",
-              "buttons"
+              "buttons",
+              "media"
             ]
           },
           "text": {
@@ -31701,6 +31743,10 @@
             "type": "number",
             "description": "Folders criadas."
           },
+          "spaces": {
+            "type": "number",
+            "description": "Spaces criados."
+          },
           "tags": {
             "type": "number",
             "description": "Tags criadas."
@@ -31725,6 +31771,7 @@
           "tasks",
           "lists",
           "folders",
+          "spaces",
           "tags",
           "skipped",
           "warnings"

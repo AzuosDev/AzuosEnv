@@ -88,6 +88,7 @@ export class TasksService {
       listIds: [list._id],
       parentTaskId: parent?._id ?? null,
       customId: await this.counters.nextCustomId(ctx.workspaceId, taskPrefix),
+      externalId: dto.externalId ?? null,
       name: dto.name,
       description: dto.description ?? null,
       descriptionText: dto.descriptionText ?? '',
