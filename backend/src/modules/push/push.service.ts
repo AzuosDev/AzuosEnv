@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import webpush, { WebPushError } from 'web-push';
+import { WebPushError, sendNotification, setVapidDetails } from 'web-push';
 import { CreatePushSubscriptionDto } from './dto/push-subscription.dto';
 import { PushSubscription, PushSubscriptionDocument } from './schemas/push-subscription.schema';
 
@@ -41,7 +41,7 @@ export class PushService {
     this.ready = this.publicVapidKey !== '' && privateKey !== '';
 
     if (this.ready) {
-      webpush.setVapidDetails(
+      setVapidDetails(
         config.get<string>('VAPID_SUBJECT') || 'mailto:no-reply@azuos.dev',
         this.publicVapidKey,
         privateKey,
@@ -105,7 +105,7 @@ export class PushService {
 
   private async deliver(subscription: PushSubscriptionDocument, body: string): Promise<void> {
     try {
-      await webpush.sendNotification(
+      await sendNotification(
         {
           endpoint: subscription.endpoint,
           keys: { p256dh: subscription.p256dh, auth: subscription.auth },
