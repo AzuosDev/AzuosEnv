@@ -252,3 +252,29 @@ test('Lista e Quadro sem rolagem horizontal em 360, 768 e 1280', async () => {
   await page.setViewportSize({ width: 360, height: 900 });
   await expectNoHorizontalScroll(page);
 });
+
+test('seleciona as tarefas de uma coluna e cria uma nova coluna', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openList(page, 'Quadro');
+
+  const taskStatus = statuses.find((status) => status.id === tasks.a?.statusId);
+
+  expect(taskStatus, 'status da tarefa de exemplo').toBeTruthy();
+
+  const column = page.getByRole('region', { name: taskStatus?.name ?? '' });
+  const selectColumn = column.getByRole('checkbox', {
+    name: `Selecionar tarefas da coluna ${taskStatus?.name ?? ''}`,
+  });
+
+  await selectColumn.click();
+  await expect(selectColumn).toHaveAttribute('aria-checked', 'true');
+  await expect(page.locator('p[role="status"]')).toContainText('selecionada');
+
+  await page.getByRole('button', { name: 'Adicionar grupo' }).click();
+  const newColumn = `Aguardando ${stamp}`;
+  const newColumnName = page.getByRole('textbox', { name: 'Nome da nova coluna' });
+  await newColumnName.fill(newColumn);
+  await newColumnName.press('Enter');
+
+  await expect(page.getByRole('region', { name: newColumn })).toBeVisible();
+});

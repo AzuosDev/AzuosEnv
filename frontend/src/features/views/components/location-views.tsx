@@ -1,13 +1,17 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { queryKeys } from '@/api/keys';
 import type { CustomField, EffectiveStatus, ViewLocationType, WorkspaceRole } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { toast } from '@/components/ui/toast';
 import { useSession } from '@/features/auth/session';
+import { useHierarchy } from '@/features/hierarchy/components/hierarchy-provider';
+import type { FlatNode } from '@/features/hierarchy/tree-dnd';
 import { membersQuery } from '@/features/settings/api';
 import { listStatusesQuery, tagsQuery, tasksInfiniteQuery } from '@/features/tasks/api';
+import { createStatusSet, updateStatusSet, updateList } from '@/features/hierarchy/api';
 import { fieldColumnsOf } from '@/features/tasks/field-values';
 import { customFieldsQuery } from '@/features/tasks/fields-api';
 import { BoardView } from '@/features/tasks/components/board-view';
@@ -61,7 +65,7 @@ const NO_STATUSES: EffectiveStatus[] = [];
 const NO_FIELDS: CustomField[] = [];
 
 /** Views em que o estado vazio substitui o desenho da view. */
-const EMPTY_STATE_TYPES = ['list', 'board', 'table'];
+const EMPTY_STATE_TYPES = ['list', 'table'];
 
 /**
  * Views salvas do local com a toolbar e a view aberta. É quem monta a consulta a
@@ -76,6 +80,8 @@ export function LocationViews({
   listName,
 }: LocationViewsProps) {
   const user = useSession();
+  const queryClient = useQueryClient();
+  const { open: openHierarchyDialog } = useHierarchy();
   const views = useQuery(viewsQuery(wsId, locationType, listId));
   const statuses = useQuery({ ...listStatusesQuery(wsId, listId), enabled: listId !== '' });
   const members = useQuery(membersQuery(wsId));
@@ -165,6 +171,114 @@ export function LocationViews({
     fieldColumns,
     groups,
     groupBy,
+    canManageColumns:
+      type === 'board' &&
+      groupBy === 'status' &&
+      locationType === 'list' &&
+      listId !== '' &&
+      role !== 'guest',
+    onManageColumns: (options = {}) => {
+      if (locationType !== 'list' || listId === '') {
+        return;
+      }
+
+      const node: FlatNode = {
+        id: listId,
+        kind: 'list',
+        name: listName ?? 'List',
+        depth: 1,
+        spaceId,
+        folderId: null,
+      };
+
+      openHierarchyDialog({
+        type: 'statuses',
+        node,
+        boardMode: true,
+        ...options,
+      });
+    },
+    onCreateColumn: async (name) => {
+      if (!statuses.data || locationType !== 'list' || listId === '') return false;
+      const next = [
+        ...statusList.map(({ id, name: statusName, color, group }) => ({
+          id,
+          name: statusName,
+          color,
+          group,
+        })),
+        { name, color: '#22c55e', group: 'active' as const },
+      ];
+      try {
+        let statusSetId = statuses.data.statusSetId;
+        if (statuses.data.source !== 'list') {
+          const created = await createStatusSet(wsId, {
+            name: `${listName ?? 'List'} — colunas`,
+            statuses: next.map(({ name: statusName, color, group }) => ({
+              name: statusName,
+              color,
+              group,
+            })),
+          });
+          await updateList(wsId, listId, { statusSetId: created.id });
+          statusSetId = created.id;
+        } else {
+          await updateStatusSet(wsId, statusSetId, {
+            statuses: next.map((status) => ({
+              ...('id' in status ? { id: status.id } : {}),
+              name: status.name,
+              color: status.color,
+              group: status.group,
+            })),
+          });
+        }
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: queryKeys.listStatuses(wsId, listId) }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.tree(wsId) }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.statusSet(wsId, statusSetId) }),
+        ]);
+        return true;
+      } catch {
+        toast.error('Não foi possível criar a coluna.');
+        return false;
+      }
+    },
+    onReorderColumns: (activeId, overId) => {
+      const sourceId = activeId.replace(/^column:/, '');
+      const targetId = overId.replace(/^column:/, '');
+      const ordered = [...statusList];
+      const from = ordered.findIndex((status) => status.id === sourceId);
+      const to = ordered.findIndex((status) => status.id === targetId);
+
+      if (from < 0 || to < 0 || from === to || !statuses.data || locationType !== 'list') {
+        return;
+      }
+
+      const [status] = ordered.splice(from, 1);
+      ordered.splice(to, 0, status!);
+      void (async () => {
+        let statusSetId = statuses.data.statusSetId;
+        if (statuses.data.source !== 'list') {
+          const created = await createStatusSet(wsId, {
+            name: `${listName ?? 'List'} — colunas`,
+            statuses: ordered.map(({ name, color, group }) => ({ name, color, group })),
+          });
+          await updateList(wsId, listId, { statusSetId: created.id });
+          statusSetId = created.id;
+        } else {
+          await updateStatusSet(wsId, statusSetId, {
+            statuses: ordered.map(({ id, name, color, group }) => ({ id, name, color, group })),
+          });
+        }
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: queryKeys.listStatuses(wsId, listId) }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.tree(wsId) }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.statusSet(wsId, statusSetId) }),
+        ]);
+      })().catch(() => {
+        toast.error('Não foi possível mover a coluna.');
+      });
+    },
     actions,
     canEdit: role !== 'guest',
     selected,
@@ -176,6 +290,22 @@ export function LocationViews({
           next.delete(taskId);
         } else {
           next.add(taskId);
+        }
+
+        return next;
+      });
+    },
+    onToggleGroupSelect: (taskIds) => {
+      setSelected((current) => {
+        const next = new Set(current);
+        const shouldSelect = !taskIds.every((taskId) => next.has(taskId));
+
+        for (const taskId of taskIds) {
+          if (shouldSelect) {
+            next.add(taskId);
+          } else {
+            next.delete(taskId);
+          }
         }
 
         return next;

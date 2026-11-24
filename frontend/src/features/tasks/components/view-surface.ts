@@ -40,11 +40,16 @@ export interface ViewSurfaceProps {
   fieldColumns: CustomField[];
   groups: TaskGroupState[];
   groupBy: ViewGroupBy;
+  canManageColumns: boolean;
+  onManageColumns: (options?: { addStatus?: boolean; focusStatusId?: string }) => void;
+  onCreateColumn: (name: string) => Promise<boolean>;
+  onReorderColumns: (activeId: string, overId: string) => void;
   actions: ReturnType<typeof useTaskActions>;
   /** Falso quando o papel do usuário não permite editar o local. */
   canEdit: boolean;
   selected: Set<string>;
   onToggleSelect: (taskId: string) => void;
+  onToggleGroupSelect: (taskIds: string[]) => void;
   onDrop: (activeId: string, overId: string) => void;
   onLoadMore: (cursor: string) => void;
   loadingMore: boolean;

@@ -20,7 +20,13 @@ export type HierarchyDialog =
   | { type: 'edit'; node: FlatNode; focus?: 'name' | 'appearance' }
   | { type: 'move'; node: FlatNode }
   | { type: 'share'; node: FlatNode }
-  | { type: 'statuses'; node: FlatNode }
+  | {
+      type: 'statuses';
+      node: FlatNode;
+      addStatus?: boolean;
+      boardMode?: boolean;
+      focusStatusId?: string;
+    }
   | { type: 'archive'; node: FlatNode }
   | { type: 'template'; node: FlatNode }
   | { type: 'sprints'; node: FlatNode }
@@ -109,7 +115,14 @@ export function HierarchyProvider({ wsId, children }: { wsId: string; children: 
       ) : null}
 
       {dialog?.type === 'statuses' ? (
-        <StatusesDialog wsId={wsId} node={dialog.node} onClose={close} />
+        <StatusesDialog
+          wsId={wsId}
+          node={dialog.node}
+          addStatusOnOpen={dialog.addStatus}
+          boardMode={dialog.boardMode}
+          focusStatusId={dialog.focusStatusId}
+          onClose={close}
+        />
       ) : null}
 
       {dialog?.type === 'template' ? (
