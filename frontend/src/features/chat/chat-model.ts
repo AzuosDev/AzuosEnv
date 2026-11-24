@@ -360,7 +360,7 @@ export interface MessageReceipt {
   readBy: number;
 }
 
-/** Quem leu o canal e quem ainda deve ler, para os tiques das minhas mensagens. */
+/** Entregas e leituras do canal, usadas nos tiques das minhas mensagens. */
 export interface ChannelReceipts {
   readers: ChannelReader[];
   /** Participantes do canal fora o próprio usuário. */
@@ -393,15 +393,28 @@ export function messageReceipt(
     return { tick: 'sent', readBy: 0 };
   }
 
-  const readBy = readers.filter((reader) => {
-    const at = new Date(reader.lastReadAt).getTime();
-
-    return String(reader.userId) !== me && !Number.isNaN(at) && at >= sentAt;
+  const recipients = readers.filter((reader) => String(reader.userId) !== me);
+  const readBy = recipients.filter((reader) => {
+    const at = reader.lastReadAt ? new Date(reader.lastReadAt).getTime() : Number.NaN;
+    return !Number.isNaN(at) && at >= sentAt;
+  }).length;
+  const deliveredBy = recipients.filter((reader) => {
+    const deliveredAt = reader.lastDeliveredAt
+      ? new Date(reader.lastDeliveredAt).getTime()
+      : Number.NaN;
+    const readAt = reader.lastReadAt ? new Date(reader.lastReadAt).getTime() : Number.NaN;
+    return (
+      (!Number.isNaN(deliveredAt) && deliveredAt >= sentAt) ||
+      (!Number.isNaN(readAt) && readAt >= sentAt)
+    );
   }).length;
 
-  if (readBy === 0) {
+  if (deliveredBy === 0) {
     return { tick: 'sent', readBy: 0 };
   }
 
-  return { tick: readBy >= Math.max(others.length, 1) ? 'read' : 'delivered', readBy };
+  return {
+    tick: readBy >= Math.max(others.length, 1) ? 'read' : 'delivered',
+    readBy: deliveredBy,
+  };
 }

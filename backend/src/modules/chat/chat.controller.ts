@@ -11,7 +11,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SuccessDto } from '../../common/dto/api-error.dto';
 import { ApiPagedResponse } from '../../common/swagger/api-paged-response.decorator';
 import { ApiWorkspaceParam } from '../../common/swagger/api-workspace-param.decorator';
@@ -30,6 +36,7 @@ import { WorkspaceDocument } from '../workspaces/schemas/workspace.schema';
 import { ChannelsService, ChatActivity } from './channels.service';
 import { MessageToTaskResult, MessagesService } from './messages.service';
 import {
+  ChannelDeliveryDto,
   ChannelMembersDto,
   ChannelQueryDto,
   CreateChannelDto,
@@ -183,7 +190,7 @@ export class ChannelsController {
   ): Promise<{ channelId: string; lastReadAt: string }> {
     const read = await this.channels.markRead(permissionContextFrom(membership), channelId);
 
-    return { channelId: String(read.channelId), lastReadAt: read.lastReadAt.toISOString() };
+    return { channelId: String(read.channelId), lastReadAt: read.lastReadAt!.toISOString() };
   }
 
   @Get(':channelId/reads')
@@ -195,6 +202,21 @@ export class ChannelsController {
     const items = await this.channels.readers(permissionContextFrom(membership), channelId);
 
     return { items };
+  }
+
+  @Post(':channelId/delivered')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse({ description: 'Entrega da mensagem registrada.' })
+  async delivered(
+    @CurrentMembership() membership: RequestMembership,
+    @Param('channelId', ParseObjectIdPipe) channelId: Types.ObjectId,
+    @Body() dto: ChannelDeliveryDto,
+  ): Promise<void> {
+    await this.channels.markDelivered(
+      permissionContextFrom(membership),
+      channelId,
+      new Types.ObjectId(dto.messageId),
+    );
   }
 
   @Post(':channelId/messages')

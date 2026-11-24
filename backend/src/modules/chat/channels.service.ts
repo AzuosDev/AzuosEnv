@@ -7,7 +7,12 @@ import { DEFAULT_PAGE_SIZE } from '../../common/pagination/pagination-query.dto'
 import { PermissionContext } from '../hierarchy/permission.service';
 import { MembersService } from '../workspaces/members.service';
 import { ChatAccessService } from './chat-access.service';
-import { CHANNEL_READ, ChannelReadEvent } from './chat-events';
+import {
+  CHANNEL_DELIVERED,
+  CHANNEL_READ,
+  ChannelDeliveredEvent,
+  ChannelReadEvent,
+} from './chat-events';
 import { ChannelLocationType, MAX_ACTIVITY_CHANNELS } from './chat-fields';
 import { dmMemberIds, isOpenChannel } from './chat-rules';
 import {
@@ -34,7 +39,8 @@ export interface ChannelActivity {
 /** One participant of the channel and the moment they read it up to. */
 export interface ChannelReader {
   userId: string;
-  lastReadAt: string;
+  lastReadAt: string | null;
+  lastDeliveredAt: string | null;
 }
 
 export interface ChatActivity {
@@ -254,10 +260,50 @@ export class ChannelsService {
     return read;
   }
 
-  /**
-   * Who read the channel and up to when, which gives the author of each
-   * message its read tick. Only who already opened the channel is listed.
-   */
+  /** Records that this participant's client received a message in the channel. */
+  async markDelivered(
+    ctx: PermissionContext,
+    channelId: Types.ObjectId,
+    messageId: Types.ObjectId,
+  ): Promise<void> {
+    const channel = await this.access.requireChannel(ctx, channelId, 'view');
+    const message = await this.messages
+      .findOne({
+        _id: messageId,
+        workspaceId: ctx.workspaceId,
+        channelId: channel._id,
+        deletedAt: null,
+      })
+      .select('createdAt')
+      .exec();
+
+    if (!message) {
+      return;
+    }
+
+    const messageCreatedAt = message.get('createdAt') as Date;
+    const delivered = await this.reads
+      .findOneAndUpdate(
+        { channelId: channel._id, userId: ctx.userId },
+        {
+          $set: { workspaceId: ctx.workspaceId },
+          $max: { lastDeliveredAt: messageCreatedAt },
+          $setOnInsert: { lastReadAt: null },
+        },
+        { new: true, upsert: true },
+      )
+      .exec();
+    const lastDeliveredAt = delivered?.lastDeliveredAt ?? messageCreatedAt;
+
+    this.events.emit(CHANNEL_DELIVERED, {
+      workspaceId: ctx.workspaceId,
+      channelId: channel._id,
+      userId: ctx.userId,
+      lastDeliveredAt,
+    } satisfies ChannelDeliveredEvent);
+  }
+
+  /** Delivery and read watermarks used to calculate each message's receipt. */
   async readers(ctx: PermissionContext, channelId: Types.ObjectId): Promise<ChannelReader[]> {
     const channel = await this.access.requireChannel(ctx, channelId, 'view');
     const reads = await this.reads
@@ -266,7 +312,8 @@ export class ChannelsService {
 
     return reads.map((read) => ({
       userId: String(read.userId),
-      lastReadAt: read.lastReadAt.toISOString(),
+      lastReadAt: read.lastReadAt?.toISOString() ?? null,
+      lastDeliveredAt: read.lastDeliveredAt?.toISOString() ?? null,
     }));
   }
 

@@ -245,7 +245,11 @@ describe('authorToneIndex', () => {
 
 describe('messageReceipt', () => {
   const mine = message('m1', { authorId: 'u1', createdAt: '2026-11-23T12:00:00.000Z' });
-  const reader = (userId: string, lastReadAt: string) => ({ userId, lastReadAt });
+  const reader = (userId: string, lastReadAt: string | null, lastDeliveredAt: string | null = null) => ({
+    userId,
+    lastReadAt,
+    lastDeliveredAt,
+  });
 
   it('fica em um tique enquanto ninguém abriu o canal depois da mensagem', () => {
     expect(messageReceipt(mine, [], 'u1', ['u2'])).toEqual({ tick: 'sent', readBy: 0 });
@@ -263,6 +267,12 @@ describe('messageReceipt', () => {
       readBy: 1,
     });
     expect(messageReceipt(mine, readers, 'u1', ['u2'])).toEqual({ tick: 'read', readBy: 1 });
+  });
+
+  it('marca como entregue quando o cliente do destinatário recebe a mensagem', () => {
+    const recipients = [reader('u2', null, '2026-11-23T12:01:00.000Z')];
+
+    expect(messageReceipt(mine, recipients, 'u1', ['u2'])).toEqual({ tick: 'delivered', readBy: 1 });
   });
 
   it('ignora a minha própria leitura', () => {

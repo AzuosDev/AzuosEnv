@@ -9,10 +9,12 @@ import {
 } from '../collaboration/collaboration-events';
 import {
   CHANNEL_READ,
+  CHANNEL_DELIVERED,
   MESSAGE_CREATED,
   MESSAGE_DELETED,
   MESSAGE_UPDATED,
   ChannelReadEvent,
+  ChannelDeliveredEvent,
   MessageCreatedEvent,
   MessageDeletedEvent,
   MessageEventBase,
@@ -158,6 +160,16 @@ export class RealtimeListener {
       channelId: String(event.channelId),
       userId: String(event.userId),
       lastReadAt: event.lastReadAt.toISOString(),
+    });
+  }
+
+  @OnEvent(CHANNEL_DELIVERED)
+  onChannelDelivered(event: ChannelDeliveredEvent): void {
+    this.gateway.emitToRooms([roomName('channel', String(event.channelId))], 'channel.delivered', {
+      workspaceId: String(event.workspaceId),
+      channelId: String(event.channelId),
+      userId: String(event.userId),
+      lastDeliveredAt: event.lastDeliveredAt.toISOString(),
     });
   }
 

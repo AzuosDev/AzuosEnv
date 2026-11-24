@@ -83,9 +83,11 @@ function receiptTitle(receipt: MessageReceipt | null): string {
     return 'Enviada';
   }
 
-  return receipt.tick === 'read'
-    ? 'Lida por todos'
-    : `Lida por ${String(receipt.readBy)} ${receipt.readBy === 1 ? 'pessoa' : 'pessoas'}`;
+  if (receipt.tick === 'delivered') {
+    return `Entregue a ${String(receipt.readBy)} ${receipt.readBy === 1 ? 'pessoa' : 'pessoas'}`;
+  }
+
+  return receipt.tick === 'read' ? 'Lida por todos' : `Lida por ${String(receipt.readBy)} pessoas`;
 }
 
 function timeOf(iso: string): { short: string; exact: string } {

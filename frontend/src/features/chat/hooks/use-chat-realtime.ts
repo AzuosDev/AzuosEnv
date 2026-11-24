@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { queryKeys } from '@/api/keys';
 import { useSocket, useSocketEvent } from '@/features/realtime/socket';
+import { markChannelDelivered } from '../api';
 
 /** O que `message.new`, `message.updated` e `message.deleted` mandam na sala. */
 export interface MessageEvent {
@@ -106,7 +107,7 @@ export function useChatRealtime(wsId: string, channelIds: string[]): void {
   );
 
   const refreshReads = useCallback(
-    (event: ChannelReadEvent) => {
+    (event: Pick<ChannelReadEvent, 'workspaceId' | 'channelId'>) => {
       if (event.workspaceId !== wsId) {
         return;
       }
@@ -118,10 +119,25 @@ export function useChatRealtime(wsId: string, channelIds: string[]): void {
     [queryClient, wsId],
   );
 
+  const refreshMessage = useCallback(
+    (event: MessageEvent) => {
+      refresh(event);
+
+      if (event.workspaceId === wsId) {
+        void markChannelDelivered(wsId, event.channelId, event.messageId).catch(() => undefined);
+      }
+    },
+    [refresh, wsId],
+  );
+
   useSocketEvent<ChannelReadEvent>('channel.read', refreshReads);
-  useSocketEvent<MessageEvent>('message.new', refresh);
+  useSocketEvent<MessageEvent>('message.new', refreshMessage);
   useSocketEvent<MessageEvent>('message.updated', refresh);
   useSocketEvent<MessageEvent>('message.deleted', refresh);
+  useSocketEvent<Pick<ChannelReadEvent, 'workspaceId' | 'channelId'>>(
+    'channel.delivered',
+    refreshReads,
+  );
 
   // A conexão voltou: a conversa pode ter perdido mensagem no meio.
   const wasConnected = useRef(connected);

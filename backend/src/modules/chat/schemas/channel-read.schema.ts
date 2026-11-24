@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { baseSchemaOptions } from '../../../common/schemas/base-schema-options';
 
-/** How far a user has read a channel; everything newer counts as unread. */
+/** Per-user delivery and read watermarks for a channel. */
 @Schema({ collection: 'channel_reads', ...baseSchemaOptions })
 export class ChannelRead {
   @Prop({ type: Types.ObjectId, ref: 'Workspace', required: true, index: true })
@@ -14,8 +14,11 @@ export class ChannelRead {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
-  @Prop({ type: Date, required: true })
-  lastReadAt: Date;
+  @Prop({ type: Date, default: null })
+  lastReadAt: Date | null;
+
+  @Prop({ type: Date, default: null })
+  lastDeliveredAt: Date | null;
 }
 
 export type ChannelReadDocument = HydratedDocument<ChannelRead>;

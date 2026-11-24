@@ -11,13 +11,16 @@ export class ChannelReadDto {
   lastReadAt: string;
 }
 
-/** One participant of the channel and the moment they read it up to. */
+/** One participant's delivery and read watermarks for a channel. */
 export class ChannelReaderDto {
   @ApiProperty()
   userId: string;
 
-  @ApiProperty({ format: 'date-time' })
-  lastReadAt: string;
+  @ApiProperty({ format: 'date-time', nullable: true })
+  lastReadAt: string | null;
+
+  @ApiProperty({ format: 'date-time', nullable: true })
+  lastDeliveredAt: string | null;
 }
 
 /** Answer of GET /channels/:channelId/reads. */

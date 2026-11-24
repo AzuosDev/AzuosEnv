@@ -12248,6 +12248,54 @@
         ]
       }
     },
+    "/api/v1/workspaces/{wsId}/channels/{channelId}/delivered": {
+      "post": {
+        "operationId": "ChannelsController_delivered",
+        "parameters": [
+          {
+            "name": "channelId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/ObjectId"
+            }
+          },
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChannelDeliveryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Entrega da mensagem registrada."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
     "/api/v1/workspaces/{wsId}/channels/{channelId}/messages": {
       "post": {
         "operationId": "ChannelsController_send",
@@ -26746,12 +26794,31 @@
           },
           "lastReadAt": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastDeliveredAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "required": [
           "userId",
-          "lastReadAt"
+          "lastReadAt",
+          "lastDeliveredAt"
+        ]
+      },
+      "ChannelDeliveryDto": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "format": "ObjectId"
+          }
+        },
+        "required": [
+          "messageId"
         ]
       },
       "ChannelReadsDto": {

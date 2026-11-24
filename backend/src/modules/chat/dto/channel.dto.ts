@@ -68,6 +68,13 @@ export class UpdateChannelDto {
   private?: boolean;
 }
 
+/** Message acknowledged by a participant's realtime client. */
+export class ChannelDeliveryDto {
+  @ApiProperty({ format: 'ObjectId' })
+  @IsMongoId()
+  messageId: string;
+}
+
 export class ChannelQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ enum: CHANNEL_LOCATION_TYPES })
   @IsOptional()

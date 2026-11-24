@@ -167,6 +167,17 @@ export async function markChannelRead(wsId: string, channelId: string): Promise<
   ) as ChannelRead;
 }
 
+export async function markChannelDelivered(
+  wsId: string,
+  channelId: string,
+  messageId: string,
+): Promise<void> {
+  await api.POST('/api/v1/workspaces/{wsId}/channels/{channelId}/delivered', {
+    params: { path: { wsId, channelId } },
+    body: { messageId },
+  });
+}
+
 /* Mensagens -------------------------------------------------------------- */
 
 /**

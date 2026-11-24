@@ -6,6 +6,7 @@ export const MESSAGE_CREATED = 'message.created';
 export const MESSAGE_UPDATED = 'message.updated';
 export const MESSAGE_DELETED = 'message.deleted';
 export const CHANNEL_READ = 'channel.read';
+export const CHANNEL_DELIVERED = 'channel.delivered';
 
 /** Everything the realtime gateway and the inbox need without loading the channel. */
 export interface MessageEventBase {
@@ -36,4 +37,12 @@ export interface ChannelReadEvent {
   channelId: Types.ObjectId;
   userId: Types.ObjectId;
   lastReadAt: Date;
+}
+
+/** A participant's client received a message in this channel. */
+export interface ChannelDeliveredEvent {
+  workspaceId: Types.ObjectId;
+  channelId: Types.ObjectId;
+  userId: Types.ObjectId;
+  lastDeliveredAt: Date;
 }

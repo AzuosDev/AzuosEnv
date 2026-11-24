@@ -2737,6 +2737,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{wsId}/channels/{channelId}/delivered": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ChannelsController_delivered"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{wsId}/channels/{channelId}/messages": {
         parameters: {
             query?: never;
@@ -6477,7 +6493,13 @@ export interface components {
         ChannelReaderDto: {
             userId: string;
             /** Format: date-time */
-            lastReadAt: string;
+            lastReadAt: string | null;
+            /** Format: date-time */
+            lastDeliveredAt: string | null;
+        };
+        ChannelDeliveryDto: {
+            /** Format: ObjectId */
+            messageId: string;
         };
         ChannelReadsDto: {
             items: components["schemas"]["ChannelReaderDto"][];
@@ -14060,6 +14082,32 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ChannelReadsDto"];
                 };
+            };
+        };
+    };
+    ChannelsController_delivered: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channelId: components["schemas"]["ObjectId"];
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChannelDeliveryDto"];
+            };
+        };
+        responses: {
+            /** @description Entrega da mensagem registrada. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
