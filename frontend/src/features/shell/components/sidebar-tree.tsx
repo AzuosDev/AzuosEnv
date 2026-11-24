@@ -21,7 +21,7 @@ import { useDropNode } from '@/features/hierarchy/hooks/use-hierarchy-actions';
 import { iconOf } from '@/features/hierarchy/node-kinds';
 import { flattenTree, planDrop, type FlatNode } from '@/features/hierarchy/tree-dnd';
 import { useSprints } from '@/features/sprints/hooks/use-sprints';
-import { colorSwatch } from '@/lib/colors';
+import { colorSwatch, colorText } from '@/lib/colors';
 import { cn } from '@/lib/utils';
 import type { ExpandedTree } from '../hooks/use-expanded';
 
@@ -34,7 +34,7 @@ export interface SidebarTreeProps {
 }
 
 const rowClass =
-  'flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg px-2 text-left text-[13px] text-body no-underline hover:bg-surface-2 hover:text-ink';
+  'flex min-h-9 min-w-0 flex-1 items-center gap-1.5 rounded-lg px-1.5 text-left text-[12.5px] text-body no-underline hover:bg-surface-2 hover:text-ink';
 
 function Disclosure({
   name,
@@ -51,7 +51,7 @@ function Disclosure({
       aria-label={`${open ? 'Recolher' : 'Expandir'} ${name}`}
       aria-expanded={open}
       onClick={onToggle}
-      className="flex h-11 w-7 shrink-0 items-center justify-center rounded-lg bg-transparent text-muted hover:bg-surface-2 hover:text-ink"
+      className="flex h-9 w-5 shrink-0 items-center justify-center rounded-lg bg-transparent text-muted hover:bg-surface-2 hover:text-ink"
     >
       <ChevronRight
         className={cn('h-4 w-4 transition-transform', open && 'rotate-90')}
@@ -72,7 +72,7 @@ function Row({ node, children, indent }: { node: FlatNode; children: ReactNode; 
     <div
       ref={sortable.setNodeRef}
       className={cn(
-        'group flex items-center rounded-lg',
+        'group relative flex items-center rounded-lg',
         indent,
         sortable.isDragging && 'opacity-40',
         sortable.isOver && !sortable.isDragging && 'bg-accent/10 ring-1 ring-accent',
@@ -81,7 +81,7 @@ function Row({ node, children, indent }: { node: FlatNode; children: ReactNode; 
       <button
         type="button"
         aria-label={`Reordenar ${node.name}`}
-        className="hidden h-9 w-5 shrink-0 cursor-grab items-center justify-center rounded-lg text-muted opacity-0 hover:text-ink focus-visible:opacity-100 group-hover:opacity-100 md:flex"
+        className="hidden h-8 w-4 shrink-0 cursor-grab items-center justify-center rounded-lg text-muted opacity-0 hover:text-ink focus-visible:opacity-100 group-hover:opacity-100 md:flex"
         {...sortable.attributes}
         {...sortable.listeners}
       >
@@ -94,7 +94,7 @@ function Row({ node, children, indent }: { node: FlatNode; children: ReactNode; 
 
 function Actions({ node }: { node: FlatNode }) {
   return (
-    <span className="flex shrink-0 items-center transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 md:has-[[data-state=open]]:opacity-100">
+    <span className="flex shrink-0 items-center transition-opacity md:absolute md:right-0 md:top-1/2 md:z-10 md:-translate-y-1/2 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 md:has-[[data-state=open]]:opacity-100">
       <AddMenu node={node} size="sm" className="hidden md:flex" />
       <NodeMenu node={node} size="sm" includeCreate />
     </span>
@@ -119,7 +119,7 @@ function ListRow({
 }) {
   return (
     <li>
-      <Row node={node} indent="ml-7">
+      <Row node={node} indent="ml-5">
         <Link
           to="/w/$wsId/l/$listId"
           params={{ wsId, listId: list.id }}
@@ -127,7 +127,9 @@ function ListRow({
           aria-current={active ? 'page' : undefined}
           className={cn(rowClass, active && 'bg-accent/15 text-ink')}
         >
-          <span className="min-w-0 flex-1 truncate">{list.name}</span>
+          <span className="min-w-0 flex-1 truncate" title={list.name}>
+            {list.name}
+          </span>
           {sprint ? (
             <span className="shrink-0 rounded-full bg-accent/[0.18] px-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-ink">
               Sprint
@@ -188,10 +190,16 @@ function FolderRow({
           params={{ wsId, folderId: folder.id }}
           onClick={onNavigate}
           aria-current={activeId === folder.id ? 'page' : undefined}
-          className={cn(rowClass, activeId === folder.id && 'bg-accent/15 text-ink')}
+          className={cn(
+            rowClass,
+            'md:group-hover:pr-16 md:group-focus-within:pr-16',
+            activeId === folder.id && 'bg-accent/15 text-ink',
+          )}
         >
           <Folder className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
-          <span className="min-w-0 flex-1 truncate">{folder.name}</span>
+          <span className="min-w-0 flex-1 truncate" title={folder.name}>
+            {folder.name}
+          </span>
         </Link>
         <Actions node={node} />
       </Row>
@@ -279,19 +287,21 @@ function SpaceRow({
           aria-current={activeId === space.id ? 'page' : undefined}
           className={cn(
             rowClass,
-            'font-semibold text-ink',
+            'font-semibold text-ink md:group-hover:pr-16 md:group-focus-within:pr-16',
             activeId === space.id && 'bg-accent/15',
           )}
         >
           {Icon ? (
-            <Icon className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+            <Icon className={cn('h-4 w-4 shrink-0', colorText(space.color))} aria-hidden="true" />
           ) : (
             <span
               className={cn('h-2.5 w-2.5 shrink-0 rounded-[3px]', colorSwatch(space.color))}
               aria-hidden="true"
             />
           )}
-          <span className="min-w-0 flex-1 truncate">{space.name}</span>
+          <span className="min-w-0 flex-1 truncate" title={space.name}>
+            {space.name}
+          </span>
         </Link>
         <Actions node={node} />
       </Row>

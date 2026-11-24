@@ -12,6 +12,14 @@ const BG_BY_TONE: Record<ColorTone, string> = {
   danger: 'bg-danger',
 };
 
+const TEXT_BY_TONE: Record<ColorTone, string> = {
+  accent: 'text-accent',
+  info: 'text-info',
+  success: 'text-success',
+  warning: 'text-warning',
+  danger: 'text-danger',
+};
+
 function parseHex(color: string): [number, number, number] | null {
   const hex = color.trim().replace('#', '');
   const full =
@@ -92,4 +100,9 @@ export function toneFromColor(color: string | undefined): ColorTone {
 /** Classe de fundo (token) para o ponto de cor do Space. */
 export function colorSwatch(color: string | undefined): string {
   return BG_BY_TONE[toneFromColor(color)];
+}
+
+/** Classe de texto (token) para o ícone do Space. */
+export function colorText(color: string | undefined): string {
+  return TEXT_BY_TONE[toneFromColor(color)];
 }

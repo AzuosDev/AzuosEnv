@@ -50,7 +50,7 @@ export function AppShell({ wsId, workspaces, children }: AppShellProps) {
 
       <aside
         aria-label="Navegação do workspace"
-        className="hidden w-[264px] shrink-0 flex-col border-r border-line bg-paper-2 p-3 lg:flex"
+        className="hidden w-[280px] shrink-0 flex-col border-r border-line bg-paper-2 p-3 lg:flex"
       >
         <WorkspaceSidebar wsId={wsId} workspaces={workspaces} active={active} />
       </aside>
