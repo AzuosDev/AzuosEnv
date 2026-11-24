@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { errorMessage } from '@/api/errors';
+import { ApiRequestError, errorMessage } from '@/api/errors';
 import { citedTasks, parseSse, type TaskChip } from '../ai-events';
 import { openChatStream } from '../api';
 import {
@@ -121,11 +121,27 @@ export function useAiChat(wsId: string): AiChat {
       let answer = '';
 
       try {
-        const reader = await openChatStream(
-          wsId,
-          { message, ...(conversationId === undefined ? {} : { conversationId }) },
-          controller.signal,
-        );
+        let reader: ReadableStreamDefaultReader<Uint8Array>;
+
+        try {
+          reader = await openChatStream(
+            wsId,
+            { message, ...(conversationId === undefined ? {} : { conversationId }) },
+            controller.signal,
+          );
+        } catch (fault) {
+          // O histórico fica no navegador e pode sobreviver a uma limpeza do banco.
+          // Nesse caso, repete como conversa nova; o evento "start" troca o ID salvo.
+          if (
+            conversationId === undefined ||
+            !(fault instanceof ApiRequestError) ||
+            fault.code !== 'AI_CONVERSATION_NOT_FOUND'
+          ) {
+            throw fault;
+          }
+
+          reader = await openChatStream(wsId, { message }, controller.signal);
+        }
         const decoder = new TextDecoder();
         let buffer = '';
 
