@@ -225,6 +225,26 @@ describe('IA com Grok', () => {
       await chat(fixture, { message: 'Oi', conversationId }, fixture.member.session).expect(404);
     });
 
+    it('mantém a conversa se o provedor falhar durante o stream', async () => {
+      const fixture = await setup();
+      const failedStream = jest.spyOn(provider(), 'stream').mockImplementation(async function* () {
+        throw new Error('xAI indisponível');
+      });
+      const failed = await chat(fixture, { message: 'Olá' }, fixture.owner).expect(200);
+      failedStream.mockRestore();
+      const conversationId = sseEvents(failed.text).find((event) => event.type === 'start')
+        ?.conversationId as string;
+      const stored = await ctx.connection
+        .collection('ai_conversations')
+        .findOne({ _id: new Types.ObjectId(conversationId) });
+
+      expect((stored?.messages as unknown[]).length).toBe(1);
+
+      await chat(fixture, { message: 'Tente novamente', conversationId }, fixture.owner).expect(
+        200,
+      );
+    });
+
     it('valida o corpo', async () => {
       const fixture = await setup();
 

@@ -274,7 +274,7 @@ test('seleciona as tarefas de uma coluna e cria uma nova coluna', async () => {
   const newColumn = `Aguardando ${stamp}`;
   const newColumnName = page.getByRole('textbox', { name: 'Nome da nova coluna' });
   await newColumnName.fill(newColumn);
-  await newColumnName.press('Enter');
+  await page.getByRole('button', { name: 'Criar coluna' }).click();
 
   await expect(page.getByRole('region', { name: newColumn })).toBeVisible();
 });

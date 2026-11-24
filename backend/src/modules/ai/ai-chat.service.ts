@@ -69,7 +69,7 @@ export class AiChatService {
       at: new Date(),
     });
 
-    return {
+    const session: AiChatSession = {
       ctx: input.ctx,
       timeZone: input.timeZone,
       conversation,
@@ -78,6 +78,12 @@ export class AiChatService {
         ...this.history(conversation),
       ],
     };
+
+    // Persist the id before streaming so a provider error cannot leave the browser
+    // with a conversation id that the next request cannot load.
+    await this.persist(session);
+
+    return session;
   }
 
   async *stream(session: AiChatSession): AsyncIterable<AiChatEvent> {

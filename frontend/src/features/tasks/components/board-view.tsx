@@ -18,7 +18,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { Link } from '@tanstack/react-router';
-import { CheckSquare, GripVertical, MoreHorizontal, Plus, Settings2 } from 'lucide-react';
+import { Check, CheckSquare, GripVertical, MoreHorizontal, Plus, Settings2 } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import type { Task } from '@/api/types';
@@ -285,11 +285,14 @@ export function BoardView(surface: ViewSurfaceProps) {
     const name = newColumnName.trim();
     if (!name || creatingColumn) return;
     setCreatingColumn(true);
-    const created = await surface.onCreateColumn(name);
-    setCreatingColumn(false);
-    if (created) {
-      setNewColumnName('');
-      setAddingColumn(false);
+    try {
+      const created = await surface.onCreateColumn(name);
+      if (created) {
+        setNewColumnName('');
+        setAddingColumn(false);
+      }
+    } finally {
+      setCreatingColumn(false);
     }
   };
 
@@ -346,8 +349,19 @@ export function BoardView(surface: ViewSurfaceProps) {
                           setNewColumnName('');
                         }
                       }}
-                      className="h-7 border-0 bg-transparent px-0 text-[13px] focus-visible:ring-0 md:h-7"
+                      className="h-7 min-w-0 flex-1 border-0 bg-transparent px-0 text-[13px] focus-visible:ring-0 md:h-7"
                     />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Criar coluna"
+                      disabled={!newColumnName.trim() || creatingColumn}
+                      onClick={() => void createColumn()}
+                      className="h-7 w-7 shrink-0 rounded-md"
+                    >
+                      <Check className="h-4 w-4" aria-hidden="true" />
+                    </Button>
                   </form>
                 ) : (
                   <button
