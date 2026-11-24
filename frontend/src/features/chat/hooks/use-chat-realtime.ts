@@ -37,16 +37,17 @@ export const MAX_CHAT_ROOMS = 30;
 const FALLBACK_POLL_MS = 4000;
 
 /**
- * Casa as queries que o tempo real atualizaria: mensagens do canal e respostas
- * da thread. Só as montadas recarregam, então na prática é a conversa aberta.
+ * Casa as queries que o tempo real atualizaria: mensagens do canal, leituras do
+ * canal (os ticks de visto) e respostas da thread. Só as montadas recarregam,
+ * então na prática é a conversa aberta.
  */
 export function isChatPollKey(key: readonly unknown[], wsId: string): boolean {
   if (key[0] !== 'workspaces' || key[1] !== wsId) {
     return false;
   }
 
-  if (key[2] === 'channels' && key[3] === 'detail' && key[5] === 'messages') {
-    return true;
+  if (key[2] === 'channels' && key[3] === 'detail') {
+    return key[5] === 'messages' || key[5] === 'reads';
   }
 
   return key[2] === 'messages' && key[4] === 'replies';
