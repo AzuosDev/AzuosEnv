@@ -1,6 +1,6 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { errorMessage } from '@/api/errors';
 import { queryKeys } from '@/api/keys';
 import type { StatusGroup } from '@/api/types';
@@ -51,6 +51,9 @@ import type { FlatNode } from '../tree-dnd';
 export interface StatusesDialogProps {
   wsId: string;
   node: FlatNode;
+  addStatusOnOpen?: boolean;
+  boardMode?: boolean;
+  focusStatusId?: string;
   onClose: () => void;
 }
 
@@ -66,6 +69,7 @@ function StatusRow({
   status,
   first,
   last,
+  boardMode,
   onChange,
   onMove,
   onRemove,
@@ -73,20 +77,24 @@ function StatusRow({
   status: StatusDraft;
   first: boolean;
   last: boolean;
+  boardMode: boolean;
   onChange: (patch: Partial<Omit<StatusDraft, 'key' | 'id'>>) => void;
   onMove: (offset: number) => void;
   onRemove: () => void;
 }) {
   return (
-    <li className="flex flex-col gap-2 border-b border-line py-3 last:border-b-0 md:flex-row md:items-center">
+    <li
+      id={status.id ? `status-row-${status.id}` : undefined}
+      className="flex flex-col gap-2 border-b border-line py-3 last:border-b-0 md:flex-row md:items-center"
+    >
       <span
         className={cn('h-3 w-3 shrink-0 rounded-[4px]', colorSwatch(status.color))}
         aria-hidden="true"
       />
       <Input
-        aria-label="Nome do status"
+        aria-label={boardMode ? 'Nome da coluna' : 'Nome do status'}
         value={status.name}
-        placeholder="Nome do status"
+        placeholder={boardMode ? 'Nome da coluna' : 'Nome do status'}
         className="md:flex-1"
         onChange={(event) => {
           onChange({ name: event.target.value });
@@ -124,24 +132,40 @@ function StatusRow({
         <Button
           variant="ghost"
           size="icon"
-          aria-label={`Subir ${status.name || 'status'}`}
+          aria-label={
+            boardMode
+              ? `Mover ${status.name || 'coluna'} para a esquerda`
+              : `Subir ${status.name || 'status'}`
+          }
           disabled={first}
           onClick={() => {
             onMove(-1);
           }}
         >
-          <ArrowUp className="h-4 w-4" aria-hidden="true" />
+          {boardMode ? (
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <ArrowUp className="h-4 w-4" aria-hidden="true" />
+          )}
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          aria-label={`Descer ${status.name || 'status'}`}
+          aria-label={
+            boardMode
+              ? `Mover ${status.name || 'coluna'} para a direita`
+              : `Descer ${status.name || 'status'}`
+          }
           disabled={last}
           onClick={() => {
             onMove(1);
           }}
         >
-          <ArrowDown className="h-4 w-4" aria-hidden="true" />
+          {boardMode ? (
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <ArrowDown className="h-4 w-4" aria-hidden="true" />
+          )}
         </Button>
         <Button
           variant="ghost"
@@ -160,7 +184,14 @@ function StatusRow({
  * Editor dos statuses do local: edita o conjunto quando ele é do próprio nó e,
  * quando vem do pai, oferece criar um conjunto só dele.
  */
-export function StatusesDialog({ wsId, node, onClose }: StatusesDialogProps) {
+export function StatusesDialog({
+  wsId,
+  node,
+  addStatusOnOpen = false,
+  boardMode = false,
+  focusStatusId,
+  onClose,
+}: StatusesDialogProps) {
   const queryClient = useQueryClient();
   const refresh = useTreeRefresh(wsId);
   const tree = useQuery(treeQuery(wsId));
@@ -187,13 +218,24 @@ export function StatusesDialog({ wsId, node, onClose }: StatusesDialogProps) {
 
   const [draft, setDraft] = useState<StatusDraft[] | null>(null);
   const [touched, setTouched] = useState(false);
+  const focused = useRef(false);
 
   useEffect(() => {
     if (statusSet.data) {
-      setDraft(draftFromStatuses(statusSet.data.statuses));
-      setTouched(false);
+      const next = draftFromStatuses(statusSet.data.statuses);
+      const shouldAdd = addStatusOnOpen && !inherited;
+
+      setDraft(shouldAdd ? addStatus(next) : next);
+      setTouched(shouldAdd);
     }
-  }, [statusSet.data]);
+  }, [addStatusOnOpen, inherited, statusSet.data]);
+
+  useEffect(() => {
+    if (focusStatusId && draft && !focused.current) {
+      document.getElementById(`status-row-${focusStatusId}`)?.scrollIntoView({ block: 'nearest' });
+      focused.current = true;
+    }
+  }, [draft, focusStatusId]);
 
   const error = draft ? validateDraft(draft) : null;
 
@@ -210,7 +252,7 @@ export function StatusesDialog({ wsId, node, onClose }: StatusesDialogProps) {
         queryKey: queryKeys.statusSet(wsId, statusSetId ?? ''),
       });
       refresh();
-      toast.success('Statuses salvos.');
+      toast.success(boardMode ? 'Colunas salvas.' : 'Statuses salvos.');
       onClose();
     },
   });
@@ -222,7 +264,7 @@ export function StatusesDialog({ wsId, node, onClose }: StatusesDialogProps) {
       }
 
       const created = await createStatusSet(wsId, {
-        name: `${node.name} — statuses`,
+        name: `${node.name} — ${boardMode ? 'colunas' : 'statuses'}`,
         statuses: toStatusInputs(draft).map(({ name, color, group }) => ({ name, color, group })),
       });
 
@@ -239,7 +281,11 @@ export function StatusesDialog({ wsId, node, onClose }: StatusesDialogProps) {
       void queryClient.invalidateQueries({ queryKey: queryKeys.space(wsId, node.id) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.folder(wsId, node.id) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.list(wsId, node.id) });
-      toast.success(`${NODE_LABEL[node.kind]} com statuses próprios.`);
+      toast.success(
+        boardMode
+          ? `${NODE_LABEL[node.kind]} com colunas próprias.`
+          : `${NODE_LABEL[node.kind]} com statuses próprios.`,
+      );
     },
   });
 
@@ -268,11 +314,15 @@ export function StatusesDialog({ wsId, node, onClose }: StatusesDialogProps) {
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="md:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Statuses de “{node.name}”</DialogTitle>
+          <DialogTitle>
+            {boardMode ? `Colunas do Quadro de “${node.name}”` : `Statuses de “${node.name}”`}
+          </DialogTitle>
           <DialogDescription>
             {inherited && owner
-              ? `Herdando os statuses do ${NODE_LABEL[owner.kind]} “${owner.name}”.`
-              : 'Estes statuses valem para este local e para tudo que está dentro dele.'}
+              ? `Herdando as colunas do ${NODE_LABEL[owner.kind]} “${owner.name}”.`
+              : boardMode
+                ? 'Cada status vira uma coluna. Edite o nome ou use as setas para mudar a ordem.'
+                : 'Estes statuses valem para este local e para tudo que está dentro dele.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -300,7 +350,13 @@ export function StatusesDialog({ wsId, node, onClose }: StatusesDialogProps) {
                     detach.mutate();
                   }}
                 >
-                  {detach.isPending ? <Spinner label="Criando" /> : 'Criar statuses próprios'}
+                  {detach.isPending ? (
+                    <Spinner label="Criando" />
+                  ) : boardMode ? (
+                    'Criar colunas próprias'
+                  ) : (
+                    'Criar statuses próprios'
+                  )}
                 </Button>
               </div>
             ) : null}
@@ -312,6 +368,7 @@ export function StatusesDialog({ wsId, node, onClose }: StatusesDialogProps) {
                   status={status}
                   first={index === 0}
                   last={index === draft.length - 1}
+                  boardMode={boardMode}
                   onChange={(patch) => {
                     update(patchStatus(draft, status.key, patch));
                   }}
@@ -334,7 +391,7 @@ export function StatusesDialog({ wsId, node, onClose }: StatusesDialogProps) {
                   }}
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
-                  Adicionar status
+                  {boardMode ? 'Adicionar coluna' : 'Adicionar status'}
                 </Button>
                 {node.kind === 'space' ? null : (
                   <Button
@@ -363,7 +420,13 @@ export function StatusesDialog({ wsId, node, onClose }: StatusesDialogProps) {
                     save.mutate();
                   }}
                 >
-                  {save.isPending ? <Spinner label="Salvando" /> : 'Salvar statuses'}
+                  {save.isPending ? (
+                    <Spinner label="Salvando" />
+                  ) : boardMode ? (
+                    'Salvar colunas'
+                  ) : (
+                    'Salvar statuses'
+                  )}
                 </Button>
               )}
             </DialogFooter>
