@@ -70,11 +70,27 @@ export async function queryTasks(
       : {}),
   };
 
-  return unwrap(
-    await api.GET('/api/v1/workspaces/{wsId}/tasks/query', {
-      params: { path: { wsId }, query: query as GeneratedTaskQuery },
-    }),
-  ) as TaskQueryResult;
+  const request = (queryParams: typeof query) =>
+    api.GET('/api/v1/workspaces/{wsId}/tasks/query', {
+      params: { path: { wsId }, query: queryParams as GeneratedTaskQuery },
+    });
+  const result = await request(query);
+  const message = (result.error as { message?: unknown } | undefined)?.message;
+
+  // Algumas implantações antigas da API ainda não aceitam `limit`.
+  if (
+    result.response.status === 400 &&
+    typeof message === 'string' &&
+    message === 'property limit should not exist' &&
+    'limit' in query
+  ) {
+    const compatibleQuery = { ...query };
+    delete compatibleQuery.limit;
+
+    return unwrap(await request(compatibleQuery)) as TaskQueryResult;
+  }
+
+  return unwrap(result) as TaskQueryResult;
 }
 
 /**
