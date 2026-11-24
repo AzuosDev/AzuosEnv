@@ -11,6 +11,9 @@ export class TreeListDto {
   @ApiPropertyOptional({ example: '#A78BFA' })
   color?: string;
 
+  @ApiPropertyOptional({ example: 'code' })
+  icon?: string;
+
   @ApiProperty({ description: 'Ordem manual (fractional indexing).' })
   position: string;
 

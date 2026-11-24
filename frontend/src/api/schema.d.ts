@@ -4478,13 +4478,13 @@ export interface components {
             name?: string;
             /** @example #2563EB */
             color?: string;
-            /** @example users */
-            icon?: string;
             /** @description Space privado: só aparece para quem for convidado. */
             private?: boolean;
             /** @description Conjunto de statuses existente. */
             statusSetId?: string;
             clickApps?: components["schemas"]["ClickAppsOverrideDto"];
+            /** @example users */
+            icon?: string | null;
         };
         ReorderDto: {
             /** @description Irmão que fica antes do item. */
@@ -4535,6 +4535,8 @@ export interface components {
             name: string;
             /** @example #2563EB */
             color?: string;
+            /** @example code */
+            icon?: string;
             description?: string;
             statusSetId?: string | null;
         };
@@ -4544,6 +4546,7 @@ export interface components {
             folderId: components["schemas"]["ObjectId"] | null;
             name: string;
             color?: string;
+            icon?: string;
             description?: string;
             statusSetId: components["schemas"]["ObjectId"] | null;
             position: string;
@@ -4595,6 +4598,8 @@ export interface components {
             color?: string;
             description?: string;
             statusSetId?: string | null;
+            /** @example code */
+            icon?: string | null;
         };
         MoveListDto: {
             spaceId?: string;
@@ -4666,6 +4671,8 @@ export interface components {
             name: string;
             /** @example #A78BFA */
             color?: string;
+            /** @example code */
+            icon?: string;
             /** @description Ordem manual (fractional indexing). */
             position: string;
             /**

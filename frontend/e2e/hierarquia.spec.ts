@@ -86,6 +86,10 @@ function nodeMenu(name: string): Locator {
   return page.getByRole('button', { name: `Ações de ${name}` });
 }
 
+async function selectRadio(dialog: Locator, name: string): Promise<void> {
+  await dialog.getByRole('radio', { name }).locator('xpath=..').click();
+}
+
 test('cria um Space com o template Dev e os statuses vêm do template', async () => {
   const name = `F5 Dev ${stamp}`;
 
@@ -112,6 +116,37 @@ test('cria um Space com o template Dev e os statuses vêm do template', async ()
   await expect(names).toHaveCount(9);
   await expect(names.first()).toHaveValue('Backlog');
   await editor.getByRole('button', { name: 'Cancelar' }).click();
+});
+
+test('remove o ícone do Space e personaliza a List sem perder a hierarquia', async () => {
+  await openFixture();
+
+  await nodeMenu(SPACE).click();
+  await page.getByRole('menuitem', { name: 'Cor e ícone' }).click();
+  let dialog = page.getByRole('dialog');
+  await selectRadio(dialog, 'Código');
+  await dialog.getByRole('button', { name: 'Salvar' }).click();
+
+  await expect(page.getByRole('link', { name: SPACE, exact: true }).locator('svg')).toHaveCount(1);
+
+  await nodeMenu(SPACE).click();
+  await page.getByRole('menuitem', { name: 'Cor e ícone' }).click();
+  dialog = page.getByRole('dialog');
+  await selectRadio(dialog, 'Sem ícone');
+  await dialog.getByRole('button', { name: 'Salvar' }).click();
+  await expect(page.getByRole('link', { name: SPACE, exact: true }).locator('svg')).toHaveCount(0);
+
+  await nodeMenu(LIST_MOVE).click();
+  await page.getByRole('menuitem', { name: 'Cor e ícone' }).click();
+  dialog = page.getByRole('dialog');
+  await selectRadio(dialog, 'Verde');
+  await selectRadio(dialog, 'Código');
+  await dialog.getByRole('button', { name: 'Salvar' }).click();
+
+  const listIcon = page.getByRole('link', { name: LIST_MOVE, exact: true }).locator('svg');
+
+  await expect(listIcon).toHaveCount(1);
+  await expect(listIcon).toHaveClass(/text-success/);
 });
 
 test('arrasta a List para outro Folder e o lugar novo resiste ao recarregar', async () => {

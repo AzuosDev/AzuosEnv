@@ -181,7 +181,7 @@ export function NodeMenu({
             }}
           >
             <Palette className={itemIcon} aria-hidden="true" />
-            {node.kind === 'space' ? 'Cor e ícone' : 'Cor'}
+            Cor e ícone
           </DropdownMenuItem>
         )}
 

@@ -13,7 +13,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { Link } from '@tanstack/react-router';
-import { ChevronRight, Folder, GripVertical } from 'lucide-react';
+import { ChevronRight, Folder, GripVertical, List as ListIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import type { TreeFolder, TreeList, TreeSpace, WorkspaceTree } from '@/api/types';
 import { AddMenu, NodeMenu } from '@/features/hierarchy/components/node-menu';
@@ -117,6 +117,8 @@ function ListRow({
   sprint?: boolean;
   onNavigate?: () => void;
 }) {
+  const Icon = iconOf(list.icon) ?? ListIcon;
+
   return (
     <li>
       <Row node={node} indent="ml-5">
@@ -127,6 +129,7 @@ function ListRow({
           aria-current={active ? 'page' : undefined}
           className={cn(rowClass, active && 'bg-accent/15 text-ink')}
         >
+          <Icon className={cn('h-4 w-4 shrink-0', colorText(list.color))} aria-hidden="true" />
           <span className="min-w-0 flex-1 truncate" title={list.name}>
             {list.name}
           </span>

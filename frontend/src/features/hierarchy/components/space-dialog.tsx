@@ -74,7 +74,7 @@ function SpaceForm({
         await updateSpace(wsId, spaceId, {
           name: data.name,
           color: data.color,
-          icon: data.icon,
+          icon: data.icon || null,
           ...(data.private === initial.private ? {} : { private: data.private }),
         });
       } else {

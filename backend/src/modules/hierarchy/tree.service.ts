@@ -12,6 +12,7 @@ export interface TreeList {
   id: string;
   name: string;
   color?: string;
+  icon?: string;
   position: string;
   openTaskCount: number;
 }
@@ -188,6 +189,7 @@ export class TreeService {
       id: String(list._id),
       name: list.name,
       color: list.color,
+      icon: list.icon ?? undefined,
       position: list.position,
       openTaskCount: 0,
     };

@@ -20,6 +20,9 @@ export class List {
   color?: string;
 
   @Prop()
+  icon?: string;
+
+  @Prop()
   description?: string;
 
   @Prop({ type: Types.ObjectId, ref: 'StatusSet', default: null })

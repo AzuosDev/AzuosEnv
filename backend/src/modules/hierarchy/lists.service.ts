@@ -43,6 +43,7 @@ export class ListsService {
       folderId: folder?._id ?? null,
       name: dto.name,
       color: dto.color,
+      icon: dto.icon,
       description: dto.description,
       statusSetId: dto.statusSetId
         ? await this.statusSets.requireOwned(ctx.workspaceId, dto.statusSetId)
@@ -109,6 +110,10 @@ export class ListsService {
 
     if (dto.color !== undefined) {
       list.color = dto.color;
+    }
+
+    if (dto.icon !== undefined) {
+      list.icon = dto.icon ?? undefined;
     }
 
     if (dto.description !== undefined) {

@@ -9,6 +9,7 @@ interface WorkspaceBody {
 interface SpaceBody {
   id: string;
   name: string;
+  icon?: string | null;
   private: boolean;
   statusSetId: string;
   position: string;
@@ -28,6 +29,8 @@ interface FolderBody {
 interface ListBody {
   id: string;
   name: string;
+  color?: string;
+  icon?: string | null;
   spaceId: string;
   folderId: string | null;
   position: string;
@@ -48,10 +51,22 @@ interface TreeBody {
     folders: {
       id: string;
       name: string;
-      lists: { id: string; name: string; openTaskCount: number }[];
+      lists: {
+        id: string;
+        name: string;
+        color?: string;
+        icon?: string;
+        openTaskCount: number;
+      }[];
       folders: unknown[];
     }[];
-    lists: { id: string; name: string; openTaskCount: number }[];
+    lists: {
+      id: string;
+      name: string;
+      color?: string;
+      icon?: string;
+      openTaskCount: number;
+    }[];
   }[];
 }
 
@@ -194,6 +209,44 @@ describe('Hierarquia', () => {
   }
 
   describe('Spaces', () => {
+    it('clears the Space icon and stores List color and icon in the tree', async () => {
+      const owner = await createSession(ctx);
+      const workspace = await createWorkspace(owner);
+      const space = await createSpace(workspace, owner, { icon: 'code' });
+      const list = await createList(workspace, owner, {
+        spaceId: space.id,
+        color: '#16A34A',
+        icon: 'book',
+      });
+
+      expect(list.icon).toBe('book');
+
+      const tree = await withAuth(
+        http().get(`/api/v1/workspaces/${workspace.id}/tree`),
+        owner,
+      ).expect(200);
+      const spaceNode = (tree.body as TreeBody).spaces.find((node) => node.id === space.id);
+      const listNode = spaceNode?.lists.find((node) => node.id === list.id);
+
+      expect(listNode).toMatchObject({ color: '#16A34A', icon: 'book' });
+
+      const clearedSpace = await withAuth(
+        http().patch(`/api/v1/workspaces/${workspace.id}/spaces/${space.id}`),
+        owner,
+      )
+        .send({ icon: null })
+        .expect(200);
+      const clearedList = await withAuth(
+        http().patch(`/api/v1/workspaces/${workspace.id}/lists/${list.id}`),
+        owner,
+      )
+        .send({ icon: null })
+        .expect(200);
+
+      expect((clearedSpace.body as SpaceBody).icon ?? null).toBeNull();
+      expect((clearedList.body as ListBody).icon ?? null).toBeNull();
+    });
+
     it('creates the Space with the statuses of the chosen template', async () => {
       const owner = await createSession(ctx);
       const workspace = await createWorkspace(owner);

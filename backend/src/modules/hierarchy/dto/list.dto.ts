@@ -22,6 +22,12 @@ export class CreateListDto {
   @IsHexColor()
   color?: string;
 
+  @ApiPropertyOptional({ example: 'code' })
+  @IsOptional()
+  @IsString()
+  @Length(1, 40)
+  icon?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -35,8 +41,14 @@ export class CreateListDto {
 }
 
 export class UpdateListDto extends PartialType(
-  OmitType(CreateListDto, ['spaceId', 'folderId'] as const),
-) {}
+  OmitType(CreateListDto, ['spaceId', 'folderId', 'icon'] as const),
+) {
+  @ApiPropertyOptional({ example: 'code', nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 40)
+  icon?: string | null;
+}
 
 export class MoveListDto {
   @ApiPropertyOptional()

@@ -19733,12 +19733,6 @@
             "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$",
             "example": "#2563EB"
           },
-          "icon": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 40,
-            "example": "users"
-          },
           "private": {
             "type": "boolean",
             "description": "Space privado: só aparece para quem for convidado."
@@ -19749,6 +19743,13 @@
           },
           "clickApps": {
             "$ref": "#/components/schemas/ClickAppsOverrideDto"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 40,
+            "example": "users"
           }
         }
       },
@@ -19909,6 +19910,12 @@
             "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$",
             "example": "#2563EB"
           },
+          "icon": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "example": "code"
+          },
           "description": {
             "type": "string",
             "minLength": 0,
@@ -19946,6 +19953,9 @@
             "type": "string"
           },
           "color": {
+            "type": "string"
+          },
+          "icon": {
             "type": "string"
           },
           "description": {
@@ -20107,6 +20117,13 @@
           "statusSetId": {
             "type": "string",
             "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 40,
+            "example": "code"
           }
         }
       },
@@ -20364,6 +20381,10 @@
           "color": {
             "type": "string",
             "example": "#A78BFA"
+          },
+          "icon": {
+            "type": "string",
+            "example": "code"
           },
           "position": {
             "type": "string",
