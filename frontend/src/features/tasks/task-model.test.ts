@@ -65,6 +65,15 @@ describe('fillStatusGroups', () => {
 
     expect(filled.map((item) => item.key)).toEqual(['todo', 'doing', 'done', 'removido']);
   });
+
+  it('reassocia tarefas de um status anterior quando o nome continua igual', () => {
+    const previousGroup = { ...group('id-antigo', ['a'], 'c1'), label: 'A fazer' };
+    const filled = fillStatusGroups([previousGroup], statuses);
+
+    expect(filled.map((item) => item.key)).toEqual(['todo', 'doing', 'done']);
+    expect(filled[0]?.items.map((item) => item.id)).toEqual(['a']);
+    expect(filled[0]?.nextCursor).toBe('c1');
+  });
 });
 
 describe('planTaskDrop', () => {

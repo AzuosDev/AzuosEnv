@@ -64,11 +64,48 @@ export function fillStatusGroups(
   statuses: { id: string; name: string }[],
 ): TaskGroupState[] {
   const byKey = new Map(groups.map((group) => [group.key, group]));
+  const byName = new Map<string, typeof statuses>();
+
+  for (const status of statuses) {
+    const name = status.name.trim().toLocaleLowerCase('pt-BR');
+    byName.set(name, [...(byName.get(name) ?? []), status]);
+  }
+
   const ordered = statuses.map(
     (status) =>
       byKey.get(status.id) ?? { key: status.id, label: status.name, items: [], nextCursor: null },
   );
-  const extra = groups.filter((group) => !statuses.some((status) => status.id === group.key));
+  const extra: TaskGroupState[] = [];
+
+  for (const group of groups) {
+    if (statuses.some((status) => status.id === group.key)) {
+      continue;
+    }
+
+    const matches = byName.get(group.label.trim().toLocaleLowerCase('pt-BR')) ?? [];
+    const target =
+      matches.length === 1 ? ordered.find((item) => item.key === matches[0]?.id) : null;
+
+    if (!target || (target.nextCursor !== null && group.nextCursor !== null)) {
+      extra.push(group);
+      continue;
+    }
+
+    const taskIds = new Set(target.items.map((task) => task.id));
+
+    target.items.push(
+      ...group.items.filter((task) => {
+        if (taskIds.has(task.id)) {
+          return false;
+        }
+
+        taskIds.add(task.id);
+
+        return true;
+      }),
+    );
+    target.nextCursor ??= group.nextCursor;
+  }
 
   return [...ordered, ...extra];
 }

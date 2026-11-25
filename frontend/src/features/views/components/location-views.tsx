@@ -232,10 +232,11 @@ export function LocationViews({
         if (statuses.data.source !== 'list') {
           const created = await createStatusSet(wsId, {
             name: `${listName ?? 'List'} — colunas`,
-            statuses: next.map(({ name: statusName, color, group }) => ({
-              name: statusName,
-              color,
-              group,
+            statuses: next.map((status) => ({
+              ...('id' in status && status.id ? { id: status.id } : {}),
+              name: status.name,
+              color: status.color,
+              group: status.group,
             })),
           });
           await updateList(wsId, listId, { statusSetId: created.id });
@@ -279,7 +280,7 @@ export function LocationViews({
         if (statuses.data.source !== 'list') {
           const created = await createStatusSet(wsId, {
             name: `${listName ?? 'List'} — colunas`,
-            statuses: ordered.map(({ name, color, group }) => ({ name, color, group })),
+            statuses: ordered.map(({ id, name, color, group }) => ({ id, name, color, group })),
           });
           await updateList(wsId, listId, { statusSetId: created.id });
           statusSetId = created.id;

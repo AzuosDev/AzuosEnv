@@ -288,7 +288,7 @@ export function StatusesDialog({
 
       const created = await createStatusSet(wsId, {
         name: `${node.name} — ${boardMode ? 'colunas' : 'statuses'}`,
-        statuses: toStatusInputs(draft).map(({ name, color, group }) => ({ name, color, group })),
+        statuses: toStatusInputs(draft),
       });
 
       if (node.kind === 'space') {
