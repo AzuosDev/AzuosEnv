@@ -147,6 +147,7 @@ export function LocationViews({
         search: debounced,
         groupBy,
         limit: type ? pageSizeOf(type) : undefined,
+        showClosedByDefault: type === 'board',
       }),
     [config, debounced, groupBy, listId, locationType, type],
   );

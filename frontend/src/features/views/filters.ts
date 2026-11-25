@@ -18,6 +18,8 @@ export interface QueryContext {
   groupBy: ViewGroupBy;
   /** Tamanho do lote; cada tipo de view pede o seu. */
   limit?: number;
+  /** Boards include completed tasks by default unless the view opted out. */
+  showClosedByDefault?: boolean;
 }
 
 function list(values: string[] | undefined): string[] | undefined {
@@ -73,7 +75,11 @@ export function toQueryParams(config: ViewConfig, context: QueryContext): TaskQu
     dueTo: filters.dueTo,
     fieldFilters: usable.length > 0 ? usable : undefined,
     includeSubtasks: config.showSubtasks === true ? true : undefined,
-    includeClosed: config.showClosed === true ? true : undefined,
+    includeClosed:
+      config.showClosed === true ||
+      (config.showClosed === undefined && context.showClosedByDefault === true)
+        ? true
+        : undefined,
     q: search === '' ? filters.q : search,
   });
 }

@@ -71,9 +71,16 @@ export function ViewToolbar({
   const disabled = !canEdit;
   const sortBy = config.sortBy ?? 'position';
   const me = config.filters?.me === true;
+  const showClosed = config.showClosed ?? type === 'board';
 
   const toggle = (key: 'showSubtasks' | 'showClosed') => () => {
-    update((current) => ({ ...current, [key]: current[key] !== true }));
+    update((current) => ({
+      ...current,
+      [key]:
+        current[key] === undefined && key === 'showClosed' && type === 'board'
+          ? false
+          : current[key] !== true,
+    }));
   };
 
   return (
@@ -223,9 +230,9 @@ export function ViewToolbar({
       <Button
         variant="ghost"
         size="sm"
-        aria-pressed={config.showClosed === true}
+        aria-pressed={showClosed}
         disabled={disabled}
-        className={cn(config.showClosed === true && 'border-accent text-ink')}
+        className={cn(showClosed && 'border-accent text-ink')}
         onClick={toggle('showClosed')}
       >
         Fechadas

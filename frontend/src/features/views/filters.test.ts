@@ -73,6 +73,13 @@ describe('toQueryParams', () => {
     });
   });
 
+  it('inclui tarefas fechadas por padrão no Quadro, mas respeita a escolha da view', () => {
+    expect(toQueryParams({}, { ...context, showClosedByDefault: true }).includeClosed).toBe(true);
+    expect(
+      toQueryParams({ showClosed: false }, { ...context, showClosedByDefault: true }).includeClosed,
+    ).toBeUndefined();
+  });
+
   it('a busca da toolbar vence o q guardado na view', () => {
     const config: ViewConfig = { filters: { q: 'salvo' } };
 
