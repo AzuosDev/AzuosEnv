@@ -34,6 +34,10 @@ import {
 } from '../view-kinds';
 import { viewsQuery } from '../api';
 import { FormViewTab } from '@/features/forms/components/form-view-tab';
+import {
+  AutomationBuilder,
+  type AutomationBuilderContext,
+} from '@/features/automations/components/automation-builder';
 import { DocViewTab } from './doc-view-tab';
 
 import { ActivityView } from './activity-view';
@@ -109,6 +113,19 @@ export function LocationViews({
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [automationStatus, setAutomationStatus] = useState<EffectiveStatus | null>(null);
+  const automationContext = useMemo<AutomationBuilderContext | undefined>(
+    () =>
+      automationStatus
+        ? {
+            locationType: 'list',
+            locationId: listId,
+            statusId: automationStatus.id,
+            statusName: automationStatus.name,
+          }
+        : undefined,
+    [automationStatus, listId],
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -198,6 +215,7 @@ export function LocationViews({
         ...options,
       });
     },
+    onAutomateStatus: setAutomationStatus,
     onCreateColumn: async (name) => {
       if (!statuses.data || locationType !== 'list' || listId === '') return false;
       const next = [
@@ -457,6 +475,16 @@ export function LocationViews({
           }}
         />
       ) : null}
+      <AutomationBuilder
+        wsId={wsId}
+        open={automationStatus !== null}
+        initialContext={automationContext}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAutomationStatus(null);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -310,21 +310,34 @@ describe('Tarefas', () => {
 
     it('atualiza campos, limpa closedAt ao reabrir e valida a entrada', async () => {
       const { owner, workspace, list, statuses } = await setup();
+      const member = await addMember(workspace, owner, 'member');
       const done = statuses.find((status) => status.group === 'done');
       const active = statuses.find((status) => status.group === 'active');
       const task = await createdTask(workspace, owner, list, { statusId: done?.id });
+      const dueAt = new Date(Date.now() + DAY_MS).toISOString();
 
       const reopened = await withAuth(
         http().patch(`/api/v1/workspaces/${workspace.id}/tasks/${task.id}`),
         owner,
       )
-        .send({ statusId: active?.id, priority: 'urgent', name: 'Novo nome' })
+        .send({
+          statusId: active?.id,
+          priority: 'urgent',
+          name: 'Novo nome',
+          description: { type: 'doc', content: [] },
+          descriptionText: 'Descricao atualizada',
+          assigneeIds: [member.userId],
+          dueAt,
+        })
         .expect(200);
 
       expect(reopened.body.statusGroup).toBe('active');
       expect(reopened.body.closedAt).toBeNull();
       expect(reopened.body.priority).toBe('urgent');
       expect(reopened.body.name).toBe('Novo nome');
+      expect(reopened.body.descriptionText).toBe('Descricao atualizada');
+      expect(reopened.body.assigneeIds).toEqual([member.userId]);
+      expect(reopened.body.dueAt).toBe(dueAt);
 
       await withAuth(http().patch(`/api/v1/workspaces/${workspace.id}/tasks/${task.id}`), owner)
         .send({ priority: 'altíssima' })

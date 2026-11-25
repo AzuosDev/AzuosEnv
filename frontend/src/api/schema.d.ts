@@ -4753,6 +4753,8 @@ export interface components {
              */
             type?: "task" | "bug" | "milestone" | "meeting";
             customFields?: components["schemas"]["TaskCustomFieldDto"][];
+            /** @description Permite completar campos obrigatórios depois da criação inline na List. */
+            allowIncompleteRequiredFields?: boolean;
             /** @description null remove a recorrência. */
             recurrence?: components["schemas"]["TaskRecurrenceDto"] | null;
             /** @description Tarefa pai; a subtarefa fica na List do pai. */
@@ -5040,36 +5042,25 @@ export interface components {
             deletedAt: string | null;
         };
         UpdateTaskDto: {
-            /** @example Corrigir fechamento de caixa */
             name?: string;
-            /** @description JSON do editor. */
             description?: {
                 [key: string]: unknown;
             } | null;
-            /** @description Texto puro da descrição, usado na busca. */
             descriptionText?: string;
-            /** @description Status do conjunto da List; ausente usa o primeiro. */
             statusId?: string;
             /** @enum {string|null} */
             priority?: "urgent" | "high" | "normal" | "low" | null;
             assigneeIds?: string[];
             watcherIds?: string[];
             tagIds?: string[];
-            /** @description UTC ISO 8601. */
             startAt?: string | null;
-            /** @description UTC ISO 8601. */
             dueAt?: string | null;
-            /** @description Padrão false: o prazo é só o dia. */
             dueHasTime?: boolean;
             estimateMinutes?: number | null;
             points?: number | null;
-            /**
-             * @description Padrão task.
-             * @enum {string}
-             */
+            /** @enum {string} */
             type?: "task" | "bug" | "milestone" | "meeting";
             customFields?: components["schemas"]["TaskCustomFieldDto"][];
-            /** @description null remove a recorrência. */
             recurrence?: components["schemas"]["TaskRecurrenceDto"] | null;
         };
         MoveTaskDto: {

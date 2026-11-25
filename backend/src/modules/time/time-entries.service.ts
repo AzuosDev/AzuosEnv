@@ -226,14 +226,28 @@ export class TimeEntriesService {
       return null;
     }
 
-    running.end = at;
-    running.durationMinutes = Math.max(0, minutesBetween(running.start, at));
+    const durationMinutes = Math.max(0, minutesBetween(running.start, at));
+    const stopped = await this.model
+      .findOneAndUpdate(
+        { _id: running._id, end: null },
+        { $set: { end: at, durationMinutes } },
+        { new: true },
+      )
+      .exec();
 
-    await running.save();
-    await this.syncTracked(ctx.workspaceId, running.taskId);
-    this.emit(TIME_ENTRY_UPDATED, ctx, running);
+    if (!stopped) {
+      return null;
+    }
 
-    return running;
+    await this.tasks
+      .updateOne(
+        { _id: stopped.taskId, workspaceId: ctx.workspaceId },
+        { $inc: { trackedMinutes: durationMinutes } },
+      )
+      .exec();
+    this.emit(TIME_ENTRY_UPDATED, ctx, stopped);
+
+    return stopped;
   }
 
   private async requireWritable(

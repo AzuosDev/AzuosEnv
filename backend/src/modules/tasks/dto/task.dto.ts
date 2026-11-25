@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional, OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -138,6 +138,13 @@ export class CreateTaskDto {
   @Type(() => TaskCustomFieldDto)
   customFields?: TaskCustomFieldDto[];
 
+  @ApiPropertyOptional({
+    description: 'Permite completar campos obrigatórios depois da criação inline na List.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  allowIncompleteRequiredFields?: boolean;
+
   @ApiPropertyOptional({ type: TaskRecurrenceDto, description: 'null remove a recorrência.' })
   @IsOptional()
   @ValidateNested()
@@ -150,9 +157,101 @@ export class CreateTaskDto {
   parentTaskId?: string | null;
 }
 
-export class UpdateTaskDto extends PartialType(
-  OmitType(CreateTaskDto, ['parentTaskId', 'externalId'] as const),
-) {}
+/** Explicit update DTO keeps class-validator metadata on every editable field. */
+export class UpdateTaskDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(1, 500)
+  name?: string;
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @IsObject()
+  description?: Record<string, unknown> | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(0, 20000)
+  descriptionText?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsMongoId()
+  statusId?: string;
+
+  @ApiPropertyOptional({ enum: TASK_PRIORITIES, nullable: true })
+  @IsOptional()
+  @IsEnum(TASK_PRIORITIES)
+  priority?: TaskPriority | null;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  assigneeIds?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  watcherIds?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  tagIds?: string[];
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @IsDateString()
+  startAt?: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @IsDateString()
+  dueAt?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  dueHasTime?: boolean;
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(100000)
+  estimateMinutes?: number | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(1000)
+  points?: number | null;
+
+  @ApiPropertyOptional({ enum: TASK_TYPES })
+  @IsOptional()
+  @IsEnum(TASK_TYPES)
+  type?: TaskType;
+
+  @ApiPropertyOptional({ type: [TaskCustomFieldDto], maxItems: MAX_TASK_FIELD_VALUES })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_TASK_FIELD_VALUES)
+  @ValidateNested({ each: true })
+  @Type(() => TaskCustomFieldDto)
+  customFields?: TaskCustomFieldDto[];
+
+  @ApiPropertyOptional({ type: TaskRecurrenceDto, nullable: true })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TaskRecurrenceDto)
+  recurrence?: TaskRecurrenceDto | null;
+}
 
 export class MoveTaskDto {
   @ApiPropertyOptional({ description: 'List de destino; ausente mantém a atual.' })

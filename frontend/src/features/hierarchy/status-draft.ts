@@ -67,6 +67,33 @@ export function moveStatus(draft: StatusDraft[], key: string, offset: number): S
   return next;
 }
 
+/** Reordena um status sem alterar a ordem dos demais grupos. */
+export function reorderStatusInGroup(
+  draft: StatusDraft[],
+  group: StatusGroup,
+  activeKey: string,
+  overKey: string,
+): StatusDraft[] {
+  const grouped = draft.filter((status) => status.group === group);
+  const from = grouped.findIndex((status) => status.key === activeKey);
+  const to = grouped.findIndex((status) => status.key === overKey);
+
+  if (from < 0 || to < 0 || from === to) {
+    return draft;
+  }
+
+  const reordered = [...grouped];
+  const [moved] = reordered.splice(from, 1);
+
+  if (moved) {
+    reordered.splice(to, 0, moved);
+  }
+
+  let index = 0;
+
+  return draft.map((status) => (status.group === group ? (reordered[index++] ?? status) : status));
+}
+
 /** Mensagem do primeiro problema do rascunho; null quando pode salvar. */
 export function validateDraft(draft: StatusDraft[]): string | null {
   if (draft.length === 0) {

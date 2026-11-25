@@ -138,10 +138,39 @@ test('a Lista agrupa por status e cria tarefa pelo grupo', async () => {
   const name = `Nova pelo grupo ${stamp}`;
 
   await page.getByRole('button', { name: '+ Adicionar tarefa' }).first().click();
-  await page.getByPlaceholder('Nome da tarefa e Enter').fill(name);
+  await expect(page.getByRole('button', { name: 'Adicionar responsável' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Adicionar prioridade' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Adicionar prazo' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Adicionar print' })).toBeVisible();
+  await expect(page.getByText('Adicionar ID ClickUp')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Adicionar prioridade' }).click();
+  await page.getByRole('button', { name: 'Alta' }).click();
+  await page.getByPlaceholder('Nome da tarefa...').fill(name);
+  const pastedName = `colado-${stamp}.png`;
+  await page.getByPlaceholder('Nome da tarefa...').evaluate((input, fileName) => {
+    const clipboard = new DataTransfer();
+
+    clipboard.items.add(new File([new Uint8Array([1])], fileName, { type: 'image/png' }));
+    input.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, clipboardData: clipboard }));
+  }, pastedName);
+  await expect(page.getByText(pastedName)).toBeVisible();
+  const screenshotName = `print-${stamp}.png`;
+  await page.setInputFiles('[aria-label="Selecionar print para anexar"]', {
+    name: screenshotName,
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/r3sAAAAASUVORK5CYII=',
+      'base64',
+    ),
+  });
+  await expect(page.getByText(screenshotName)).toBeVisible();
   await page.keyboard.press('Enter');
 
   await expect(page.getByRole('link', { name })).toBeVisible();
+  await page.getByRole('link', { name }).click();
+  await expect(page.getByText('Alta', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Anexos' })).toBeVisible();
+  await expect(page.getByText(screenshotName)).toBeVisible();
 });
 
 test('muda o status pelo popover da linha', async () => {
@@ -277,4 +306,36 @@ test('seleciona as tarefas de uma coluna e cria uma nova coluna', async () => {
   await page.getByRole('button', { name: 'Criar coluna' }).click();
 
   await expect(page.getByRole('region', { name: newColumn })).toBeVisible();
+});
+
+test('menu da coluna abre o editor de status e inicia automação contextual', async () => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openList(page, 'Quadro');
+
+  const status = statuses.find((item) => item.name === 'Em andamento');
+
+  expect(status, 'status para validar o menu').toBeTruthy();
+
+  const column = page.getByRole('region', { name: status?.name ?? '' }).first();
+  const columnMenu = column
+    .getByRole('button', { name: `Opções da coluna ${status?.name ?? ''}` })
+    .first();
+
+  await columnMenu.click();
+  await expect(page.getByText('Opções do grupo')).toBeVisible();
+  await page.getByRole('menuitem', { name: 'Editar status' }).click();
+  await expect(
+    page.getByRole('heading', { name: new RegExp(`Colunas do Quadro de “${LIST}”`) }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: /Adicionar coluna/ })).toHaveCount(4);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  await columnMenu.click();
+  await page.getByRole('menuitem', { name: 'Automatizar status' }).click();
+  await expect(page.getByRole('combobox', { name: 'Gatilho' })).toHaveValue('statusChanged');
+  await expect(
+    page.getByRole('combobox', { name: 'Status de destino' }).locator('option:checked'),
+  ).toHaveText(status?.name ?? '');
+  await page.getByRole('button', { name: 'Cancelar' }).click();
 });

@@ -1,5 +1,21 @@
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Plus, Trash2 } from 'lucide-react';
+import { Check, GripVertical, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { errorMessage } from '@/api/errors';
 import { queryKeys } from '@/api/keys';
@@ -18,6 +34,13 @@ import { SelectNative } from '@/components/ui/select-native';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { FormAlert } from '@/features/auth/components/field';
 import { treeQuery } from '@/features/shell/api';
 import { crumbsOf, findLocation, type TreeCrumb } from '@/features/shell/tree-path';
@@ -39,9 +62,9 @@ import { NODE_COLORS, NODE_LABEL, STATUS_GROUP_LABEL, STATUS_GROUP_ORDER } from 
 import {
   addStatus,
   draftFromStatuses,
-  moveStatus,
   patchStatus,
   removeStatus,
+  reorderStatusInGroup,
   toStatusInputs,
   validateDraft,
   type StatusDraft,
@@ -67,117 +90,110 @@ function nodeQuery(wsId: string, crumb: TreeCrumb) {
 
 function StatusRow({
   status,
-  first,
-  last,
-  boardMode,
   onChange,
-  onMove,
+  onMoveGroup,
   onRemove,
 }: {
   status: StatusDraft;
-  first: boolean;
-  last: boolean;
-  boardMode: boolean;
   onChange: (patch: Partial<Omit<StatusDraft, 'key' | 'id'>>) => void;
-  onMove: (offset: number) => void;
+  onMoveGroup: (group: StatusGroup) => void;
   onRemove: () => void;
 }) {
+  const sortable = useSortable({ id: status.key });
+
   return (
     <li
+      ref={sortable.setNodeRef}
       id={status.id ? `status-row-${status.id}` : undefined}
-      className="flex flex-col gap-2 border-b border-line py-3 last:border-b-0 md:flex-row md:items-center"
+      style={{
+        transform: CSS.Transform.toString(sortable.transform),
+        transition: sortable.transition,
+      }}
+      className={cn(
+        'flex min-w-0 items-center gap-1.5 rounded-lg border border-line bg-surface px-2 py-1',
+        sortable.isDragging && 'z-10 opacity-70',
+      )}
     >
-      <span
-        className={cn('h-3 w-3 shrink-0 rounded-[4px]', colorSwatch(status.color))}
-        aria-hidden="true"
-      />
+      <button
+        type="button"
+        className="flex h-8 w-6 shrink-0 cursor-grab items-center justify-center text-muted hover:text-ink"
+        aria-label={`Reordenar ${status.name || 'status'}`}
+        {...sortable.attributes}
+        {...sortable.listeners}
+      >
+        <GripVertical className="h-4 w-4" aria-hidden="true" />
+      </button>
+      <div className="relative flex h-9 w-9 shrink-0 items-center justify-center">
+        <span
+          className={cn('h-3 w-3 rounded-full', colorSwatch(status.color))}
+          aria-hidden="true"
+        />
+        <SelectNative
+          aria-label={`Cor de ${status.name || 'novo status'}`}
+          value={status.color}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          onChange={(event) => {
+            onChange({ color: event.target.value });
+          }}
+        >
+          {NODE_COLORS.map((color) => (
+            <option key={color.value} value={color.value}>
+              {color.label}
+            </option>
+          ))}
+        </SelectNative>
+      </div>
       <Input
-        aria-label={boardMode ? 'Nome da coluna' : 'Nome do status'}
+        aria-label="Nome do status"
         value={status.name}
-        placeholder={boardMode ? 'Nome da coluna' : 'Nome do status'}
-        className="md:flex-1"
+        placeholder="Nome do status"
+        className="h-9 min-w-0 flex-1 border-transparent bg-transparent px-2 focus-visible:border-accent"
         onChange={(event) => {
           onChange({ name: event.target.value });
         }}
       />
-      <SelectNative
-        aria-label="Cor do status"
-        value={status.color}
-        className="md:w-32"
-        onChange={(event) => {
-          onChange({ color: event.target.value });
-        }}
-      >
-        {NODE_COLORS.map((color) => (
-          <option key={color.value} value={color.value}>
-            {color.label}
-          </option>
-        ))}
-      </SelectNative>
-      <SelectNative
-        aria-label="Grupo do status"
-        value={status.group}
-        className="md:w-40"
-        onChange={(event) => {
-          onChange({ group: event.target.value as StatusGroup });
-        }}
-      >
-        {STATUS_GROUP_ORDER.map((group) => (
-          <option key={group} value={group}>
-            {STATUS_GROUP_LABEL[group]}
-          </option>
-        ))}
-      </SelectNative>
       <span className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={
-            boardMode
-              ? `Mover ${status.name || 'coluna'} para a esquerda`
-              : `Subir ${status.name || 'status'}`
-          }
-          disabled={first}
-          onClick={() => {
-            onMove(-1);
-          }}
-        >
-          {boardMode ? (
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          ) : (
-            <ArrowUp className="h-4 w-4" aria-hidden="true" />
-          )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={
-            boardMode
-              ? `Mover ${status.name || 'coluna'} para a direita`
-              : `Descer ${status.name || 'status'}`
-          }
-          disabled={last}
-          onClick={() => {
-            onMove(1);
-          }}
-        >
-          {boardMode ? (
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          ) : (
-            <ArrowDown className="h-4 w-4" aria-hidden="true" />
-          )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={`Excluir ${status.name || 'status'}`}
-          onClick={onRemove}
-        >
-          <Trash2 className="h-4 w-4" aria-hidden="true" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="nav"
+              size="icon"
+              className="h-9 w-9"
+              aria-label={`Opções de ${status.name || 'novo status'}`}
+            >
+              <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {STATUS_GROUP_ORDER.map((group) => (
+              <DropdownMenuItem
+                key={group}
+                onSelect={() => {
+                  onMoveGroup(group);
+                }}
+              >
+                {status.group === group ? (
+                  <Check className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <span className="h-4 w-4" aria-hidden="true" />
+                )}
+                {STATUS_GROUP_LABEL[group]}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={onRemove}>
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
+              Excluir status
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </span>
     </li>
   );
+}
+
+function orderStatusesByGroup(statuses: StatusDraft[]): StatusDraft[] {
+  return STATUS_GROUP_ORDER.flatMap((group) => statuses.filter((status) => status.group === group));
 }
 
 /**
@@ -219,20 +235,27 @@ export function StatusesDialog({
   const [draft, setDraft] = useState<StatusDraft[] | null>(null);
   const [touched, setTouched] = useState(false);
   const focused = useRef(false);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   useEffect(() => {
     if (statusSet.data) {
-      const next = draftFromStatuses(statusSet.data.statuses);
+      const next = orderStatusesByGroup(draftFromStatuses(statusSet.data.statuses));
       const shouldAdd = addStatusOnOpen && !inherited;
 
-      setDraft(shouldAdd ? addStatus(next) : next);
+      setDraft(shouldAdd ? orderStatusesByGroup(addStatus(next)) : next);
       setTouched(shouldAdd);
     }
   }, [addStatusOnOpen, inherited, statusSet.data]);
 
   useEffect(() => {
     if (focusStatusId && draft && !focused.current) {
-      document.getElementById(`status-row-${focusStatusId}`)?.scrollIntoView({ block: 'nearest' });
+      const row = document.getElementById(`status-row-${focusStatusId}`);
+
+      row?.scrollIntoView({ block: 'nearest' });
+      row?.querySelector('input')?.focus();
       focused.current = true;
     }
   }, [draft, focusStatusId]);
@@ -306,7 +329,7 @@ export function StatusesDialog({
   });
 
   const update = (next: StatusDraft[]): void => {
-    setDraft(next);
+    setDraft(orderStatusesByGroup(next));
     setTouched(true);
   };
 
@@ -338,74 +361,167 @@ export function StatusesDialog({
           </div>
         ) : (
           <>
-            {inherited ? (
-              <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface-2 p-3 md:flex-row md:items-center md:justify-between">
-                <p className="text-[13px] text-body">
-                  Para mudar só aqui, crie um conjunto próprio com uma cópia destes statuses.
-                </p>
-                <Button
-                  variant="outline"
-                  disabled={detach.isPending}
-                  onClick={() => {
-                    detach.mutate();
-                  }}
-                >
-                  {detach.isPending ? (
-                    <Spinner label="Criando" />
-                  ) : boardMode ? (
-                    'Criar colunas próprias'
-                  ) : (
-                    'Criar statuses próprios'
+            <div className="grid gap-5 md:grid-cols-[220px_minmax(0,1fr)]">
+              <aside className="flex flex-col gap-5 border-b border-line pb-4 md:border-b-0 md:border-r md:pb-0 md:pr-5">
+                <section className="flex flex-col gap-3">
+                  <h3 className="text-[12px] font-semibold text-muted">Tipo do status</h3>
+                  {node.kind === 'space' ? null : (
+                    <label className="flex min-h-9 items-center gap-2 text-[13px] text-body">
+                      <input
+                        type="radio"
+                        name={`status-source-${node.id}`}
+                        checked={inherited}
+                        disabled={reinherit.isPending}
+                        onChange={() => {
+                          if (!inherited) {
+                            reinherit.mutate();
+                          }
+                        }}
+                        className="accent-accent"
+                      />
+                      Herdar do pai
+                    </label>
                   )}
-                </Button>
-              </div>
-            ) : null}
+                  <label className="flex min-h-9 items-center gap-2 text-[13px] text-body">
+                    <input
+                      type="radio"
+                      name={`status-source-${node.id}`}
+                      checked={!inherited}
+                      disabled={detach.isPending}
+                      onChange={() => {
+                        if (inherited) {
+                          detach.mutate();
+                        }
+                      }}
+                      className="accent-accent"
+                    />
+                    Usar status personalizados
+                  </label>
+                </section>
 
-            <ul className={cn('flex flex-col', inherited && 'pointer-events-none opacity-60')}>
-              {draft.map((status, index) => (
-                <StatusRow
-                  key={status.key}
-                  status={status}
-                  first={index === 0}
-                  last={index === draft.length - 1}
-                  boardMode={boardMode}
-                  onChange={(patch) => {
-                    update(patchStatus(draft, status.key, patch));
-                  }}
-                  onMove={(offset) => {
-                    update(moveStatus(draft, status.key, offset));
-                  }}
-                  onRemove={() => {
-                    update(removeStatus(draft, status.key));
-                  }}
-                />
-              ))}
-            </ul>
+                <section className="flex flex-col gap-2">
+                  <h3 className="text-[12px] font-semibold text-muted">Modelo de status</h3>
+                  <div className="flex h-10 items-center rounded-lg border border-line bg-surface px-3 text-[13px] text-body">
+                    {statusSet.data?.name ?? 'Personalizado'}
+                  </div>
+                </section>
 
-            {inherited ? null : (
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    update(addStatus(draft));
-                  }}
+                {inherited && owner ? (
+                  <p className="rounded-lg bg-surface-2 px-3 py-2 text-[12px] text-muted">
+                    Herdando do {NODE_LABEL[owner.kind]} “{owner.name}”.
+                  </p>
+                ) : null}
+              </aside>
+
+              <div className="min-w-0">
+                {inherited ? (
+                  <p className="mb-3 rounded-lg bg-surface-2 px-3 py-2 text-[12px] text-muted">
+                    Crie um conjunto próprio para editar os status somente neste local.
+                  </p>
+                ) : null}
+
+                <div
+                  className={cn(
+                    'flex flex-col gap-4',
+                    inherited && 'pointer-events-none opacity-60',
+                  )}
                 >
-                  <Plus className="h-4 w-4" aria-hidden="true" />
-                  {boardMode ? 'Adicionar coluna' : 'Adicionar status'}
-                </Button>
-                {node.kind === 'space' ? null : (
-                  <Button
-                    variant="ghost"
-                    disabled={reinherit.isPending}
-                    onClick={() => {
-                      reinherit.mutate();
-                    }}
-                  >
-                    {reinherit.isPending ? <Spinner label="Salvando" /> : 'Voltar a herdar do pai'}
-                  </Button>
-                )}
+                  {STATUS_GROUP_ORDER.map((group) => {
+                    const groupStatuses = draft.filter((status) => status.group === group);
+
+                    return (
+                      <section key={group} className="flex flex-col gap-2">
+                        <header className="flex items-center gap-2 px-1">
+                          <span
+                            className={cn(
+                              'h-2.5 w-2.5 rounded-full',
+                              group === 'done' || group === 'closed'
+                                ? 'bg-success'
+                                : group === 'active'
+                                  ? 'bg-info'
+                                  : 'bg-muted',
+                            )}
+                            aria-hidden="true"
+                          />
+                          <h3 className="flex-1 text-[13px] font-semibold text-body">
+                            {STATUS_GROUP_LABEL[group]}
+                          </h3>
+                          <span className="text-[12px] text-muted">
+                            {String(groupStatuses.length)}
+                          </span>
+                          <Button
+                            variant="nav"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label={`Adicionar status em ${STATUS_GROUP_LABEL[group]}`}
+                            disabled={inherited}
+                            onClick={() => {
+                              update(addStatus(draft, group));
+                            }}
+                          >
+                            <Plus className="h-4 w-4" aria-hidden="true" />
+                          </Button>
+                        </header>
+
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragEnd={(event: DragEndEvent) => {
+                            if (!event.over || event.active.id === event.over.id) {
+                              return;
+                            }
+
+                            update(
+                              reorderStatusInGroup(
+                                draft,
+                                group,
+                                String(event.active.id),
+                                String(event.over.id),
+                              ),
+                            );
+                          }}
+                        >
+                          <SortableContext
+                            items={groupStatuses.map((status) => status.key)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <ul className="flex flex-col gap-1.5">
+                              {groupStatuses.map((status) => (
+                                <StatusRow
+                                  key={status.key}
+                                  status={status}
+                                  onChange={(patch) => {
+                                    update(patchStatus(draft, status.key, patch));
+                                  }}
+                                  onMoveGroup={(nextGroup) => {
+                                    update(patchStatus(draft, status.key, { group: nextGroup }));
+                                  }}
+                                  onRemove={() => {
+                                    update(removeStatus(draft, status.key));
+                                  }}
+                                />
+                              ))}
+                            </ul>
+                          </SortableContext>
+                        </DndContext>
+
+                        <button
+                          type="button"
+                          disabled={inherited}
+                          className="flex min-h-9 items-center gap-2 rounded-lg border border-dashed border-line px-3 text-left text-[12.5px] text-muted hover:border-accent hover:text-ink disabled:pointer-events-none disabled:opacity-45"
+                          onClick={() => {
+                            update(addStatus(draft, group));
+                          }}
+                        >
+                          <Plus className="h-4 w-4" aria-hidden="true" />
+                          {boardMode ? 'Adicionar coluna' : 'Adicionar status'}
+                        </button>
+                      </section>
+                    );
+                  })}
+                </div>
               </div>
-            )}
+            </div>
 
             {touched && error ? <FormAlert>{error}</FormAlert> : null}
 
@@ -415,18 +531,12 @@ export function StatusesDialog({
               </Button>
               {inherited ? null : (
                 <Button
-                  disabled={save.isPending || error !== null}
+                  disabled={save.isPending || error !== null || !touched}
                   onClick={() => {
                     save.mutate();
                   }}
                 >
-                  {save.isPending ? (
-                    <Spinner label="Salvando" />
-                  ) : boardMode ? (
-                    'Salvar colunas'
-                  ) : (
-                    'Salvar statuses'
-                  )}
+                  {save.isPending ? <Spinner label="Salvando" /> : 'Aplicar alterações'}
                 </Button>
               )}
             </DialogFooter>

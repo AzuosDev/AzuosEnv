@@ -341,6 +341,12 @@ describe('Campos personalizados, views e exportação', () => {
 
       expect(missing.body.code).toBe('CUSTOM_FIELD_REQUIRED');
 
+      const inlineTask = await createTask(workspace, owner, list, {
+        allowIncompleteRequiredFields: true,
+      }).expect(201);
+
+      expect(inlineTask.body.customFields).toEqual([]);
+
       const task = await createdTask(workspace, owner, list, {
         customFields: [{ fieldId: versao.id, value: '3.2' }],
       });

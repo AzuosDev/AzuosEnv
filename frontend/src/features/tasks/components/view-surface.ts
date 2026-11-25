@@ -42,6 +42,7 @@ export interface ViewSurfaceProps {
   groupBy: ViewGroupBy;
   canManageColumns: boolean;
   onManageColumns: (options?: { addStatus?: boolean; focusStatusId?: string }) => void;
+  onAutomateStatus: (status: EffectiveStatus) => void;
   onCreateColumn: (name: string) => Promise<boolean>;
   onReorderColumns: (activeId: string, overId: string) => void;
   actions: ReturnType<typeof useTaskActions>;

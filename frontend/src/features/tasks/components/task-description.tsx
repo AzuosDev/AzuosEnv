@@ -13,7 +13,7 @@ export const DESCRIPTION_DEBOUNCE_MS = 900;
 export interface TaskDescriptionProps {
   wsId: string;
   value: TaskDescriptionJson;
-  onSave: (body: UpdateTaskInput) => Promise<void>;
+  onSave: (body: UpdateTaskInput) => Promise<boolean>;
 }
 
 type SaveState = 'idle' | 'typing' | 'saving' | 'saved';
@@ -100,8 +100,8 @@ export function TaskDescription({ wsId, value, onSave }: TaskDescriptionProps) {
 
       pending.current = null;
       setState('saving');
-      void save.current(body).then(() => {
-        setState('saved');
+      void save.current(body).then((saved) => {
+        setState(saved ? 'saved' : 'idle');
       });
     }, DESCRIPTION_DEBOUNCE_MS);
   }, []);

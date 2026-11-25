@@ -73,6 +73,14 @@ export interface AutomationBuilderProps {
   onOpenChange: (open: boolean) => void;
   /** Receita escolhida; ausente começa em branco. */
   recipe?: AutomationRecipe;
+  initialContext?: AutomationBuilderContext;
+}
+
+export interface AutomationBuilderContext {
+  locationType: AutomationLocationType;
+  locationId: string;
+  statusId: string;
+  statusName: string;
 }
 
 interface Draft {
@@ -95,13 +103,29 @@ function emptyDraft(): Draft {
   };
 }
 
+function draftFromContext(context: AutomationBuilderContext): Draft {
+  return {
+    ...emptyDraft(),
+    name: `Automatizar ${context.statusName}`,
+    locationType: context.locationType,
+    locationId: context.locationId,
+    trigger: { type: 'statusChanged', params: { toStatusId: context.statusId } },
+  };
+}
+
 /** Lê um parâmetro do gatilho ou da ação sem perder o tipo do resto. */
 function paramOf(params: Record<string, unknown> | undefined, key: string): unknown {
   return params?.[key];
 }
 
 /** Construtor Quando → Se → Então, com os campos que cada tipo pede. */
-export function AutomationBuilder({ wsId, open, onOpenChange, recipe }: AutomationBuilderProps) {
+export function AutomationBuilder({
+  wsId,
+  open,
+  onOpenChange,
+  recipe,
+  initialContext,
+}: AutomationBuilderProps) {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const members = useQuery({ ...membersQuery(wsId), enabled: open });
@@ -117,8 +141,14 @@ export function AutomationBuilder({ wsId, open, onOpenChange, recipe }: Automati
       return;
     }
 
-    setDraft(recipe ? { ...emptyDraft(), ...recipeDraft(recipe) } : emptyDraft());
-  }, [open, recipe]);
+    setDraft(
+      recipe
+        ? { ...emptyDraft(), ...recipeDraft(recipe) }
+        : initialContext
+          ? draftFromContext(initialContext)
+          : emptyDraft(),
+    );
+  }, [open, recipe, initialContext]);
 
   const create = useMutation({
     mutationFn: () =>

@@ -18,7 +18,17 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { Link } from '@tanstack/react-router';
-import { Check, CheckSquare, GripVertical, MoreHorizontal, Plus, Settings2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  CheckSquare,
+  GripVertical,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Settings2,
+  Zap,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import type { Task } from '@/api/types';
@@ -30,6 +40,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
@@ -123,7 +135,17 @@ function Card({
   );
 }
 
-function Column({ group, surface }: { group: TaskGroupState; surface: ViewSurfaceProps }) {
+function Column({
+  group,
+  surface,
+  collapsed,
+  onToggleCollapse,
+}: {
+  group: TaskGroupState;
+  surface: ViewSurfaceProps;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
+}) {
   const droppable = useDroppable({ id: groupDropId(group.key) });
   const sortable = useSortable({ id: `column:${group.key}`, disabled: !surface.canManageColumns });
   const status = surface.statuses.find((item) => item.id === group.key);
@@ -150,6 +172,7 @@ function Column({ group, surface }: { group: TaskGroupState; surface: ViewSurfac
       aria-label={group.label}
       className={cn(
         'relative flex w-[85vw] shrink-0 snap-start flex-col gap-2 rounded-2xl bg-surface-2 p-2.5 sm:w-[272px]',
+        collapsed && 'sm:w-[190px]',
         droppable.isOver && 'ring-1 ring-accent',
         sortable.isDragging && 'z-10 opacity-50',
       )}
@@ -200,49 +223,75 @@ function Column({ group, surface }: { group: TaskGroupState; surface: ViewSurfac
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Opções do grupo</DropdownMenuLabel>
+              <DropdownMenuItem onSelect={onToggleCollapse}>
+                <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                {collapsed ? 'Expandir grupo' : 'Recolher grupo'}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={!status}
+                onSelect={() => {
+                  if (status) {
+                    surface.onAutomateStatus(status);
+                  }
+                }}
+              >
+                <Zap className="h-4 w-4" aria-hidden="true" />
+                Automatizar status
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onSelect={() => surface.onManageColumns({ focusStatusId: group.key })}
               >
+                <Pencil className="h-4 w-4" aria-hidden="true" />
+                Renomear
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => surface.onManageColumns()}>
                 <Settings2 className="h-4 w-4" aria-hidden="true" />
-                Editar coluna
+                Editar status
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}
       </header>
 
-      <SortableContext items={group.items.map((item) => item.id)}>
-        <div className="flex flex-col gap-2">
-          {group.items.map((task) => (
-            <Card
-              key={task.id}
-              task={task}
-              surface={surface}
-              selected={surface.selected.has(task.id)}
-            />
-          ))}
-        </div>
-      </SortableContext>
+      {collapsed ? null : (
+        <>
+          <SortableContext items={group.items.map((item) => item.id)}>
+            <div className="flex flex-col gap-2">
+              {group.items.map((task) => (
+                <Card
+                  key={task.id}
+                  task={task}
+                  surface={surface}
+                  selected={surface.selected.has(task.id)}
+                />
+              ))}
+            </div>
+          </SortableContext>
 
-      {group.nextCursor ? (
-        <Button
-          variant="nav"
-          size="sm"
-          disabled={surface.loadingMore}
-          onClick={() => {
-            surface.onLoadMore(group.nextCursor ?? '');
-          }}
-        >
-          {surface.loadingMore ? <Spinner label="Carregando" /> : 'Carregar mais'}
-        </Button>
-      ) : null}
+          {group.nextCursor ? (
+            <Button
+              variant="nav"
+              size="sm"
+              disabled={surface.loadingMore}
+              onClick={() => {
+                surface.onLoadMore(group.nextCursor ?? '');
+              }}
+            >
+              {surface.loadingMore ? <Spinner label="Carregando" /> : 'Carregar mais'}
+            </Button>
+          ) : null}
 
-      <QuickAdd
-        groupKey={surface.groupBy === 'none' ? null : group.key}
-        surface={surface}
-        label="+ Adicionar"
-        className="rounded-lg border border-dashed border-line"
-      />
+          <QuickAdd
+            groupKey={surface.groupBy === 'none' ? null : group.key}
+            surface={surface}
+            label="+ Adicionar"
+            className="rounded-lg border border-dashed border-line"
+          />
+        </>
+      )}
     </section>
   );
 }
@@ -257,6 +306,7 @@ export function BoardView(surface: ViewSurfaceProps) {
   const [addingColumn, setAddingColumn] = useState(false);
   const [newColumnName, setNewColumnName] = useState('');
   const [creatingColumn, setCreatingColumn] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -323,7 +373,25 @@ export function BoardView(surface: ViewSurfaceProps) {
         >
           <div className="flex snap-x snap-mandatory items-start gap-3 sm:snap-none">
             {surface.groups.map((group) => (
-              <Column key={group.key} group={group} surface={surface} />
+              <Column
+                key={group.key}
+                group={group}
+                surface={surface}
+                collapsed={collapsedGroups.has(group.key)}
+                onToggleCollapse={() => {
+                  setCollapsedGroups((current) => {
+                    const next = new Set(current);
+
+                    if (next.has(group.key)) {
+                      next.delete(group.key);
+                    } else {
+                      next.add(group.key);
+                    }
+
+                    return next;
+                  });
+                }}
+              />
             ))}
             {surface.canManageColumns ? (
               <div className="w-[248px] shrink-0 pt-2">

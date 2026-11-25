@@ -9,7 +9,7 @@ import { replaceChecklist } from '../checklist-model';
 
 export interface TaskDetailActions {
   /** Escreve um campo da tarefa, pintando o painel antes da resposta. */
-  patch: (body: UpdateTaskInput, optimistic?: Partial<TaskDetail>) => Promise<void>;
+  patch: (body: UpdateTaskInput, optimistic?: Partial<TaskDetail>) => Promise<boolean>;
   /** Troca uma checklist no cache do painel (toda escrita devolve a inteira). */
   setChecklist: (checklist: Checklist) => void;
   /** Tira a checklist do cache depois do DELETE. */
@@ -66,10 +66,12 @@ export function useTaskDetailActions(wsId: string, customId: string): TaskDetail
   });
 
   const patch = useCallback(
-    async (body: UpdateTaskInput, optimistic?: Partial<TaskDetail>): Promise<void> => {
+    async (body: UpdateTaskInput, optimistic?: Partial<TaskDetail>): Promise<boolean> => {
       try {
         await mutation.mutateAsync({ body, optimistic });
+        return true;
       } catch {
+        return false;
         // O toast e o rollback já saíram no onError.
       }
     },

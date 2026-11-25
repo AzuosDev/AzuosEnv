@@ -6,6 +6,7 @@ import {
   moveStatus,
   patchStatus,
   removeStatus,
+  reorderStatusInGroup,
   toStatusInputs,
   validateDraft,
 } from './status-draft';
@@ -44,6 +45,23 @@ describe('status-draft', () => {
     expect(moveStatus(draft, '1', -1).map((status) => status.id)).toEqual(['1', '2', '3']);
     expect(moveStatus(draft, '2', -1)).toBe(draft);
     expect(moveStatus(draft, '3', 1)).toBe(draft);
+  });
+
+  it('reordena dentro do grupo sem mover os statuses dos outros grupos', () => {
+    const draft = [
+      ...draftFromStatuses(statuses),
+      { key: '4', id: '4', name: 'Pronto', color: '#16A34A', group: 'active' as const },
+    ];
+
+    const reordered = reorderStatusInGroup(draft, 'active', '4', '1');
+
+    expect(
+      reordered.filter((status) => status.group === 'active').map((status) => status.id),
+    ).toEqual(['4', '1']);
+    expect(
+      reordered.filter((status) => status.group !== 'active').map((status) => status.id),
+    ).toEqual(['2', '3']);
+    expect(reorderStatusInGroup(draft, 'active', '1', '3')).toBe(draft);
   });
 
   it('cobra nome, nome único, limite e um status de Concluído', () => {

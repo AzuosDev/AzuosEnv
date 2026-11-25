@@ -195,6 +195,7 @@ export class CustomFieldsService {
     list: ListDocument,
     entries: TaskCustomFieldDto[],
     current: FieldValueEntry[] = [],
+    validateRequired = true,
   ): Promise<TaskFieldValue[]> {
     const available = new Map(
       (await this.forList(list)).map((field) => [String(field._id), field]),
@@ -224,12 +225,14 @@ export class CustomFieldsService {
       }
     }
 
-    for (const [id, field] of available) {
-      if (field.required && field.type !== 'formula' && isEmptyFieldValue(merged.get(id))) {
-        throw new BadRequestException({
-          code: 'CUSTOM_FIELD_REQUIRED',
-          message: `O campo ${field.name} é obrigatório.`,
-        });
+    if (validateRequired) {
+      for (const [id, field] of available) {
+        if (field.required && field.type !== 'formula' && isEmptyFieldValue(merged.get(id))) {
+          throw new BadRequestException({
+            code: 'CUSTOM_FIELD_REQUIRED',
+            message: `O campo ${field.name} é obrigatório.`,
+          });
+        }
       }
     }
 

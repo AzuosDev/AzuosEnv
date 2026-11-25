@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { errorMessage } from '@/api/errors';
 import { queryKeys } from '@/api/keys';
-import type { TimeEntry } from '@/api/types';
+import type { TimeEntry, TimerState } from '@/api/types';
 import { toast } from '@/components/ui/toast';
 import { startTimer, stopTimer, timerQuery } from '../time-api';
 
@@ -68,11 +68,25 @@ export function useTimer(wsId: string): TimerControls {
 
   const end = useMutation({
     mutationFn: () => stopTimer(wsId),
+    onMutate: () => {
+      const key = queryKeys.timer(wsId);
+      const snapshot = queryClient.getQueryData<TimerState>(key);
+
+      queryClient.setQueryData<TimerState>(key, { entry: null });
+
+      return { snapshot };
+    },
     onSuccess: () => {
       invalidate();
       toast.success('Cronômetro parado.');
     },
-    onError,
+    onError: (error, _variables, context) => {
+      if (context?.snapshot) {
+        queryClient.setQueryData(queryKeys.timer(wsId), context.snapshot);
+      }
+
+      onError(error);
+    },
   });
 
   return {
