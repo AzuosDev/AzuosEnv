@@ -44,6 +44,59 @@ const bindCjsSingletons = {
   },
 };
 
+/**
+ * O @nestjs/mapped-types (PartialType, OmitType, IntersectionType) carrega o
+ * class-validator e o class-transformer por createRequire(import.meta.url). No
+ * bundle isso resolve a partir de dist-vercel/, onde a funcao da Vercel nao tem
+ * node_modules: o require falha, a heranca de metadados e pulada em silencio e
+ * todo DTO derivado fica sem propriedade conhecida, entao o ValidationPipe
+ * (forbidNonWhitelisted) responde 400 "property X should not exist".
+ *
+ * Aqui o require vira um mapa para as copias que ja estao no bundle - as mesmas
+ * que os decorators usam, entao o metadata storage continua unico.
+ */
+const MAPPED_TYPES_SHIM = [
+  "import * as __classValidator from 'class-validator';",
+  "import * as __classTransformer from 'class-transformer';",
+  "import * as __classTransformerStorage from 'class-transformer/cjs/storage.js';",
+  'const __bundledModules = {',
+  "  'class-validator': __classValidator,",
+  "  'class-transformer': __classTransformer,",
+  "  'class-transformer/storage': __classTransformerStorage,",
+  "  'class-transformer/cjs/storage': __classTransformerStorage,",
+  '};',
+  'const require = (id) => {',
+  '  const mod = __bundledModules[id];',
+  '  if (!mod) {',
+  '    throw new Error(`modulo fora do bundle: ${id}`);',
+  '  }',
+  '  return mod;',
+  '};',
+].join('\n');
+
+const inlineMappedTypesRequire = {
+  name: 'inline-mapped-types-require',
+  setup(build) {
+    build.onLoad({ filter: /\.js$/ }, async (args) => {
+      if (!args.path.split('\\').join('/').includes('@nestjs/mapped-types')) {
+        return null;
+      }
+
+      const source = await readFile(args.path, 'utf8');
+
+      if (!source.includes('createRequire(import.meta.url)')) {
+        return null;
+      }
+
+      const contents = source
+        .replace("import { createRequire } from 'node:module';\n", '')
+        .replace('const require = createRequire(import.meta.url);', MAPPED_TYPES_SHIM);
+
+      return { contents, loader: 'js' };
+    });
+  },
+};
+
 // Dependencias nativas ou opcionais: ficam fora do bundle e sao carregadas (ou
 // nao) em runtime. Todas sao CJS, entao require() nelas funciona normalmente.
 const external = [
@@ -62,7 +115,6 @@ const external = [
   '@fastify/static',
   '@fastify/view',
   'fastify',
-  'class-transformer/storage',
   'pino-pretty',
   'thread-stream',
   'pino-worker',
@@ -77,7 +129,7 @@ const result = await build({
   target: 'node22',
   format: 'cjs',
   external,
-  plugins: [bindCjsSingletons],
+  plugins: [bindCjsSingletons, inlineMappedTypesRequire],
   // Pacotes ESM (o @nestjs/swagger, entre outros) usam createRequire(import.meta.url),
   // que num bundle CJS viraria undefined.
   define: { 'import.meta.url': '__bundleFileUrl' },
