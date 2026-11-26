@@ -410,6 +410,7 @@ export type ChannelType = Channel['type'];
 export type ChannelLocationType = Channel['locationType'];
 export type Message = Doc<FreeJson<components['schemas']['Message'], 'body'>>;
 export type MessageReaction = components['schemas']['MessageReaction'];
+export type MessageQuote = components['schemas']['MessageQuote'];
 export type CreateChannelInput = components['schemas']['CreateChannelDto'];
 export type UpdateChannelInput = components['schemas']['UpdateChannelDto'];
 export type CreateDmInput = components['schemas']['CreateDmDto'];

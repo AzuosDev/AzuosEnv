@@ -73,6 +73,8 @@ export function ChannelConversation({
   onBack,
 }: ChannelConversationProps) {
   const [membersOpen, setMembersOpen] = useState(false);
+  // Mensagem escolhida para citar; some assim que a resposta sai.
+  const [replyTo, setReplyTo] = useState<Message | null>(null);
   const messages = useInfiniteQuery(messagesQuery(wsId, channel.id));
   const attachments = useQuery(channelAttachmentsQuery(wsId, channel.id));
   const reads = useQuery(channelReadsQuery(wsId, channel.id));
@@ -205,6 +207,7 @@ export function ChannelConversation({
           receipts={receipts}
           onOpenThread={onOpenThread}
           onCreateTask={onCreateTask}
+          onReply={setReplyTo}
         />
       ) : null}
 
@@ -224,9 +227,14 @@ export function ChannelConversation({
             submitVariant="signal"
             pending={actionsOfMessage.sending}
             withAttachments
+            replyTo={replyTo}
+            onCancelReply={() => {
+              setReplyTo(null);
+            }}
             onTyping={typing.notify}
             onSubmit={(draft) => {
               typing.stop();
+              setReplyTo(null);
               void actionsOfMessage.send(draft);
             }}
           />

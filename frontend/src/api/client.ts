@@ -1,5 +1,6 @@
 import createClient from 'openapi-fetch';
 import { createAuthFetch } from './auth-fetch';
+import { isChallengeResponse, recoverFromChallenge } from './challenge';
 import type { paths } from './schema';
 import { getAccessToken, notifySessionLost, setAccessToken } from './token-store';
 import type { AuthSession } from './types';
@@ -39,7 +40,16 @@ export async function requestRefresh(): Promise<AuthSession | null> {
  * cliente tipado porque a resposta não é JSON.
  */
 export const apiFetch = createAuthFetch({
-  fetch: (request) => fetch(request),
+  fetch: async (request) => {
+    const response = await fetch(request);
+
+    // A borda do host devolveu o desafio no lugar da API: sai da frente dele.
+    if (isChallengeResponse(response)) {
+      void recoverFromChallenge();
+    }
+
+    return response;
+  },
   getToken: getAccessToken,
   setToken: setAccessToken,
   refresh: async () => (await requestRefresh())?.accessToken ?? null,

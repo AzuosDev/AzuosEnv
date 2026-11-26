@@ -9,7 +9,7 @@ import { mergeMessagePages, mergeReplyPages, otherMemberIds } from '../chat-mode
 import type { ChannelReceipts } from '../chat-model';
 import { useMessages } from '../hooks/use-messages';
 import { MessageComposer } from './message-composer';
-import { MessageItem } from './message-item';
+import { MessageBlock } from './message-block';
 import { MessageList } from './message-list';
 
 export interface ThreadPanelProps {
@@ -72,17 +72,16 @@ export function ThreadPanel({
 
       {root ? (
         <div className="shrink-0 border-b border-line px-2 py-2 md:px-3">
-          <MessageItem
+          <MessageBlock
             wsId={wsId}
             channelId={channelId}
-            message={root}
+            block={{ id: root.id, authorId: String(root.authorId), day: '', items: [root] }}
             members={members}
             attachments={attachments.data ?? []}
             currentUserId={currentUserId}
             role={role}
             canWrite={canWrite}
             actions={actions}
-            leading
             group={group}
             receipts={receipts}
             reply

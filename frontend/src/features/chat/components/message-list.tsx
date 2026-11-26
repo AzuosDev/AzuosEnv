@@ -7,7 +7,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { groupMessages } from '../chat-model';
 import type { ChannelReceipts } from '../chat-model';
 import type { MessageActions } from '../hooks/use-messages';
-import { MessageItem } from './message-item';
+import { MessageBlock } from './message-block';
 
 export interface MessageListProps {
   wsId: string;
@@ -30,6 +30,7 @@ export interface MessageListProps {
   reply?: boolean;
   onOpenThread?: (messageId: string) => void;
   onCreateTask?: (message: Message) => void;
+  onReply?: (message: Message) => void;
 }
 
 /** A que distância do topo a rolagem pede o lote anterior. */
@@ -78,6 +79,7 @@ export function MessageList({
   reply = false,
   onOpenThread,
   onCreateTask,
+  onReply,
 }: MessageListProps) {
   const box = useRef<HTMLDivElement>(null);
   const days = groupMessages(messages);
@@ -150,28 +152,26 @@ export function MessageList({
             <span className="h-px flex-1 bg-line" aria-hidden="true" />
           </div>
 
-          {day.blocks.map((block) =>
-            block.items.map((message, index) => (
-              <MessageItem
-                key={message.id}
-                wsId={wsId}
-                channelId={channelId}
-                message={message}
-                members={members}
-                attachments={attachments}
-                currentUserId={currentUserId}
-                role={role}
-                canWrite={canWrite}
-                actions={actions}
-                leading={index === 0}
-                group={group}
-                {...(receipts ? { receipts } : {})}
-                reply={reply}
-                {...(onOpenThread ? { onOpenThread } : {})}
-                {...(onCreateTask ? { onCreateTask } : {})}
-              />
-            )),
-          )}
+          {day.blocks.map((block) => (
+            <MessageBlock
+              key={block.id}
+              wsId={wsId}
+              channelId={channelId}
+              block={block}
+              members={members}
+              attachments={attachments}
+              currentUserId={currentUserId}
+              role={role}
+              canWrite={canWrite}
+              actions={actions}
+              group={group}
+              {...(receipts ? { receipts } : {})}
+              reply={reply}
+              {...(onOpenThread ? { onOpenThread } : {})}
+              {...(onCreateTask ? { onCreateTask } : {})}
+              {...(onReply ? { onReply } : {})}
+            />
+          ))}
         </section>
       ))}
     </div>

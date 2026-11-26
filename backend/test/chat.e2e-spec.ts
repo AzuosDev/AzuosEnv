@@ -17,6 +17,7 @@ interface ChannelBody extends IdBody {
 
 interface MessageBody extends IdBody {
   bodyText: string;
+  replyTo: { messageId: string; authorId: string; text: string } | null;
   parentMessageId: string | null;
   replyCount: number;
   lastReplyAt: string | null;
@@ -500,6 +501,51 @@ describe('Chat (canais, DMs e threads)', () => {
       }).expect(400);
 
       expect(response.body.code).toBe('INVALID_MESSAGE_PARENT');
+    });
+
+    it('a resposta cita a mensagem escolhida', async () => {
+      const fixture = await setup();
+      const channel = (await createChannel(fixture, { name: 'Geral' }).expect(201))
+        .body as ChannelBody;
+      const quoted = (
+        await sendMessage(fixture, channel.id, { bodyText: 'Alguém viu o build?' }).expect(201)
+      ).body as MessageBody;
+
+      const answer = (
+        await sendMessage(fixture, channel.id, {
+          bodyText: 'Vi sim, subiu às 14h',
+          replyToId: quoted.id,
+        }).expect(201)
+      ).body as MessageBody;
+
+      expect(answer.replyTo?.messageId).toBe(quoted.id);
+      expect(answer.replyTo?.text).toBe('Alguém viu o build?');
+      // A citação é da conversa, não da thread: a raiz não ganha resposta.
+      expect(answer.parentMessageId).toBeNull();
+
+      const listed = await withAuth(
+        http().get(`/api/v1/workspaces/${fixture.workspace.id}/channels/${channel.id}/messages`),
+        fixture.owner,
+      ).expect(200);
+      const items = listed.body.items as MessageBody[];
+
+      expect(items.find((one) => one.id === answer.id)?.replyTo?.text).toBe('Alguém viu o build?');
+    });
+
+    it('recusa citar mensagem de outro canal', async () => {
+      const fixture = await setup();
+      const first = (await createChannel(fixture, { name: 'Geral' }).expect(201))
+        .body as ChannelBody;
+      const second = (await createChannel(fixture, { name: 'Dev' }).expect(201))
+        .body as ChannelBody;
+      const quoted = (await sendMessage(fixture, first.id, { bodyText: 'Citada' }).expect(201))
+        .body as MessageBody;
+      const response = await sendMessage(fixture, second.id, {
+        bodyText: 'Resposta',
+        replyToId: quoted.id,
+      }).expect(400);
+
+      expect(response.body.code).toBe('INVALID_MESSAGE_QUOTE');
     });
 
     it('a mensagem vira tarefa com link para a conversa', async () => {

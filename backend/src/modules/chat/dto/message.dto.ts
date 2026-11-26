@@ -26,6 +26,11 @@ export class CreateMessageDto {
   @IsMongoId()
   parentMessageId?: string;
 
+  @ApiPropertyOptional({ description: 'Mensagem citada na resposta.' })
+  @IsOptional()
+  @IsMongoId()
+  replyToId?: string;
+
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()

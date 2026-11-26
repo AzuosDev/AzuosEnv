@@ -202,17 +202,78 @@ test('as não lidas aparecem e zeram ao abrir o canal', async ({ browser }) => {
 
     await sendByApi(`Mensagem não lida ${stamp}`);
 
-    await expect(row).toContainText('não lidas', { timeout: 25_000 });
+    await expect(row).toContainText('não lida', { timeout: 25_000 });
 
     await row.click();
     await expect(other.getByRole('heading', { name: CHANNEL, level: 2 })).toBeVisible({
       timeout: 20_000,
     });
-    await expect(row).not.toContainText('não lidas', { timeout: 25_000 });
+    await expect(row).not.toContainText('não lida', { timeout: 25_000 });
   } finally {
     await other.close();
     await second.close();
   }
+});
+
+test('mensagens seguidas dividem a bolha e o foco volta para a caixa', async () => {
+  await page.goto(`/w/${wsId}/chat?canal=${channelId}`);
+  await expect(page.getByRole('heading', { name: CHANNEL, level: 2 })).toBeVisible({
+    timeout: 25_000,
+  });
+
+  const label = `Mensagem para ${CHANNEL}`;
+  const editor = page.getByRole('textbox', { name: label });
+  const first = `Primeira seguida ${stamp}`;
+  const second = `Segunda seguida ${stamp}`;
+
+  await type(page, label, first);
+  await page.getByRole('button', { name: 'Enviar' }).click();
+  await expect(page.getByText(first)).toBeVisible({ timeout: 20_000 });
+
+  // O cursor volta sozinho: a segunda sai sem precisar clicar na caixa.
+  await expect(editor).toBeFocused();
+  await page.keyboard.type(second);
+  await page.getByRole('button', { name: 'Enviar' }).click();
+  await expect(page.getByText(second)).toBeVisible({ timeout: 20_000 });
+
+  // As duas mensagens na mesma bolha, com um avatar e um nome só.
+  const bubble = page.locator('[data-message-block]').filter({ hasText: first });
+
+  await expect(bubble).toHaveCount(1);
+  await expect(bubble).toContainText(second);
+});
+
+test('responde citando a mensagem, como no WhatsApp', async () => {
+  const original = `Pergunta do estoque ${stamp}`;
+
+  await sendByApi(original);
+  await page.goto(`/w/${wsId}/chat?canal=${channelId}`);
+
+  const message = page
+    .getByRole('article', { name: `Mensagem de ${ADMIN_NAME}` })
+    .filter({ hasText: original });
+
+  await expect(message).toBeVisible({ timeout: 25_000 });
+  await message.getByRole('button', { name: 'Responder citando' }).click();
+
+  // A citação aparece no editor e o cursor já está nele.
+  await expect(page.getByText(`Respondendo ${ADMIN_NAME}`)).toBeVisible();
+
+  const editor = page.getByRole('textbox', { name: `Mensagem para ${CHANNEL}` });
+  const answer = `Respondido na hora ${stamp}`;
+
+  await expect(editor).toBeFocused();
+  await page.keyboard.type(answer);
+  await page.getByRole('button', { name: 'Enviar' }).click();
+
+  const sent = page
+    .getByRole('article', { name: `Mensagem de ${ADMIN_NAME}` })
+    .filter({ hasText: answer });
+
+  await expect(sent).toBeVisible({ timeout: 20_000 });
+  await expect(
+    sent.getByRole('button', { name: `Ir para a mensagem de ${ADMIN_NAME}` }),
+  ).toContainText(original);
 });
 
 test('o canal aparece como view da List', async () => {

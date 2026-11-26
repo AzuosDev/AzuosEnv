@@ -1,3 +1,4 @@
+import { HOST_CHALLENGE, isChallengeResponse } from './challenge';
 import type { ApiErrorBody } from './types';
 
 const FALLBACK = 'Não foi possível concluir. Tente de novo.';
@@ -9,6 +10,8 @@ const BY_CODE: Record<string, string> = {
   AI_RATE_LIMITED: 'Muitos pedidos à IA em pouco tempo. Tente de novo em instantes.',
   WHITEBOARD_VERSION_CONFLICT: 'O quadro mudou em outra aba. Recarregando para aplicar de novo.',
   INTERNAL_ERROR: 'O servidor falhou. Tente de novo em instantes.',
+  [HOST_CHALLENGE]:
+    'A verificação de segurança do servidor bloqueou a chamada. Recarregue a página; se continuar, desligue o modo de desafio no painel do host.',
 };
 
 /** Erro da API já no formato do contrato { statusCode, code, message }. */
@@ -31,6 +34,10 @@ interface ApiResult<T> {
 }
 
 function toBody(error: unknown, response: Response): ApiErrorBody {
+  if (isChallengeResponse(response)) {
+    return { statusCode: response.status, code: HOST_CHALLENGE, message: FALLBACK };
+  }
+
   const body = error as Partial<ApiErrorBody> | undefined;
 
   return {

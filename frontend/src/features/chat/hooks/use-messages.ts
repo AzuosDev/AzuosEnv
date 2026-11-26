@@ -18,6 +18,8 @@ export interface MessageDraft {
   body: Record<string, unknown>;
   bodyText: string;
   attachmentIds?: string[];
+  /** Mensagem citada na resposta, no estilo do WhatsApp. */
+  replyToId?: string;
 }
 
 export interface MessageActions {
@@ -69,6 +71,7 @@ export function useMessages(wsId: string, channelId: string): MessageActions {
         bodyText: draft.bodyText,
         body: draft.body,
         ...(draft.attachmentIds?.length ? { attachmentIds: draft.attachmentIds } : {}),
+        ...(draft.replyToId ? { replyToId: draft.replyToId } : {}),
         ...(parentMessageId ? { parentMessageId } : {}),
       }),
     onSuccess: (message) => {
