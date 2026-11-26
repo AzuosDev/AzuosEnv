@@ -11,7 +11,11 @@ import { UsersService } from '../users/users.service';
 import { WhatsappAccessService } from '../whatsapp/whatsapp-access.service';
 import { WhiteboardsAccessService } from '../whiteboards/whiteboards-access.service';
 import { WorkspacesService } from '../workspaces/workspaces.service';
-import { RoomPayload, isRoomKind, roomName } from './realtime-rooms';
+import type { RealtimeCapability } from './ably.realtime';
+import { RoomPayload, isRoomKind, roomName, userRoom } from './realtime-rooms';
+
+/** Teto de workspaces considerados no token; ninguém participa de mais. */
+const WORKSPACE_LIMIT = 50;
 
 /** Authenticates the handshake and enforces the permission of each room. */
 @Injectable()
@@ -49,6 +53,34 @@ export class RoomAccessService {
     }
 
     return String(user._id);
+  }
+
+  /**
+   * Canais que este usuário pode ouvir, no formato de capacidade do Ably: a
+   * própria sala, cada workspace ativo e cada canal de chat visível nele. É a
+   * mesma permissão do `resolve`, só calculada de uma vez — com o token
+   * recortado, canal de terceiro é recusado pelo serviço, não por nós.
+   */
+  async subscribeCapability(userId: string): Promise<RealtimeCapability> {
+    const capability: RealtimeCapability = { [userRoom(userId)]: ['subscribe'] };
+    const workspaces = await this.workspaces.listForUser(userId, { limit: WORKSPACE_LIMIT });
+
+    for (const workspace of workspaces.items) {
+      const wsId = String(workspace._id);
+
+      capability[roomName('ws', wsId)] = ['subscribe'];
+
+      const resolved = await this.workspaces.resolveContext(wsId, userId);
+      const channelIds = await this.chat.visibleChannelIds(
+        permissionContextFrom(resolved.membership),
+      );
+
+      for (const channelId of channelIds) {
+        capability[roomName('channel', String(channelId))] = ['subscribe'];
+      }
+    }
+
+    return capability;
   }
 
   /** Name of the room when the user may watch it; throws otherwise. */

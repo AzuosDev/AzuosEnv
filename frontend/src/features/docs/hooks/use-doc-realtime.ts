@@ -1,8 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
 import { queryKeys } from '@/api/keys';
 import { useSession } from '@/features/auth/session';
-import { useSocket, useSocketEvent } from '@/features/realtime/socket';
+import { useRealtimeRoom, useSocketEvent } from '@/features/realtime/realtime';
 
 interface PageEvent {
   docId?: string;
@@ -26,19 +25,8 @@ export interface DocRealtimeOptions {
 export function useDocRealtime({ wsId, docId, pageId, onPageUpdated }: DocRealtimeOptions): void {
   const client = useQueryClient();
   const user = useSession();
-  const { socket, connected } = useSocket();
 
-  useEffect(() => {
-    if (!socket || !connected || docId === '') {
-      return;
-    }
-
-    socket.emit('join', { room: 'doc', id: docId });
-
-    return () => {
-      socket.emit('leave', { room: 'doc', id: docId });
-    };
-  }, [socket, connected, docId]);
+  useRealtimeRoom('doc', docId);
 
   useSocketEvent<PageEvent>('page.created', (payload) => {
     if (payload.docId !== undefined && payload.docId !== docId) {

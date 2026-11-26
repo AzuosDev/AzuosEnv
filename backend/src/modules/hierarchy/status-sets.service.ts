@@ -112,7 +112,7 @@ export class StatusSetsService {
     await statusSet.save();
 
     if (dto.statuses !== undefined) {
-      this.events.emit(STATUS_SET_UPDATED, {
+      await this.events.emitAsync(STATUS_SET_UPDATED, {
         workspaceId,
         statusSetId: statusSet._id,
         statuses: statusSet.statuses.map((status) => ({

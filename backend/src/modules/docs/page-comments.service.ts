@@ -58,7 +58,7 @@ export class PageCommentsService {
       createdBy: ctx.userId,
     });
 
-    this.events.emit(PAGE_COMMENTED, {
+    await this.events.emitAsync(PAGE_COMMENTED, {
       workspaceId: ctx.workspaceId,
       docId: page.docId,
       pageId: page._id,

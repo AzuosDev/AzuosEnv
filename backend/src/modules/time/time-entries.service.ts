@@ -72,7 +72,7 @@ export class TimeEntriesService {
       source: 'timer',
     });
 
-    this.emit(TIME_ENTRY_CREATED, ctx, entry);
+    await this.emit(TIME_ENTRY_CREATED, ctx, entry);
 
     return { entry, stopped };
   }
@@ -112,7 +112,7 @@ export class TimeEntriesService {
     });
 
     await this.syncTracked(ctx.workspaceId, task._id);
-    this.emit(TIME_ENTRY_CREATED, ctx, entry);
+    await this.emit(TIME_ENTRY_CREATED, ctx, entry);
 
     return entry;
   }
@@ -171,7 +171,7 @@ export class TimeEntriesService {
 
     await entry.save();
     await this.syncTracked(ctx.workspaceId, entry.taskId);
-    this.emit(TIME_ENTRY_UPDATED, ctx, entry);
+    await this.emit(TIME_ENTRY_UPDATED, ctx, entry);
 
     return entry;
   }
@@ -181,7 +181,7 @@ export class TimeEntriesService {
 
     await entry.deleteOne();
     await this.syncTracked(ctx.workspaceId, entry.taskId);
-    this.emit(TIME_ENTRY_DELETED, ctx, entry);
+    await this.emit(TIME_ENTRY_DELETED, ctx, entry);
   }
 
   /** Entries of a window, used by the timesheet and by the dashboard cards. */
@@ -245,7 +245,7 @@ export class TimeEntriesService {
         { $inc: { trackedMinutes: durationMinutes } },
       )
       .exec();
-    this.emit(TIME_ENTRY_UPDATED, ctx, stopped);
+    await this.emit(TIME_ENTRY_UPDATED, ctx, stopped);
 
     return stopped;
   }
@@ -316,7 +316,11 @@ export class TimeEntriesService {
     };
   }
 
-  private emit(event: string, ctx: PermissionContext, entry: TimeEntryDocument): void {
+  private async emit(
+    event: string,
+    ctx: PermissionContext,
+    entry: TimeEntryDocument,
+  ): Promise<void> {
     const payload: TimeEntryEvent = {
       workspaceId: ctx.workspaceId,
       entryId: entry._id,
@@ -326,6 +330,6 @@ export class TimeEntriesService {
       durationMinutes: entry.durationMinutes,
     };
 
-    this.events.emit(event, payload);
+    await this.events.emitAsync(event, payload);
   }
 }

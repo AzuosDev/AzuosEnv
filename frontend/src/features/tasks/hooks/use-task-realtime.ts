@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import { queryKeys } from '@/api/keys';
-import { useSocket, useSocketEvent } from '@/features/realtime/socket';
+import { useRealtimeRoom, useSocketEvent } from '@/features/realtime/realtime';
 
 /** Payload comum dos eventos de tarefa do gateway. */
 interface TaskEvent {
@@ -42,21 +42,14 @@ export function useTaskRealtime({
   currentUserId,
 }: TaskRealtimeOptions): string[] {
   const queryClient = useQueryClient();
-  const { socket, connected } = useSocket();
   const [viewers, setViewers] = useState<string[]>([]);
 
+  useRealtimeRoom('task', taskId ?? '', wsId);
+
+  // Sair da tarefa zera quem estava olhando: a presença é da sala.
   useEffect(() => {
-    if (!socket || !connected || !taskId) {
-      return;
-    }
-
-    socket.emit('join', { room: 'task', id: taskId, wsId });
-
-    return () => {
-      socket.emit('leave', { room: 'task', id: taskId, wsId });
-      setViewers([]);
-    };
-  }, [socket, connected, taskId, wsId]);
+    setViewers([]);
+  }, [taskId]);
 
   const refreshTask = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.task(wsId, customId) });

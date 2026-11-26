@@ -250,7 +250,7 @@ export class ChannelsService {
       )
       .exec();
 
-    this.events.emit(CHANNEL_READ, {
+    await this.events.emitAsync(CHANNEL_READ, {
       workspaceId: ctx.workspaceId,
       channelId: channel._id,
       userId: ctx.userId,
@@ -295,7 +295,7 @@ export class ChannelsService {
       .exec();
     const lastDeliveredAt = delivered?.lastDeliveredAt ?? messageCreatedAt;
 
-    this.events.emit(CHANNEL_DELIVERED, {
+    await this.events.emitAsync(CHANNEL_DELIVERED, {
       workspaceId: ctx.workspaceId,
       channelId: channel._id,
       userId: ctx.userId,

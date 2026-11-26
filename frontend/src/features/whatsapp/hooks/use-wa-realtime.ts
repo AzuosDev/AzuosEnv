@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 import { queryKeys } from '@/api/keys';
 import { toast } from '@/components/ui/toast';
-import { useSocket, useSocketEvent } from '@/features/realtime/socket';
+import { useRealtimeRoom, useSocket, useSocketEvent } from '@/features/realtime/realtime';
 
 /** `message.new` da sala whatsapp:{wsId}; o chat usa o mesmo nome de evento. */
 interface WaMessageEvent {
@@ -44,20 +44,10 @@ export interface WaRealtimeOptions {
  */
 export function useWaRealtime(wsId: string, options: WaRealtimeOptions): void {
   const queryClient = useQueryClient();
-  const { socket, connected } = useSocket();
+  const { connected } = useSocket();
   const open = options.openConversationId;
 
-  useEffect(() => {
-    if (!socket || !connected) {
-      return;
-    }
-
-    socket.emit('join', { room: 'whatsapp', id: wsId, wsId });
-
-    return () => {
-      socket.emit('leave', { room: 'whatsapp', id: wsId, wsId });
-    };
-  }, [socket, connected, wsId]);
+  useRealtimeRoom('whatsapp', wsId, wsId);
 
   const refreshList = useCallback(() => {
     void queryClient.invalidateQueries({

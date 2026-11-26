@@ -83,7 +83,7 @@ export class CommentsService {
       createdBy: ctx.userId,
     });
 
-    this.events.emit(
+    await this.events.emitAsync(
       COMMENT_CREATED,
       this.baseEvent(ctx, comment, task) satisfies CommentCreatedEvent,
     );
@@ -460,7 +460,7 @@ export class CommentsService {
   ): Promise<CommentDocument> {
     await comment.save();
 
-    this.events.emit(COMMENT_UPDATED, {
+    await this.events.emitAsync(COMMENT_UPDATED, {
       ...this.baseEvent(ctx, comment, task),
       changes,
     } satisfies CommentUpdatedEvent);

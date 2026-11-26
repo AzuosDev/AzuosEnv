@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { queryKeys } from '@/api/keys';
-import { useSocket, useSocketEvent } from '@/features/realtime/socket';
+import { useSession } from '@/features/auth/session';
+import { useRealtime, useSocket, useSocketEvent } from '@/features/realtime/realtime';
 import { markChannelDelivered } from '../api';
 
 /** O que `message.new`, `message.updated` e `message.deleted` mandam na sala. */
@@ -31,60 +32,27 @@ interface TypingEvent {
   typing: boolean;
 }
 
-/** Salas de canal assinadas de uma vez; a lateral não precisa de mais. */
-export const MAX_CHAT_ROOMS = 30;
-
-/** Ritmo do recarregamento quando a conexão em tempo real não está de pé. */
-const FALLBACK_POLL_MS = 4000;
-
-/**
- * Casa as queries que o tempo real atualizaria: mensagens do canal, leituras do
- * canal (os ticks de visto) e respostas da thread. Só as montadas recarregam,
- * então na prática é a conversa aberta.
- */
-export function isChatPollKey(key: readonly unknown[], wsId: string): boolean {
-  if (key[0] !== 'workspaces' || key[1] !== wsId) {
-    return false;
-  }
-
-  if (key[2] === 'channels' && key[3] === 'detail') {
-    return key[5] === 'messages' || key[5] === 'reads';
-  }
-
-  return key[2] === 'messages' && key[4] === 'replies';
-}
-
 /** Depois de quanto tempo sem sinal a pessoa deixa de constar como digitando. */
 const TYPING_TIMEOUT_MS = 6000;
 
 /**
- * Entra nas salas dos canais visíveis e mantém as não lidas e a conversa aberta
- * em dia. A mensagem nova chega sem o corpo, então o cache do canal é refeito;
- * a atividade do chat (badge da Sidebar) é refeita em qualquer canal.
+ * Mantém a conversa aberta em dia: assina só a sala dela (mensagem, ticks de
+ * visto e digitação). O que acontece nas outras conversas chega como resumo na
+ * sala do usuário — ver `useChatActivity` —, então não há motivo para assinar
+ * canal por canal, o que no Ably seria uma sala paga por conversa visível.
  */
-export function useChatRealtime(wsId: string, channelIds: string[]): void {
+export function useChatRealtime(wsId: string, openChannelId: string | undefined): void {
   const queryClient = useQueryClient();
-  const { socket, connected } = useSocket();
-  const rooms = channelIds.slice(0, MAX_CHAT_ROOMS);
-  const key = rooms.join(',');
+  const user = useSession();
+  const { connected, join, transport } = useRealtime();
 
   useEffect(() => {
-    if (!socket || !connected || key === '') {
+    if (!transport || !openChannelId) {
       return;
     }
 
-    const joined = key.split(',');
-
-    for (const channelId of joined) {
-      socket.emit('join', { room: 'channel', id: channelId, wsId });
-    }
-
-    return () => {
-      for (const channelId of joined) {
-        socket.emit('leave', { room: 'channel', id: channelId, wsId });
-      }
-    };
-  }, [socket, connected, key, wsId]);
+    return join('channel', openChannelId, wsId);
+  }, [join, transport, openChannelId, wsId]);
 
   const refresh = useCallback(
     (event: MessageEvent) => {
@@ -121,13 +89,18 @@ export function useChatRealtime(wsId: string, channelIds: string[]): void {
 
   const refreshMessage = useCallback(
     (event: MessageEvent) => {
+      // A própria mensagem já entrou no cache no envio: rebuscar só piscaria.
+      if (event.authorId === user?.id) {
+        return;
+      }
+
       refresh(event);
 
       if (event.workspaceId === wsId) {
         void markChannelDelivered(wsId, event.channelId, event.messageId).catch(() => undefined);
       }
     },
-    [refresh, wsId],
+    [refresh, user?.id, wsId],
   );
 
   useSocketEvent<ChannelReadEvent>('channel.read', refreshReads);
@@ -149,33 +122,6 @@ export function useChatRealtime(wsId: string, channelIds: string[]): void {
     }
 
     wasConnected.current = connected;
-  }, [connected, queryClient, wsId]);
-
-  // Sem socket (a API serverless não mantém conexão longa) o chat volta a
-  // buscar sozinho; com o socket conectado nada disso roda.
-  useEffect(() => {
-    if (connected) {
-      return;
-    }
-
-    const timer = setInterval(() => {
-      if (document.visibilityState !== 'visible') {
-        return;
-      }
-
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.chatActivity(wsId),
-        refetchType: 'active',
-      });
-      void queryClient.invalidateQueries({
-        refetchType: 'active',
-        predicate: (query) => isChatPollKey(query.queryKey, wsId),
-      });
-    }, FALLBACK_POLL_MS);
-
-    return () => {
-      clearInterval(timer);
-    };
   }, [connected, queryClient, wsId]);
 }
 

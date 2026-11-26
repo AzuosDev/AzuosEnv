@@ -14,6 +14,8 @@ export interface MessageEventBase {
   channelId: Types.ObjectId;
   channelType: ChannelType;
   channelName: string;
+  /** Canal privado, DM e grupo têm lista de membros; canal aberto, não. */
+  channelPrivate: boolean;
   messageId: Types.ObjectId;
   parentMessageId: Types.ObjectId | null;
   authorId: Types.ObjectId;

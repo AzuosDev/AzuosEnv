@@ -66,7 +66,7 @@ export class WhiteboardsService {
       updatedBy: ctx.userId,
     });
 
-    this.events.emit(
+    await this.events.emitAsync(
       WHITEBOARD_CREATED,
       this.baseEvent(ctx, board) satisfies WhiteboardCreatedEvent,
     );
@@ -147,7 +147,7 @@ export class WhiteboardsService {
     board.markModified('elements');
     await board.save();
 
-    this.events.emit(WHITEBOARD_UPDATED, {
+    await this.events.emitAsync(WHITEBOARD_UPDATED, {
       ...this.baseEvent(ctx, board),
       ops: ops.map((op) => ({ op: op.op, id: this.opId(op) })),
     } satisfies WhiteboardUpdatedEvent);
@@ -184,7 +184,7 @@ export class WhiteboardsService {
     board.markModified('elements');
     await board.save();
 
-    this.events.emit(WHITEBOARD_UPDATED, {
+    await this.events.emitAsync(WHITEBOARD_UPDATED, {
       ...this.baseEvent(ctx, board),
       ops: [{ op: 'update', id: elementId }],
     } satisfies WhiteboardUpdatedEvent);
@@ -200,7 +200,7 @@ export class WhiteboardsService {
     board.updatedBy = ctx.userId;
     await board.save();
 
-    this.events.emit(
+    await this.events.emitAsync(
       WHITEBOARD_DELETED,
       this.baseEvent(ctx, board) satisfies WhiteboardDeletedEvent,
     );

@@ -164,7 +164,7 @@ export class WhatsappConversationsService {
 
     conversation.unreadCount = 0;
     await conversation.save();
-    this.emitUpdated(conversation);
+    await this.emitUpdated(conversation);
 
     return conversation;
   }
@@ -205,7 +205,7 @@ export class WhatsappConversationsService {
     }
 
     await conversation.save();
-    this.emitUpdated(conversation);
+    await this.emitUpdated(conversation);
 
     if (changed && assigneeId && String(assigneeId) !== String(ctx.userId)) {
       await this.notifyAssignee(conversation, assigneeId, ctx.userId);
@@ -224,7 +224,7 @@ export class WhatsappConversationsService {
 
     conversation.priority = dto.priority;
     await conversation.save();
-    this.emitUpdated(conversation);
+    await this.emitUpdated(conversation);
 
     return conversation;
   }
@@ -240,7 +240,7 @@ export class WhatsappConversationsService {
     conversation.mode = dto.mode;
     conversation.botPausedUntil = dto.botPausedUntil ? new Date(dto.botPausedUntil) : null;
     await conversation.save();
-    this.emitUpdated(conversation);
+    await this.emitUpdated(conversation);
 
     return conversation;
   }
@@ -257,7 +257,7 @@ export class WhatsappConversationsService {
     conversation.closedBy = ctx.userId;
     conversation.unreadCount = 0;
     await conversation.save();
-    this.emitUpdated(conversation);
+    await this.emitUpdated(conversation);
 
     return conversation;
   }
@@ -273,7 +273,7 @@ export class WhatsappConversationsService {
     conversation.closedAt = null;
     conversation.closedBy = null;
     await conversation.save();
-    this.emitUpdated(conversation);
+    await this.emitUpdated(conversation);
 
     return conversation;
   }
@@ -316,7 +316,7 @@ export class WhatsappConversationsService {
     }
 
     await conversation.save();
-    this.emitUpdated(conversation);
+    await this.emitUpdated(conversation);
   }
 
   /**
@@ -339,11 +339,11 @@ export class WhatsappConversationsService {
     }
 
     await conversation.save();
-    this.emitUpdated(conversation);
+    await this.emitUpdated(conversation);
   }
 
-  emitUpdated(conversation: WaConversationDocument): void {
-    this.events.emit(WA_CONVERSATION_UPDATED, {
+  async emitUpdated(conversation: WaConversationDocument): Promise<void> {
+    await this.events.emitAsync(WA_CONVERSATION_UPDATED, {
       workspaceId: conversation.workspaceId,
       conversationId: conversation._id,
       status: conversation.status,

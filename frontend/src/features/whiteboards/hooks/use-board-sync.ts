@@ -4,7 +4,7 @@ import { ApiRequestError } from '@/api/errors';
 import { queryKeys } from '@/api/keys';
 import type { Whiteboard } from '@/api/types';
 import { useSession } from '@/features/auth/session';
-import { useSocket, useSocketEvent } from '@/features/realtime/socket';
+import { useRealtimeRoom, useSocketEvent } from '@/features/realtime/realtime';
 import { patchElements, whiteboardQuery } from '../api';
 import {
   diffElements,
@@ -59,7 +59,6 @@ interface BoardEvent {
 export function useBoardSync(wsId: string, board: Whiteboard | undefined): BoardSync {
   const client = useQueryClient();
   const user = useSession();
-  const { socket, connected } = useSocket();
   const [state, setState] = useState<BoardSaveState>('idle');
   const [scene, setScene] = useState<BoardScene>({ elements: [], epoch: 0 });
   const synced = useRef<BoardElement[]>([]);
@@ -185,17 +184,7 @@ export function useBoardSync(wsId: string, board: Whiteboard | undefined): Board
     [flush],
   );
 
-  useEffect(() => {
-    if (!socket || !connected || boardId === undefined) {
-      return;
-    }
-
-    socket.emit('join', { room: 'board', id: boardId });
-
-    return () => {
-      socket.emit('leave', { room: 'board', id: boardId });
-    };
-  }, [socket, connected, boardId]);
+  useRealtimeRoom('board', boardId ?? '');
 
   useSocketEvent<BoardEvent>('whiteboard.updated', (payload) => {
     if (payload.whiteboardId !== boardId || payload.actorId === user?.id) {

@@ -575,6 +575,31 @@ describe('Inbox, lembretes e notificações', () => {
       expect(await push.forUser(new Types.ObjectId(fixture.member.userId))).toHaveLength(1);
     });
 
+    it('o aviso de teste diz que o servidor não tem push, em vez de falhar calado', async () => {
+      const fixture = await setup();
+
+      await withAuth(http().post('/api/v1/users/me/push-subscriptions'), fixture.member.session)
+        .send(subscription('aparelho-de-teste'))
+        .expect(201);
+
+      const body = (
+        await withAuth(
+          http().post('/api/v1/users/me/push-subscriptions/test'),
+          fixture.member.session,
+        ).expect(200)
+      ).body as { configured: boolean; results: unknown[] };
+
+      // Sem VAPID no ambiente de teste: nada é enviado e a tela sabe o motivo.
+      expect(body.configured).toBe(false);
+      expect(body.results).toEqual([]);
+    });
+
+    it('não manda aviso de teste sem sessão', async () => {
+      await setup();
+
+      await http().post('/api/v1/users/me/push-subscriptions/test').expect(401);
+    });
+
     it('devolve a chave pública vazia quando o servidor não tem VAPID', async () => {
       const fixture = await setup();
 

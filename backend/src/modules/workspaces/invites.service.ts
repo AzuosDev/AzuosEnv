@@ -140,7 +140,7 @@ export class InvitesService {
     }
 
     if (user) {
-      this.events.emit(MEMBER_INVITED, {
+      await this.events.emitAsync(MEMBER_INVITED, {
         workspaceId: workspace._id,
         workspaceName: workspace.name,
         userId: user._id,

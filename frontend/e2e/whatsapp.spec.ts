@@ -188,6 +188,11 @@ async function openCentral(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Central do WhatsApp' })).toBeVisible();
 }
 
+/** O painel da conversa aberta, para não confundir com a prévia da lista. */
+function conversationPane(page: Page, name: string) {
+  return page.getByRole('region', { name: new RegExp(`Conversa com ${name}`) });
+}
+
 /** Abre a conversa do contato pela lista. */
 async function openConversation(page: Page, name: string): Promise<void> {
   await expect(page.getByRole('button', { name: new RegExp(name) })).toBeVisible({
@@ -240,12 +245,16 @@ test.describe('Central do WhatsApp', () => {
     await expect(page.getByText('WhatsApp conectado')).toBeVisible();
 
     await openConversation(page, 'Ana do Teste');
-    await expect(page.getByText('Bom dia, preciso de ajuda')).toBeVisible();
+
+    const pane = conversationPane(page, 'Ana do Teste');
+
+    // Dentro da conversa: a prévia da lista mostra o mesmo texto.
+    await expect(pane.getByText('Bom dia, preciso de ajuda')).toBeVisible();
 
     await page.getByRole('textbox', { name: 'Mensagem' }).fill('Bom dia! Já estou vendo isso.');
     await page.getByRole('button', { name: 'Enviar', exact: true }).click();
 
-    await expect(page.getByText('Bom dia! Já estou vendo isso.')).toBeVisible();
+    await expect(pane.getByText('Bom dia! Já estou vendo isso.')).toBeVisible();
     // A mensagem enviada ganha o check do status.
     await expect(page.getByText('Enviada', { exact: true }).first()).toBeAttached({
       timeout: 20_000,

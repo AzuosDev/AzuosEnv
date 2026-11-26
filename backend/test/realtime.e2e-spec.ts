@@ -125,6 +125,24 @@ describe('Tempo real (Socket.IO)', () => {
     });
   }
 
+  /** Convida a sessão para o workspace do fixture e devolve o id do usuário. */
+  async function joinWorkspace(fixture: Fixture, session: Session): Promise<string> {
+    const invite = await withAuth(
+      http().post(`/api/v1/workspaces/${fixture.workspace.id}/invites`),
+      fixture.owner,
+    )
+      .send({ email: session.credentials.email, role: 'member' })
+      .expect(201);
+
+    return (
+      await http()
+        .post('/api/v1/invites/accept')
+        .set('X-Forwarded-For', session.credentials.ip)
+        .send({ token: invite.body.token })
+        .expect(200)
+    ).body.member.userId as string;
+  }
+
   it('recusa o handshake sem token', async () => {
     await setup();
     const client = connect();
@@ -199,6 +217,160 @@ describe('Tempo real (Socket.IO)', () => {
 
     expect(payload.type).toBe('assigned');
     expect(payload.entityId).toBe(fixture.task.id);
+  });
+
+  it('credencial de tempo real: socket.io sem ABLY_API_KEY, com os canais do usuário', async () => {
+    const fixture = await setup();
+
+    const body = (await withAuth(http().post('/api/v1/realtime/token'), fixture.owner).expect(200))
+      .body as { transport: string; token: unknown; channels: string[] };
+
+    expect(body.transport).toBe('socket.io');
+    expect(body.token).toBeNull();
+    expect(body.channels).toContain(`ws:${fixture.workspace.id}`);
+    expect(body.channels.some((channel) => channel.startsWith('user:'))).toBe(true);
+  });
+
+  it('a credencial não lista workspace nem canal de outra pessoa', async () => {
+    const fixture = await setup();
+    const stranger = await createSession(ctx);
+
+    // O estranho cria o próprio workspace: nenhum dos dois vê o canal do outro.
+    const other = (
+      await withAuth(http().post('/api/v1/workspaces'), stranger)
+        .send({ name: 'Outra empresa' })
+        .expect(201)
+    ).body as WorkspaceBody;
+
+    const channel = (
+      await withAuth(
+        http().post(`/api/v1/workspaces/${fixture.workspace.id}/channels`),
+        fixture.owner,
+      )
+        .send({ name: 'diretoria', private: true })
+        .expect(201)
+    ).body as { id: string };
+
+    const mine = (await withAuth(http().post('/api/v1/realtime/token'), fixture.owner).expect(200))
+      .body as { channels: string[] };
+    const theirs = (await withAuth(http().post('/api/v1/realtime/token'), stranger).expect(200))
+      .body as { channels: string[] };
+
+    expect(mine.channels).toContain(`channel:${channel.id}`);
+    expect(mine.channels).not.toContain(`ws:${other.id}`);
+    expect(theirs.channels).toContain(`ws:${other.id}`);
+    expect(theirs.channels).not.toContain(`ws:${fixture.workspace.id}`);
+    expect(theirs.channels).not.toContain(`channel:${channel.id}`);
+  });
+
+  it('não devolve credencial sem sessão', async () => {
+    await setup();
+
+    await http().post('/api/v1/realtime/token').expect(401);
+  });
+
+  it('mensagem de canal aberto chega a quem está fora do Chat, pela sala do workspace', async () => {
+    const fixture = await setup();
+    const colleague = await createSession(ctx);
+    const memberId = await joinWorkspace(fixture, colleague);
+    const channel = (
+      await withAuth(
+        http().post(`/api/v1/workspaces/${fixture.workspace.id}/channels`),
+        fixture.owner,
+      )
+        .send({ name: 'geral' })
+        .expect(201)
+    ).body as { id: string };
+
+    expect(memberId).toHaveLength(24);
+
+    const client = connect(colleague.accessToken);
+
+    await connected(client);
+
+    // Só a sala do workspace, que toda aba do app assina na conexão: nenhum
+    // `join` de canal, que é o caso de quem está em outra tela.
+    await expect(join(client, { room: 'ws', id: fixture.workspace.id })).resolves.toEqual({
+      joined: `ws:${fixture.workspace.id}`,
+    });
+
+    const summary = nextEvent<Record<string, unknown>>(client, 'channel.activity');
+
+    await withAuth(
+      http().post(`/api/v1/workspaces/${fixture.workspace.id}/channels/${channel.id}/messages`),
+      fixture.owner,
+    )
+      .send({ bodyText: 'alguém viu o relatório?' })
+      .expect(201);
+
+    const payload = await summary;
+
+    expect(payload.channelId).toBe(channel.id);
+    expect(payload.channelName).toBe('geral');
+    expect(payload.preview).toContain('relatório');
+  });
+
+  it('mensagem de canal privado chega na sala do próprio membro, sem join nenhum', async () => {
+    const fixture = await setup();
+    const colleague = await createSession(ctx);
+    const memberId = await joinWorkspace(fixture, colleague);
+    const channel = (
+      await withAuth(
+        http().post(`/api/v1/workspaces/${fixture.workspace.id}/channels`),
+        fixture.owner,
+      )
+        .send({ name: 'diretoria', private: true, memberIds: [memberId] })
+        .expect(201)
+    ).body as { id: string };
+
+    const client = connect(colleague.accessToken);
+
+    await connected(client);
+
+    const summary = nextEvent<Record<string, unknown>>(client, 'channel.activity');
+
+    await withAuth(
+      http().post(`/api/v1/workspaces/${fixture.workspace.id}/channels/${channel.id}/messages`),
+      fixture.owner,
+    )
+      .send({ bodyText: 'fechamento amanhã' })
+      .expect(201);
+
+    const payload = await summary;
+
+    expect(payload.channelId).toBe(channel.id);
+    expect(payload.channelName).toBe('diretoria');
+  });
+
+  it('o autor não recebe resumo da própria mensagem', async () => {
+    const fixture = await setup();
+    const channel = (
+      await withAuth(
+        http().post(`/api/v1/workspaces/${fixture.workspace.id}/channels`),
+        fixture.owner,
+      )
+        .send({ name: 'avisos' })
+        .expect(201)
+    ).body as { id: string };
+
+    const client = connect(fixture.owner.accessToken);
+
+    await connected(client);
+
+    const seen: unknown[] = [];
+
+    client.on('channel.activity', (payload: unknown) => seen.push(payload));
+
+    await withAuth(
+      http().post(`/api/v1/workspaces/${fixture.workspace.id}/channels/${channel.id}/messages`),
+      fixture.owner,
+    )
+      .send({ bodyText: 'reunião às 10h' })
+      .expect(201);
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    expect(seen).toEqual([]);
   });
 
   it('publica presence:update na sala da tarefa', async () => {

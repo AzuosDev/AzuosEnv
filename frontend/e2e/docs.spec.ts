@@ -190,7 +190,9 @@ test('compartilha o Doc e a página pública abre sem login', async () => {
 
   await guest.goto(path);
 
-  await expect(guest.getByText('Somente leitura')).toBeVisible();
+  // Primeira visita à rota pública: no dev server ela é compilada agora, e sob
+  // carga da suíte inteira isso passa dos 10 s padrão.
+  await expect(guest.getByText('Somente leitura')).toBeVisible({ timeout: 30_000 });
 
   const pages = guest.getByRole('navigation', { name: 'Páginas do Doc' });
 

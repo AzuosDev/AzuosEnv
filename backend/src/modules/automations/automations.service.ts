@@ -88,7 +88,7 @@ export class AutomationsService {
       createdBy: ctx.userId,
     });
 
-    this.changed(ctx.workspaceId);
+    await this.changed(ctx.workspaceId);
 
     return this.withSecret(automation, secret);
   }
@@ -189,7 +189,7 @@ export class AutomationsService {
     }
 
     await automation.save();
-    this.changed(ctx.workspaceId);
+    await this.changed(ctx.workspaceId);
 
     return this.withSecret(automation, secret);
   }
@@ -198,7 +198,7 @@ export class AutomationsService {
     const automation = await this.requireAutomation(ctx, automationId, 'edit');
 
     await this.model.deleteOne({ _id: automation._id, workspaceId: ctx.workspaceId }).exec();
-    this.changed(ctx.workspaceId);
+    await this.changed(ctx.workspaceId);
   }
 
   /**
@@ -263,7 +263,7 @@ export class AutomationsService {
   }
 
   /** Drops the cache of the workspace and lets the scheduler re-register the crons. */
-  changed(workspaceId: Types.ObjectId): void {
+  async changed(workspaceId: Types.ObjectId): Promise<void> {
     const prefix = `${String(workspaceId)}:`;
 
     for (const key of this.cache.keys()) {
@@ -272,7 +272,7 @@ export class AutomationsService {
       }
     }
 
-    this.events.emit(AUTOMATIONS_CHANGED, { workspaceId });
+    await this.events.emitAsync(AUTOMATIONS_CHANGED, { workspaceId });
   }
 
   private async hasSecret(automationId: Types.ObjectId): Promise<boolean> {

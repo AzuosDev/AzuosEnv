@@ -34,6 +34,11 @@ async function openTab(page: Page, tab: string, marker: RegExp | string): Promis
   await expect(page.getByText(marker).first()).toBeVisible({ timeout: 20_000 });
 }
 
+/** O painel da conversa aberta, para não confundir com a prévia da lista. */
+function conversationPane(page: Page, name: string) {
+  return page.getByRole('region', { name: new RegExp(`Conversa com ${name}`) });
+}
+
 /** Abre a conversa do contato pela lista de Conversas. */
 async function openConversation(page: Page, name: string): Promise<void> {
   await page.goto(`/w/${wsId}/whatsapp?aba=conversas&filtro=all`);
@@ -129,7 +134,8 @@ test.describe('Central do WhatsApp — bot e configuração', () => {
     await waitForBotMessage(session, conversation.id, RULE_REPLY);
 
     await openConversation(page, 'Caio do Bot');
-    await expect(page.getByText(RULE_REPLY)).toBeVisible();
+    // Dentro da conversa: a prévia da lista mostra o mesmo texto.
+    await expect(conversationPane(page, 'Caio do Bot').getByText(RULE_REPLY)).toBeVisible();
   });
 
   test('cadastra a resposta rápida e usa pelo "/" na conversa', async () => {

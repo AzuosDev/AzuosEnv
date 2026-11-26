@@ -45,6 +45,10 @@ export const envValidationSchema = Joi.object({
     .allow('')
     .default('')
     .when('S3_BUCKET', { is: Joi.string().min(1), then: Joi.string().min(1).required() }),
+  // Tempo real: com a chave o transporte é o Ably (publicação por REST, que é o
+  // único caminho que funciona em host serverless); sem ela, o gateway Socket.IO
+  // deste processo. Formato da chave: "<appId>.<keyId>:<secret>".
+  ABLY_API_KEY: Joi.string().allow('').default(''),
   // Web Push (VAPID). Sem as duas chaves o push fica desligado e a tela esconde
   // a opção; gere o par com `npx web-push generate-vapid-keys`.
   VAPID_PUBLIC_KEY: Joi.string().allow('').default(''),

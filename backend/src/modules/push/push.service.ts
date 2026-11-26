@@ -20,6 +20,24 @@ export interface PushPayload {
 const GONE = [404, 410];
 
 /**
+ * O serviço de push recusou a assinatura VAPID: a inscrição nasceu com outro
+ * par de chaves (o servidor trocou de chave, ou o deploy tem outra). Ela nunca
+ * volta a funcionar, então sai do banco e o navegador se inscreve de novo na
+ * próxima visita — sem isso o canal fica mudo para sempre.
+ */
+const STALE_KEY = [401, 403];
+
+/** O que aconteceu com um dispositivo no envio, para a tela de ajustes. */
+export interface PushDeliveryResult {
+  /** Serviço de push do navegador (fcm.googleapis.com, wns2-…, …). */
+  host: string;
+  ok: boolean;
+  statusCode: number | null;
+  /** Vazio quando deu certo. */
+  message: string;
+}
+
+/**
  * Web Push padrão (VAPID): enviar é um POST para o serviço do navegador, então
  * funciona em host serverless, sem processo longo nem socket. Sem as chaves
  * VAPID o serviço fica desligado e só registra aviso.
@@ -103,7 +121,38 @@ export class PushService {
     }
   }
 
-  private async deliver(subscription: PushSubscriptionDocument, body: string): Promise<void> {
+  /**
+   * Envio sob demanda para os dispositivos do próprio usuário, com o resultado
+   * de cada um. É o que a tela de ajustes usa para dizer por que o aviso não
+   * chega: sem isso a falha só existe no log do servidor.
+   */
+  async sendTest(userId: Types.ObjectId): Promise<PushDeliveryResult[]> {
+    if (!this.ready) {
+      return [];
+    }
+
+    const subscriptions = await this.model.find({ userId }).exec();
+    const body = JSON.stringify({
+      title: 'Azuos Env',
+      body: 'Teste: as notificações deste dispositivo estão funcionando.',
+      url: '/',
+      tag: 'push-test',
+    } satisfies PushPayload);
+    const results: PushDeliveryResult[] = [];
+
+    for (const subscription of subscriptions) {
+      results.push(await this.deliver(subscription, body));
+    }
+
+    return results;
+  }
+
+  private async deliver(
+    subscription: PushSubscriptionDocument,
+    body: string,
+  ): Promise<PushDeliveryResult> {
+    const host = hostOf(subscription.endpoint);
+
     try {
       await sendNotification(
         {
@@ -112,18 +161,47 @@ export class PushService {
         },
         body,
       );
-    } catch (error) {
-      if (error instanceof WebPushError && GONE.includes(error.statusCode)) {
-        await this.model.deleteOne({ _id: subscription._id }).exec();
 
-        return;
+      return { host, ok: true, statusCode: 201, message: '' };
+    } catch (error) {
+      const status = error instanceof WebPushError ? error.statusCode : null;
+      const detail = error instanceof Error ? error.message : String(error);
+
+      if (status !== null && GONE.includes(status)) {
+        await this.model.deleteOne({ _id: subscription._id }).exec();
+        this.logger.log(`Inscrição de push expirada em ${host} (${status}): removida.`);
+
+        return { host, ok: false, statusCode: status, message: 'Inscrição expirada no navegador.' };
       }
 
-      this.logger.warn(
-        `Falha ao enviar push para ${subscription.endpoint}: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
+      if (status !== null && STALE_KEY.includes(status)) {
+        await this.model.deleteOne({ _id: subscription._id }).exec();
+        this.logger.error(
+          `Push recusado em ${host} (${status}): a inscrição foi feita com outra VAPID_PUBLIC_KEY. ` +
+            'Inscrição removida; confira as chaves VAPID deste deploy.',
+        );
+
+        return {
+          host,
+          ok: false,
+          statusCode: status,
+          message:
+            'O serviço de push recusou a chave do servidor. Ligue as notificações de novo neste dispositivo.',
+        };
+      }
+
+      this.logger.warn(`Falha ao enviar push para ${host} (${status ?? 'sem status'}): ${detail}`);
+
+      return { host, ok: false, statusCode: status, message: detail };
     }
+  }
+}
+
+/** O host identifica o serviço de push sem jogar o endpoint inteiro no log. */
+function hostOf(endpoint: string): string {
+  try {
+    return new URL(endpoint).host;
+  } catch {
+    return 'endpoint inválido';
   }
 }

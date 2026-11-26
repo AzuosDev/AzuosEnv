@@ -326,7 +326,7 @@ export class WhatsappMessagesService {
 
     await this.conversations.touchOutbound(conversation, sentAt);
     await this.contacts.touch(conversation.contactId, sentAt);
-    this.emitCreated(created);
+    await this.emitCreated(created);
 
     return created;
   }
@@ -359,7 +359,7 @@ export class WhatsappMessagesService {
         sentAt: message.sentAt,
       });
 
-      this.emitCreated(created);
+      await this.emitCreated(created);
 
       return created;
     } catch (error) {
@@ -388,7 +388,7 @@ export class WhatsappMessagesService {
     message.error = update.error;
     await message.save();
 
-    this.events.emit(WA_MESSAGE_STATUS, {
+    await this.events.emitAsync(WA_MESSAGE_STATUS, {
       workspaceId,
       conversationId: message.conversationId,
       messageId: message._id,
@@ -504,13 +504,13 @@ export class WhatsappMessagesService {
       await this.botSettings.pauseMinutesFor(ctx.workspaceId),
     );
     await this.contacts.touch(conversation.contactId, sentAt);
-    this.emitCreated(created);
+    await this.emitCreated(created);
 
     return created;
   }
 
-  private emitCreated(message: WaMessageDocument): void {
-    this.events.emit(WA_MESSAGE_CREATED, {
+  private async emitCreated(message: WaMessageDocument): Promise<void> {
+    await this.events.emitAsync(WA_MESSAGE_CREATED, {
       workspaceId: message.workspaceId,
       conversationId: message.conversationId,
       messageId: message._id,
