@@ -339,7 +339,7 @@ export class NotificationsService {
 
 /** A notificação do sistema mostra poucas linhas; o resto só pesa o envio. */
 function trimBody(body: string): string {
-  const flat = body.replace(/s+/g, ' ').trim();
+  const flat = body.replace(/\s+/g, ' ').trim();
 
   return flat.length > 180 ? `${flat.slice(0, 179)}…` : flat;
 }

@@ -17,14 +17,19 @@ self.addEventListener('push', (event) => {
 
   const title = payload.title || 'Azuos Env';
   const url = payload.url || '/';
+  const tag = payload.tag || undefined;
 
   event.waitUntil(
     self.registration.showNotification(title, {
       body: payload.body || '',
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',
-      // Aviso do mesmo assunto substitui o anterior em vez de empilhar.
-      tag: payload.tag || undefined,
+      lang: 'pt-BR',
+      // Aviso do mesmo assunto substitui o anterior em vez de empilhar; o
+      // renotify faz o substituto avisar de novo em vez de trocar em silencio.
+      tag: tag,
+      renotify: Boolean(tag),
+      timestamp: Date.now(),
       data: { url },
     }),
   );

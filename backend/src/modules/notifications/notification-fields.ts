@@ -48,10 +48,14 @@ export interface NotificationChannels {
 
 export type NotificationPreferences = Record<NotificationType, NotificationChannels>;
 
-/** Inbox on, mail and push off: the user opts into each one per type. */
+/**
+ * Inbox and push on, mail off. Push only leaves the server for a browser the
+ * user turned on by hand, so the device itself is the opt-in; mail stays off
+ * because it reaches the person outside the product.
+ */
 export function defaultPreferences(): NotificationPreferences {
   return Object.fromEntries(
-    NOTIFICATION_TYPES.map((type) => [type, { inbox: true, email: false, push: false }]),
+    NOTIFICATION_TYPES.map((type) => [type, { inbox: true, email: false, push: true }]),
   ) as NotificationPreferences;
 }
 
