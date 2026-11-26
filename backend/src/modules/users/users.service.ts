@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as argon2 from 'argon2';
+import { forgetCachedUser } from '../auth/user-cache';
 import { Model, Types } from 'mongoose';
 import { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { escapeRegex } from '../../common/utils/regex';
@@ -111,6 +112,8 @@ export class UsersService {
       user.avatarUrl = avatarUrl;
     }
 
+    forgetCachedUser(String(user._id));
+
     return user.save();
   }
 
@@ -132,6 +135,7 @@ export class UsersService {
     user.passwordHash = await this.hashPassword(password);
     user.authProviders = withProvider(user.authProviders, 'password');
     await user.save();
+    forgetCachedUser(String(user._id));
   }
 
   /**
@@ -175,6 +179,7 @@ export class UsersService {
     user.googleId = undefined;
     user.authProviders = (user.authProviders ?? []).filter((provider) => provider !== 'google');
     await user.save();
+    forgetCachedUser(id);
   }
 
   findByEmail(email: string): Promise<UserDocument | null> {
@@ -275,6 +280,8 @@ export class UsersService {
       user.avatarUrl = undefined;
     }
 
+    forgetCachedUser(id);
+
     return user.save();
   }
 
@@ -295,6 +302,7 @@ export class UsersService {
 
     user.passwordHash = await this.hashPassword(newPassword);
     await user.save();
+    forgetCachedUser(id);
   }
 
   async registerLogin(user: UserDocument): Promise<UserDocument> {
@@ -302,8 +310,19 @@ export class UsersService {
     return user.save();
   }
 
+  /**
+   * Parâmetros do argon2id no mínimo recomendado pela OWASP (m=19 MiB, t=2,
+   * p=1). O padrão da lib (m=64 MiB, t=3, p=4) custa várias centenas de ms de
+   * CPU por login sem ganho prático de segurança aqui. Hash antigo continua
+   * sendo verificado: os parâmetros vão dentro do próprio hash.
+   */
   hashPassword(password: string): Promise<string> {
-    return argon2.hash(password, { type: argon2.argon2id });
+    return argon2.hash(password, {
+      type: argon2.argon2id,
+      memoryCost: 19_456,
+      timeCost: 2,
+      parallelism: 1,
+    });
   }
 
   async verifyPassword(hash: string | undefined, password: string): Promise<boolean> {

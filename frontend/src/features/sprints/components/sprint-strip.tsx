@@ -51,7 +51,7 @@ export function SprintStrip({ wsId, sprint, folder, canEdit }: SprintStripProps)
   const tasks = useQuery({
     queryKey: queryKeys.tasks(wsId, params),
     queryFn: () => queryTasks(wsId, params),
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
   const items = tasks.data?.items ?? flattenGroups(tasks.data?.groups ?? []);
   const points = sprintPoints(items);

@@ -50,7 +50,7 @@ export function channelsQuery(wsId: string, filter: ChannelFilter = {}) {
 
       return page.items;
     },
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -63,7 +63,7 @@ export function channelQuery(wsId: string, channelId: string) {
           params: { path: { wsId, channelId } },
         }),
       ) as Channel,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -77,7 +77,7 @@ export function chatActivityQuery(wsId: string) {
           params: { path: { wsId } },
         }),
       ) as ChatActivity,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -294,7 +294,7 @@ export function channelReadsQuery(wsId: string, channelId: string) {
           params: { path: { wsId, channelId } },
         }),
       ) as ChannelReads,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -307,7 +307,7 @@ export function channelAttachmentsQuery(wsId: string, channelId: string) {
           params: { path: { wsId, channelId } },
         }),
       ) as Attachment[],
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 

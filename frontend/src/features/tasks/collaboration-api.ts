@@ -39,7 +39,7 @@ export function commentsQuery(wsId: string, idOrCustomId: string) {
       ) as Page<CommentThread>,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -134,7 +134,7 @@ export function taskActivityQuery(wsId: string, idOrCustomId: string) {
       ) as Page<Activity>,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -149,7 +149,7 @@ export function attachmentsQuery(wsId: string, idOrCustomId: string) {
           params: { path: { wsId, idOrCustomId } },
         }),
       ) as Attachment[],
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -291,7 +291,7 @@ export function dependenciesQuery(wsId: string, idOrCustomId: string) {
           params: { path: { wsId, idOrCustomId } },
         }),
       ) as TaskDependency[],
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 

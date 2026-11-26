@@ -65,7 +65,7 @@ export function locationActivityQuery(wsId: string, params: ActivityParams) {
       ) as Page<Activity>,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 

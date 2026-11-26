@@ -25,7 +25,7 @@ export function timesheetQuery(wsId: string, weekStart: string, userId?: string)
           params: { path: { wsId }, query: { weekStart, ...(userId ? { userId } : {}) } },
         }),
       ),
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -69,7 +69,7 @@ export function weekEntriesQuery(wsId: string, weekStart: string, userId?: strin
 
       return items;
     },
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -96,7 +96,7 @@ export function approvalsQuery(wsId: string, enabled: boolean) {
         }),
       ).items,
     enabled,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Workbook } from 'exceljs';
 import { Model, Types } from 'mongoose';
 import { slugify } from '../../common/utils/slug';
 import { CustomFieldsService } from '../fields/custom-fields.service';
@@ -333,6 +332,9 @@ async function toXlsx(
   columns: ExportColumn[],
   rows: Cell[][],
 ): Promise<Buffer> {
+  // import dinamico: o exceljs (com o bluebird) custa centenas de ms de CPU
+  // para carregar e so esta rota precisa dele.
+  const { Workbook } = await import('exceljs');
   const workbook = new Workbook();
 
   workbook.creator = 'Azuos Env';

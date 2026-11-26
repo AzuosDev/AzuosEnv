@@ -8,6 +8,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { AppLoggerModule } from './common/logging/logger.module';
 import { MongoSanitizePipe } from './common/pipes/mongo-sanitize.pipe';
+import { PerfInterceptor } from './common/logging/perf.interceptor';
 import { AuditInterceptor } from './modules/audit/audit.interceptor';
 import { AuditModule } from './modules/audit/audit.module';
 import { ImportModule } from './modules/import/import.module';
@@ -55,6 +56,11 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         uri: config.getOrThrow<string>('MONGODB_URI'),
+        // autoIndex liga uma verificacao de indice por model no primeiro uso: em
+        // serverless isso se paga em todo cold start. Indices sao criados pelo
+        // deploy/dev, nunca pela funcao.
+        autoIndex: config.get<string>('NODE_ENV') !== 'production',
+        maxPoolSize: 5,
       }),
     }),
     ThrottlerModule.forRootAsync({
@@ -107,6 +113,7 @@ import { WorkspacesModule } from './modules/workspaces/workspaces.module';
     { provide: APP_GUARD, useClass: HttpThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: ApiKeyScopeGuard },
+    { provide: APP_INTERCEPTOR, useClass: PerfInterceptor },
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
     // Runs before the ValidationPipe: strips $ and dotted keys from every input.
     { provide: APP_PIPE, useClass: MongoSanitizePipe },

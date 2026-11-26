@@ -5,6 +5,7 @@ import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { Model, Types } from 'mongoose';
 import { randomUUID } from 'node:crypto';
+import { schedulersEnabled } from '../../common/runtime';
 import { Folder } from '../hierarchy/schemas/folder.schema';
 import { List } from '../hierarchy/schemas/list.schema';
 import { StatusGroup } from '../hierarchy/status-templates';
@@ -54,6 +55,10 @@ export class AutomationsScheduler implements OnModuleInit, OnModuleDestroy {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async run(): Promise<void> {
+    if (!schedulersEnabled()) {
+      return;
+    }
+
     try {
       await this.runDueTriggers();
     } catch (error) {
@@ -177,6 +182,10 @@ export class AutomationsScheduler implements OnModuleInit, OnModuleDestroy {
 
   /** Rebuilds the dynamic cron jobs from the active `schedule` automations. */
   private async syncScheduleJobs(): Promise<void> {
+    if (!schedulersEnabled()) {
+      return;
+    }
+
     this.clearScheduleJobs();
 
     for (const automation of await this.automations.activeByTriggers(['schedule'])) {

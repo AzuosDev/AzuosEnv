@@ -38,7 +38,7 @@ export function formQuery(wsId: string, formId: string) {
           params: { path: { wsId, formId } },
         }),
       ) as WorkspaceForm,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 

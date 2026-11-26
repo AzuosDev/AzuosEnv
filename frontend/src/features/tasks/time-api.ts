@@ -20,7 +20,7 @@ export function timerQuery(wsId: string) {
           params: { path: { wsId } },
         }),
       ) as TimerState,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -34,7 +34,7 @@ export function timeEntriesQuery(wsId: string, taskId: string) {
           params: { path: { wsId }, query: { taskId, limit: 50 } },
         }),
       ).items as TimeEntry[],
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 

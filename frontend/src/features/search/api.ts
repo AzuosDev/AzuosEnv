@@ -21,6 +21,6 @@ export function searchQuery(wsId: string, term: string) {
         }),
       ),
     enabled: term.length >= MIN_SEARCH_TERM,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }

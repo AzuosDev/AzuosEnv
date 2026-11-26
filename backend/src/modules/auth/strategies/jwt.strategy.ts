@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthenticatedUser } from '../../../common/decorators/current-user.decorator';
 import { UsersService, toAuthenticatedUser } from '../../users/users.service';
+import { cacheUser, cachedUser } from '../user-cache';
 
 export interface AccessTokenPayload {
   sub: string;
@@ -24,6 +25,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: AccessTokenPayload): Promise<AuthenticatedUser> {
+    const cached = cachedUser(payload.sub);
+
+    if (cached) {
+      return cached;
+    }
+
     const user = await this.usersService.findById(payload.sub);
 
     if (!user) {
@@ -33,6 +40,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       });
     }
 
-    return toAuthenticatedUser(user);
+    const authenticated = toAuthenticatedUser(user);
+
+    cacheUser(payload.sub, authenticated);
+
+    return authenticated;
   }
 }

@@ -20,7 +20,7 @@ export function plannerQuery(wsId: string, from: string, to: string) {
           params: { path: { wsId }, query: { from, to } },
         }),
       ) as PlannerResult,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 

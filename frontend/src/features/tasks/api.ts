@@ -93,7 +93,7 @@ export function tasksInfiniteQuery(
     queryFn: ({ pageParam }) => queryTasks(wsId, params, pageParam ?? undefined),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: () => nextCursor(),
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -106,7 +106,7 @@ export function taskQuery(wsId: string, idOrCustomId: string) {
           params: { path: { wsId, idOrCustomId } },
         }),
       ) as TaskDetail,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -120,7 +120,7 @@ export function subtasksQuery(wsId: string, idOrCustomId: string) {
           params: { path: { wsId, idOrCustomId }, query: { limit: 100 } },
         }),
       ).items as Task[],
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 

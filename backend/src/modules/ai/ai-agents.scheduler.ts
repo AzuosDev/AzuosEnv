@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { OnEvent } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
+import { schedulersEnabled } from '../../common/runtime';
 import { AiAgentRunnerService } from './ai-agent-runner.service';
 import { AiAgentsService } from './ai-agents.service';
 import { AI_AGENTS_CHANGED } from './ai-events';
@@ -37,6 +38,10 @@ export class AiAgentsScheduler implements OnModuleInit, OnModuleDestroy {
   }
 
   private async syncJobs(): Promise<void> {
+    if (!schedulersEnabled()) {
+      return;
+    }
+
     this.clearJobs();
 
     for (const agent of await this.agents.active()) {

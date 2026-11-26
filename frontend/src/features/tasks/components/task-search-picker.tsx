@@ -57,7 +57,7 @@ export function TaskSearchPicker({
     queryKey: queryKeys.tasks(wsId, params),
     queryFn: async () => (await queryTasks(wsId, params)).items ?? [],
     enabled: open && term.length >= MIN_QUERY,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 
   const items = (results.data ?? []).filter((task) => !excludeIds.includes(task.id));

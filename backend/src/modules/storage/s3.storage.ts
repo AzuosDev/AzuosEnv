@@ -1,11 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3';
+import type { S3Client } from '@aws-sdk/client-s3';
 import { randomUUID } from 'node:crypto';
 import { extname } from 'node:path';
 import { Readable } from 'node:stream';
@@ -19,32 +14,58 @@ import { SaveFileInput, StorageService, StoredFile } from './storage.service';
 @Injectable()
 export class S3Storage extends StorageService {
   private readonly bucket: string;
-  private readonly client: S3Client;
+  private client?: S3Client;
 
   /** The client is a parameter so the test can drive it without network. */
-  constructor(config: ConfigService, client?: S3Client) {
+  constructor(
+    private readonly config: ConfigService,
+    client?: S3Client,
+  ) {
     super();
     this.bucket = config.getOrThrow<string>('S3_BUCKET');
-    this.client =
-      client ??
-      new S3Client({
-        region: config.get<string>('S3_REGION') || 'auto',
-        forcePathStyle: config.get<boolean>('S3_FORCE_PATH_STYLE') ?? true,
-        ...(config.get<string>('S3_ENDPOINT')
-          ? { endpoint: config.getOrThrow<string>('S3_ENDPOINT') }
-          : {}),
-        credentials: {
-          accessKeyId: config.getOrThrow<string>('S3_ACCESS_KEY_ID'),
-          secretAccessKey: config.getOrThrow<string>('S3_SECRET_ACCESS_KEY'),
-        },
-      });
+    this.client = client;
+  }
+
+  /**
+   * O SDK da AWS é carregado no primeiro arquivo, não no boot: são centenas de
+   * KB de código que a maioria das requisições nunca toca.
+   */
+  private async aws(): Promise<typeof import('@aws-sdk/client-s3')> {
+    return import('@aws-sdk/client-s3');
+  }
+
+  private async s3(): Promise<S3Client> {
+    if (this.client) {
+      return this.client;
+    }
+
+    const { S3Client } = await this.aws();
+    const config = this.config;
+
+    this.client = new S3Client({
+      region: config.get<string>('S3_REGION') || 'auto',
+      forcePathStyle: config.get<boolean>('S3_FORCE_PATH_STYLE') ?? true,
+      ...(config.get<string>('S3_ENDPOINT')
+        ? { endpoint: config.getOrThrow<string>('S3_ENDPOINT') }
+        : {}),
+      credentials: {
+        accessKeyId: config.getOrThrow<string>('S3_ACCESS_KEY_ID'),
+        secretAccessKey: config.getOrThrow<string>('S3_SECRET_ACCESS_KEY'),
+      },
+    });
+
+    return this.client;
   }
 
   async save(input: SaveFileInput): Promise<StoredFile> {
     // Same layout as the local disk: swapping the driver keeps old keys readable.
     const key = `${input.workspaceId}/${randomUUID()}${extname(input.filename).toLowerCase()}`;
 
-    await this.client.send(
+    const { PutObjectCommand } = await this.aws();
+
+    await (
+      await this.s3()
+    ).send(
       new PutObjectCommand({
         Bucket: this.bucket,
         Key: key,
@@ -58,7 +79,10 @@ export class S3Storage extends StorageService {
   }
 
   async read(key: string): Promise<Readable> {
-    const object = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
+    const { GetObjectCommand } = await this.aws();
+    const object = await (
+      await this.s3()
+    ).send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
 
     if (!(object.Body instanceof Readable)) {
       throw new InternalServerErrorException({
@@ -71,6 +95,8 @@ export class S3Storage extends StorageService {
   }
 
   async remove(key: string): Promise<void> {
-    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
+    const { DeleteObjectCommand } = await this.aws();
+
+    await (await this.s3()).send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
   }
 }

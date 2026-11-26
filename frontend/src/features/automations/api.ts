@@ -60,7 +60,7 @@ export function runsQuery(wsId: string, automationId: string) {
       ) as { items: AutomationRun[]; nextCursor: string | null },
     initialPageParam: '',
     getNextPageParam: (page) => page.nextCursor ?? undefined,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 

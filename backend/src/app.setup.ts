@@ -52,7 +52,7 @@ export function configureApp(app: NestExpressApplication, options: ConfigureAppO
     allowedHeaders: ['Content-Type', 'Authorization', REQUEST_ID_HEADER],
     // O front lê o requestId para citar no suporte e o nome do arquivo exportado.
     exposedHeaders: [REQUEST_ID_HEADER, 'Content-Disposition'],
-    maxAge: 600,
+    maxAge: 7200,
   });
 
   app.enableShutdownHooks();

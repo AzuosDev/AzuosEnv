@@ -138,6 +138,9 @@ const result = await build({
   },
   // O Nest identifica provider por constructor.name; sem isto o bundle quebra a DI.
   keepNames: true,
+  // Menos bytes para ler e parsear no cold start (o minify nao renomeia
+  // propriedade nem membro de classe, so o que e local ao modulo).
+  minify: true,
   logLevel: 'warning',
   metafile: true,
 });

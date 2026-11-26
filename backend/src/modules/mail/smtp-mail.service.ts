@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnApplicationShutdown } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Transporter, createTransport } from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 import { describeMailError } from './mail-error';
 import { MailMessage, MailService } from './mail.service';
 import { renderNoticeHtml } from './templates/notice-email';
@@ -18,12 +18,27 @@ const SOCKET_TIMEOUT_MS = 20_000;
 @Injectable()
 export class SmtpMailService extends MailService implements OnApplicationShutdown {
   private readonly logger = new Logger(SmtpMailService.name);
-  private readonly transporter: Transporter;
+  /**
+   * Criado na primeira mensagem, não no boot: o nodemailer (com o iconv-lite)
+   * é um dos pacotes mais caros de carregar e a maioria das requisições nunca
+   * manda e-mail.
+   */
+  private transporter?: Transporter;
   private readonly from: string;
 
-  constructor(config: ConfigService) {
+  constructor(private readonly config: ConfigService) {
     super();
 
+    this.from = config.get<string>('SMTP_FROM') ?? 'Azuos Env <no-reply@azuos.dev>';
+  }
+
+  private async transport(): Promise<Transporter> {
+    if (this.transporter) {
+      return this.transporter;
+    }
+
+    const { createTransport } = await import('nodemailer');
+    const config = this.config;
     const user = config.get<string>('SMTP_USER');
     const pass = config.get<string>('SMTP_PASSWORD');
 
@@ -37,12 +52,15 @@ export class SmtpMailService extends MailService implements OnApplicationShutdow
       greetingTimeout: GREETING_TIMEOUT_MS,
       socketTimeout: SOCKET_TIMEOUT_MS,
     });
-    this.from = config.get<string>('SMTP_FROM') ?? 'Azuos Env <no-reply@azuos.dev>';
+
+    return this.transporter;
   }
 
   async send(message: MailMessage): Promise<void> {
     try {
-      await this.transporter.sendMail({
+      await (
+        await this.transport()
+      ).sendMail({
         from: this.from,
         to: message.to,
         subject: message.subject,
@@ -59,6 +77,6 @@ export class SmtpMailService extends MailService implements OnApplicationShutdow
   }
 
   onApplicationShutdown(): void {
-    this.transporter.close();
+    this.transporter?.close();
   }
 }

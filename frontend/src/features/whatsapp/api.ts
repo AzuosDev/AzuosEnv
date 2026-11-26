@@ -480,7 +480,7 @@ export function waContactsQuery(wsId: string, term = '') {
       ) as Page<WaContact>,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
@@ -637,7 +637,7 @@ export function waQuickRepliesAdminQuery(wsId: string, term = '') {
       ) as Page<WaQuickReply>,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 

@@ -65,7 +65,7 @@ export function goalQuery(wsId: string, goalId: string) {
           params: { path: { wsId, goalId } },
         }),
       ) as GoalView,
-    staleTime: 15_000,
+    staleTime: 60_000,
   });
 }
 
