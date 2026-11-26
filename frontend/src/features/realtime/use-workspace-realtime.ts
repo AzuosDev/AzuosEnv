@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 import { queryKeys } from '@/api/keys';
 import { toast } from '@/components/ui/toast';
+import { useDesktopNotice } from '@/features/inbox/hooks/use-desktop-notice';
 import { describeNotification } from '@/features/inbox/notification-model';
 import type { Notification } from '@/api/types';
 import { useSocket, useSocketEvent } from './socket';
@@ -48,6 +49,7 @@ export interface WorkspaceRealtimeOptions {
  */
 export function useWorkspaceRealtime({ wsId, currentUserId }: WorkspaceRealtimeOptions): void {
   const queryClient = useQueryClient();
+  const notice = useDesktopNotice(wsId);
   const { connected } = useSocket();
   const wasConnected = useRef(connected);
 
@@ -114,9 +116,12 @@ export function useWorkspaceRealtime({ wsId, currentUserId }: WorkspaceRealtimeO
       data: event.data,
     } as Notification);
 
-    toast.message(card.task ? `${card.task.customId}: ${card.verb}` : 'Nova notificação', {
-      description: card.task?.name ?? card.detail ?? 'Abra o Inbox para ver.',
-    });
+    const title = card.task ? `${card.task.customId}: ${card.verb}` : 'Nova notificação';
+    const body = card.task?.name ?? card.detail ?? 'Abra o Inbox para ver.';
+
+    toast.message(title, { description: body });
+    // Mesma etiqueta do push do servidor: um aviso só, mesmo se os dois saírem.
+    notice({ title, body, tag: `${event.type}:${event.entityId}` });
   });
 
   // A conexão voltou: o que está na tela pode ter perdido evento no meio.

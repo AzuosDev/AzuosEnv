@@ -4,6 +4,7 @@ import type { Workspace } from '@/api/types';
 import { PanelResizer, usePanelSize } from '@/components/ui/resizable-panel';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { useSession } from '@/features/auth/session';
+import { PushAskBanner } from '@/features/settings/components/push-ask-banner';
 import { activeNavId, activeTreeTarget } from '../nav-active';
 import { BottomNav } from './bottom-nav';
 import { NavRail } from './nav-rail';
@@ -78,6 +79,7 @@ export function AppShell({ wsId, workspaces, children }: AppShellProps) {
             setMenuOpen(true);
           }}
         />
+        <PushAskBanner />
         <main
           id="conteudo"
           tabIndex={-1}

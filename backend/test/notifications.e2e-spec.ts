@@ -377,8 +377,8 @@ describe('Inbox, lembretes e notificações', () => {
         ).expect(200)
       ).body as Record<string, { inbox: boolean; email: boolean; push: boolean }>;
 
-      expect(settings.assigned).toEqual({ inbox: false, email: false, push: false });
-      expect(settings.mentioned).toEqual({ inbox: true, email: false, push: false });
+      expect(settings.assigned).toEqual({ inbox: false, email: false, push: true });
+      expect(settings.mentioned).toEqual({ inbox: true, email: false, push: true });
 
       await createTask(fixture, fixture.owner, {
         name: 'Corrigir fechamento de caixa',

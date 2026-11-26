@@ -1,4 +1,4 @@
-import { BellOff, BellRing } from 'lucide-react';
+import { Bell, BellOff, BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePush } from '../use-push';
 import { SettingsCard, SettingsRow } from './settings-card';
@@ -8,6 +8,15 @@ const COPY = {
   on: {
     title: 'Notificações ligadas neste dispositivo',
     description: 'Os avisos com o canal Push marcado chegam mesmo com o app fechado.',
+  },
+  checking: {
+    title: 'Verificando este dispositivo',
+    description: 'Um instante enquanto o navegador responde.',
+  },
+  local: {
+    title: 'Avisos do sistema só com o app aberto',
+    description:
+      'O navegador liberou o aviso, mas não se inscreveu no serviço de push — rede, proxy ou política do navegador costumam ser a causa. Com o Azuos Env aberto o aviso aparece na área de trabalho.',
   },
   off: {
     title: 'Notificações desligadas neste dispositivo',
@@ -36,7 +45,13 @@ const COPY = {
 export function DevicePushCard() {
   const push = usePush();
   const copy = COPY[push.state];
-  const actionable = push.state === 'on' || push.state === 'off';
+  const actionable = push.state === 'on' || push.state === 'off' || push.state === 'local';
+  const label =
+    push.state === 'on'
+      ? 'Desligar'
+      : push.state === 'local'
+        ? 'Tentar de novo'
+        : 'Ligar notificações';
 
   return (
     <SettingsCard
@@ -49,6 +64,8 @@ export function DevicePushCard() {
           <span className="flex items-center gap-2">
             {push.state === 'on' ? (
               <BellRing aria-hidden className="size-4 text-signal" />
+            ) : push.state === 'local' ? (
+              <Bell aria-hidden className="size-4 text-accent" />
             ) : (
               <BellOff aria-hidden className="size-4 text-muted" />
             )}
@@ -65,7 +82,7 @@ export function DevicePushCard() {
                 void (push.state === 'on' ? push.disable() : push.enable());
               }}
             >
-              {push.state === 'on' ? 'Desligar' : 'Ligar notificações'}
+              {label}
             </Button>
           ) : null
         }
