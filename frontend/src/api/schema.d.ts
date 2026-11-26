@@ -6516,7 +6516,15 @@ export interface components {
             };
             /** @description Mensagem raiz da thread. */
             parentMessageId?: string;
+            /** @description Mensagem citada na resposta. */
+            replyToId?: string;
             attachmentIds?: string[];
+        };
+        MessageQuote: {
+            messageId: components["schemas"]["ObjectId"];
+            authorId: components["schemas"]["ObjectId"];
+            /** @description Beginning of the quoted text, already trimmed for the preview. */
+            text: string;
         };
         MessageReaction: {
             emoji: string;
@@ -6530,6 +6538,8 @@ export interface components {
             bodyText: string;
             /** @description Root message of the thread; null on the root itself. */
             parentMessageId: components["schemas"]["ObjectId"] | null;
+            /** @description Message being answered, quoted above the body; null when there is none. */
+            replyTo: components["schemas"]["MessageQuote"] | null;
             /** @description Replies of this root, kept denormalized so the list needs one query. */
             replyCount: number;
             /** Format: date-time */

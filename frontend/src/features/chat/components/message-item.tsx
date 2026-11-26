@@ -9,12 +9,12 @@ import {
   MoreHorizontal,
   Paperclip,
   Pencil,
+  Reply,
   SmilePlus,
   Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
 import type { Attachment, Message, WorkspaceMemberItem, WorkspaceRole } from '@/api/types';
-import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -24,15 +24,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { toast } from '@/components/ui/toast';
 import { saveFile, formatBytes } from '@/features/tasks/components/attachments-section';
 import { RichTextView } from '@/features/tasks/components/rich-text-view';
 import { cn } from '@/lib/utils';
 import {
-  AUTHOR_TONE_COUNT,
   QUICK_REACTIONS,
-  authorToneIndex,
   canDeleteMessage,
-  isAuthor,
   memberUser,
   messageReactions,
   messageReceipt,
@@ -52,27 +50,19 @@ export interface MessageItemProps {
   /** Falso em papel sem permissão de escrever no canal: fica só leitura. */
   canWrite: boolean;
   actions: MessageActions;
-  /** Primeira mensagem do bloco: só ela mostra avatar e nome. */
-  leading: boolean;
-  /** Conversa de mais de duas pessoas: cada autor ganha nome e tonalidade. */
-  group?: boolean;
+  /** Primeira mensagem da bolha: as seguintes ganham o filete de separação. */
+  first: boolean;
+  /** Bolha do usuário autenticado: muda o lado das ações e o tom do filete. */
+  mine: boolean;
   /** Leituras do canal: dão o tique de entrega das minhas mensagens. */
   receipts?: ChannelReceipts;
   /** Resposta da thread: sem botão de thread e sem "Criar tarefa". */
   reply?: boolean;
   onOpenThread?: (messageId: string) => void;
   onCreateTask?: (message: Message) => void;
+  /** Cita esta mensagem no editor da conversa, no estilo do WhatsApp. */
+  onReply?: (message: Message) => void;
 }
-
-/** Tons do nome de quem escreve no grupo, todos tokens com contraste AA. */
-const AUTHOR_TONES = [
-  'text-tone-1',
-  'text-tone-2',
-  'text-tone-3',
-  'text-tone-4',
-  'text-tone-5',
-  'text-tone-6',
-] as const;
 
 function receiptTitle(receipt: MessageReceipt | null): string {
   if (!receipt) {
@@ -103,6 +93,26 @@ function timeOf(iso: string): { short: string; exact: string } {
   };
 }
 
+/**
+ * Leva a conversa até a mensagem citada e a destaca por um instante. Ela pode
+ * estar numa página ainda não carregada: aí só avisa.
+ */
+function jumpToMessage(messageId: string): void {
+  const node = document.querySelector<HTMLElement>(`[data-message-id="${messageId}"]`);
+
+  if (!node) {
+    toast('A mensagem citada ainda não está carregada. Role para cima para vê-la.');
+
+    return;
+  }
+
+  node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  node.dataset.highlight = 'true';
+  window.setTimeout(() => {
+    delete node.dataset.highlight;
+  }, 1600);
+}
+
 function AttachmentChip({ wsId, attachment }: { wsId: string; attachment: Attachment }) {
   const [saving, setSaving] = useState(false);
 
@@ -127,8 +137,10 @@ function AttachmentChip({ wsId, attachment }: { wsId: string; attachment: Attach
 }
 
 /**
- * Uma mensagem da conversa ou da thread, em bolha: a minha à direita e as dos
- * outros à esquerda, com reações e as ações de quem pode.
+ * Uma mensagem dentro da bolha do bloco: texto, anexos, hora, tique e reações.
+ * Avatar, nome e a borda da bolha são do bloco, porque mensagens seguidas do
+ * mesmo autor dividem a mesma bolha. No desktop as ações flutuam ao lado da
+ * bolha, para não alargar mensagem curta; no celular ficam embaixo.
  */
 export function MessageItem({
   wsId,
@@ -140,22 +152,20 @@ export function MessageItem({
   role,
   canWrite,
   actions,
-  leading,
-  group = false,
+  first,
+  mine,
   receipts,
   reply = false,
   onOpenThread,
   onCreateTask,
+  onReply,
 }: MessageItemProps) {
   const [editing, setEditing] = useState(false);
   const author = memberUser(members, message.authorId);
   const reactions = messageReactions(message, currentUserId);
   const stamp = timeOf(message.createdAt);
   const busy = actions.busyId === message.id;
-  const mine = isAuthor(message, currentUserId);
   const parentId = message.parentMessageId === null ? null : String(message.parentMessageId);
-  const tone =
-    AUTHOR_TONES[authorToneIndex(message.authorId, AUTHOR_TONE_COUNT)] ?? AUTHOR_TONES[0];
   const receipt = mine
     ? messageReceipt(message, receipts?.readers ?? [], currentUserId, receipts?.others ?? [])
     : null;
@@ -163,10 +173,16 @@ export function MessageItem({
   const files = message.attachmentIds
     .map((id) => attachments.find((one) => one.id === String(id)))
     .filter((one): one is Attachment => one !== undefined);
+  const divider = first
+    ? ''
+    : cn('mt-1.5 border-t pt-1.5', mine ? 'border-scene-line' : 'border-line');
+  const threadCount = !reply && message.replyCount > 0 && onOpenThread;
+  const quote = message.replyTo;
+  const quotedAuthor = quote ? memberUser(members, quote.authorId) : null;
 
   if (editing) {
     return (
-      <div className="px-1 py-1.5">
+      <div data-editing="true" className={cn('w-full py-1', divider)}>
         <MessageComposer
           wsId={wsId}
           channelId={channelId}
@@ -190,86 +206,69 @@ export function MessageItem({
 
   return (
     <article
+      data-message-id={message.id}
       className={cn(
-        'group flex min-w-0 items-start gap-2 px-1 py-0.5',
-        mine ? 'flex-row-reverse' : 'flex-row',
-        leading && 'mt-2',
+        'group relative flex min-w-0 flex-col scroll-mt-16 rounded-lg',
+        'data-[highlight=true]:ring-2 data-[highlight=true]:ring-accent',
+        divider,
       )}
       aria-label={`Mensagem de ${author?.name ?? 'pessoa removida'}`}
     >
-      {leading ? (
-        <Avatar
-          name={author?.name ?? 'Pessoa'}
-          src={author?.avatarUrl}
-          className={reply ? 'h-7 w-7 shrink-0' : 'h-8 w-8 shrink-0'}
-        />
-      ) : (
-        <span className={cn('shrink-0', reply ? 'w-7' : 'w-8')} aria-hidden="true" />
-      )}
-
-      <div
-        className={cn(
-          'flex min-w-0 max-w-[85%] flex-col gap-1 md:max-w-[75%] lg:max-w-[66%]',
-          mine ? 'items-end' : 'items-start',
-        )}
-      >
-        <div
-          className={cn(
-            'min-w-0 max-w-full rounded-2xl border px-3 py-2',
-            mine ? 'border-scene-line bg-scene' : 'border-line bg-surface',
-            leading && (mine ? 'rounded-tr-sm' : 'rounded-tl-sm'),
-          )}
+      {quote ? (
+        <button
+          type="button"
+          className="mb-1 min-w-0 max-w-full rounded-lg border-l-2 border-accent bg-paper/40 px-2 py-1 text-left hover:bg-surface-2"
+          aria-label={`Ir para a mensagem de ${quotedAuthor?.name ?? 'pessoa removida'}`}
+          onClick={() => {
+            jumpToMessage(String(quote.messageId));
+          }}
         >
-          {leading ? (
-            <span
-              className={cn(
-                'mb-0.5 block truncate text-[12.5px] font-semibold',
-                group && !mine ? tone : 'text-ink',
-              )}
-            >
-              {author?.name ?? 'Pessoa removida'}
-            </span>
-          ) : null}
-
-          <RichTextView value={message.body} text={message.bodyText} />
-
-          {files.length > 0 ? (
-            <ul className="mt-1.5 flex flex-wrap gap-1.5">
-              {files.map((attachment) => (
-                <li key={attachment.id} className="min-w-0">
-                  <AttachmentChip wsId={wsId} attachment={attachment} />
-                </li>
-              ))}
-            </ul>
-          ) : null}
-
-          <span className="mt-0.5 flex items-center justify-end gap-1 text-[11px] text-muted">
-            {message.editedAt ? <span>editada ·</span> : null}
-            <time dateTime={message.createdAt} title={stamp.exact}>
-              {stamp.short}
-            </time>
-
-            {receipt ? (
-              <span
-                role="img"
-                aria-label={receiptLabel}
-                title={receiptLabel}
-                className={receipt.tick === 'read' ? 'text-accent' : 'text-muted'}
-              >
-                {receipt.tick === 'sent' ? (
-                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                ) : (
-                  <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                )}
-              </span>
-            ) : null}
+          <span className="block truncate text-[12px] font-semibold text-accent">
+            {quotedAuthor?.name ?? 'Pessoa removida'}
           </span>
-        </div>
+          <span className="block truncate text-[12px] text-muted">{quote.text}</span>
+        </button>
+      ) : null}
 
+      <RichTextView value={message.body} text={message.bodyText} />
+
+      {files.length > 0 ? (
+        <ul className="mt-1.5 flex flex-wrap gap-1.5">
+          {files.map((attachment) => (
+            <li key={attachment.id} className="min-w-0">
+              <AttachmentChip wsId={wsId} attachment={attachment} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <span className="mt-0.5 flex items-center justify-end gap-1 text-[11px] text-muted">
+        {message.editedAt ? <span>editada ·</span> : null}
+        <time dateTime={message.createdAt} title={stamp.exact}>
+          {stamp.short}
+        </time>
+
+        {receipt ? (
+          <span
+            role="img"
+            aria-label={receiptLabel}
+            title={receiptLabel}
+            className={receipt.tick === 'read' ? 'text-accent' : 'text-muted'}
+          >
+            {receipt.tick === 'sent' ? (
+              <Check className="h-3.5 w-3.5" aria-hidden="true" />
+            ) : (
+              <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            )}
+          </span>
+        ) : null}
+      </span>
+
+      {reactions.length > 0 || threadCount ? (
         <div
           className={cn(
-            'flex flex-wrap items-center gap-1',
-            mine ? 'flex-row-reverse' : 'flex-row',
+            'mt-1 flex flex-wrap items-center gap-1',
+            mine ? 'justify-end' : 'justify-start',
           )}
         >
           {reactions.map((reaction) => (
@@ -294,7 +293,7 @@ export function MessageItem({
             </button>
           ))}
 
-          {!reply && message.replyCount > 0 && onOpenThread ? (
+          {threadCount && onOpenThread ? (
             <button
               type="button"
               className="flex h-11 items-center gap-1.5 rounded-full border border-line px-2.5 text-[12px] font-medium text-accent hover:bg-surface-2 md:h-8"
@@ -308,45 +307,68 @@ export function MessageItem({
                 : `${String(message.replyCount)} respostas na thread`}
             </button>
           ) : null}
+        </div>
+      ) : null}
 
-          {canWrite ? (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="nav"
-                  size="icon"
-                  aria-label="Reagir"
-                  className="h-11 w-11 md:h-9 md:w-9 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
-                >
-                  <SmilePlus className="h-4 w-4" aria-hidden="true" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align={mine ? 'end' : 'start'} className="w-auto">
-                <div className="flex gap-1">
-                  {QUICK_REACTIONS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      aria-label={`Reagir com ${emoji}`}
-                      className="flex h-11 w-11 items-center justify-center rounded-lg text-base hover:bg-surface-2 md:h-10 md:w-10"
-                      onClick={() => {
-                        actions.react(message.id, emoji, parentId);
-                      }}
-                    >
-                      <span aria-hidden="true">{emoji}</span>
-                    </button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
+      {canWrite ? (
+        <div
+          className={cn(
+            // Fora do fluxo: a bolha fica do tamanho da mensagem, e as ações
+            // flutuam na folga ao lado dela. No celular cabe só o menu.
+            'absolute top-0 flex items-center gap-1',
+            mine ? 'right-full mr-2 md:mr-4' : 'left-full ml-2 md:ml-4',
+          )}
+        >
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="nav"
+                size="icon"
+                aria-label="Reagir"
+                className="hidden md:inline-flex md:h-9 md:w-9 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 md:has-[[data-state=open]]:opacity-100"
+              >
+                <SmilePlus className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align={mine ? 'end' : 'start'} className="w-auto">
+              <div className="flex gap-1">
+                {QUICK_REACTIONS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    aria-label={`Reagir com ${emoji}`}
+                    className="flex h-11 w-11 items-center justify-center rounded-lg text-base hover:bg-surface-2 md:h-10 md:w-10"
+                    onClick={() => {
+                      actions.react(message.id, emoji, parentId);
+                    }}
+                  >
+                    <span aria-hidden="true">{emoji}</span>
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {onReply ? (
+            <Button
+              variant="nav"
+              size="icon"
+              aria-label="Responder citando"
+              className="hidden md:inline-flex md:h-9 md:w-9 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
+              onClick={() => {
+                onReply(message);
+              }}
+            >
+              <Reply className="h-4 w-4" aria-hidden="true" />
+            </Button>
           ) : null}
 
-          {!reply && canWrite && onOpenThread ? (
+          {!reply && onOpenThread ? (
             <Button
               variant="nav"
               size="icon"
               aria-label="Responder em thread"
-              className="h-11 w-11 md:h-9 md:w-9 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
+              className="hidden md:inline-flex md:h-9 md:w-9 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100"
               onClick={() => {
                 onOpenThread(message.id);
               }}
@@ -355,59 +377,97 @@ export function MessageItem({
             </Button>
           ) : null}
 
-          {canWrite ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="nav"
-                  size="icon"
-                  aria-label={`Ações da mensagem de ${author?.name ?? 'pessoa removida'}`}
-                  className="h-11 w-11 md:h-9 md:w-9 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 md:has-[[data-state=open]]:opacity-100"
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="nav"
+                size="icon"
+                aria-label={`Ações da mensagem de ${author?.name ?? 'pessoa removida'}`}
+                className="h-11 w-11 md:h-9 md:w-9 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100 md:has-[[data-state=open]]:opacity-100"
+              >
+                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align={mine ? 'start' : 'end'}>
+              <div className="flex gap-1 px-1 pb-1 md:hidden">
+                {QUICK_REACTIONS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    aria-label={`Reagir com ${emoji}`}
+                    className="flex h-11 w-11 items-center justify-center rounded-lg text-base hover:bg-surface-2"
+                    onClick={() => {
+                      actions.react(message.id, emoji, parentId);
+                    }}
+                  >
+                    <span aria-hidden="true">{emoji}</span>
+                  </button>
+                ))}
+              </div>
+
+              {onReply ? (
+                <DropdownMenuItem
+                  className="md:hidden"
+                  onSelect={() => {
+                    onReply(message);
+                  }}
                 >
-                  <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align={mine ? 'start' : 'end'}>
-                {!reply && onCreateTask ? (
+                  <Reply className="h-4 w-4" aria-hidden="true" />
+                  Responder citando
+                </DropdownMenuItem>
+              ) : null}
+
+              {!reply && onOpenThread ? (
+                <DropdownMenuItem
+                  className="md:hidden"
+                  onSelect={() => {
+                    onOpenThread(message.id);
+                  }}
+                >
+                  <CornerDownRight className="h-4 w-4" aria-hidden="true" />
+                  Responder em thread
+                </DropdownMenuItem>
+              ) : null}
+
+              {!reply && onCreateTask ? (
+                <DropdownMenuItem
+                  onSelect={() => {
+                    onCreateTask(message);
+                  }}
+                >
+                  <ListPlus className="h-4 w-4" aria-hidden="true" />
+                  Criar tarefa
+                </DropdownMenuItem>
+              ) : null}
+
+              {mine ? (
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setEditing(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4" aria-hidden="true" />
+                  Editar
+                </DropdownMenuItem>
+              ) : null}
+
+              {canDeleteMessage(message, currentUserId, role) ? (
+                <>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onSelect={() => {
-                      onCreateTask(message);
+                      actions.remove(message.id, parentId);
                     }}
                   >
-                    <ListPlus className="h-4 w-4" aria-hidden="true" />
-                    Criar tarefa
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    Excluir
                   </DropdownMenuItem>
-                ) : null}
-
-                {mine ? (
-                  <DropdownMenuItem
-                    onSelect={() => {
-                      setEditing(true);
-                    }}
-                  >
-                    <Pencil className="h-4 w-4" aria-hidden="true" />
-                    Editar
-                  </DropdownMenuItem>
-                ) : null}
-
-                {canDeleteMessage(message, currentUserId, role) ? (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onSelect={() => {
-                        actions.remove(message.id, parentId);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" aria-hidden="true" />
-                      Excluir
-                    </DropdownMenuItem>
-                  </>
-                ) : null}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : null}
+                </>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </div>
+      ) : null}
     </article>
   );
 }

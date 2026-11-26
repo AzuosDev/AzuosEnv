@@ -215,7 +215,7 @@ Uma família violeta sobre quase-preto, com neutros frios e quatro cores de esta
 
 Casca de altura fixa (`h-dvh`) com rolagem só no `<main>`; a página nunca rola na horizontal (`overflow-x: hidden` no `body`).
 
-- **Shell desktop:** sidebar de 264 px em `paper-2` com borda à direita, topbar de ~52 px em `paper` com borda abaixo, conteúdo no restante.
+- **Shell desktop:** sidebar em `paper-2` com borda à direita, largura ajustável pela alça (padrão 280 px, entre 220 e 480) e ocultável; topbar de ~52 px em `paper` com borda abaixo, conteúdo no restante.
 - **Breakpoints:** 360 (`xs`), 768 (`md`), 1024 (`lg`), 1280+.
 - **Abaixo de 1024:** a sidebar sai do fluxo e vira drawer (`Sheet` lateral) aberto pelo botão de menu da topbar; o painel da tarefa vira tela cheia.
 - **Abaixo de 768:** a navegação global vira barra inferior fixa em `paper-2`, com `padding-bottom: max(env(safe-area-inset-bottom), 6px)`; o `<main>` reserva `pb-24` para ela; diálogos viram bottom sheet.
@@ -225,6 +225,8 @@ Casca de altura fixa (`h-dvh`) com rolagem só no `<main>`; a página nunca rola
 
 ### Named Rules
 **A Regra do Zero Scroll Lateral.** Toda tela nova ganha spec Playwright que abre em 360, 768 e 1280 e falha se `document.documentElement.scrollWidth > innerWidth`.
+
+**A Regra da Contagem Alinhada.** Todo número repetido linha a linha é `tabular-nums` e diz em `sr-only` o que conta. Número que pede ação é círculo cheio; número que só informa é texto `muted` alinhado à direita. Um número solto, sem calha e sem nome, é dado sem desenho.
 
 **A Regra do Alvo de 44.** Nada clicável abaixo de 44 px no toque. Botão só de ícone é `h-11 w-11` (`md:h-10 md:w-10`) com `aria-label`.
 
@@ -282,13 +284,15 @@ Cantos suaves e consistentes, com três raios e um só contorno.
 
 ### Chips
 - **StatusPill:** raio 999, 12 px/600, borda de 1 px e fundo tonal. Tons: `neutral` (`surface-2`/`body`), `accent` (`scene`/`scene-line`/`ink`) e os quatro de estado a 15%/40%.
-- **Badge de contagem:** círculo `accent` com texto `on-signal` em 11 px/700, altura mínima de 20 px.
+- **Badge de contagem (`CountBadge`):** o que pede ação — não lidas. Círculo `accent` de 20 px com texto `on-signal` em 11 px/700, `tabular-nums`, cortado em `99+`, com o que está sendo contado em `sr-only`. Na Central do WhatsApp o mesmo componente veste `wa-brand`.
+- **Medida na navegação:** o que só se lê de relance — tarefas abertas na árvore. Sem pílula: 11 px/600 em `muted`, `tabular-nums`, alinhado à direita numa calha de 16 px. No mouse ele sai de cena (`md:group-hover:hidden`) para as ações da linha entrarem no mesmo lugar, sem mexer no layout.
 
 ### Navigation
-- **Sidebar:** `paper-2`, 264 px, rótulo de seção em 11 px caixa alta `muted`, linha de item com `min-h-11`, raio 8 px, texto 13 px `body`, ícone de 16 px. Hover: `surface-2` + `ink`. Ativo: `aria-current="page"` com texto `ink`. Blocos separados por `border-t border-line`.
+- **Sidebar:** `paper-2`, largura ajustável, rótulo de seção em 11 px caixa alta `muted`, linha de item com `min-h-11`, raio 8 px, texto 13 px `body`, ícone de 16 px. Hover: `surface-2` + `ink`. Ativo: `aria-current="page"` com texto `ink`. Blocos separados por `border-t border-line`.
 - **Topbar:** `paper` com borda inferior, 12 px de padding (24 px em `md`), menu à esquerda só abaixo de `lg`, ações à direita. Queda de conexão aparece como ícone em `warning`.
 - **Barra inferior (< 768):** `paper-2` fixa com borda superior, ícone sobre rótulo, respeitando `safe-area-inset-bottom`.
 - **Drawer (< 1024):** a mesma sidebar dentro de um `Sheet` lateral, com título em `sr-only`.
+- **Alça da barra lateral (≥ 1024):** trilho de largura zero sobre a borda, com área de pega de 8 px. Arrastar mede, clique duplo volta ao padrão, `Enter` ou o botão de 24×44 px oculta e mostra; setas medem de 16 px em 16 px (48 com `Shift`), `Home`/`End` vão aos limites. A linha de 1 px acende em `accent` no hover e no foco. Medida e estado ficam no `localStorage` por barra (`azuos-env:panel:<id>`) e a sidebar do shell também liga/desliga pelo botão da topbar. Abaixo de 1024 px a alça não existe: lá a barra é drawer.
 
 ### Dialogs / Sheets
 - **Desktop:** centralizado, largura máxima de 32 rem, raio 16 px, fundo `surface`, padding de 20 px, fechar de 36 px no canto com `aria-label="Fechar"`.

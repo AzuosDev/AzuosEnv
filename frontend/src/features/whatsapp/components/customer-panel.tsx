@@ -23,6 +23,8 @@ export interface CustomerPanelProps {
   /** Fecha o painel; no celular ele é tela cheia. */
   onClose?: () => void;
   fullScreen?: boolean;
+  /** Largura em px quando o painel fica ao lado da conversa. */
+  width?: number;
 }
 
 function dateLabel(iso: string | null): string {
@@ -48,6 +50,7 @@ export function CustomerPanel({
   onCreateTask,
   onClose,
   fullScreen = false,
+  width,
 }: CustomerPanelProps) {
   const queryClient = useQueryClient();
   const contact = conversation.contact;
@@ -90,6 +93,7 @@ export function CustomerPanel({
   return (
     <aside
       aria-label="Painel do cliente"
+      style={fullScreen || width === undefined ? undefined : { width }}
       className={
         fullScreen
           ? 'flex min-h-0 flex-1 flex-col overflow-y-auto bg-wa-panel'

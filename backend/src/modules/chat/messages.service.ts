@@ -27,7 +27,7 @@ import {
   MessageEventBase,
   MessageUpdatedEvent,
 } from './chat-events';
-import { MAX_TASK_NAME_FROM_MESSAGE } from './chat-fields';
+import { MAX_MESSAGE_QUOTE_LENGTH, MAX_TASK_NAME_FROM_MESSAGE } from './chat-fields';
 import {
   CreateMessageDto,
   MessageReactionDto,
@@ -35,7 +35,7 @@ import {
   UpdateMessageDto,
 } from './dto/message.dto';
 import { ChannelDocument } from './schemas/channel.schema';
-import { Message, MessageDocument } from './schemas/message.schema';
+import { Message, MessageDocument, MessageQuote } from './schemas/message.schema';
 
 /** Preview of the message carried by the events and by the inbox. */
 const PREVIEW_LENGTH = 200;
@@ -70,6 +70,9 @@ export class MessagesService {
     const parent = dto.parentMessageId
       ? await this.requireParent(channel, new Types.ObjectId(dto.parentMessageId))
       : null;
+    const quoted = dto.replyToId
+      ? await this.requireQuoted(channel, new Types.ObjectId(dto.replyToId))
+      : null;
     const message = await this.model.create({
       workspaceId: channel.workspaceId,
       channelId: channel._id,
@@ -77,6 +80,7 @@ export class MessagesService {
       body: dto.body ?? null,
       bodyText: dto.bodyText,
       parentMessageId: parent?._id ?? null,
+      replyTo: quoted ? this.toQuote(quoted) : null,
       mentions: await this.resolveMentions(ctx, dto.body),
       attachmentIds: await this.resolveAttachments(ctx, dto.attachmentIds),
     });
@@ -275,6 +279,39 @@ export class MessagesService {
     }
 
     return parent;
+  }
+
+  /** The quoted message must be alive and in the same channel. */
+  private async requireQuoted(
+    channel: ChannelDocument,
+    replyToId: Types.ObjectId,
+  ): Promise<MessageDocument> {
+    const quoted = await this.model
+      .findOne({
+        _id: replyToId,
+        workspaceId: channel.workspaceId,
+        channelId: channel._id,
+        deletedAt: null,
+      })
+      .exec();
+
+    if (!quoted) {
+      throw new BadRequestException({
+        code: 'INVALID_MESSAGE_QUOTE',
+        message: 'A mensagem citada não pertence a este canal.',
+      });
+    }
+
+    return quoted;
+  }
+
+  /** Snapshot kept in the answer, so the quote survives the next page. */
+  private toQuote(quoted: MessageDocument): MessageQuote {
+    return {
+      messageId: quoted._id,
+      authorId: quoted.authorId,
+      text: quoted.bodyText.slice(0, MAX_MESSAGE_QUOTE_LENGTH),
+    };
   }
 
   /** Mentions of active members only; anyone else is dropped in silence. */

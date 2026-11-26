@@ -2,6 +2,7 @@ import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { Bot, ListPlus, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { PanelResizer, usePanelSize } from '@/components/ui/resizable-panel';
 import { workspaceQuery } from '@/features/settings/api';
 import { useMinWidth } from '@/lib/use-min-width';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,13 @@ export function AiPage({ wsId }: { wsId: string }) {
   const usage = useQuery(aiUsageQuery(wsId));
   const chat = useAiChat(wsId);
   const wide = useMinWidth(WIDE_PX);
+  const sidebar = usePanelSize({
+    id: 'ai-history',
+    label: 'as conversas da IA',
+    defaultWidth: 260,
+    min: 220,
+    max: 420,
+  });
   const [agents, setAgents] = useState(false);
   const [fromText, setFromText] = useState(false);
 
@@ -41,10 +49,11 @@ export function AiPage({ wsId }: { wsId: string }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-      {wide ? (
+      {wide && !sidebar.collapsed ? (
         <aside
           aria-label="Conversas da IA"
-          className="flex w-[260px] shrink-0 flex-col gap-3 border-r border-line bg-paper-2 p-3"
+          style={{ width: sidebar.width }}
+          className="flex shrink-0 flex-col gap-3 border-r border-line bg-paper-2 p-3"
         >
           <div className="flex items-center gap-2 px-1">
             <h1 className="heading flex-1 text-[20px]">IA</h1>
@@ -110,9 +119,11 @@ export function AiPage({ wsId }: { wsId: string }) {
         </aside>
       ) : null}
 
+      <PanelResizer panel={sidebar} />
+
       <main className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line px-3 py-2 md:px-6">
-          {wide ? null : <h1 className="heading flex-1 text-[18px]">IA</h1>}
+          {wide && !sidebar.collapsed ? null : <h1 className="heading flex-1 text-[18px]">IA</h1>}
           <span className="hidden flex-1 text-[13px] text-muted lg:inline">
             Contexto: {workspace.workspace.name} · tarefas, docs e chat
           </span>

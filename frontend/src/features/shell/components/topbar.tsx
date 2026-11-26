@@ -1,7 +1,8 @@
-import { Menu, WifiOff } from 'lucide-react';
+import { Menu, PanelLeftClose, PanelLeftOpen, WifiOff } from 'lucide-react';
 import type { RefObject } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
+import type { PanelSize } from '@/components/ui/resizable-panel';
 import type { AuthUser } from '@/api/types';
 import { AiDrawer } from '@/features/ai/components/ai-drawer';
 import { UserMenu } from '@/features/auth/components/user-menu';
@@ -16,6 +17,8 @@ export interface TopbarProps {
   onOpenMenu: () => void;
   /** O drawer devolve o foco para este botão ao fechar. */
   menuRef?: RefObject<HTMLButtonElement | null>;
+  /** Barra lateral do shell, para ocultar e mostrar no desktop. */
+  sidebar?: PanelSize;
 }
 
 /** Aviso discreto de tempo real caído; some sozinho quando o socket volta. */
@@ -39,7 +42,7 @@ function ConnectionBadge() {
 }
 
 /** Topbar: busca, timer ativo, tema e conta. */
-export function Topbar({ wsId, user, onOpenMenu, menuRef }: TopbarProps) {
+export function Topbar({ wsId, user, onOpenMenu, menuRef, sidebar }: TopbarProps) {
   return (
     <header className="flex items-center gap-2 border-b border-line bg-paper px-3 py-2.5 md:gap-3 md:px-6">
       <Button
@@ -52,6 +55,22 @@ export function Topbar({ wsId, user, onOpenMenu, menuRef }: TopbarProps) {
       >
         <Menu className="h-5 w-5" aria-hidden="true" />
       </Button>
+
+      {sidebar ? (
+        <Button
+          variant="nav"
+          size="icon"
+          aria-label={`${sidebar.collapsed ? 'Mostrar' : 'Ocultar'} ${sidebar.label}`}
+          className="hidden shrink-0 lg:inline-flex"
+          onClick={sidebar.toggle}
+        >
+          {sidebar.collapsed ? (
+            <PanelLeftOpen className="h-5 w-5" aria-hidden="true" />
+          ) : (
+            <PanelLeftClose className="h-5 w-5" aria-hidden="true" />
+          )}
+        </Button>
+      ) : null}
 
       <CommandPalette wsId={wsId} />
       <TimerSlot wsId={wsId} />

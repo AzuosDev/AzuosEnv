@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { Workspace } from '@/api/types';
 import { Button } from '@/components/ui/button';
+import { CountBadge } from '@/components/ui/count-badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { chatActivityQuery } from '@/features/chat/api';
@@ -48,7 +49,8 @@ export function WorkspaceSidebar({ wsId, workspaces, active, onNavigate }: Works
   const expanded = useExpanded(wsId, active ? [...ancestorIds(location), active.id] : []);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
+    /* O pr-1 abre a calha da barra de rolagem: contagem nenhuma encosta nela. */
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
       <WorkspaceSwitcher
         wsId={wsId}
         workspaces={workspaces}
@@ -60,11 +62,10 @@ export function WorkspaceSidebar({ wsId, workspaces, active, onNavigate }: Works
         <Link to="/w/$wsId/inbox" params={{ wsId }} onClick={onNavigate} className={homeRow}>
           <Inbox className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="min-w-0 flex-1 truncate">Inbox</span>
-          {unread > 0 ? (
-            <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-signal">
-              {unread}
-            </span>
-          ) : null}
+          <CountBadge
+            count={unread}
+            label={unread === 1 ? 'notificação não lida' : 'notificações não lidas'}
+          />
         </Link>
         <Link
           to="/w/$wsId/minhas-tarefas"
@@ -84,12 +85,10 @@ export function WorkspaceSidebar({ wsId, workspaces, active, onNavigate }: Works
         >
           <MessagesSquare className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="min-w-0 flex-1 truncate">Chat</span>
-          {chatUnread > 0 ? (
-            <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-signal">
-              {chatUnread > 99 ? '99+' : chatUnread}
-              <span className="sr-only"> mensagens não lidas</span>
-            </span>
-          ) : null}
+          <CountBadge
+            count={chatUnread}
+            label={chatUnread === 1 ? 'mensagem não lida' : 'mensagens não lidas'}
+          />
         </Link>
         <Link to="/w/$wsId/tudo" params={{ wsId }} onClick={onNavigate} className={homeRow}>
           <LayoutGrid className="h-4 w-4 shrink-0" aria-hidden="true" />

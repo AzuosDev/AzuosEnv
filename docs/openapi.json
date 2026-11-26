@@ -26890,6 +26890,10 @@
             "type": "string",
             "description": "Mensagem raiz da thread."
           },
+          "replyToId": {
+            "type": "string",
+            "description": "Mensagem citada na resposta."
+          },
           "attachmentIds": {
             "maxItems": 20,
             "type": "array",
@@ -26900,6 +26904,26 @@
         },
         "required": [
           "bodyText"
+        ]
+      },
+      "MessageQuote": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "authorId": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "text": {
+            "type": "string",
+            "description": "Beginning of the quoted text, already trimmed for the preview."
+          }
+        },
+        "required": [
+          "messageId",
+          "authorId",
+          "text"
         ]
       },
       "MessageReaction": {
@@ -26945,6 +26969,16 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/ObjectId"
+              }
+            ]
+          },
+          "replyTo": {
+            "nullable": true,
+            "description": "Message being answered, quoted above the body; null when there is none.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MessageQuote"
               }
             ]
           },
@@ -26994,6 +27028,7 @@
           "body",
           "bodyText",
           "parentMessageId",
+          "replyTo",
           "replyCount",
           "lastReplyAt",
           "mentions",

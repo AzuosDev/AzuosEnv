@@ -22,5 +22,8 @@ export const MAX_CHANNEL_SCAN = 200;
 /** Channels the chat activity endpoint counts unread messages for. */
 export const MAX_ACTIVITY_CHANNELS = 100;
 
+/** Characters of the quoted message kept in the answer. */
+export const MAX_MESSAGE_QUOTE_LENGTH = 200;
+
 /** Characters of the message that become the name of the task. */
 export const MAX_TASK_NAME_FROM_MESSAGE = 120;

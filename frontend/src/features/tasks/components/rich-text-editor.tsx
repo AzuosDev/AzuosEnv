@@ -96,6 +96,12 @@ export interface RichTextEditorProps {
    * do chat). Com o menu de menção aberto, Enter continua escolhendo a sugestão.
    */
   onEnter?: () => void;
+  /**
+   * Põe o cursor no editor assim que ele monta (e assim que volta a aceitar
+   * edição). É o que devolve o foco à caixa depois de enviar a mensagem, já
+   * que publicar remonta o editor.
+   */
+  focusOnMount?: boolean;
 }
 
 const toolbarButton =
@@ -116,6 +122,7 @@ export function RichTextEditor({
   className,
   showToolbar = true,
   onEnter,
+  focusOnMount = false,
 }: RichTextEditorProps) {
   const notify = useRef(onChange);
   const people = useRef(searchPeople);
@@ -190,6 +197,14 @@ export function RichTextEditor({
   useEffect(() => {
     editor?.setEditable(editable);
   }, [editor, editable]);
+
+  // Só depois de voltar a ser editável: durante o envio o editor fica travado
+  // e o comando de foco não teria efeito.
+  useEffect(() => {
+    if (focusOnMount && editable) {
+      editor?.commands.focus('end');
+    }
+  }, [editor, editable, focusOnMount]);
 
   if (!editor) {
     return <div className="min-h-[88px] rounded-xl border border-line bg-surface" />;

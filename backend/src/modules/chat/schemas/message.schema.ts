@@ -17,6 +17,26 @@ export const MessageReactionSchema = SchemaFactory.createForClass(MessageReactio
 /** Rich text of the message, as produced by the editor. */
 export type MessageBody = Record<string, unknown> | null;
 
+/**
+ * Snapshot of the quoted message, in the style of WhatsApp: the quote keeps
+ * what was written when the answer was sent, so the list needs no extra query
+ * and an older quoted message stays readable after the page scrolled past it.
+ */
+@Schema({ _id: false })
+export class MessageQuote {
+  @Prop({ type: Types.ObjectId, ref: 'Message', required: true })
+  messageId: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  authorId: Types.ObjectId;
+
+  /** Beginning of the quoted text, already trimmed for the preview. */
+  @Prop({ type: String, default: '' })
+  text: string;
+}
+
+export const MessageQuoteSchema = SchemaFactory.createForClass(MessageQuote);
+
 @Schema({ collection: 'messages', ...baseSchemaOptions })
 export class Message {
   @Prop({ type: Types.ObjectId, ref: 'Workspace', required: true, index: true })
@@ -37,6 +57,10 @@ export class Message {
   /** Root message of the thread; null on the root itself. */
   @Prop({ type: Types.ObjectId, ref: 'Message', default: null, index: true })
   parentMessageId: Types.ObjectId | null;
+
+  /** Message being answered, quoted above the body; null when there is none. */
+  @Prop({ type: MessageQuoteSchema, default: null })
+  replyTo: MessageQuote | null;
 
   /** Replies of this root, kept denormalized so the list needs one query. */
   @Prop({ type: Number, default: 0 })

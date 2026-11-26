@@ -2,6 +2,7 @@ import { format, isThisYear, isToday, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Flag, Search } from 'lucide-react';
 import type { WaConversationFilter, WaConversationItem } from '@/api/types';
+import { CountBadge } from '@/components/ui/count-badge';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 import { WA_FILTERS, botPauseUntil, contactLabel, initialsOf, previewOf } from '../whatsapp-model';
@@ -18,6 +19,8 @@ export interface ConversationListProps {
   onFilter: (filter: WaConversationFilter) => void;
   onTerm: (term: string) => void;
   onLoadMore: () => void;
+  /** Largura em px no desktop; no celular a lista ocupa a tela toda. */
+  width?: number;
 }
 
 /** Hora do dia para hoje, dia e mês no resto do ano, data cheia fora dele. */
@@ -52,9 +55,16 @@ export function ConversationList({
   onFilter,
   onTerm,
   onLoadMore,
+  width,
 }: ConversationListProps) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-wa-panel lg:w-[340px] lg:flex-none lg:border-r lg:border-wa-line">
+    <div
+      style={width === undefined ? undefined : { width }}
+      className={cn(
+        'flex min-h-0 flex-1 flex-col bg-wa-panel lg:flex-none lg:border-r lg:border-wa-line',
+        width === undefined && 'lg:w-[340px]',
+      )}
+    >
       <div className="shrink-0 border-b border-wa-line px-3 py-2.5">
         <label className="relative flex items-center">
           <span className="sr-only">Buscar conversa</span>
@@ -170,11 +180,11 @@ export function ConversationList({
                       </span>
                     ) : null}
 
-                    {item.unreadCount > 0 ? (
-                      <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-wa-brand px-1 text-[11px] font-bold text-wa-panel">
-                        {item.unreadCount > 99 ? '99+' : item.unreadCount}
-                      </span>
-                    ) : null}
+                    <CountBadge
+                      count={item.unreadCount}
+                      tone="wa"
+                      label={item.unreadCount === 1 ? 'mensagem não lida' : 'mensagens não lidas'}
+                    />
                   </span>
                 </span>
               </button>

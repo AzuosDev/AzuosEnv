@@ -2,6 +2,7 @@ import { Hash, MessageSquarePlus, Plus } from 'lucide-react';
 import type { Channel, ChatActivity, WorkspaceMemberItem } from '@/api/types';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { CountBadge } from '@/components/ui/count-badge';
 import { cn } from '@/lib/utils';
 import { channelTitle, memberUser, dmPartnerId, sortByLastMessage, unreadOf } from '../chat-model';
 
@@ -20,15 +21,6 @@ export interface ChannelListProps {
 }
 
 const sectionLabel = 'px-2 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted';
-
-function UnreadBadge({ count }: { count: number }) {
-  return (
-    <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-bold text-on-signal">
-      {count > 99 ? '99+' : count}
-      <span className="sr-only"> não lidas</span>
-    </span>
-  );
-}
 
 function Row({
   channel,
@@ -67,7 +59,10 @@ function Row({
       <span className={cn('min-w-0 flex-1 truncate', unread > 0 && 'font-semibold text-ink')}>
         {label}
       </span>
-      {unread > 0 ? <UnreadBadge count={unread} /> : null}
+      <CountBadge
+        count={unread}
+        label={unread === 1 ? 'mensagem não lida' : 'mensagens não lidas'}
+      />
     </button>
   );
 }

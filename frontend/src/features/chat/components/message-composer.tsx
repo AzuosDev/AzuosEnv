@@ -2,13 +2,14 @@ import type { JSONContent } from '@tiptap/react';
 import { Paperclip, Send, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { errorMessage } from '@/api/errors';
-import type { Attachment, WorkspaceMemberItem } from '@/api/types';
+import type { Attachment, Message, WorkspaceMemberItem } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { MAX_UPLOAD_BYTES, formatBytes } from '@/features/tasks/components/attachments-section';
 import { RichTextEditor } from '@/features/tasks/components/rich-text-editor';
 import { useMentionSearch } from '@/features/tasks/hooks/use-mention-search';
 import { uploadChannelAttachment } from '../api';
+import { memberUser } from '../chat-model';
 import type { MessageDraft } from '../hooks/use-messages';
 
 export interface MessageComposerProps {
@@ -29,6 +30,9 @@ export interface MessageComposerProps {
   /** Falso no editor de resposta e na edição: só a conversa aceita anexo. */
   withAttachments?: boolean;
   showToolbar?: boolean;
+  /** Mensagem sendo respondida: vira a citação acima do editor e do envio. */
+  replyTo?: Message | null;
+  onCancelReply?: () => void;
   onSubmit: (draft: MessageDraft) => void;
   onCancel?: () => void;
   /** Avisa a sala que a pessoa está escrevendo. */
@@ -58,6 +62,8 @@ export function MessageComposer({
   value,
   withAttachments = false,
   showToolbar = false,
+  replyTo = null,
+  onCancelReply,
   onSubmit,
   onCancel,
   onTyping,
@@ -83,6 +89,7 @@ export function MessageComposer({
       // A API exige texto: mensagem só de anexo ganha o nome do arquivo.
       bodyText: text === '' ? (attached[0]?.name ?? 'Anexo') : text,
       ...(attached.length > 0 ? { attachmentIds: attached.map((one) => one.id) } : {}),
+      ...(replyTo ? { replyToId: replyTo.id } : {}),
     });
     setDraft(null);
     setAttached([]);
@@ -120,8 +127,33 @@ export function MessageComposer({
     }
   };
 
+  const quoted = replyTo ? memberUser(members, replyTo.authorId) : null;
+
   return (
     <div className="flex flex-col gap-2 rounded-2xl border border-line bg-surface p-2.5">
+      {replyTo ? (
+        <div className="flex items-center gap-2 rounded-xl border-l-2 border-accent bg-paper/40 px-2.5 py-1.5">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[12px] font-semibold text-accent">
+              {`Respondendo ${quoted?.name ?? 'pessoa removida'}`}
+            </p>
+            <p className="truncate text-[12px] text-muted">{replyTo.bodyText}</p>
+          </div>
+
+          {onCancelReply ? (
+            <Button
+              variant="nav"
+              size="icon"
+              aria-label="Cancelar a resposta"
+              className="h-11 w-11 shrink-0 md:h-9 md:w-9"
+              onClick={onCancelReply}
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+
       <RichTextEditor
         key={round}
         aria-label={label}
@@ -130,6 +162,9 @@ export function MessageComposer({
         placeholder={placeholder}
         showToolbar={showToolbar}
         className="min-h-11 md:min-h-10"
+        // Depois do primeiro envio o editor remonta: o cursor volta sozinho.
+        // Escolher a mensagem a responder também leva o cursor para cá.
+        focusOnMount={round > 0 || replyTo !== null}
         searchPeople={searchPeople}
         searchTasks={searchTasks}
         onEnter={submit}
