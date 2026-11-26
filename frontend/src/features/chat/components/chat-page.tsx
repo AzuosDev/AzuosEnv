@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Message } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
+import { PanelResizer, usePanelSize } from '@/components/ui/resizable-panel';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/toast';
 import { useSession } from '@/features/auth/session';
@@ -49,6 +50,13 @@ export function ChatPage({ wsId, channelId, threadId }: ChatPageProps) {
   const actions = useChannelActions(wsId);
   const wide = useMinWidth(WIDE_PX);
   const threePane = useMinWidth(THREE_PANE_PX);
+  const list = usePanelSize({
+    id: 'chat-list',
+    label: 'a lista de canais',
+    defaultWidth: 264,
+    min: 220,
+    max: 420,
+  });
   const [newChannel, setNewChannel] = useState(false);
   const [newDm, setNewDm] = useState(false);
   const [toTask, setToTask] = useState<Message | null>(null);
@@ -78,7 +86,7 @@ export function ChatPage({ wsId, channelId, threadId }: ChatPageProps) {
   };
 
   /** No celular a lista só aparece quando nenhum canal está aberto. */
-  const showList = wide || active === null;
+  const showList = wide ? !list.collapsed : active === null;
   const showThread = threadId !== undefined && active !== null;
   const showConversation = active !== null && (threePane || !showThread);
 
@@ -87,7 +95,8 @@ export function ChatPage({ wsId, channelId, threadId }: ChatPageProps) {
       {showList ? (
         <aside
           aria-label="Canais e mensagens diretas"
-          className="flex min-h-0 flex-1 flex-col border-line bg-paper-2 lg:w-[264px] lg:flex-none lg:border-r"
+          style={wide ? { width: list.width } : undefined}
+          className="flex min-h-0 flex-1 flex-col border-line bg-paper-2 lg:flex-none lg:border-r"
         >
           <div className="flex shrink-0 items-center gap-2 px-4 pt-4">
             <h1 className="heading min-w-0 flex-1 truncate text-xl">Chat</h1>
@@ -117,6 +126,8 @@ export function ChatPage({ wsId, channelId, threadId }: ChatPageProps) {
           )}
         </aside>
       ) : null}
+
+      <PanelResizer panel={list} />
 
       {showConversation && active ? (
         <ChannelConversation

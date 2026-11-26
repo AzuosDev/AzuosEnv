@@ -1,6 +1,7 @@
 import { useRouterState } from '@tanstack/react-router';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Workspace } from '@/api/types';
+import { PanelResizer, usePanelSize } from '@/components/ui/resizable-panel';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { useSession } from '@/features/auth/session';
 import { activeNavId, activeTreeTarget } from '../nav-active';
@@ -27,6 +28,13 @@ export function AppShell({ wsId, workspaces, children }: AppShellProps) {
   const menuRef = useRef<HTMLButtonElement>(null);
   const navId = activeNavId(pathname, wsId);
   const active = activeTreeTarget(pathname, wsId);
+  const nav = usePanelSize({
+    id: 'shell-nav',
+    label: 'a navegação do workspace',
+    defaultWidth: 280,
+    min: 220,
+    max: 480,
+  });
 
   // O drawer fecha sozinho ao navegar.
   useEffect(() => {
@@ -48,18 +56,24 @@ export function AppShell({ wsId, workspaces, children }: AppShellProps) {
       </a>
       <NavRail wsId={wsId} activeId={navId} />
 
-      <aside
-        aria-label="Navegação do workspace"
-        className="hidden w-[280px] shrink-0 flex-col border-r border-line bg-paper-2 p-3 lg:flex"
-      >
-        <WorkspaceSidebar wsId={wsId} workspaces={workspaces} active={active} />
-      </aside>
+      {nav.collapsed ? null : (
+        <aside
+          aria-label="Navegação do workspace"
+          style={{ width: nav.width }}
+          className="hidden shrink-0 flex-col border-r border-line bg-paper-2 p-3 lg:flex"
+        >
+          <WorkspaceSidebar wsId={wsId} workspaces={workspaces} active={active} />
+        </aside>
+      )}
+
+      <PanelResizer panel={nav} />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Topbar
           wsId={wsId}
           user={user}
           menuRef={menuRef}
+          sidebar={nav}
           onOpenMenu={() => {
             setMenuOpen(true);
           }}

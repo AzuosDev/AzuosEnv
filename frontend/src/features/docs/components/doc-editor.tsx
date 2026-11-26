@@ -7,6 +7,7 @@ import { queryKeys } from '@/api/keys';
 import type { DocPage, MovePageInput } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PanelResizer, usePanelSize } from '@/components/ui/resizable-panel';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/toast';
@@ -116,6 +117,13 @@ export function DocEditor({ wsId, docId, pageId, onPickPage }: DocEditorProps) {
   const client = useQueryClient();
   const user = useSession();
   const wide = useMinWidth(1024);
+  const treePanel = usePanelSize({
+    id: 'doc-pages',
+    label: 'as páginas do Doc',
+    defaultWidth: 272,
+    min: 220,
+    max: 460,
+  });
   const doc = useQuery(docQuery(wsId, docId));
   const pages = useQuery(docPagesQuery(wsId, docId));
   const members = useQuery(membersQuery(wsId));
@@ -254,15 +262,18 @@ export function DocEditor({ wsId, docId, pageId, onPickPage }: DocEditorProps) {
 
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">
-      {wide ? (
+      {wide && !treePanel.collapsed ? (
         <aside
           aria-label="Páginas"
-          className="flex w-[272px] shrink-0 flex-col gap-3 overflow-y-auto border-r border-line bg-paper-2 p-3"
+          style={{ width: treePanel.width }}
+          className="flex shrink-0 flex-col gap-3 overflow-y-auto border-r border-line bg-paper-2 p-3"
         >
           <h1 className="heading px-2 text-[18px]">{doc.data?.title}</h1>
           {tree}
         </aside>
       ) : null}
+
+      <PanelResizer panel={treePanel} />
 
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-2">

@@ -6,6 +6,7 @@ import { errorMessage } from '@/api/errors';
 import type { WaAccessLevel, WaConversationFilter, WaConversationItem } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
+import { PanelResizer, usePanelSize } from '@/components/ui/resizable-panel';
 import { toast } from '@/components/ui/toast';
 import { useSession } from '@/features/auth/session';
 import { membersQuery } from '@/features/settings/api';
@@ -63,6 +64,21 @@ export function ConversationsTab({
   const user = useSession();
   const wide = useMinWidth(WIDE_PX);
   const threePane = useMinWidth(THREE_PANE_PX);
+  const listPanel = usePanelSize({
+    id: 'wa-list',
+    label: 'a lista de conversas',
+    defaultWidth: 340,
+    min: 280,
+    max: 480,
+  });
+  const customerPanel = usePanelSize({
+    id: 'wa-customer',
+    label: 'o painel do cliente',
+    side: 'right',
+    defaultWidth: 320,
+    min: 280,
+    max: 480,
+  });
   const list = useInfiniteQuery(waConversationsQuery(wsId, { filter, q: term }));
   const detail = useQuery({
     ...waConversationQuery(wsId, conversationId ?? ''),
@@ -84,10 +100,12 @@ export function ConversationsTab({
 
   useMarkWaRead(wsId, active && active.unreadCount > 0 ? active.id : null);
 
-  const showPanel = active !== null && (threePane || panelOpen);
+  const showPanel =
+    active !== null && (threePane || panelOpen) && !(threePane && customerPanel.collapsed);
   // Entre 1024 e 1440 o painel do cliente entra no lugar da lista; abaixo de
   // 1024 a navegação é em pilha e só uma coluna aparece por vez.
-  const showList = active === null || (wide && !(showPanel && !threePane));
+  const showList =
+    !(wide && listPanel.collapsed) && (active === null || (wide && !(showPanel && !threePane)));
   const showChat = active !== null && (wide || !panelOpen);
 
   return (
@@ -117,8 +135,11 @@ export function ConversationsTab({
           onLoadMore={() => {
             void list.fetchNextPage();
           }}
+          {...(wide ? { width: listPanel.width } : {})}
         />
       ) : null}
+
+      {wide ? <PanelResizer panel={listPanel} tone="wa" /> : null}
 
       {showChat && active ? (
         <ConversationChat
@@ -143,6 +164,8 @@ export function ConversationsTab({
         />
       ) : null}
 
+      {threePane && active !== null ? <PanelResizer panel={customerPanel} tone="wa" /> : null}
+
       {showPanel && active ? (
         <CustomerPanel
           wsId={wsId}
@@ -162,6 +185,7 @@ export function ConversationsTab({
           onCreateTask={() => {
             setTaskOpen(true);
           }}
+          {...(wide ? { width: customerPanel.width } : {})}
         />
       ) : null}
 

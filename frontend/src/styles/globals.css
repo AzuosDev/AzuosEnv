@@ -91,6 +91,7 @@
     background: rgb(var(--paper));
     color: rgb(var(--ink));
     scrollbar-color: rgb(var(--line)) rgb(var(--paper));
+    scrollbar-width: thin;
     overflow-x: hidden;
   }
 

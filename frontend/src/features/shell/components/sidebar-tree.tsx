@@ -127,20 +127,33 @@ function ListRow({
           params={{ wsId, listId: list.id }}
           onClick={onNavigate}
           aria-current={active ? 'page' : undefined}
-          className={cn(rowClass, active && 'bg-accent/15 text-ink')}
+          className={cn(
+            rowClass,
+            'md:group-focus-within:pr-16 md:group-hover:pr-16',
+            active && 'bg-accent/15 text-ink',
+          )}
         >
           <Icon className={cn('h-4 w-4 shrink-0', colorText(list.color))} aria-hidden="true" />
           <span className="min-w-0 flex-1 truncate" title={list.name}>
             {list.name}
           </span>
-          {sprint ? (
-            <span className="shrink-0 rounded-full bg-accent/[0.18] px-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-ink">
-              Sprint
-            </span>
-          ) : null}
-          {list.openTaskCount > 0 ? (
-            <span className="shrink-0 text-[12px] text-muted">{list.openTaskCount}</span>
-          ) : null}
+          {/* No mouse as ações entram por cima desta ponta: a medida cede o
+              lugar em vez de ser encoberta, e o layout não se mexe. */}
+          <span className="flex shrink-0 items-center gap-1.5 md:group-focus-within:hidden md:group-hover:hidden">
+            {sprint ? (
+              <span className="rounded-full bg-accent/[0.18] px-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink">
+                Sprint
+              </span>
+            ) : null}
+            {list.openTaskCount > 0 ? (
+              <span className="min-w-4 text-right text-[11px] font-semibold tabular-nums text-muted">
+                {list.openTaskCount}
+                <span className="sr-only">
+                  {list.openTaskCount === 1 ? ' tarefa aberta' : ' tarefas abertas'}
+                </span>
+              </span>
+            ) : null}
+          </span>
         </Link>
         <Actions node={node} />
       </Row>

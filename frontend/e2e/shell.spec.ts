@@ -123,3 +123,49 @@ test('o shell não rola para os lados em 360, 768 e 1280', async () => {
   await page.waitForURL(/\/s\/[0-9a-f]{24}$/);
   await expectNoHorizontalScroll(page);
 });
+
+test('a sidebar muda de largura pelo arraste, lembra a medida e some pelo botão', async () => {
+  await page.goto('/');
+  await page.waitForURL(/\/w\/[0-9a-f]{24}$/);
+
+  const sidebar = page.getByRole('complementary', { name: 'Navegação do workspace' });
+  const handle = page.getByRole('separator', { name: 'Redimensionar a navegação do workspace' });
+
+  await expect(handle).toHaveAttribute('aria-valuenow', '280');
+
+  const box = await handle.boundingBox();
+
+  if (!box) {
+    throw new Error('A alça da sidebar não está visível');
+  }
+
+  const y = box.y + 200;
+
+  await page.mouse.move(box.x + box.width / 2, y);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 60, y, { steps: 5 });
+  await page.mouse.up();
+
+  await expect(handle).toHaveAttribute('aria-valuenow', '340');
+  await expect.poll(async () => Math.round((await sidebar.boundingBox())?.width ?? 0)).toBe(340);
+  await expectNoHorizontalScroll(page);
+
+  // A medida sobrevive ao reload.
+  await page.reload();
+  await page.waitForURL(/\/w\/[0-9a-f]{24}$/);
+  await expect(handle).toHaveAttribute('aria-valuenow', '340');
+
+  // Ocultar e mostrar pela topbar.
+  const topbar = page.getByRole('banner');
+
+  await topbar.getByRole('button', { name: 'Ocultar a navegação do workspace' }).click();
+  await expect(sidebar).toBeHidden();
+  await expectNoHorizontalScroll(page);
+
+  await topbar.getByRole('button', { name: 'Mostrar a navegação do workspace' }).click();
+  await expect(sidebar).toBeVisible();
+
+  // Clique duplo na alça devolve a largura padrão para os outros testes.
+  await handle.dblclick();
+  await expect(handle).toHaveAttribute('aria-valuenow', '280');
+});
