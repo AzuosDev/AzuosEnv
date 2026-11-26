@@ -117,7 +117,7 @@ export class TasksService {
       createdBy: ctx.userId,
     });
 
-    this.events.emit(TASK_CREATED, this.baseEvent(ctx, task) satisfies TaskCreatedEvent);
+    await this.events.emitAsync(TASK_CREATED, this.baseEvent(ctx, task) satisfies TaskCreatedEvent);
 
     return task;
   }
@@ -266,7 +266,7 @@ export class TasksService {
 
     await task.save();
 
-    this.events.emit(TASK_MOVED, {
+    await this.events.emitAsync(TASK_MOVED, {
       ...this.baseEvent(ctx, task),
       fromListId,
       toListId: task.listId,
@@ -502,7 +502,7 @@ export class TasksService {
     await this.saveWithChanges(ctx, task, diff);
 
     if (String(fromListId) !== String(task.listId)) {
-      this.events.emit(TASK_MOVED, {
+      await this.events.emitAsync(TASK_MOVED, {
         ...this.baseEvent(ctx, task),
         fromListId,
         toListId: task.listId,
@@ -523,7 +523,7 @@ export class TasksService {
       )
       .exec();
 
-    this.events.emit(TASK_DELETED, this.baseEvent(ctx, task) satisfies TaskDeletedEvent);
+    await this.events.emitAsync(TASK_DELETED, this.baseEvent(ctx, task) satisfies TaskDeletedEvent);
   }
 
   /** Moves the primary list, keeping the secondary ones. */
@@ -665,7 +665,10 @@ export class TasksService {
       createdBy: task.createdBy,
     });
 
-    this.events.emit(TASK_CREATED, this.baseEvent(ctx, created) satisfies TaskCreatedEvent);
+    await this.events.emitAsync(
+      TASK_CREATED,
+      this.baseEvent(ctx, created) satisfies TaskCreatedEvent,
+    );
 
     return created;
   }
@@ -790,7 +793,7 @@ export class TasksService {
 
     await task.save();
 
-    this.events.emit(TASK_UPDATED, {
+    await this.events.emitAsync(TASK_UPDATED, {
       ...this.baseEvent(ctx, task),
       changes,
     } satisfies TaskUpdatedEvent);

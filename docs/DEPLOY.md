@@ -43,6 +43,10 @@ Fonte completa: `backend/.env.example`. Obrigatórias e mais relevantes:
 | `JWT_REFRESH_SECRET` | **sim** | — | Mínimo 16 caracteres. |
 | `JWT_ACCESS_TTL` / `JWT_REFRESH_TTL` | não | `15m` / `30d` | |
 | `COOKIE_SECURE` | não | `false` | **`true` em produção** (cookie do refresh por HTTPS). |
+| `ABLY_API_KEY` | não | vazio | Tempo real do chat e das notificações. **Obrigatória em host serverless** (Vercel): com ela o servidor publica no Ably por REST e o navegador conecta lá. Vazia = gateway Socket.IO do próprio processo (Docker/Railway). Formato `<appId>.<keyId>:<secret>`. |
+| `VAPID_PUBLIC_KEY` | não | vazio | Web Push (aviso com o app fechado). Gere o par com `npm run vapid` (backend). Sem ela a tela de ajustes esconde o canal Push. |
+| `VAPID_PRIVATE_KEY` | não¹ | vazio | ¹ Obrigatória quando a pública está preenchida; o boot falha sem ela. **Nunca** vai para o front. |
+| `VAPID_SUBJECT` | não | `mailto:no-reply@azuos.dev` | Contato exigido pelo protocolo do Web Push. |
 | `COOKIE_DOMAIN` | não | vazio | Domínio do cookie quando front e API não compartilham host. |
 | `UPLOAD_DIR` | não | `./storage/uploads` | Só vale sem `S3_BUCKET`; monte um volume. Em host serverless o disco é efêmero. |
 | `S3_BUCKET` | em serverless | vazio | Bucket dos anexos (R2, S3, MinIO). Preenchido, troca o disco local pelo bucket. |
@@ -139,9 +143,27 @@ Com isso nada mais é terceira parte. As variáveis mudam assim:
 A URI nova do login tem que entrar em "URIs de redirecionamento autorizados" do client
 OAuth no Console do Google; a antiga (`azuosenv-api.vercel.app/...`) pode ficar.
 
-O tempo real (Socket.IO) **não funciona nessa hospedagem** com ou sem o rewrite: função
-serverless não mantém WebSocket. O rewrite de `/ws/:path*` fica pronto para quando a API
-rodar em um host que aceite conexão longa.
+### Tempo real na Vercel (Ably)
+
+O gateway Socket.IO **não funciona nessa hospedagem**: função serverless não mantém
+WebSocket. Por isso o tempo real é uma camada com dois transportes (`RealtimeService`):
+
+| Hospedagem | Transporte | Como ligar |
+| --- | --- | --- |
+| Vercel (serverless) | Ably | `ABLY_API_KEY` no projeto da **API** |
+| Docker / Railway (processo longo) | Socket.IO | deixar `ABLY_API_KEY` vazia |
+
+Na Vercel, sem `ABLY_API_KEY` **o app não recebe nada em tempo real**: a aba cai na
+reserva de sincronização (busca a cada 30 s com a aba visível) e o aviso fora do app
+depende do Web Push. Com a chave, o servidor publica por REST dentro do próprio request
+que salvou o dado, e o navegador conecta no Ably com token pedido em
+`POST /api/v1/realtime/token` — recortado nos canais do usuário (`user:{id}`,
+`ws:{wsId}` dos workspaces ativos e `channel:{id}` dos canais visíveis), com 1 h de
+validade. A chave do Ably fica só no servidor; o front nunca a vê.
+
+Digitação ("digitando…"), presença na tarefa e a edição ao vivo do quadro continuam só
+no transporte Socket.IO: são do cliente para o servidor. O rewrite de `/ws/:path*` fica
+pronto para quando a API rodar em host de conexão longa.
 
 O rewrite não cria limite novo de upload: o backend já é uma Vercel Function, então o
 teto de 4,5 MB de corpo vale igual com ou sem proxy.

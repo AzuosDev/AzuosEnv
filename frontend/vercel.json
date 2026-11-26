@@ -41,7 +41,7 @@
       ]
     },
     {
-      "source": "/(index.html|sw.js|registerSW.js|manifest.webmanifest|offline.html)",
+      "source": "/(index.html|sw.js|push-sw.js|registerSW.js|manifest.webmanifest|offline.html)",
       "headers": [
         {
           "key": "Cache-Control",

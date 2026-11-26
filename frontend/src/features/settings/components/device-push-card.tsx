@@ -1,5 +1,9 @@
 import { Bell, BellOff, BellRing } from 'lucide-react';
+import { useState } from 'react';
+import { errorMessage } from '@/api/errors';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/toast';
+import { sendPushTest } from '../api';
 import { usePush } from '../use-push';
 import { SettingsCard, SettingsRow } from './settings-card';
 
@@ -44,6 +48,52 @@ const COPY = {
  */
 export function DevicePushCard() {
   const push = usePush();
+  const [testing, setTesting] = useState(false);
+
+  /**
+   * Aviso de teste pelo caminho real (servidor → serviço de push → navegador).
+   * O resultado por dispositivo evita o beco sem saída de "liguei e não chega":
+   * a falha aparece aqui, com o status que o serviço de push devolveu.
+   */
+  const test = async (): Promise<void> => {
+    setTesting(true);
+
+    try {
+      const { configured, results } = await sendPushTest();
+
+      if (!configured) {
+        toast.error('O servidor não tem chaves VAPID configuradas.');
+
+        return;
+      }
+
+      if (results.length === 0) {
+        toast.error('Nenhum dispositivo inscrito nesta conta.');
+
+        return;
+      }
+
+      const failure = results.find((result) => !result.ok);
+
+      if (!failure) {
+        toast.success(
+          results.length === 1
+            ? 'Aviso de teste enviado. Ele deve aparecer na área de trabalho em instantes.'
+            : `Aviso de teste enviado para ${results.length} dispositivos.`,
+        );
+
+        return;
+      }
+
+      toast.error(
+        `${failure.host} recusou (${failure.statusCode ?? 'sem status'}): ${failure.message}`,
+      );
+    } catch (error) {
+      toast.error(errorMessage(error));
+    } finally {
+      setTesting(false);
+    }
+  };
   const copy = COPY[push.state];
   const actionable = push.state === 'on' || push.state === 'off' || push.state === 'local';
   const label =
@@ -75,15 +125,22 @@ export function DevicePushCard() {
         description={copy.description}
         control={
           actionable ? (
-            <Button
-              variant={push.state === 'on' ? 'outline' : 'signal'}
-              disabled={push.busy}
-              onClick={() => {
-                void (push.state === 'on' ? push.disable() : push.enable());
-              }}
-            >
-              {label}
-            </Button>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              {push.state === 'on' ? (
+                <Button variant="ghost" disabled={testing} onClick={() => void test()}>
+                  {testing ? 'Enviando…' : 'Enviar teste'}
+                </Button>
+              ) : null}
+              <Button
+                variant={push.state === 'on' ? 'outline' : 'signal'}
+                disabled={push.busy}
+                onClick={() => {
+                  void (push.state === 'on' ? push.disable() : push.enable());
+                }}
+              >
+                {label}
+              </Button>
+            </div>
           ) : null
         }
       />

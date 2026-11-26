@@ -6,7 +6,7 @@ import type { PanelSize } from '@/components/ui/resizable-panel';
 import type { AuthUser } from '@/api/types';
 import { AiDrawer } from '@/features/ai/components/ai-drawer';
 import { UserMenu } from '@/features/auth/components/user-menu';
-import { useSocket } from '@/features/realtime/socket';
+import { useSocket } from '@/features/realtime/realtime';
 import { CommandPalette } from '@/features/search/components/command-palette';
 import { NewTaskButton } from '@/features/tasks/components/new-task-dialog';
 import { TimerSlot } from './timer-slot';

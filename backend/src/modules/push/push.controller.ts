@@ -6,6 +6,7 @@ import {
   CreatePushSubscriptionDto,
   PushPublicKeyDto,
   PushSubscriptionResultDto,
+  PushTestResultDto,
 } from './dto/push-subscription.dto';
 import { PushService } from './push.service';
 
@@ -36,6 +37,20 @@ export class PushController {
     const saved = await this.push.subscribe(new Types.ObjectId(user.id), dto);
 
     return { id: String(saved._id) };
+  }
+
+  @Post('test')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Manda um aviso de teste para os dispositivos deste usuário',
+    description:
+      'Devolve o resultado de cada dispositivo (status do serviço de push e motivo da falha), ' +
+      'e remove a inscrição que o navegador descartou ou que nasceu com outra chave VAPID.',
+  })
+  async test(@CurrentUser() user: AuthenticatedUser): Promise<PushTestResultDto> {
+    const results = await this.push.sendTest(new Types.ObjectId(user.id));
+
+    return { configured: this.push.publicKey !== '', results };
   }
 
   @Delete()

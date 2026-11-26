@@ -34,7 +34,7 @@ export class AiAgentsService {
       createdBy: ctx.userId,
     });
 
-    this.changed(ctx.workspaceId);
+    await this.changed(ctx.workspaceId);
 
     return agent;
   }
@@ -89,7 +89,7 @@ export class AiAgentsService {
     }
 
     await agent.save();
-    this.changed(ctx.workspaceId);
+    await this.changed(ctx.workspaceId);
 
     return agent;
   }
@@ -98,7 +98,7 @@ export class AiAgentsService {
     const agent = await this.get(ctx, agentId);
 
     await this.model.deleteOne({ _id: agent._id }).exec();
-    this.changed(ctx.workspaceId);
+    await this.changed(ctx.workspaceId);
   }
 
   /** Every active agent of every workspace; read by the scheduler. */
@@ -130,8 +130,8 @@ export class AiAgentsService {
     return config ? (JSON.parse(JSON.stringify(config)) as Record<string, unknown>) : {};
   }
 
-  private changed(workspaceId: Types.ObjectId): void {
-    this.events.emit(AI_AGENTS_CHANGED, {
+  private async changed(workspaceId: Types.ObjectId): Promise<void> {
+    await this.events.emitAsync(AI_AGENTS_CHANGED, {
       workspaceId: String(workspaceId),
     } satisfies AiAgentsChangedEvent);
   }

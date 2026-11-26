@@ -18,13 +18,38 @@ const BY_CODE: Record<string, string> = {
 export class ApiRequestError extends Error {
   readonly statusCode: number;
   readonly code: string;
+  /** Espera pedida pelo servidor no `Retry-After` (ms); nula quando não veio. */
+  readonly retryAfterMs: number | null;
 
-  constructor(body: ApiErrorBody) {
+  constructor(body: ApiErrorBody, retryAfterMs: number | null = null) {
     super(BY_CODE[body.code] ?? body.message ?? FALLBACK);
     this.name = 'ApiRequestError';
     this.statusCode = body.statusCode;
     this.code = body.code;
+    this.retryAfterMs = retryAfterMs;
   }
+}
+
+/**
+ * `Retry-After` em segundos ou como data HTTP. Quem repete a chamada sozinho
+ * (a reserva de sincronização) respeita esse prazo em vez do próprio backoff.
+ */
+export function retryAfterMsOf(response: Response): number | null {
+  const header = response.headers.get('Retry-After');
+
+  if (!header) {
+    return null;
+  }
+
+  const seconds = Number(header);
+
+  if (Number.isFinite(seconds)) {
+    return Math.max(0, seconds * 1000);
+  }
+
+  const date = Date.parse(header);
+
+  return Number.isNaN(date) ? null : Math.max(0, date - Date.now());
 }
 
 interface ApiResult<T> {
@@ -50,7 +75,10 @@ function toBody(error: unknown, response: Response): ApiErrorBody {
 /** Devolve o corpo da resposta ou lança ApiRequestError. */
 export function unwrap<T>(result: ApiResult<T>): T {
   if (!result.response.ok || result.data === undefined) {
-    throw new ApiRequestError(toBody(result.error, result.response));
+    throw new ApiRequestError(
+      toBody(result.error, result.response),
+      retryAfterMsOf(result.response),
+    );
   }
 
   return result.data;

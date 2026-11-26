@@ -61,30 +61,35 @@ import {
   WhiteboardEventBase,
   WhiteboardUpdatedEvent,
 } from '../whiteboards/whiteboard-events';
-import { EventsGateway } from './events.gateway';
 import { roomName, userRoom } from './realtime-rooms';
+import { RealtimeService } from './realtime.service';
 
-/** Relays the domain events to the Socket.IO rooms that watch them. */
+/**
+ * Leva os eventos de domínio aos canais que os assistem, pelo transporte do
+ * deploy (gateway Socket.IO ou Ably). Cada handler devolve a promessa da
+ * publicação: em serverless o envio precisa terminar dentro do request, então
+ * quem emite com `emitAsync` espera por ela.
+ */
 @Injectable()
 export class RealtimeListener {
-  constructor(private readonly gateway: EventsGateway) {}
+  constructor(private readonly realtime: RealtimeService) {}
 
   @OnEvent(TASK_CREATED)
-  onTaskCreated(event: TaskCreatedEvent): void {
-    this.gateway.emitToRooms(taskRooms(event), 'task.created', taskPayload(event));
+  async onTaskCreated(event: TaskCreatedEvent): Promise<void> {
+    await this.realtime.publish(taskRooms(event), 'task.created', taskPayload(event));
   }
 
   @OnEvent(TASK_UPDATED)
-  onTaskUpdated(event: TaskUpdatedEvent): void {
-    this.gateway.emitToRooms(taskRooms(event), 'task.updated', {
+  async onTaskUpdated(event: TaskUpdatedEvent): Promise<void> {
+    await this.realtime.publish(taskRooms(event), 'task.updated', {
       ...taskPayload(event),
       changes: event.changes,
     });
   }
 
   @OnEvent(TASK_MOVED)
-  onTaskMoved(event: TaskMovedEvent): void {
-    this.gateway.emitToRooms(
+  async onTaskMoved(event: TaskMovedEvent): Promise<void> {
+    await this.realtime.publish(
       [...taskRooms(event), roomName('list', String(event.fromListId))],
       'task.moved',
       {
@@ -96,39 +101,39 @@ export class RealtimeListener {
   }
 
   @OnEvent(TASK_DELETED)
-  onTaskDeleted(event: TaskDeletedEvent): void {
-    this.gateway.emitToRooms(taskRooms(event), 'task.deleted', taskPayload(event));
+  async onTaskDeleted(event: TaskDeletedEvent): Promise<void> {
+    await this.realtime.publish(taskRooms(event), 'task.deleted', taskPayload(event));
   }
 
   @OnEvent(COMMENT_CREATED)
-  onCommentCreated(event: CommentCreatedEvent): void {
-    this.gateway.emitToRooms(commentRooms(event), 'comment.created', commentPayload(event));
+  async onCommentCreated(event: CommentCreatedEvent): Promise<void> {
+    await this.realtime.publish(commentRooms(event), 'comment.created', commentPayload(event));
   }
 
   @OnEvent(COMMENT_UPDATED)
-  onCommentUpdated(event: CommentUpdatedEvent): void {
-    this.gateway.emitToRooms(commentRooms(event), 'comment.updated', {
+  async onCommentUpdated(event: CommentUpdatedEvent): Promise<void> {
+    await this.realtime.publish(commentRooms(event), 'comment.updated', {
       ...commentPayload(event),
       changes: event.changes,
     });
   }
 
   @OnEvent(PAGE_CREATED)
-  onPageCreated(event: PageCreatedEvent): void {
-    this.gateway.emitToRooms(pageRooms(event), 'page.created', pagePayload(event));
+  async onPageCreated(event: PageCreatedEvent): Promise<void> {
+    await this.realtime.publish(pageRooms(event), 'page.created', pagePayload(event));
   }
 
   @OnEvent(PAGE_UPDATED)
-  onPageUpdated(event: PageUpdatedEvent): void {
-    this.gateway.emitToRooms(pageRooms(event), 'page.updated', {
+  async onPageUpdated(event: PageUpdatedEvent): Promise<void> {
+    await this.realtime.publish(pageRooms(event), 'page.updated', {
       ...pagePayload(event),
       changes: event.changes,
     });
   }
 
   @OnEvent(PAGE_COMMENTED)
-  onPageCommented(event: PageCommentedEvent): void {
-    this.gateway.emitToRooms(pageRooms(event), 'page.commented', {
+  async onPageCommented(event: PageCommentedEvent): Promise<void> {
+    await this.realtime.publish(pageRooms(event), 'page.commented', {
       ...pagePayload(event),
       commentId: String(event.commentId),
       anchor: event.anchor,
@@ -136,26 +141,29 @@ export class RealtimeListener {
   }
 
   @OnEvent(MESSAGE_CREATED)
-  onMessageCreated(event: MessageCreatedEvent): void {
-    this.gateway.emitToRooms(messageRooms(event), 'message.new', messagePayload(event));
+  async onMessageCreated(event: MessageCreatedEvent): Promise<void> {
+    await Promise.all([
+      this.realtime.publish(messageRooms(event), 'message.new', messagePayload(event)),
+      this.realtime.publish(activityRooms(event), 'channel.activity', messagePayload(event)),
+    ]);
   }
 
   @OnEvent(MESSAGE_UPDATED)
-  onMessageUpdated(event: MessageUpdatedEvent): void {
-    this.gateway.emitToRooms(messageRooms(event), 'message.updated', {
+  async onMessageUpdated(event: MessageUpdatedEvent): Promise<void> {
+    await this.realtime.publish(messageRooms(event), 'message.updated', {
       ...messagePayload(event),
       changes: event.changes,
     });
   }
 
   @OnEvent(MESSAGE_DELETED)
-  onMessageDeleted(event: MessageDeletedEvent): void {
-    this.gateway.emitToRooms(messageRooms(event), 'message.deleted', messagePayload(event));
+  async onMessageDeleted(event: MessageDeletedEvent): Promise<void> {
+    await this.realtime.publish(messageRooms(event), 'message.deleted', messagePayload(event));
   }
 
   @OnEvent(CHANNEL_READ)
-  onChannelRead(event: ChannelReadEvent): void {
-    this.gateway.emitToRooms([roomName('channel', String(event.channelId))], 'channel.read', {
+  async onChannelRead(event: ChannelReadEvent): Promise<void> {
+    await this.realtime.publish([roomName('channel', String(event.channelId))], 'channel.read', {
       workspaceId: String(event.workspaceId),
       channelId: String(event.channelId),
       userId: String(event.userId),
@@ -164,36 +172,40 @@ export class RealtimeListener {
   }
 
   @OnEvent(CHANNEL_DELIVERED)
-  onChannelDelivered(event: ChannelDeliveredEvent): void {
-    this.gateway.emitToRooms([roomName('channel', String(event.channelId))], 'channel.delivered', {
-      workspaceId: String(event.workspaceId),
-      channelId: String(event.channelId),
-      userId: String(event.userId),
-      lastDeliveredAt: event.lastDeliveredAt.toISOString(),
-    });
+  async onChannelDelivered(event: ChannelDeliveredEvent): Promise<void> {
+    await this.realtime.publish(
+      [roomName('channel', String(event.channelId))],
+      'channel.delivered',
+      {
+        workspaceId: String(event.workspaceId),
+        channelId: String(event.channelId),
+        userId: String(event.userId),
+        lastDeliveredAt: event.lastDeliveredAt.toISOString(),
+      },
+    );
   }
 
   @OnEvent(WHITEBOARD_CREATED)
-  onWhiteboardCreated(event: WhiteboardCreatedEvent): void {
-    this.gateway.emitToRooms(boardRooms(event), 'whiteboard.created', boardPayload(event));
+  async onWhiteboardCreated(event: WhiteboardCreatedEvent): Promise<void> {
+    await this.realtime.publish(boardRooms(event), 'whiteboard.created', boardPayload(event));
   }
 
   @OnEvent(WHITEBOARD_UPDATED)
-  onWhiteboardUpdated(event: WhiteboardUpdatedEvent): void {
-    this.gateway.emitToRooms(boardRooms(event), 'whiteboard.updated', {
+  async onWhiteboardUpdated(event: WhiteboardUpdatedEvent): Promise<void> {
+    await this.realtime.publish(boardRooms(event), 'whiteboard.updated', {
       ...boardPayload(event),
       ops: event.ops,
     });
   }
 
   @OnEvent(WHITEBOARD_DELETED)
-  onWhiteboardDeleted(event: WhiteboardDeletedEvent): void {
-    this.gateway.emitToRooms(boardRooms(event), 'whiteboard.deleted', boardPayload(event));
+  async onWhiteboardDeleted(event: WhiteboardDeletedEvent): Promise<void> {
+    await this.realtime.publish(boardRooms(event), 'whiteboard.deleted', boardPayload(event));
   }
 
   @OnEvent(WA_MESSAGE_CREATED)
-  onWaMessageCreated(event: WaMessageCreatedEvent): void {
-    this.gateway.emitToRooms(whatsappRooms(event.workspaceId), 'message.new', {
+  async onWaMessageCreated(event: WaMessageCreatedEvent): Promise<void> {
+    await this.realtime.publish(whatsappRooms(event.workspaceId), 'message.new', {
       workspaceId: String(event.workspaceId),
       conversationId: String(event.conversationId),
       messageId: String(event.messageId),
@@ -205,8 +217,8 @@ export class RealtimeListener {
   }
 
   @OnEvent(WA_MESSAGE_STATUS)
-  onWaMessageStatus(event: WaMessageStatusEvent): void {
-    this.gateway.emitToRooms(whatsappRooms(event.workspaceId), 'message.status', {
+  async onWaMessageStatus(event: WaMessageStatusEvent): Promise<void> {
+    await this.realtime.publish(whatsappRooms(event.workspaceId), 'message.status', {
       workspaceId: String(event.workspaceId),
       conversationId: String(event.conversationId),
       messageId: String(event.messageId),
@@ -216,8 +228,8 @@ export class RealtimeListener {
   }
 
   @OnEvent(WA_CONVERSATION_UPDATED)
-  onWaConversationUpdated(event: WaConversationUpdatedEvent): void {
-    this.gateway.emitToRooms(whatsappRooms(event.workspaceId), 'conversation.updated', {
+  async onWaConversationUpdated(event: WaConversationUpdatedEvent): Promise<void> {
+    await this.realtime.publish(whatsappRooms(event.workspaceId), 'conversation.updated', {
       workspaceId: String(event.workspaceId),
       conversationId: String(event.conversationId),
       status: event.status,
@@ -227,8 +239,8 @@ export class RealtimeListener {
   }
 
   @OnEvent(NOTIFICATION_CREATED)
-  onNotificationCreated(event: NotificationCreatedEvent): void {
-    this.gateway.emitToRooms([userRoom(String(event.userId))], 'notification.new', {
+  async onNotificationCreated(event: NotificationCreatedEvent): Promise<void> {
+    await this.realtime.publish([userRoom(String(event.userId))], 'notification.new', {
       id: String(event.notificationId),
       workspaceId: String(event.workspaceId),
       type: event.type,
@@ -295,11 +307,29 @@ function messageRooms(event: MessageEventBase): string[] {
   return [roomName('channel', String(event.channelId))];
 }
 
+/**
+ * Onde o resumo da mensagem nova chega para quem está fora do Chat. DM, grupo e
+ * canal privado têm lista de membros, então cada um recebe na própria sala — e
+ * o autor não precisa de aviso do que ele mesmo escreveu. Canal aberto não tem
+ * lista: o resumo vai na sala do workspace, que toda aba assina, e a aba
+ * descarta o que veio dela mesma.
+ */
+function activityRooms(event: MessageEventBase): string[] {
+  if (event.channelPrivate || event.channelType !== 'channel') {
+    return event.memberIds
+      .filter((memberId) => !memberId.equals(event.authorId))
+      .map((memberId) => userRoom(String(memberId)));
+  }
+
+  return [roomName('ws', String(event.workspaceId))];
+}
+
 function messagePayload(event: MessageEventBase): Record<string, unknown> {
   return {
     workspaceId: String(event.workspaceId),
     channelId: String(event.channelId),
     channelType: event.channelType,
+    channelName: event.channelName,
     messageId: String(event.messageId),
     parentMessageId: event.parentMessageId ? String(event.parentMessageId) : null,
     authorId: String(event.authorId),

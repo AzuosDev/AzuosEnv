@@ -90,6 +90,28 @@ export async function subscribeToPush(body: PushSubscriptionInput): Promise<void
   unwrap(await api.POST('/api/v1/users/me/push-subscriptions', { body }));
 }
 
+/** Resultado do aviso de teste em um dispositivo do usuário. */
+export interface PushTestResult {
+  host: string;
+  ok: boolean;
+  statusCode: number | null;
+  message: string;
+}
+
+/**
+ * Manda um aviso de teste para os dispositivos deste usuário e devolve o que
+ * cada um respondeu: é o que diz se a falha é do servidor, do serviço de push
+ * ou do próprio navegador.
+ */
+export async function sendPushTest(): Promise<{
+  configured: boolean;
+  results: PushTestResult[];
+}> {
+  const body = unwrap(await api.POST('/api/v1/users/me/push-subscriptions/test'));
+
+  return { configured: body.configured, results: body.results as PushTestResult[] };
+}
+
 export async function unsubscribeFromPush(endpoint: string): Promise<void> {
   unwrap(
     await api.DELETE('/api/v1/users/me/push-subscriptions', { params: { query: { endpoint } } }),

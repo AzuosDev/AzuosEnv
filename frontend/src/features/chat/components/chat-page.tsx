@@ -68,10 +68,7 @@ export function ChatPage({ wsId, channelId, threadId }: ChatPageProps) {
   const role = workspace.role;
   const canCreate = role !== 'guest';
 
-  useChatRealtime(
-    wsId,
-    items.map((channel) => channel.id),
-  );
+  useChatRealtime(wsId, active?.id);
 
   const go = (next: { canal?: string; thread?: string }): void => {
     void navigate({

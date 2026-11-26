@@ -56,3 +56,30 @@ export class PushPublicKeyDto {
   })
   publicKey: string;
 }
+
+/** Resultado do envio de teste em um dispositivo do usuário. */
+export class PushDeliveryResultDto {
+  @ApiProperty({ description: 'Serviço de push do navegador (fcm.googleapis.com, wns2-…).' })
+  host: string;
+
+  @ApiProperty({ description: 'O serviço de push aceitou o aviso.' })
+  ok: boolean;
+
+  @ApiProperty({
+    nullable: true,
+    type: Number,
+    description: 'Status devolvido pelo serviço de push; nulo quando a falha foi antes do envio.',
+  })
+  statusCode: number | null;
+
+  @ApiProperty({ description: 'Motivo da falha; vazio quando deu certo.' })
+  message: string;
+}
+
+export class PushTestResultDto {
+  @ApiProperty({ description: 'O servidor tem chaves VAPID configuradas.' })
+  configured: boolean;
+
+  @ApiProperty({ type: [PushDeliveryResultDto], description: 'Um resultado por dispositivo.' })
+  results: PushDeliveryResultDto[];
+}

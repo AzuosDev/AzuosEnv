@@ -78,7 +78,7 @@ export class DocPagesService {
       updatedBy: ctx.userId,
     });
 
-    this.events.emit(PAGE_CREATED, this.baseEvent(ctx, page) satisfies PageCreatedEvent);
+    await this.events.emitAsync(PAGE_CREATED, this.baseEvent(ctx, page) satisfies PageCreatedEvent);
 
     return page;
   }
@@ -147,7 +147,7 @@ export class DocPagesService {
     page.updatedBy = ctx.userId;
     await page.save();
 
-    this.events.emit(PAGE_UPDATED, {
+    await this.events.emitAsync(PAGE_UPDATED, {
       ...this.baseEvent(ctx, page),
       changes,
     } satisfies PageUpdatedEvent);
@@ -183,7 +183,7 @@ export class DocPagesService {
 
     await page.save();
 
-    this.events.emit(PAGE_UPDATED, {
+    await this.events.emitAsync(PAGE_UPDATED, {
       ...this.baseEvent(ctx, page),
       changes,
     } satisfies PageUpdatedEvent);
@@ -252,7 +252,7 @@ export class DocPagesService {
 
     await page.save();
 
-    this.events.emit(PAGE_UPDATED, {
+    await this.events.emitAsync(PAGE_UPDATED, {
       ...this.baseEvent(ctx, page),
       changes,
     } satisfies PageUpdatedEvent);

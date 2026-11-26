@@ -49,10 +49,7 @@ export function ChannelSurface({ wsId, locationType, locationId, role }: Channel
   const items = channels.data ?? [];
   const active = items.find((channel) => channel.id === pickedId) ?? items[0] ?? null;
 
-  useChatRealtime(
-    wsId,
-    items.map((channel) => channel.id),
-  );
+  useChatRealtime(wsId, active?.id);
 
   if (channels.isPending) {
     return (

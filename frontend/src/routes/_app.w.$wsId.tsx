@@ -4,14 +4,13 @@ import type { Workspace } from '@/api/types';
 import { useSession } from '@/features/auth/session';
 import { HierarchyProvider } from '@/features/hierarchy/components/hierarchy-provider';
 import { useTitleBadge } from '@/features/inbox/hooks/use-title-badge';
-import { SocketProvider } from '@/features/realtime/socket';
 import { useWorkspaceRealtime } from '@/features/realtime/use-workspace-realtime';
 import { AppShell } from '@/features/shell/components/app-shell';
 import { workspacesQuery } from '@/features/workspaces/api';
 
 /**
- * Tempo real e badge ficam dentro do SocketProvider: o hook do socket precisa
- * do contexto, e o título da aba segue a contagem do Inbox.
+ * A conexão vem do RealtimeProvider do grupo /_app; aqui só se assina a sala
+ * deste workspace e o título da aba segue a contagem do Inbox.
  */
 function WorkspaceBody({ wsId, workspaces }: { wsId: string; workspaces: Workspace[] }) {
   const user = useSession();
@@ -32,11 +31,7 @@ function WorkspaceLayout() {
   const { wsId } = Route.useParams();
   const { data: workspaces } = useSuspenseQuery(workspacesQuery);
 
-  return (
-    <SocketProvider wsId={wsId}>
-      <WorkspaceBody wsId={wsId} workspaces={workspaces} />
-    </SocketProvider>
-  );
+  return <WorkspaceBody wsId={wsId} workspaces={workspaces} />;
 }
 
 export const Route = createFileRoute('/_app/w/$wsId')({

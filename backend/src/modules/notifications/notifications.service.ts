@@ -72,8 +72,25 @@ export class NotificationsService {
   /**
    * Writes one entry per recipient that wants the type in the inbox and mails the
    * ones that asked for e-mail. The actor is always dropped.
+   *
+   * Nunca lança: quem emite o evento de domínio agora espera por este trabalho
+   * (em serverless ele seria cortado no fim do request), e uma falha de aviso
+   * não pode derrubar a escrita que o originou.
    */
   async deliver(input: DeliverNotificationInput): Promise<NotificationDocument[]> {
+    try {
+      return await this.deliverOrFail(input);
+    } catch (error) {
+      this.logger.error(
+        `Falha ao entregar notificação de ${input.type}`,
+        error instanceof Error ? error.stack : String(error),
+      );
+
+      return [];
+    }
+  }
+
+  private async deliverOrFail(input: DeliverNotificationInput): Promise<NotificationDocument[]> {
     const recipients = this.eligible(input);
 
     if (recipients.length === 0) {
@@ -271,7 +288,8 @@ export class NotificationsService {
       bucket: recipient.bucket,
     });
 
-    this.events.emit(NOTIFICATION_CREATED, {
+    // Esperado de propósito: em serverless o aviso precisa sair dentro do request.
+    await this.events.emitAsync(NOTIFICATION_CREATED, {
       workspaceId: doc.workspaceId,
       notificationId: doc._id,
       userId: doc.userId,

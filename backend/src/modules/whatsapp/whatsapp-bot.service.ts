@@ -260,7 +260,7 @@ export class WhatsappBotService {
       conversation.mode = 'human';
       conversation.botPausedUntil = null;
       await conversation.save();
-      this.conversations.emitUpdated(conversation);
+      await this.conversations.emitUpdated(conversation);
       await this.conversations.notifyAssignee(conversation, action.userId, null);
 
       return;
@@ -269,7 +269,7 @@ export class WhatsappBotService {
     if (action.kind === 'priority') {
       conversation.priority = action.priority;
       await conversation.save();
-      this.conversations.emitUpdated(conversation);
+      await this.conversations.emitUpdated(conversation);
 
       return;
     }
@@ -298,7 +298,7 @@ export class WhatsappBotService {
     conversation.mode = 'human';
     conversation.botPausedUntil = null;
     await conversation.save();
-    this.conversations.emitUpdated(conversation);
+    await this.conversations.emitUpdated(conversation);
 
     if (!conversation.assigneeId) {
       await this.conversations.notifyNewConversation(conversation);

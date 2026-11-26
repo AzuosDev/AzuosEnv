@@ -8043,6 +8043,52 @@
         ]
       }
     },
+    "/api/v1/users/me/push-subscriptions/test": {
+      "post": {
+        "description": "Devolve o resultado de cada dispositivo (status do serviço de push e motivo da falha), e remove a inscrição que o navegador descartou ou que nasceu com outra chave VAPID.",
+        "operationId": "PushController_test",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushTestResultDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Manda um aviso de teste para os dispositivos deste usuário",
+        "tags": [
+          "inbox"
+        ]
+      }
+    },
+    "/api/v1/realtime/token": {
+      "post": {
+        "description": "No transporte Ably devolve um token recortado nos canais do usuário (a própria sala, os workspaces ativos e os canais de chat visíveis). No Socket.IO só diz o transporte: a conexão usa o access token no handshake.",
+        "operationId": "RealtimeController_token",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RealtimeTokenDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Credencial de tempo real desta aba",
+        "tags": [
+          "realtime"
+        ]
+      }
+    },
     "/api/v1/workspaces/{wsId}/search": {
       "get": {
         "operationId": "SearchController_run",
@@ -23476,6 +23522,85 @@
         },
         "required": [
           "id"
+        ]
+      },
+      "PushDeliveryResultDto": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "description": "Serviço de push do navegador (fcm.googleapis.com, wns2-…)."
+          },
+          "ok": {
+            "type": "boolean",
+            "description": "O serviço de push aceitou o aviso."
+          },
+          "statusCode": {
+            "type": "number",
+            "nullable": true,
+            "description": "Status devolvido pelo serviço de push; nulo quando a falha foi antes do envio."
+          },
+          "message": {
+            "type": "string",
+            "description": "Motivo da falha; vazio quando deu certo."
+          }
+        },
+        "required": [
+          "host",
+          "ok",
+          "statusCode",
+          "message"
+        ]
+      },
+      "PushTestResultDto": {
+        "type": "object",
+        "properties": {
+          "configured": {
+            "type": "boolean",
+            "description": "O servidor tem chaves VAPID configuradas."
+          },
+          "results": {
+            "description": "Um resultado por dispositivo.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PushDeliveryResultDto"
+            }
+          }
+        },
+        "required": [
+          "configured",
+          "results"
+        ]
+      },
+      "RealtimeTokenDto": {
+        "type": "object",
+        "properties": {
+          "transport": {
+            "enum": [
+              "socket.io",
+              "ably"
+            ],
+            "type": "string",
+            "description": "Transporte deste deploy: `ably` quando o servidor é serverless, `socket.io` em processo longo."
+          },
+          "token": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true,
+            "description": "Pedido de token do Ably, assinado e recortado nos canais do usuário; nulo no transporte socket.io."
+          },
+          "channels": {
+            "description": "Canais que este token pode assinar (user:{id}, ws:{wsId}, channel:{id}).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "transport",
+          "token",
+          "channels"
         ]
       },
       "SearchTaskHitDto": {

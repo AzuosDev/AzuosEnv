@@ -1840,6 +1840,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/users/me/push-subscriptions/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Manda um aviso de teste para os dispositivos deste usuário
+         * @description Devolve o resultado de cada dispositivo (status do serviço de push e motivo da falha), e remove a inscrição que o navegador descartou ou que nasceu com outra chave VAPID.
+         */
+        post: operations["PushController_test"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/realtime/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Credencial de tempo real desta aba
+         * @description No transporte Ably devolve um token recortado nos canais do usuário (a própria sala, os workspaces ativos e os canais de chat visíveis). No Socket.IO só diz o transporte: a conexão usa o access token no handshake.
+         */
+        post: operations["RealtimeController_token"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{wsId}/search": {
         parameters: {
             query?: never;
@@ -5561,6 +5601,35 @@ export interface components {
         PushSubscriptionResultDto: {
             /** @description Id da inscrição guardada. */
             id: string;
+        };
+        PushDeliveryResultDto: {
+            /** @description Serviço de push do navegador (fcm.googleapis.com, wns2-…). */
+            host: string;
+            /** @description O serviço de push aceitou o aviso. */
+            ok: boolean;
+            /** @description Status devolvido pelo serviço de push; nulo quando a falha foi antes do envio. */
+            statusCode: number | null;
+            /** @description Motivo da falha; vazio quando deu certo. */
+            message: string;
+        };
+        PushTestResultDto: {
+            /** @description O servidor tem chaves VAPID configuradas. */
+            configured: boolean;
+            /** @description Um resultado por dispositivo. */
+            results: components["schemas"]["PushDeliveryResultDto"][];
+        };
+        RealtimeTokenDto: {
+            /**
+             * @description Transporte deste deploy: `ably` quando o servidor é serverless, `socket.io` em processo longo.
+             * @enum {string}
+             */
+            transport: "socket.io" | "ably";
+            /** @description Pedido de token do Ably, assinado e recortado nos canais do usuário; nulo no transporte socket.io. */
+            token: {
+                [key: string]: unknown;
+            } | null;
+            /** @description Canais que este token pode assinar (user:{id}, ws:{wsId}, channel:{id}). */
+            channels: string[];
         };
         SearchTaskHitDto: {
             /** @enum {string} */
@@ -12035,6 +12104,44 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    PushController_test: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushTestResultDto"];
+                };
+            };
+        };
+    };
+    RealtimeController_token: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RealtimeTokenDto"];
+                };
             };
         };
     };

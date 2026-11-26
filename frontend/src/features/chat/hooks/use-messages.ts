@@ -4,8 +4,16 @@ import { errorMessage } from '@/api/errors';
 import { queryKeys } from '@/api/keys';
 import type { Message } from '@/api/types';
 import { toast } from '@/components/ui/toast';
+import { useSession } from '@/features/auth/session';
 import { deleteMessage, reactToMessage, sendMessage, updateMessage } from '../api';
 import { appendReply, prependMessage, removeMessage, replaceMessage } from '../chat-model';
+
+/** Prefixo do id da mensagem que ainda não existe no servidor. */
+export const PENDING_PREFIX = 'pendente:';
+
+export function isPendingMessage(message: Message): boolean {
+  return message.id.startsWith(PENDING_PREFIX);
+}
 
 interface Page {
   items: Message[];
@@ -40,6 +48,7 @@ export interface MessageActions {
  */
 export function useMessages(wsId: string, channelId: string): MessageActions {
   const queryClient = useQueryClient();
+  const user = useSession();
   const listKey = queryKeys.messages(wsId, channelId);
 
   const refreshActivity = useCallback(() => {
@@ -74,20 +83,56 @@ export function useMessages(wsId: string, channelId: string): MessageActions {
         ...(draft.replyToId ? { replyToId: draft.replyToId } : {}),
         ...(parentMessageId ? { parentMessageId } : {}),
       }),
-    onSuccess: (message) => {
-      if (message.parentMessageId === null) {
-        mapPages(null, (pages) => prependMessage(pages, message));
-      } else {
-        const parentId = String(message.parentMessageId);
+    /**
+     * A mensagem entra na lista antes da resposta do servidor: em host
+     * serverless a escrita leva o seu tempo, e esperar por ela fazia a conversa
+     * parecer travada. O id provisório sai quando a de verdade chega.
+     */
+    onMutate: ({ draft, parentMessageId }) => {
+      if (!user) {
+        return { pendingId: null };
+      }
 
-        mapPages(parentId, (pages) => appendReply(pages, message));
+      const pending = pendingMessage({
+        wsId,
+        channelId,
+        authorId: user.id,
+        draft,
+        parentMessageId: parentMessageId ?? null,
+      });
+
+      mapPages(parentMessageId ?? null, (pages) =>
+        parentMessageId ? appendReply(pages, pending) : prependMessage(pages, pending),
+      );
+
+      return { pendingId: pending.id };
+    },
+    onSuccess: (message, _variables, context) => {
+      const parentId = message.parentMessageId === null ? null : String(message.parentMessageId);
+
+      // Troca a provisória pela do servidor: a lista nunca mostra as duas.
+      mapPages(parentId, (pages) => {
+        const clean = context?.pendingId ? removeMessage(pages, context.pendingId) : pages;
+
+        return parentId === null ? prependMessage(clean, message) : appendReply(clean, message);
+      });
+
+      if (parentId !== null) {
         // A raiz guarda replyCount e lastReplyAt denormalizados.
         void queryClient.invalidateQueries({ queryKey: listKey });
       }
 
       refreshActivity();
     },
-    onError,
+    onError: (error, variables, context) => {
+      if (context?.pendingId) {
+        mapPages(variables.parentMessageId ?? null, (pages) =>
+          removeMessage(pages, context.pendingId as string),
+        );
+      }
+
+      onError(error);
+    },
   });
 
   const write = useMutation({
@@ -159,4 +204,41 @@ export function useMessages(wsId: string, channelId: string): MessageActions {
     sending: create.isPending,
     busyId,
   };
+}
+
+/** Mensagem provisória, com a cara da que o servidor vai devolver. */
+function pendingMessage({
+  wsId,
+  channelId,
+  authorId,
+  draft,
+  parentMessageId,
+}: {
+  wsId: string;
+  channelId: string;
+  authorId: string;
+  draft: MessageDraft;
+  parentMessageId: string | null;
+}): Message {
+  const now = new Date().toISOString();
+
+  return {
+    id: `${PENDING_PREFIX}${now}:${Math.random().toString(36).slice(2, 8)}`,
+    workspaceId: wsId,
+    channelId,
+    authorId,
+    body: draft.body as Message['body'],
+    bodyText: draft.bodyText,
+    parentMessageId,
+    replyTo: null,
+    replyCount: 0,
+    lastReplyAt: null,
+    mentions: [],
+    reactions: [],
+    attachmentIds: draft.attachmentIds ?? [],
+    editedAt: null,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  } as Message;
 }

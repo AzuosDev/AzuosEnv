@@ -1,11 +1,33 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useLocation } from '@tanstack/react-router';
 import { useCallback, useEffect, useRef } from 'react';
 import { queryKeys } from '@/api/keys';
+import { getAccessToken } from '@/api/token-store';
 import { toast } from '@/components/ui/toast';
+import { useChatActivity } from '@/features/chat/hooks/use-chat-activity';
 import { useDesktopNotice } from '@/features/inbox/hooks/use-desktop-notice';
 import { describeNotification } from '@/features/inbox/notification-model';
 import type { Notification } from '@/api/types';
-import { useSocket, useSocketEvent } from './socket';
+import { useRealtime, useRealtimeRoom, useSocketEvent } from './realtime';
+import { useSincronizacao } from './use-sincronizacao';
+
+/**
+ * Consultas que o tempo real manteria em dia. Só elas são rebuscadas pela
+ * reserva, e só as que estão na tela: o resto espera o staleTime normal.
+ */
+export function isRealtimeBackedKey(key: readonly unknown[], wsId: string): boolean {
+  if (key[0] !== 'workspaces' || key[1] !== wsId) {
+    return false;
+  }
+
+  return (
+    key[2] === 'chat-activity' ||
+    key[2] === 'inbox' ||
+    key[2] === 'channels' ||
+    key[2] === 'messages' ||
+    key[2] === 'tasks'
+  );
+}
 
 /** Payload dos eventos de tarefa do gateway. */
 interface TaskEvent {
@@ -50,8 +72,17 @@ export interface WorkspaceRealtimeOptions {
 export function useWorkspaceRealtime({ wsId, currentUserId }: WorkspaceRealtimeOptions): void {
   const queryClient = useQueryClient();
   const notice = useDesktopNotice(wsId);
-  const { connected } = useSocket();
+  const { connected } = useRealtime();
   const wasConnected = useRef(connected);
+  const location = useLocation();
+  const openChannelId = (location.search as { canal?: string }).canal;
+
+  // Sala do workspace: tarefa, doc, quadro e o resumo de canal aberto passam
+  // por ela, em qualquer tela do app.
+  useRealtimeRoom('ws', wsId);
+
+  // Mensagem de conversa fechada: não lidas, badge e toast clicável.
+  useChatActivity({ wsId, currentUserId, openChannelId });
 
   const mine = useCallback(
     (actorId: string | null) => Boolean(currentUserId) && actorId === currentUserId,
@@ -135,4 +166,20 @@ export function useWorkspaceRealtime({ wsId, currentUserId }: WorkspaceRealtimeO
 
     wasConnected.current = connected;
   }, [connected, queryClient, refreshChat, refreshInbox, refreshTasks, wsId]);
+
+  /** Rebusca só o que o tempo real manteria em dia, e só o que está na tela. */
+  const sync = useCallback(async () => {
+    // Sem token em memória a busca só geraria 401 e levaria ao login.
+    if (!getAccessToken()) {
+      return;
+    }
+
+    await queryClient.refetchQueries({
+      type: 'active',
+      predicate: (query) => isRealtimeBackedKey(query.queryKey, wsId),
+    });
+  }, [queryClient, wsId]);
+
+  // Reserva: só roda com sessão e com o tempo real fora do ar.
+  useSincronizacao({ realtime: connected, enabled: Boolean(currentUserId), sync });
 }

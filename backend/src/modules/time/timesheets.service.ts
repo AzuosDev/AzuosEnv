@@ -180,7 +180,14 @@ export class TimesheetsService {
       )
       .exec();
 
-    this.emit(TIMESHEET_SUBMITTED, ctx, ctx.userId, weekStart, 'submitted', result.modifiedCount);
+    await this.emit(
+      TIMESHEET_SUBMITTED,
+      ctx,
+      ctx.userId,
+      weekStart,
+      'submitted',
+      result.modifiedCount,
+    );
 
     return { weekStart, approvalStatus: 'submitted', updated: result.modifiedCount };
   }
@@ -261,7 +268,7 @@ export class TimesheetsService {
       });
     }
 
-    this.emit(
+    await this.emit(
       TIMESHEET_REVIEWED,
       ctx,
       new Types.ObjectId(dto.userId),
@@ -316,14 +323,14 @@ export class TimesheetsService {
     };
   }
 
-  private emit(
+  private async emit(
     event: string,
     ctx: PermissionContext,
     userId: Types.ObjectId,
     weekStart: string,
     status: ApprovalStatus,
     entries: number,
-  ): void {
+  ): Promise<void> {
     const payload: TimesheetEvent = {
       workspaceId: ctx.workspaceId,
       userId,
@@ -333,7 +340,7 @@ export class TimesheetsService {
       entries,
     };
 
-    this.events.emit(event, payload);
+    await this.events.emitAsync(event, payload);
   }
 }
 

@@ -91,7 +91,9 @@ export class MessagesService {
       await parent.save();
     }
 
-    this.events.emit(
+    // `emitAsync`: em host serverless a função congela quando o request
+    // termina, então o tempo real e a notificação têm de sair antes da resposta.
+    await this.events.emitAsync(
       MESSAGE_CREATED,
       this.baseEvent(channel, message) satisfies MessageCreatedEvent,
     );
@@ -176,7 +178,7 @@ export class MessagesService {
     message.editedAt = new Date();
     await message.save();
 
-    this.events.emit(MESSAGE_UPDATED, {
+    await this.events.emitAsync(MESSAGE_UPDATED, {
       ...this.baseEvent(channel, message),
       changes,
     } satisfies MessageUpdatedEvent);
@@ -195,7 +197,7 @@ export class MessagesService {
     message.deletedAt = new Date();
     await message.save();
 
-    this.events.emit(
+    await this.events.emitAsync(
       MESSAGE_DELETED,
       this.baseEvent(channel, message) satisfies MessageDeletedEvent,
     );
@@ -360,6 +362,7 @@ export class MessagesService {
       channelId: channel._id,
       channelType: channel.type,
       channelName: channel.name,
+      channelPrivate: channel.private,
       messageId: message._id,
       parentMessageId: message.parentMessageId,
       authorId: message.authorId,
