@@ -4,23 +4,27 @@ import { ChevronLeft } from 'lucide-react';
 import { PageHeader } from '@/features/shell/components/page-header';
 import { workspaceQuery } from '@/features/settings/api';
 import { SettingsNav } from '@/features/settings/components/settings-nav';
-import { activeSection } from '@/features/settings/sections';
+import { SettingsTabs } from '@/features/settings/components/settings-tabs';
+import { activeSettings } from '@/features/settings/sections';
 import { cn } from '@/lib/utils';
 
 function SettingsLayout() {
   const { wsId } = Route.useParams();
   const { data: detail } = useSuspenseQuery(workspaceQuery(wsId));
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  const section = activeSection(pathname, wsId);
-  const isIndex = section === null;
+  const active = activeSettings(pathname, wsId, detail.role);
+  const isIndex = active === null;
+  // Seção de uma aba só não tem barra de abas: o cabeçalho fala pela aba.
+  const single = active !== null && active.section.tabs.length < 2;
+  const heading = single ? active.tab : active?.section;
 
   return (
     <div className="flex flex-col gap-4 pb-10">
       <PageHeader
         wsId={wsId}
-        title={section ? section.label : 'Configurações'}
+        title={heading ? heading.label : 'Configurações'}
         description={
-          section ? section.description : 'Sua conta, o workspace e quem participa dele.'
+          heading ? heading.description : 'Sua conta, o workspace e quem participa dele.'
         }
       />
 
@@ -28,12 +32,12 @@ function SettingsLayout() {
         <SettingsNav
           wsId={wsId}
           role={detail.role}
-          activeId={section?.id ?? null}
+          activeId={active?.section.id ?? null}
           className={cn('w-full md:w-56 md:shrink-0', isIndex ? 'flex' : 'hidden md:flex')}
         />
 
         <div className={cn('min-w-0 flex-1 flex-col gap-4', isIndex ? 'hidden md:flex' : 'flex')}>
-          {section ? (
+          {active ? (
             <Link
               to="/w/$wsId/configuracoes"
               params={{ wsId }}
@@ -42,6 +46,10 @@ function SettingsLayout() {
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               Todas as configurações
             </Link>
+          ) : null}
+
+          {active ? (
+            <SettingsTabs wsId={wsId} section={active.section} activeId={active.tab.id} />
           ) : null}
 
           <Outlet />

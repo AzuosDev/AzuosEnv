@@ -9,7 +9,7 @@ function Page() {
   return <ClickAppsPanel wsId={wsId} />;
 }
 
-export const Route = createFileRoute('/_app/w/$wsId/configuracoes/clickapps')({
+export const Route = createFileRoute('/_app/w/$wsId/configuracoes/recursos')({
   beforeLoad: ({ context, params }) => ensureAdmin(context.queryClient, params.wsId),
   component: Page,
   pendingComponent: PanelSkeleton,

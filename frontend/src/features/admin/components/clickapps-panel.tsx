@@ -40,7 +40,7 @@ export function ClickAppsPanel({ wsId }: { wsId: string }) {
     mutationFn: (clickApps: ClickApps) => updateWorkspace(wsId, { settings: { clickApps } }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.workspace(wsId) });
-      toast.success('ClickApps do workspace salvos.');
+      toast.success('Recursos do workspace salvos.');
     },
     onError: (error: unknown) => {
       toast.error(errorMessage(error));
@@ -51,7 +51,7 @@ export function ClickAppsPanel({ wsId }: { wsId: string }) {
     mutationFn: (clickApps: ClickAppsOverride) => updateSpaceClickApps(wsId, scope, clickApps),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.space(wsId, scope) });
-      toast.success('ClickApps do Space salvos.');
+      toast.success('Recursos do Space salvos.');
     },
     onError: (error: unknown) => {
       toast.error(errorMessage(error));
@@ -94,14 +94,14 @@ export function ClickAppsPanel({ wsId }: { wsId: string }) {
                 ? 'Este Space segue o workspace em tudo.'
                 : `Este Space decide ${String(overrideCount(override))} de ${String(
                     CLICK_APP_KEYS.length,
-                  )} ClickApps.`}
+                  )} recursos.`}
             </p>
           ) : null}
         </div>
       </SettingsCard>
 
       <SettingsCard
-        title={scope === 'workspace' ? 'ClickApps do workspace' : 'ClickApps deste Space'}
+        title={scope === 'workspace' ? 'Recursos do workspace' : 'Recursos deste Space'}
         description={
           scope === 'workspace'
             ? 'Valem em todos os Spaces que não decidirem o contrário.'

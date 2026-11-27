@@ -41,7 +41,6 @@ import { Route as AppWWsIdConfiguracoesIndexRouteImport } from './routes/_app.w.
 import { Route as AppWWsIdConfiguracoesAuditoriaRouteImport } from './routes/_app.w.$wsId.configuracoes.auditoria'
 import { Route as AppWWsIdConfiguracoesCamposRouteImport } from './routes/_app.w.$wsId.configuracoes.campos'
 import { Route as AppWWsIdConfiguracoesChavesRouteImport } from './routes/_app.w.$wsId.configuracoes.chaves'
-import { Route as AppWWsIdConfiguracoesClickappsRouteImport } from './routes/_app.w.$wsId.configuracoes.clickapps'
 import { Route as AppWWsIdConfiguracoesDadosRouteImport } from './routes/_app.w.$wsId.configuracoes.dados'
 import { Route as AppWWsIdConfiguracoesEquipesRouteImport } from './routes/_app.w.$wsId.configuracoes.equipes'
 import { Route as AppWWsIdConfiguracoesIntegracoesRouteImport } from './routes/_app.w.$wsId.configuracoes.integracoes'
@@ -49,6 +48,7 @@ import { Route as AppWWsIdConfiguracoesNotificacoesRouteImport } from './routes/
 import { Route as AppWWsIdConfiguracoesPerfilRouteImport } from './routes/_app.w.$wsId.configuracoes.perfil'
 import { Route as AppWWsIdConfiguracoesPessoasRouteImport } from './routes/_app.w.$wsId.configuracoes.pessoas'
 import { Route as AppWWsIdConfiguracoesPreferenciasRouteImport } from './routes/_app.w.$wsId.configuracoes.preferencias'
+import { Route as AppWWsIdConfiguracoesRecursosRouteImport } from './routes/_app.w.$wsId.configuracoes.recursos'
 import { Route as AppWWsIdConfiguracoesSegurancaRouteImport } from './routes/_app.w.$wsId.configuracoes.seguranca'
 import { Route as AppWWsIdConfiguracoesWebhooksRouteImport } from './routes/_app.w.$wsId.configuracoes.webhooks'
 import { Route as AppWWsIdConfiguracoesWorkspaceRouteImport } from './routes/_app.w.$wsId.configuracoes.workspace'
@@ -227,12 +227,6 @@ const AppWWsIdConfiguracoesChavesRoute =
     path: '/chaves',
     getParentRoute: () => AppWWsIdConfiguracoesRoute,
   } as any)
-const AppWWsIdConfiguracoesClickappsRoute =
-  AppWWsIdConfiguracoesClickappsRouteImport.update({
-    id: '/clickapps',
-    path: '/clickapps',
-    getParentRoute: () => AppWWsIdConfiguracoesRoute,
-  } as any)
 const AppWWsIdConfiguracoesDadosRoute =
   AppWWsIdConfiguracoesDadosRouteImport.update({
     id: '/dados',
@@ -273,6 +267,12 @@ const AppWWsIdConfiguracoesPreferenciasRoute =
   AppWWsIdConfiguracoesPreferenciasRouteImport.update({
     id: '/preferencias',
     path: '/preferencias',
+    getParentRoute: () => AppWWsIdConfiguracoesRoute,
+  } as any)
+const AppWWsIdConfiguracoesRecursosRoute =
+  AppWWsIdConfiguracoesRecursosRouteImport.update({
+    id: '/recursos',
+    path: '/recursos',
     getParentRoute: () => AppWWsIdConfiguracoesRoute,
   } as any)
 const AppWWsIdConfiguracoesSegurancaRoute =
@@ -387,7 +387,6 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/configuracoes/auditoria': typeof AppWWsIdConfiguracoesAuditoriaRoute
   '/w/$wsId/configuracoes/campos': typeof AppWWsIdConfiguracoesCamposRoute
   '/w/$wsId/configuracoes/chaves': typeof AppWWsIdConfiguracoesChavesRoute
-  '/w/$wsId/configuracoes/clickapps': typeof AppWWsIdConfiguracoesClickappsRoute
   '/w/$wsId/configuracoes/dados': typeof AppWWsIdConfiguracoesDadosRoute
   '/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
   '/w/$wsId/configuracoes/integracoes': typeof AppWWsIdConfiguracoesIntegracoesRoute
@@ -395,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/w/$wsId/configuracoes/perfil': typeof AppWWsIdConfiguracoesPerfilRoute
   '/w/$wsId/configuracoes/pessoas': typeof AppWWsIdConfiguracoesPessoasRoute
   '/w/$wsId/configuracoes/preferencias': typeof AppWWsIdConfiguracoesPreferenciasRoute
+  '/w/$wsId/configuracoes/recursos': typeof AppWWsIdConfiguracoesRecursosRoute
   '/w/$wsId/configuracoes/seguranca': typeof AppWWsIdConfiguracoesSegurancaRoute
   '/w/$wsId/configuracoes/webhooks': typeof AppWWsIdConfiguracoesWebhooksRoute
   '/w/$wsId/configuracoes/workspace': typeof AppWWsIdConfiguracoesWorkspaceRoute
@@ -440,7 +440,6 @@ export interface FileRoutesByTo {
   '/w/$wsId/configuracoes/auditoria': typeof AppWWsIdConfiguracoesAuditoriaRoute
   '/w/$wsId/configuracoes/campos': typeof AppWWsIdConfiguracoesCamposRoute
   '/w/$wsId/configuracoes/chaves': typeof AppWWsIdConfiguracoesChavesRoute
-  '/w/$wsId/configuracoes/clickapps': typeof AppWWsIdConfiguracoesClickappsRoute
   '/w/$wsId/configuracoes/dados': typeof AppWWsIdConfiguracoesDadosRoute
   '/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
   '/w/$wsId/configuracoes/integracoes': typeof AppWWsIdConfiguracoesIntegracoesRoute
@@ -448,6 +447,7 @@ export interface FileRoutesByTo {
   '/w/$wsId/configuracoes/perfil': typeof AppWWsIdConfiguracoesPerfilRoute
   '/w/$wsId/configuracoes/pessoas': typeof AppWWsIdConfiguracoesPessoasRoute
   '/w/$wsId/configuracoes/preferencias': typeof AppWWsIdConfiguracoesPreferenciasRoute
+  '/w/$wsId/configuracoes/recursos': typeof AppWWsIdConfiguracoesRecursosRoute
   '/w/$wsId/configuracoes/seguranca': typeof AppWWsIdConfiguracoesSegurancaRoute
   '/w/$wsId/configuracoes/webhooks': typeof AppWWsIdConfiguracoesWebhooksRoute
   '/w/$wsId/configuracoes/workspace': typeof AppWWsIdConfiguracoesWorkspaceRoute
@@ -498,7 +498,6 @@ export interface FileRoutesById {
   '/_app/w/$wsId/configuracoes/auditoria': typeof AppWWsIdConfiguracoesAuditoriaRoute
   '/_app/w/$wsId/configuracoes/campos': typeof AppWWsIdConfiguracoesCamposRoute
   '/_app/w/$wsId/configuracoes/chaves': typeof AppWWsIdConfiguracoesChavesRoute
-  '/_app/w/$wsId/configuracoes/clickapps': typeof AppWWsIdConfiguracoesClickappsRoute
   '/_app/w/$wsId/configuracoes/dados': typeof AppWWsIdConfiguracoesDadosRoute
   '/_app/w/$wsId/configuracoes/equipes': typeof AppWWsIdConfiguracoesEquipesRoute
   '/_app/w/$wsId/configuracoes/integracoes': typeof AppWWsIdConfiguracoesIntegracoesRoute
@@ -506,6 +505,7 @@ export interface FileRoutesById {
   '/_app/w/$wsId/configuracoes/perfil': typeof AppWWsIdConfiguracoesPerfilRoute
   '/_app/w/$wsId/configuracoes/pessoas': typeof AppWWsIdConfiguracoesPessoasRoute
   '/_app/w/$wsId/configuracoes/preferencias': typeof AppWWsIdConfiguracoesPreferenciasRoute
+  '/_app/w/$wsId/configuracoes/recursos': typeof AppWWsIdConfiguracoesRecursosRoute
   '/_app/w/$wsId/configuracoes/seguranca': typeof AppWWsIdConfiguracoesSegurancaRoute
   '/_app/w/$wsId/configuracoes/webhooks': typeof AppWWsIdConfiguracoesWebhooksRoute
   '/_app/w/$wsId/configuracoes/workspace': typeof AppWWsIdConfiguracoesWorkspaceRoute
@@ -555,7 +555,6 @@ export interface FileRouteTypes {
     | '/w/$wsId/configuracoes/auditoria'
     | '/w/$wsId/configuracoes/campos'
     | '/w/$wsId/configuracoes/chaves'
-    | '/w/$wsId/configuracoes/clickapps'
     | '/w/$wsId/configuracoes/dados'
     | '/w/$wsId/configuracoes/equipes'
     | '/w/$wsId/configuracoes/integracoes'
@@ -563,6 +562,7 @@ export interface FileRouteTypes {
     | '/w/$wsId/configuracoes/perfil'
     | '/w/$wsId/configuracoes/pessoas'
     | '/w/$wsId/configuracoes/preferencias'
+    | '/w/$wsId/configuracoes/recursos'
     | '/w/$wsId/configuracoes/seguranca'
     | '/w/$wsId/configuracoes/webhooks'
     | '/w/$wsId/configuracoes/workspace'
@@ -608,7 +608,6 @@ export interface FileRouteTypes {
     | '/w/$wsId/configuracoes/auditoria'
     | '/w/$wsId/configuracoes/campos'
     | '/w/$wsId/configuracoes/chaves'
-    | '/w/$wsId/configuracoes/clickapps'
     | '/w/$wsId/configuracoes/dados'
     | '/w/$wsId/configuracoes/equipes'
     | '/w/$wsId/configuracoes/integracoes'
@@ -616,6 +615,7 @@ export interface FileRouteTypes {
     | '/w/$wsId/configuracoes/perfil'
     | '/w/$wsId/configuracoes/pessoas'
     | '/w/$wsId/configuracoes/preferencias'
+    | '/w/$wsId/configuracoes/recursos'
     | '/w/$wsId/configuracoes/seguranca'
     | '/w/$wsId/configuracoes/webhooks'
     | '/w/$wsId/configuracoes/workspace'
@@ -665,7 +665,6 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/configuracoes/auditoria'
     | '/_app/w/$wsId/configuracoes/campos'
     | '/_app/w/$wsId/configuracoes/chaves'
-    | '/_app/w/$wsId/configuracoes/clickapps'
     | '/_app/w/$wsId/configuracoes/dados'
     | '/_app/w/$wsId/configuracoes/equipes'
     | '/_app/w/$wsId/configuracoes/integracoes'
@@ -673,6 +672,7 @@ export interface FileRouteTypes {
     | '/_app/w/$wsId/configuracoes/perfil'
     | '/_app/w/$wsId/configuracoes/pessoas'
     | '/_app/w/$wsId/configuracoes/preferencias'
+    | '/_app/w/$wsId/configuracoes/recursos'
     | '/_app/w/$wsId/configuracoes/seguranca'
     | '/_app/w/$wsId/configuracoes/webhooks'
     | '/_app/w/$wsId/configuracoes/workspace'
@@ -929,13 +929,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWWsIdConfiguracoesChavesRouteImport
       parentRoute: typeof AppWWsIdConfiguracoesRoute
     }
-    '/_app/w/$wsId/configuracoes/clickapps': {
-      id: '/_app/w/$wsId/configuracoes/clickapps'
-      path: '/clickapps'
-      fullPath: '/w/$wsId/configuracoes/clickapps'
-      preLoaderRoute: typeof AppWWsIdConfiguracoesClickappsRouteImport
-      parentRoute: typeof AppWWsIdConfiguracoesRoute
-    }
     '/_app/w/$wsId/configuracoes/dados': {
       id: '/_app/w/$wsId/configuracoes/dados'
       path: '/dados'
@@ -983,6 +976,13 @@ declare module '@tanstack/react-router' {
       path: '/preferencias'
       fullPath: '/w/$wsId/configuracoes/preferencias'
       preLoaderRoute: typeof AppWWsIdConfiguracoesPreferenciasRouteImport
+      parentRoute: typeof AppWWsIdConfiguracoesRoute
+    }
+    '/_app/w/$wsId/configuracoes/recursos': {
+      id: '/_app/w/$wsId/configuracoes/recursos'
+      path: '/recursos'
+      fullPath: '/w/$wsId/configuracoes/recursos'
+      preLoaderRoute: typeof AppWWsIdConfiguracoesRecursosRouteImport
       parentRoute: typeof AppWWsIdConfiguracoesRoute
     }
     '/_app/w/$wsId/configuracoes/seguranca': {
@@ -1097,7 +1097,6 @@ interface AppWWsIdConfiguracoesRouteChildren {
   AppWWsIdConfiguracoesAuditoriaRoute: typeof AppWWsIdConfiguracoesAuditoriaRoute
   AppWWsIdConfiguracoesCamposRoute: typeof AppWWsIdConfiguracoesCamposRoute
   AppWWsIdConfiguracoesChavesRoute: typeof AppWWsIdConfiguracoesChavesRoute
-  AppWWsIdConfiguracoesClickappsRoute: typeof AppWWsIdConfiguracoesClickappsRoute
   AppWWsIdConfiguracoesDadosRoute: typeof AppWWsIdConfiguracoesDadosRoute
   AppWWsIdConfiguracoesEquipesRoute: typeof AppWWsIdConfiguracoesEquipesRoute
   AppWWsIdConfiguracoesIntegracoesRoute: typeof AppWWsIdConfiguracoesIntegracoesRoute
@@ -1105,6 +1104,7 @@ interface AppWWsIdConfiguracoesRouteChildren {
   AppWWsIdConfiguracoesPerfilRoute: typeof AppWWsIdConfiguracoesPerfilRoute
   AppWWsIdConfiguracoesPessoasRoute: typeof AppWWsIdConfiguracoesPessoasRoute
   AppWWsIdConfiguracoesPreferenciasRoute: typeof AppWWsIdConfiguracoesPreferenciasRoute
+  AppWWsIdConfiguracoesRecursosRoute: typeof AppWWsIdConfiguracoesRecursosRoute
   AppWWsIdConfiguracoesSegurancaRoute: typeof AppWWsIdConfiguracoesSegurancaRoute
   AppWWsIdConfiguracoesWebhooksRoute: typeof AppWWsIdConfiguracoesWebhooksRoute
   AppWWsIdConfiguracoesWorkspaceRoute: typeof AppWWsIdConfiguracoesWorkspaceRoute
@@ -1115,7 +1115,6 @@ const AppWWsIdConfiguracoesRouteChildren: AppWWsIdConfiguracoesRouteChildren = {
   AppWWsIdConfiguracoesAuditoriaRoute: AppWWsIdConfiguracoesAuditoriaRoute,
   AppWWsIdConfiguracoesCamposRoute: AppWWsIdConfiguracoesCamposRoute,
   AppWWsIdConfiguracoesChavesRoute: AppWWsIdConfiguracoesChavesRoute,
-  AppWWsIdConfiguracoesClickappsRoute: AppWWsIdConfiguracoesClickappsRoute,
   AppWWsIdConfiguracoesDadosRoute: AppWWsIdConfiguracoesDadosRoute,
   AppWWsIdConfiguracoesEquipesRoute: AppWWsIdConfiguracoesEquipesRoute,
   AppWWsIdConfiguracoesIntegracoesRoute: AppWWsIdConfiguracoesIntegracoesRoute,
@@ -1125,6 +1124,7 @@ const AppWWsIdConfiguracoesRouteChildren: AppWWsIdConfiguracoesRouteChildren = {
   AppWWsIdConfiguracoesPessoasRoute: AppWWsIdConfiguracoesPessoasRoute,
   AppWWsIdConfiguracoesPreferenciasRoute:
     AppWWsIdConfiguracoesPreferenciasRoute,
+  AppWWsIdConfiguracoesRecursosRoute: AppWWsIdConfiguracoesRecursosRoute,
   AppWWsIdConfiguracoesSegurancaRoute: AppWWsIdConfiguracoesSegurancaRoute,
   AppWWsIdConfiguracoesWebhooksRoute: AppWWsIdConfiguracoesWebhooksRoute,
   AppWWsIdConfiguracoesWorkspaceRoute: AppWWsIdConfiguracoesWorkspaceRoute,

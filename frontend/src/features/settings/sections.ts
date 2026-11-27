@@ -3,28 +3,39 @@ import { canAdmin } from './roles';
 
 export type SettingsGroup = 'pessoal' | 'workspace' | 'avancado';
 
+export type SettingsPath =
+  | '/w/$wsId/configuracoes/perfil'
+  | '/w/$wsId/configuracoes/preferencias'
+  | '/w/$wsId/configuracoes/notificacoes'
+  | '/w/$wsId/configuracoes/seguranca'
+  | '/w/$wsId/configuracoes/workspace'
+  | '/w/$wsId/configuracoes/pessoas'
+  | '/w/$wsId/configuracoes/equipes'
+  | '/w/$wsId/configuracoes/recursos'
+  | '/w/$wsId/configuracoes/campos'
+  | '/w/$wsId/configuracoes/integracoes'
+  | '/w/$wsId/configuracoes/webhooks'
+  | '/w/$wsId/configuracoes/chaves'
+  | '/w/$wsId/configuracoes/auditoria'
+  | '/w/$wsId/configuracoes/dados';
+
+/** Uma tela de configuração. O id é o último segmento da rota. */
+export interface SettingsTab {
+  id: string;
+  label: string;
+  description: string;
+  /** Some para member, limited e guest. */
+  adminOnly: boolean;
+  to: SettingsPath;
+}
+
+/** Um item da navegação lateral; abre a primeira aba visível. */
 export interface SettingsSection {
   id: string;
   label: string;
   description: string;
   group: SettingsGroup;
-  /** Some para member, limited e guest. */
-  adminOnly: boolean;
-  to:
-    | '/w/$wsId/configuracoes/perfil'
-    | '/w/$wsId/configuracoes/preferencias'
-    | '/w/$wsId/configuracoes/notificacoes'
-    | '/w/$wsId/configuracoes/seguranca'
-    | '/w/$wsId/configuracoes/workspace'
-    | '/w/$wsId/configuracoes/pessoas'
-    | '/w/$wsId/configuracoes/equipes'
-    | '/w/$wsId/configuracoes/clickapps'
-    | '/w/$wsId/configuracoes/campos'
-    | '/w/$wsId/configuracoes/integracoes'
-    | '/w/$wsId/configuracoes/webhooks'
-    | '/w/$wsId/configuracoes/chaves'
-    | '/w/$wsId/configuracoes/auditoria'
-    | '/w/$wsId/configuracoes/dados';
+  tabs: SettingsTab[];
 }
 
 export const GROUP_LABELS: Record<SettingsGroup, string> = {
@@ -35,124 +46,186 @@ export const GROUP_LABELS: Record<SettingsGroup, string> = {
 
 export const SETTINGS_SECTIONS: SettingsSection[] = [
   {
-    id: 'perfil',
-    label: 'Perfil',
-    description: 'Nome, avatar, fuso horário e idioma da sua conta.',
+    id: 'conta',
+    label: 'Minha conta',
+    description: 'Seus dados, a aparência do app e o acesso.',
     group: 'pessoal',
-    adminOnly: false,
-    to: '/w/$wsId/configuracoes/perfil',
-  },
-  {
-    id: 'preferencias',
-    label: 'Preferências',
-    description: 'Tema da interface, salvo na sua conta.',
-    group: 'pessoal',
-    adminOnly: false,
-    to: '/w/$wsId/configuracoes/preferencias',
+    tabs: [
+      {
+        id: 'perfil',
+        label: 'Perfil',
+        description: 'Nome, avatar, fuso horário e idioma da sua conta.',
+        adminOnly: false,
+        to: '/w/$wsId/configuracoes/perfil',
+      },
+      {
+        id: 'preferencias',
+        label: 'Preferências',
+        description: 'Tema da interface, salvo na sua conta.',
+        adminOnly: false,
+        to: '/w/$wsId/configuracoes/preferencias',
+      },
+      {
+        id: 'seguranca',
+        label: 'Segurança',
+        description: 'Senha e sessões ativas.',
+        adminOnly: false,
+        to: '/w/$wsId/configuracoes/seguranca',
+      },
+    ],
   },
   {
     id: 'notificacoes',
     label: 'Notificações',
     description: 'Onde cada tipo de aviso chega.',
     group: 'pessoal',
-    adminOnly: false,
-    to: '/w/$wsId/configuracoes/notificacoes',
-  },
-  {
-    id: 'seguranca',
-    label: 'Segurança',
-    description: 'Senha e sessões ativas.',
-    group: 'pessoal',
-    adminOnly: false,
-    to: '/w/$wsId/configuracoes/seguranca',
+    tabs: [
+      {
+        id: 'notificacoes',
+        label: 'Notificações',
+        description: 'Onde cada tipo de aviso chega.',
+        adminOnly: false,
+        to: '/w/$wsId/configuracoes/notificacoes',
+      },
+    ],
   },
   {
     id: 'workspace',
     label: 'Workspace',
-    description: 'Nome, cor e prefixo das tarefas.',
+    description: 'Identidade, recursos ligados e campos deste workspace.',
     group: 'workspace',
-    adminOnly: true,
-    to: '/w/$wsId/configuracoes/workspace',
+    tabs: [
+      {
+        id: 'workspace',
+        label: 'Geral',
+        description: 'Nome, cor e prefixo das tarefas.',
+        adminOnly: true,
+        to: '/w/$wsId/configuracoes/workspace',
+      },
+      {
+        id: 'recursos',
+        label: 'Recursos',
+        description: 'Ligue e desligue recursos no workspace e em cada Space.',
+        adminOnly: true,
+        to: '/w/$wsId/configuracoes/recursos',
+      },
+      {
+        id: 'campos',
+        label: 'Campos personalizados',
+        description: 'Todos os campos criados e onde cada um vale.',
+        adminOnly: true,
+        to: '/w/$wsId/configuracoes/campos',
+      },
+    ],
   },
   {
     id: 'pessoas',
     label: 'Pessoas',
-    description: 'Convites, papéis e acesso ao workspace.',
+    description: 'Quem participa do workspace e como está organizado.',
     group: 'workspace',
-    adminOnly: true,
-    to: '/w/$wsId/configuracoes/pessoas',
-  },
-  {
-    id: 'equipes',
-    label: 'Equipes',
-    description: 'Grupos de pessoas do workspace.',
-    group: 'workspace',
-    adminOnly: false,
-    to: '/w/$wsId/configuracoes/equipes',
-  },
-  {
-    id: 'clickapps',
-    label: 'ClickApps',
-    description: 'Ligue e desligue recursos no workspace e em cada Space.',
-    group: 'avancado',
-    adminOnly: true,
-    to: '/w/$wsId/configuracoes/clickapps',
-  },
-  {
-    id: 'campos',
-    label: 'Campos personalizados',
-    description: 'Todos os campos criados e onde cada um vale.',
-    group: 'avancado',
-    adminOnly: true,
-    to: '/w/$wsId/configuracoes/campos',
+    tabs: [
+      {
+        id: 'pessoas',
+        label: 'Membros',
+        description: 'Convites, papéis e acesso ao workspace.',
+        adminOnly: true,
+        to: '/w/$wsId/configuracoes/pessoas',
+      },
+      {
+        id: 'equipes',
+        label: 'Equipes',
+        description: 'Grupos de pessoas do workspace.',
+        adminOnly: false,
+        to: '/w/$wsId/configuracoes/equipes',
+      },
+    ],
   },
   {
     id: 'integracoes',
     label: 'Integrações',
-    description: 'GitHub e Google Agenda.',
+    description: 'Tudo o que liga o Azuos Env a outros sistemas.',
     group: 'avancado',
-    adminOnly: true,
-    to: '/w/$wsId/configuracoes/integracoes',
-  },
-  {
-    id: 'webhooks',
-    label: 'Webhooks',
-    description: 'Avisos que o Azuos Env manda para fora, com o log de entregas.',
-    group: 'avancado',
-    adminOnly: true,
-    to: '/w/$wsId/configuracoes/webhooks',
-  },
-  {
-    id: 'chaves',
-    label: 'Chaves de API',
-    description: 'Chaves pessoais para falar com a API.',
-    group: 'avancado',
-    adminOnly: true,
-    to: '/w/$wsId/configuracoes/chaves',
-  },
-  {
-    id: 'auditoria',
-    label: 'Auditoria',
-    description: 'Tudo o que a administração do workspace fez.',
-    group: 'avancado',
-    adminOnly: true,
-    to: '/w/$wsId/configuracoes/auditoria',
+    tabs: [
+      {
+        id: 'integracoes',
+        label: 'Aplicativos',
+        description: 'GitHub e Google Agenda.',
+        adminOnly: true,
+        to: '/w/$wsId/configuracoes/integracoes',
+      },
+      {
+        id: 'webhooks',
+        label: 'Webhooks',
+        description: 'Avisos que o Azuos Env manda para fora, com o log de entregas.',
+        adminOnly: true,
+        to: '/w/$wsId/configuracoes/webhooks',
+      },
+      {
+        id: 'chaves',
+        label: 'Chaves de API',
+        description: 'Chaves pessoais para falar com a API.',
+        adminOnly: true,
+        to: '/w/$wsId/configuracoes/chaves',
+      },
+    ],
   },
   {
     id: 'dados',
-    label: 'Importar e exportar',
-    description: 'Trazer do ClickUp por CSV e baixar o workspace em JSON.',
+    label: 'Dados',
+    description: 'Importação, exportação e o registro do que foi feito.',
     group: 'avancado',
-    adminOnly: true,
-    to: '/w/$wsId/configuracoes/dados',
+    tabs: [
+      {
+        id: 'dados',
+        label: 'Importar e exportar',
+        description: 'Trazer do ClickUp por CSV e baixar o workspace em JSON.',
+        adminOnly: true,
+        to: '/w/$wsId/configuracoes/dados',
+      },
+      {
+        id: 'auditoria',
+        label: 'Auditoria',
+        description: 'Tudo o que a administração do workspace fez.',
+        adminOnly: true,
+        to: '/w/$wsId/configuracoes/auditoria',
+      },
+    ],
   },
 ];
 
-/** Seções que o papel pode abrir. */
+/** Abas da seção que o papel pode abrir. */
+export function visibleTabs(section: SettingsSection, role: WorkspaceRole): SettingsTab[] {
+  return canAdmin(role) ? section.tabs : section.tabs.filter((tab) => !tab.adminOnly);
+}
+
+/** Seções que o papel pode abrir, já sem as abas que ele não vê. */
 export function visibleSections(role: WorkspaceRole): SettingsSection[] {
-  return canAdmin(role)
-    ? SETTINGS_SECTIONS
-    : SETTINGS_SECTIONS.filter((section) => !section.adminOnly);
+  return SETTINGS_SECTIONS.map((section) => ({
+    ...section,
+    tabs: visibleTabs(section, role),
+  })).filter((section) => section.tabs.length > 0);
+}
+
+/**
+ * Nome do item na navegação e no título. Seção que sobrou com uma aba só fala
+ * pela aba — para um member, "Pessoas" com nada além de Equipes seria promessa
+ * falsa.
+ */
+export function sectionLabel(section: SettingsSection): string {
+  const [first] = section.tabs;
+
+  return section.tabs.length === 1 && first ? first.label : section.label;
+}
+
+/** Para onde o item da navegação leva: a primeira aba visível. */
+export function sectionTarget(section: SettingsSection): SettingsPath {
+  const [first] = section.tabs;
+
+  if (!first) {
+    throw new Error(`Seção ${section.id} sem abas visíveis.`);
+  }
+
+  return first.to;
 }
 
 /** Seções visíveis agrupadas, na ordem em que aparecem na navegação. */
@@ -166,8 +239,18 @@ export function groupedSections(
     .filter((entry) => entry.items.length > 0);
 }
 
-/** Seção aberta agora; null na própria /configuracoes. */
-export function activeSection(pathname: string, wsId: string): SettingsSection | null {
+export interface ActiveSettings {
+  /** Seção aberta, com as abas que este papel vê. */
+  section: SettingsSection;
+  tab: SettingsTab;
+}
+
+/** Seção e aba abertas agora; null na própria /configuracoes e fora dela. */
+export function activeSettings(
+  pathname: string,
+  wsId: string,
+  role: WorkspaceRole,
+): ActiveSettings | null {
   const prefix = `/w/${wsId}/configuracoes/`;
 
   if (!pathname.startsWith(prefix)) {
@@ -176,5 +259,13 @@ export function activeSection(pathname: string, wsId: string): SettingsSection |
 
   const id = pathname.slice(prefix.length).split('/')[0];
 
-  return SETTINGS_SECTIONS.find((section) => section.id === id) ?? null;
+  for (const section of visibleSections(role)) {
+    const tab = section.tabs.find((item) => item.id === id);
+
+    if (tab) {
+      return { section, tab };
+    }
+  }
+
+  return null;
 }

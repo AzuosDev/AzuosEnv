@@ -32,6 +32,14 @@ function settingsUrl(tab: string): string {
   return `/w/${wsId}/configuracoes/${tab}`;
 }
 
+/** O título é a seção; a aba aberta é a que está marcada na barra de abas. */
+async function expectTab(section: string, tab: string): Promise<void> {
+  await expect(page.getByRole('heading', { name: section, level: 1 })).toBeVisible();
+  await expect(
+    page.getByRole('navigation', { name: `Abas de ${section}` }).getByRole('link', { name: tab }),
+  ).toHaveAttribute('aria-current', 'page');
+}
+
 test.beforeAll(async ({ browser }) => {
   wsId = await seedWorkspaceId();
   session = await adminApi();
@@ -75,7 +83,7 @@ test.beforeEach(async () => {
 
 test('a chave de API nasce visível uma vez e a revogação encerra', async () => {
   await page.goto(settingsUrl('chaves'));
-  await expect(page.getByRole('heading', { name: 'Chaves de API', level: 1 })).toBeVisible();
+  await expectTab('Integrações', 'Chaves de API');
 
   const name = `Chave ${String(Date.now())}`;
 
@@ -109,7 +117,7 @@ test('o webhook de saída entrega o evento e o log reenvia', async () => {
   received = [];
 
   await page.goto(settingsUrl('webhooks'));
-  await expect(page.getByRole('heading', { name: 'Webhooks', level: 1 })).toBeVisible();
+  await expectTab('Integrações', 'Webhooks');
 
   await page.getByRole('button', { name: 'Novo webhook' }).click();
   await page.getByLabel('URL de destino').fill(hookUrl);
@@ -146,7 +154,7 @@ test('o webhook de saída entrega o evento e o log reenvia', async () => {
 
 test('o CSV do ClickUp mostra a prévia e importa', async () => {
   await page.goto(settingsUrl('dados'));
-  await expect(page.getByRole('heading', { name: 'Importar e exportar', level: 1 })).toBeVisible();
+  await expectTab('Dados', 'Importar e exportar');
 
   const csv = [
     'Task Name,Status,Assignees,Tags,List Name,Folder Name',
@@ -179,9 +187,9 @@ test('o CSV do ClickUp mostra a prévia e importa', async () => {
   await expect(report.getByText('Linha 4: LINHA SEM NOME DE TAREFA')).toBeVisible();
 });
 
-test('ClickApps: desligar no workspace e herdar no Space', async () => {
-  await page.goto(settingsUrl('clickapps'));
-  await expect(page.getByRole('heading', { name: 'ClickApps', level: 1 })).toBeVisible();
+test('Recursos: desligar no workspace e herdar no Space', async () => {
+  await page.goto(settingsUrl('recursos'));
+  await expectTab('Workspace', 'Recursos');
 
   const sprints = page.getByRole('switch', { name: 'Sprints' });
 
@@ -197,7 +205,7 @@ test('ClickApps: desligar no workspace e herdar no Space', async () => {
   await expect(page.getByText('Herdado do workspace: desligado')).toBeVisible();
 
   await spaceSprints.selectOption('on');
-  await expect(page.getByText(/Este Space decide 1 de 9 ClickApps/)).toBeVisible();
+  await expect(page.getByText(/Este Space decide 1 de 9 recursos/)).toBeVisible();
 
   // Devolve o workspace ao estado do seed para as outras telas.
   await page.getByLabel('Escopo').selectOption('workspace');
@@ -210,7 +218,7 @@ test('ClickApps: desligar no workspace e herdar no Space', async () => {
 
 test('Integrações: liga o repositório do GitHub e mostra o Google', async () => {
   await page.goto(settingsUrl('integracoes'));
-  await expect(page.getByRole('heading', { name: 'Integrações', level: 1 })).toBeVisible();
+  await expectTab('Integrações', 'Aplicativos');
 
   await expect(page.getByLabel('URL do webhook')).toHaveValue(
     /\/api\/v1\/integrations\/github\/webhook$/,
@@ -237,7 +245,7 @@ test('Integrações: liga o repositório do GitHub e mostra o Google', async () 
 
 test('a auditoria lista a ação do admin e filtra', async () => {
   await page.goto(settingsUrl('auditoria'));
-  await expect(page.getByRole('heading', { name: 'Auditoria', level: 1 })).toBeVisible();
+  await expectTab('Dados', 'Auditoria');
 
   const log = page.getByRole('list', { name: 'Ações de administração' });
 
@@ -262,9 +270,7 @@ test('Campos personalizados mostra onde cada campo vale', async () => {
   });
 
   await page.goto(settingsUrl('campos'));
-  await expect(
-    page.getByRole('heading', { name: 'Campos personalizados', level: 1 }),
-  ).toBeVisible();
+  await expectTab('Workspace', 'Campos personalizados');
 
   await page.getByLabel('Local').selectOption(`list:${listId}`);
 
@@ -286,7 +292,7 @@ test('member não vê nenhuma aba avançada', async ({ browser }) => {
   const nav = memberPage.getByRole('navigation', { name: 'Seções de configuração' });
 
   for (const label of [
-    'ClickApps',
+    'Recursos',
     'Campos personalizados',
     'Integrações',
     'Webhooks',
@@ -299,7 +305,7 @@ test('member não vê nenhuma aba avançada', async ({ browser }) => {
 
   // Pela URL também não entra.
   for (const tab of [
-    'clickapps',
+    'recursos',
     'campos',
     'integracoes',
     'webhooks',
@@ -316,7 +322,7 @@ test('member não vê nenhuma aba avançada', async ({ browser }) => {
 
 test('cada aba nova não rola para os lados em 360, 768 e 1280', async () => {
   for (const tab of [
-    'clickapps',
+    'recursos',
     'campos',
     'integracoes',
     'webhooks',
