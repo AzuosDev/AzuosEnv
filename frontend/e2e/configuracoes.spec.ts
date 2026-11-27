@@ -49,9 +49,16 @@ test('a lista de seções leva para cada aba', async () => {
 
   const nav = page.getByRole('navigation', { name: 'Seções de configuração' });
 
-  await nav.getByRole('link', { name: 'Perfil' }).click();
+  await nav.getByRole('link', { name: 'Minha conta' }).click();
   await expect(page).toHaveURL(/configuracoes\/perfil$/);
-  await expect(page.getByRole('heading', { name: 'Perfil', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Minha conta', level: 1 })).toBeVisible();
+
+  // Dentro da seção, as abas trocam de tela sem passar pela lista.
+  const tabs = page.getByRole('navigation', { name: 'Abas de Minha conta' });
+
+  await expect(tabs.getByRole('link', { name: 'Perfil' })).toHaveAttribute('aria-current', 'page');
+  await tabs.getByRole('link', { name: 'Segurança' }).click();
+  await expect(page).toHaveURL(/configuracoes\/seguranca$/);
 
   await nav.getByRole('link', { name: 'Notificações' }).click();
   await expect(page).toHaveURL(/configuracoes\/notificacoes$/);
@@ -252,7 +259,8 @@ test('member não vê as abas nem as ações de admin', async ({ browser }) => {
 
   const nav = memberPage.getByRole('navigation', { name: 'Seções de configuração' });
 
-  await expect(nav.getByRole('link', { name: 'Perfil' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Minha conta' })).toBeVisible();
+  // Sobrando uma aba só, a seção aparece com o nome dela.
   await expect(nav.getByRole('link', { name: 'Equipes' })).toBeVisible();
   await expect(nav.getByRole('link', { name: 'Workspace' })).toBeHidden();
   await expect(nav.getByRole('link', { name: 'Pessoas' })).toBeHidden();

@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { ChevronRight } from 'lucide-react';
 import type { WorkspaceRole } from '@/api/types';
 import { cn } from '@/lib/utils';
-import { GROUP_LABELS, groupedSections } from '../sections';
+import { GROUP_LABELS, groupedSections, sectionLabel, sectionTarget } from '../sections';
 
 export interface SettingsNavProps {
   wsId: string;
@@ -13,8 +13,8 @@ export interface SettingsNavProps {
 }
 
 /**
- * Abas da configuração. Acima de 768 px é a coluna lateral; abaixo, a lista que
- * leva para a tela de cada aba.
+ * Seções da configuração. Acima de 768 px é a coluna lateral; abaixo, a lista
+ * que leva para a primeira aba de cada seção.
  */
 export function SettingsNav({ wsId, role, activeId, className }: SettingsNavProps) {
   return (
@@ -30,7 +30,7 @@ export function SettingsNav({ wsId, role, activeId, className }: SettingsNavProp
             return (
               <Link
                 key={section.id}
-                to={section.to}
+                to={sectionTarget(section)}
                 params={{ wsId }}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
@@ -40,7 +40,7 @@ export function SettingsNav({ wsId, role, activeId, className }: SettingsNavProp
                     : 'text-body hover:bg-surface-2 hover:text-ink',
                 )}
               >
-                <span className="min-w-0 truncate">{section.label}</span>
+                <span className="min-w-0 truncate">{sectionLabel(section)}</span>
                 <ChevronRight
                   className="h-4 w-4 shrink-0 text-muted md:hidden"
                   aria-hidden="true"

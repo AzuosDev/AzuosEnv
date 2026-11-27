@@ -1,43 +1,84 @@
 import { describe, expect, it } from 'vitest';
-import { activeSection, groupedSections, visibleSections } from './sections';
+import {
+  activeSettings,
+  groupedSections,
+  SETTINGS_SECTIONS,
+  sectionLabel,
+  sectionTarget,
+  visibleSections,
+} from './sections';
 import { canAdmin, isOwner } from './roles';
 
 const WS = '507f1f77bcf86cd799439011';
 
 describe('visibleSections', () => {
-  it('mostra tudo para owner e admin', () => {
+  it('mostra as seis seções para owner e admin', () => {
     for (const role of ['owner', 'admin'] as const) {
       expect(visibleSections(role).map((section) => section.id)).toEqual([
-        'perfil',
-        'preferencias',
+        'conta',
         'notificacoes',
-        'seguranca',
         'workspace',
         'pessoas',
-        'equipes',
-        'clickapps',
-        'campos',
         'integracoes',
-        'webhooks',
-        'chaves',
-        'auditoria',
         'dados',
       ]);
     }
   });
 
-  it('esconde Workspace e Pessoas de member, limited e guest', () => {
+  it('para member sobram as seções pessoais e Pessoas só com Equipes', () => {
     for (const role of ['member', 'limited', 'guest'] as const) {
-      const ids = visibleSections(role).map((section) => section.id);
+      const sections = visibleSections(role);
 
-      expect(ids).not.toContain('workspace');
-      expect(ids).not.toContain('pessoas');
-      expect(ids).not.toContain('clickapps');
-      expect(ids).not.toContain('webhooks');
-      expect(ids).not.toContain('auditoria');
-      expect(ids).toContain('equipes');
-      expect(ids).toContain('perfil');
+      expect(sections.map((section) => section.id)).toEqual(['conta', 'notificacoes', 'pessoas']);
+      expect(sections[0]?.tabs.map((tab) => tab.id)).toEqual([
+        'perfil',
+        'preferencias',
+        'seguranca',
+      ]);
+      expect(sections[2]?.tabs.map((tab) => tab.id)).toEqual(['equipes']);
     }
+  });
+
+  it('cada tela antiga continua sendo uma aba, sem id repetido', () => {
+    const ids = SETTINGS_SECTIONS.flatMap((section) => section.tabs.map((tab) => tab.id));
+
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids).toEqual([
+      'perfil',
+      'preferencias',
+      'seguranca',
+      'notificacoes',
+      'workspace',
+      'recursos',
+      'campos',
+      'pessoas',
+      'equipes',
+      'integracoes',
+      'webhooks',
+      'chaves',
+      'dados',
+      'auditoria',
+    ]);
+  });
+});
+
+describe('sectionLabel', () => {
+  it('seção com uma aba só fala pelo nome da aba', () => {
+    const admin = visibleSections('admin').find((section) => section.id === 'pessoas')!;
+    const member = visibleSections('member').find((section) => section.id === 'pessoas')!;
+
+    expect(sectionLabel(admin)).toBe('Pessoas');
+    expect(sectionLabel(member)).toBe('Equipes');
+  });
+});
+
+describe('sectionTarget', () => {
+  it('leva para a primeira aba visível do papel', () => {
+    const admin = visibleSections('admin').find((section) => section.id === 'pessoas')!;
+    const member = visibleSections('member').find((section) => section.id === 'pessoas')!;
+
+    expect(sectionTarget(admin)).toBe('/w/$wsId/configuracoes/pessoas');
+    expect(sectionTarget(member)).toBe('/w/$wsId/configuracoes/equipes');
   });
 });
 
@@ -50,24 +91,28 @@ describe('groupedSections', () => {
     ]);
   });
 
-  it('para member sobra o grupo do workspace só com Equipes e nada em Avançado', () => {
+  it('para member sobra o grupo do workspace só com Pessoas e nada em Avançado', () => {
     const groups = groupedSections('member');
 
     expect(groups.map((entry) => entry.group)).toEqual(['pessoal', 'workspace']);
-    expect(groups[1]?.items.map((section) => section.id)).toEqual(['equipes']);
+    expect(groups[1]?.items.map((section) => section.id)).toEqual(['pessoas']);
   });
 });
 
-describe('activeSection', () => {
-  it('resolve a seção pelo caminho', () => {
-    expect(activeSection(`/w/${WS}/configuracoes/pessoas`, WS)?.id).toBe('pessoas');
+describe('activeSettings', () => {
+  it('resolve a seção e a aba pelo caminho', () => {
+    const active = activeSettings(`/w/${WS}/configuracoes/campos`, WS, 'admin');
+
+    expect(active?.section.id).toBe('workspace');
+    expect(active?.tab.label).toBe('Campos personalizados');
   });
 
-  it('devolve null na própria Configurações e fora dela', () => {
-    expect(activeSection(`/w/${WS}/configuracoes`, WS)).toBeNull();
-    expect(activeSection(`/w/${WS}/configuracoes/nao-existe`, WS)).toBeNull();
-    expect(activeSection(`/w/${WS}/planner`, WS)).toBeNull();
-    expect(activeSection('/w/outro/configuracoes/perfil', WS)).toBeNull();
+  it('devolve null na própria Configurações, fora dela e em aba sem permissão', () => {
+    expect(activeSettings(`/w/${WS}/configuracoes`, WS, 'admin')).toBeNull();
+    expect(activeSettings(`/w/${WS}/configuracoes/nao-existe`, WS, 'admin')).toBeNull();
+    expect(activeSettings(`/w/${WS}/planner`, WS, 'admin')).toBeNull();
+    expect(activeSettings('/w/outro/configuracoes/perfil', WS, 'admin')).toBeNull();
+    expect(activeSettings(`/w/${WS}/configuracoes/auditoria`, WS, 'member')).toBeNull();
   });
 });
 

@@ -7,7 +7,7 @@ function Page() {
   return (
     <EmptyState
       title="Escolha uma seção"
-      description="Perfil, preferências, notificações, segurança e, para quem administra, o workspace e as pessoas."
+      description="Sua conta e as notificações e, para quem administra, o workspace, as pessoas, as integrações e os dados."
       icon={<SlidersHorizontal className="h-7 w-7" aria-hidden="true" />}
     />
   );

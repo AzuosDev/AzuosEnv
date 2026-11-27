@@ -92,7 +92,7 @@ test.beforeAll(async ({ browser }) => {
     { slug: 'config-workspace', path: `${ws}/configuracoes/workspace` },
     { slug: 'config-pessoas', path: `${ws}/configuracoes/pessoas` },
     { slug: 'config-equipes', path: `${ws}/configuracoes/equipes` },
-    { slug: 'config-clickapps', path: `${ws}/configuracoes/clickapps` },
+    { slug: 'config-recursos', path: `${ws}/configuracoes/recursos` },
     { slug: 'config-campos', path: `${ws}/configuracoes/campos` },
     { slug: 'config-integracoes', path: `${ws}/configuracoes/integracoes` },
     { slug: 'config-webhooks', path: `${ws}/configuracoes/webhooks` },

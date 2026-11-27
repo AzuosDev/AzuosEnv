@@ -66,7 +66,7 @@ function InboundBubble({ text }: { text: string }) {
 /**
  * Aba Bot e mensagens (gestor): as mensagens automáticas do atendimento, o menu
  * e a resposta por IA, com a prévia ao vivo num celular simulado ao lado. A IA
- * só aparece com o ClickApp IA ligado no workspace, que é o que o backend exige.
+ * só aparece com o recurso IA ligado no workspace, que é o que o backend exige.
  */
 export function BotSettingsTab({ wsId }: BotSettingsTabProps) {
   const queryClient = useQueryClient();
@@ -504,7 +504,7 @@ export function BotSettingsTab({ wsId }: BotSettingsTabProps) {
           ) : (
             <p className="flex items-start gap-2 rounded-2xl border border-wa-line bg-wa-panel px-4 py-3 text-[13px] text-wa-muted">
               <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-wa-accent" aria-hidden="true" />A
-              resposta por IA aparece aqui quando o ClickApp IA estiver ligado nas configurações do
+              resposta por IA aparece aqui quando o recurso IA estiver ligado nas configurações do
               workspace.
             </p>
           )}
