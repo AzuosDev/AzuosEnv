@@ -206,7 +206,9 @@ test.describe('Central do WhatsApp — bot e configuração', () => {
     await waitForBotMessage(session, conversation.id, AWAY);
 
     await openConversation(page, 'Davi de Fora');
-    await expect(page.getByText(AWAY)).toBeVisible();
+    await expect(
+      page.getByRole('region', { name: /Conversa com Davi de Fora/ }).getByText(AWAY),
+    ).toBeVisible();
   });
 
   test('as abas novas não rolam para os lados em 360, 768 e 1280', async () => {

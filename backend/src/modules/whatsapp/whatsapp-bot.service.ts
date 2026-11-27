@@ -7,7 +7,7 @@ import { AiUsageService } from '../ai/ai-usage.service';
 import { PermissionContext } from '../hierarchy/permission.service';
 import { WorkspaceMember } from '../workspaces/schemas/workspace-member.schema';
 import { Workspace } from '../workspaces/schemas/workspace.schema';
-import { WaCredentials, WaInteractive, WaOutbound } from './graph/whatsapp-graph.provider';
+import { WaCredentials, WaInteractive, WaOutbound } from './providers/whatsapp.provider';
 import { WaBotRuleDocument } from './schemas/wa-bot-rule.schema';
 import { WaBotSettingsDocument, WaMenuOption } from './schemas/wa-bot-settings.schema';
 import { WaContactDocument } from './schemas/wa-contact.schema';

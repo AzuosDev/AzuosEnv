@@ -6,7 +6,13 @@ import { cn } from '@/lib/utils';
 import { useSession } from '@/features/auth/session';
 import type { WaConversationFilter } from '@/api/types';
 import { waConnectionQuery, waConversationsQuery } from '../api';
-import { hasWaLevel, visibleWaTabs, type WaPeriodDays, type WaTabId } from '../whatsapp-model';
+import {
+  hasWaLevel,
+  visibleWaTabs,
+  waConnectionLabel,
+  type WaPeriodDays,
+  type WaTabId,
+} from '../whatsapp-model';
 import { useWaAccess } from '../hooks/use-wa-access';
 import { useWaRealtime } from '../hooks/use-wa-realtime';
 import { BotRulesTab } from './bot-rules-tab';
@@ -114,13 +120,7 @@ export function WhatsappPage({
                 status === 'connected' ? 'bg-wa-brand' : 'bg-wa-muted',
               )}
             />
-            {status === 'connected'
-              ? 'WhatsApp conectado'
-              : status === 'error'
-                ? 'WhatsApp com erro'
-                : status === 'pending'
-                  ? 'WhatsApp pendente'
-                  : 'WhatsApp sem conexão'}
+            {waConnectionLabel(status)}
           </span>
         </div>
 
@@ -162,6 +162,7 @@ export function WhatsappPage({
         <ConversationsTab
           wsId={wsId}
           level={level}
+          provider={connection.data?.connection?.provider ?? null}
           conversationId={conversationId}
           filter={filter}
           term={term}

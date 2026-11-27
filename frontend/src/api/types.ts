@@ -649,6 +649,10 @@ export type WaConnectionStatus = Omit<
   'connection'
 > & { connection: WaConnection | null };
 export type SaveWaConnectionInput = components['schemas']['SaveWaConnectionDto'];
+export type WaProvider = NonNullable<SaveWaConnectionInput['provider']>;
+export type WaCapabilities = components['schemas']['WaCapabilitiesDto'];
+export type WaQrCode = components['schemas']['WaQrCodeDto'];
+export type WaConnectionState = WaConnection['status'];
 export type WaTemplate = components['schemas']['WaTemplateDto'];
 export type WaContact = Doc<components['schemas']['WaContact']>;
 export type CreateWaContactInput = components['schemas']['CreateWaContactDto'];

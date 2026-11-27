@@ -16,8 +16,47 @@ export function hasWaLevelAtLeast(
   return level !== null && LEVEL_RANK[level] >= LEVEL_RANK[required];
 }
 
-export const WA_CONNECTION_STATUSES = ['pending', 'connected', 'error'] as const;
+export const WA_CONNECTION_STATUSES = ['pending', 'connected', 'disconnected', 'error'] as const;
 export type WaConnectionStatus = (typeof WA_CONNECTION_STATUSES)[number];
+
+/**
+ * Where the number is plugged in. `evolution` is the default: Evolution API v2
+ * over Baileys, paired by QR Code, with free sending and no templates. `cloud`
+ * is the official Cloud API of Meta, kept working but no longer offered.
+ */
+export const WA_PROVIDERS = ['evolution', 'cloud'] as const;
+export type WaProvider = (typeof WA_PROVIDERS)[number];
+
+export const DEFAULT_WA_PROVIDER: WaProvider = 'evolution';
+
+/** What the provider of the connection is able to do. */
+export interface WaCapabilities {
+  /** Approved templates exist (only the Cloud API has them). */
+  templates: boolean;
+  /** Free text only answers the last 24 h (only the Cloud API enforces it). */
+  window: boolean;
+  /** The number is paired by reading a QR Code on the Conexão tab. */
+  qrCode: boolean;
+}
+
+export function waCapabilities(provider: WaProvider): WaCapabilities {
+  return provider === 'cloud'
+    ? { templates: true, window: true, qrCode: false }
+    : { templates: false, window: false, qrCode: true };
+}
+
+/** State Evolution reports for the instance of the connection. */
+export const WA_INSTANCE_STATES = ['open', 'connecting', 'close'] as const;
+export type WaInstanceState = (typeof WA_INSTANCE_STATES)[number];
+
+/** Status of the connection each instance state means. */
+export function statusOfInstanceState(state: WaInstanceState): WaConnectionStatus {
+  if (state === 'open') {
+    return 'connected';
+  }
+
+  return state === 'connecting' ? 'pending' : 'disconnected';
+}
 
 export const WA_CONVERSATION_STATUSES = ['open', 'waiting', 'closed'] as const;
 export type WaConversationStatus = (typeof WA_CONVERSATION_STATUSES)[number];
@@ -94,6 +133,25 @@ export function isWindowOpen(lastInboundAt: Date | null, now: Date = new Date())
 export const WA_SIGNATURE_HEADER = 'x-hub-signature-256';
 
 export const GRAPH_TIMEOUT_MS = 15_000;
+
+export const EVOLUTION_TIMEOUT_MS = 20_000;
+
+/** Baileys integration of an Evolution instance; the one that reads a QR Code. */
+export const EVOLUTION_INTEGRATION = 'WHATSAPP-BAILEYS';
+
+/** Bytes of the secret that goes in the public URL of the Evolution webhook. */
+export const WA_WEBHOOK_SECRET_BYTES = 24;
+
+/** Name of an Evolution instance, as the Conexão tab accepts it. */
+export const EVOLUTION_INSTANCE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,59}$/;
+
+/** Events of the instance this module subscribes to. */
+export const EVOLUTION_EVENTS = [
+  'QRCODE_UPDATED',
+  'CONNECTION_UPDATE',
+  'MESSAGES_UPSERT',
+  'MESSAGES_UPDATE',
+] as const;
 
 /** Ceiling of documents a listing loads before filtering in memory. */
 export const MAX_WA_SCAN = 500;

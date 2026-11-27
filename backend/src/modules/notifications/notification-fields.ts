@@ -16,6 +16,7 @@ export const NOTIFICATION_TYPES = [
   'aiSummary',
   'whatsappMessage',
   'whatsappAssigned',
+  'whatsappConnection',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

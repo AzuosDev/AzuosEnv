@@ -8,6 +8,7 @@ import type {
   CreateWaContactInput,
   CreateWaQuickReplyInput,
   SaveWaBotSettingsInput,
+  SaveWaConnectionInput,
   SendWaTemplateInput,
   SendWaTextInput,
   Task,
@@ -20,6 +21,7 @@ import type {
   WaBotSettings,
   WaConnectionStatus,
   WaContact,
+  WaQrCode,
   WaConversationFilter,
   WaConversationItem,
   WaConversationPriority,
@@ -125,13 +127,7 @@ export function waConnectionQuery(wsId: string) {
 
 export async function saveWaConnection(
   wsId: string,
-  body: {
-    phoneNumberId: string;
-    wabaId: string;
-    accessToken: string;
-    appSecret: string;
-    verifyToken: string;
-  },
+  body: SaveWaConnectionInput,
 ): Promise<WaConnectionStatus> {
   return unwrap(
     await api.PUT('/api/v1/workspaces/{wsId}/whatsapp/connection', {
@@ -144,6 +140,54 @@ export async function saveWaConnection(
 export async function testWaConnection(wsId: string): Promise<WaConnectionStatus> {
   return unwrap(
     await api.POST('/api/v1/workspaces/{wsId}/whatsapp/connection/test', {
+      params: { path: { wsId } },
+    }),
+  ) as WaConnectionStatus;
+}
+
+/**
+ * Começa o pareamento: o backend cria a instância na Evolution (já com o
+ * webhook apontado para ele) e devolve o QR Code para ler.
+ */
+export async function connectWaConnection(wsId: string): Promise<WaQrCode> {
+  return unwrap(
+    await api.POST('/api/v1/workspaces/{wsId}/whatsapp/connection/connect', {
+      params: { path: { wsId } },
+    }),
+  ) as WaQrCode;
+}
+
+/**
+ * QR Code mais recente. O socket (`connection.state`) é quem avisa que mudou;
+ * o `refetchInterval` é a rede de segurança de quem está sem tempo real.
+ */
+export function waQrCodeQuery(wsId: string, enabled: boolean) {
+  return queryOptions({
+    queryKey: queryKeys.waQrCode(wsId),
+    queryFn: async (): Promise<WaQrCode> =>
+      unwrap(
+        await api.GET('/api/v1/workspaces/{wsId}/whatsapp/connection/qr', {
+          params: { path: { wsId } },
+        }),
+      ) as WaQrCode,
+    enabled,
+    staleTime: 0,
+    // Só pareando vale perguntar de novo: conectado, nada muda sozinho.
+    refetchInterval: (query) => (query.state.data?.status === 'connected' ? false : 10_000),
+  });
+}
+
+export async function disconnectWaConnection(wsId: string): Promise<WaConnectionStatus> {
+  return unwrap(
+    await api.POST('/api/v1/workspaces/{wsId}/whatsapp/connection/disconnect', {
+      params: { path: { wsId } },
+    }),
+  ) as WaConnectionStatus;
+}
+
+export async function restartWaConnection(wsId: string): Promise<WaConnectionStatus> {
+  return unwrap(
+    await api.POST('/api/v1/workspaces/{wsId}/whatsapp/connection/restart', {
       params: { path: { wsId } },
     }),
   ) as WaConnectionStatus;

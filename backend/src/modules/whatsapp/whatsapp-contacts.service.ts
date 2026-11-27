@@ -1,17 +1,26 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CursorPage, buildCursorPage, decodeObjectIdCursor } from '../../common/pagination/cursor';
 import { DEFAULT_PAGE_SIZE } from '../../common/pagination/pagination-query.dto';
 import { escapeRegex } from '../../common/utils/regex';
 import { PermissionContext } from '../hierarchy/permission.service';
+import { WhatsappProviders } from './providers/whatsapp-providers.service';
 import { CreateWaContactDto, UpdateWaContactDto, WaContactQueryDto } from './dto/whatsapp.dto';
 import { WaContact, WaContactDocument } from './schemas/wa-contact.schema';
+import { WhatsappConnectionsService } from './whatsapp-connections.service';
+import { brazilNumberVariants } from './whatsapp-jid';
 
 /** Contacts of the module, with the notes and the tags of the team. */
 @Injectable()
 export class WhatsappContactsService {
-  constructor(@InjectModel(WaContact.name) private readonly model: Model<WaContact>) {}
+  private readonly logger = new Logger(WhatsappContactsService.name);
+
+  constructor(
+    @InjectModel(WaContact.name) private readonly model: Model<WaContact>,
+    private readonly connections: WhatsappConnectionsService,
+    private readonly providers: WhatsappProviders,
+  ) {}
 
   contactNotFound(): NotFoundException {
     return new NotFoundException({
@@ -82,9 +91,8 @@ export class WhatsappContactsService {
   }
 
   async create(ctx: PermissionContext, dto: CreateWaContactDto): Promise<WaContactDocument> {
-    const taken = await this.model
-      .countDocuments({ workspaceId: ctx.workspaceId, waId: dto.waId })
-      .exec();
+    const waId = await this.resolveWaId(ctx.workspaceId, dto.waId);
+    const taken = await this.model.countDocuments({ workspaceId: ctx.workspaceId, waId }).exec();
 
     if (taken > 0) {
       throw new ConflictException({
@@ -95,7 +103,7 @@ export class WhatsappContactsService {
 
     return this.model.create({
       workspaceId: ctx.workspaceId,
-      waId: dto.waId,
+      waId,
       name: dto.name ?? '',
       tags: dto.tags ?? [],
       notes: dto.notes ?? '',
@@ -180,6 +188,51 @@ export class WhatsappContactsService {
     }
 
     return contact;
+  }
+
+  /**
+   * Número que realmente existe no WhatsApp. Um celular brasileiro cadastrado
+   * antes do nono dígito continua com o JID de oito, então o número digitado à
+   * mão só chega numa das duas formas; qual delas é se pergunta ao provedor
+   * antes de abrir a conversa. Sem resposta, o número digitado vale.
+   */
+  private async resolveWaId(workspaceId: Types.ObjectId, waId: string): Promise<string> {
+    const variants = brazilNumberVariants(waId);
+
+    if (variants.length < 2) {
+      return waId;
+    }
+
+    try {
+      const { credentials } = await this.connections.requireCredentials(workspaceId);
+      const existing = await this.providers
+        .forCredentials(credentials)
+        .existingNumbers(credentials, variants);
+      // Só serve a forma que o provedor confirmou; qualquer outra resposta é
+      // ruído e não vira contato.
+      const found = variants.find((variant) => existing.includes(variant));
+
+      if (!found) {
+        throw new ConflictException({
+          code: 'WHATSAPP_NUMBER_NOT_FOUND',
+          message: 'Este número não tem WhatsApp.',
+        });
+      }
+
+      return found;
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+
+      this.logger.warn(
+        `Não foi possível conferir o número ${waId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+
+      return waId;
+    }
   }
 
   async touch(contactId: Types.ObjectId, at: Date): Promise<void> {

@@ -1,6 +1,16 @@
-import { Controller, Get, Headers, HttpCode, HttpStatus, Post, Query, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { Body } from '@nestjs/common';
-import { ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { RawBodyRequest } from '../../app.setup';
 import { Public } from '../../common/decorators/public.decorator';
 import { WaWebhookResultDto } from './dto/whatsapp-result.dto';
@@ -42,6 +52,35 @@ export class WhatsappWebhookController {
     return this.webhook.receive({
       rawBody: request.rawBody,
       signature,
+      body: body && typeof body === 'object' ? body : {},
+    });
+  }
+}
+
+/**
+ * Public entry point of the Evolution. The secret in the URL is what proves the
+ * delivery: it is compared with the hash on the connection, and anything that
+ * does not match answers 404, the same as an unknown connection.
+ */
+@ApiTags('whatsapp')
+@Controller('integrations/whatsapp/evolution')
+export class WhatsappEvolutionWebhookController {
+  constructor(private readonly webhook: WhatsappWebhookService) {}
+
+  @Public()
+  @Post(':connectionId/:secret')
+  @HttpCode(HttpStatus.OK)
+  @ApiParam({ name: 'connectionId', description: 'Conexão que o webhook pertence.' })
+  @ApiParam({ name: 'secret', description: 'Segredo do webhook, conferido pelo hash.' })
+  @ApiOkResponse({ description: 'Evento aceito.', type: WaWebhookResultDto })
+  receive(
+    @Param('connectionId') connectionId: string,
+    @Param('secret') secret: string,
+    @Body() body: Record<string, unknown>,
+  ): Promise<WaWebhookResult> {
+    return this.webhook.receiveEvolution({
+      connectionId,
+      secret,
       body: body && typeof body === 'object' ? body : {},
     });
   }

@@ -45,9 +45,11 @@ import {
   TaskUpdatedEvent,
 } from '../tasks/task-events';
 import {
+  WA_CONNECTION_STATE,
   WA_CONVERSATION_UPDATED,
   WA_MESSAGE_CREATED,
   WA_MESSAGE_STATUS,
+  WaConnectionStateEvent,
   WaConversationUpdatedEvent,
   WaMessageCreatedEvent,
   WaMessageStatusEvent,
@@ -235,6 +237,18 @@ export class RealtimeListener {
       status: event.status,
       assigneeId: event.assigneeId ? String(event.assigneeId) : null,
       unreadCount: event.unreadCount,
+    });
+  }
+
+  @OnEvent(WA_CONNECTION_STATE)
+  async onWaConnectionState(event: WaConnectionStateEvent): Promise<void> {
+    await this.realtime.publish(whatsappRooms(event.workspaceId), 'connection.state', {
+      workspaceId: String(event.workspaceId),
+      provider: event.provider,
+      status: event.status,
+      displayPhone: event.displayPhone,
+      verifiedName: event.verifiedName,
+      hasQrCode: event.hasQrCode,
     });
   }
 

@@ -1,7 +1,13 @@
-import { ForbiddenException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { verifyBody } from '../integrations/webhooks/webhook-signature';
-import { WaCredentials } from './graph/whatsapp-graph.provider';
+import { WaCredentials } from './providers/whatsapp.provider';
 import {
   WaConnectionWithCredentials,
   WhatsappConnectionsService,
@@ -10,6 +16,7 @@ import { WhatsappBotService } from './whatsapp-bot.service';
 import { WhatsappContactsService } from './whatsapp-contacts.service';
 import { WhatsappConversationsService } from './whatsapp-conversations.service';
 import { WhatsappMessagesService } from './whatsapp-messages.service';
+import { readEvolutionDelivery } from './whatsapp-evolution-payload';
 import { WaWebhookChange, readChanges, readPhoneNumberId } from './whatsapp-payload';
 
 export interface WaWebhookVerification {
@@ -24,6 +31,13 @@ export interface WaWebhookRequest {
   body: Record<string, unknown>;
 }
 
+/** One delivery of the Evolution, as the public URL carries it. */
+export interface WaEvolutionRequest {
+  connectionId: string;
+  secret: string;
+  body: Record<string, unknown>;
+}
+
 export interface WaWebhookResult {
   received: true;
   /** Why nothing was queued, when the delivery was accepted but not applied. */
@@ -31,9 +45,11 @@ export interface WaWebhookResult {
 }
 
 /**
- * Public entry point of the Cloud API. The GET answers the handshake of Meta; the
- * POST checks the signature over the raw body, picks the workspace by the
- * phone_number_id and hands the payload to the queue, which runs after the 200.
+ * Public entry point of both providers. The Cloud API checks the signature over
+ * the raw body and routes by the phone_number_id; the Evolution routes by the
+ * connection in the URL and compares the secret of the URL with the stored hash.
+ * Both answer right away and hand the payload to the queue, which runs after the
+ * 200, and both are idempotent through the unique index on waMessageId.
  */
 @Injectable()
 export class WhatsappWebhookService {
@@ -68,7 +84,7 @@ export class WhatsappWebhookService {
     return input.challenge ?? '';
   }
 
-  /** Validates the delivery and queues the processing; answers right away. */
+  /** Validates the delivery of the Cloud API and queues the processing. */
   async receive(request: WaWebhookRequest): Promise<WaWebhookResult> {
     const phoneNumberId = readPhoneNumberId(request.body);
 
@@ -96,7 +112,52 @@ export class WhatsappWebhookService {
 
     const changes = readChanges(request.body);
 
-    this.enqueue(found, changes);
+    this.enqueue(() => this.process(found, changes));
+
+    return { received: true };
+  }
+
+  /**
+   * Validates the delivery of the Evolution and queues the processing. A wrong
+   * secret is answered as a 404, the same as an unknown connection: the URL is
+   * public, so it must never say which of the two it was.
+   */
+  async receiveEvolution(request: WaEvolutionRequest): Promise<WaWebhookResult> {
+    const found = await this.connections.byWebhookSecret(request.connectionId, request.secret);
+
+    if (!found) {
+      throw new NotFoundException({
+        code: 'WHATSAPP_NOT_FOUND',
+        message: 'Webhook não encontrado.',
+      });
+    }
+
+    await this.connections.touch(found.connection._id);
+
+    const delivery = readEvolutionDelivery(request.body);
+
+    if (delivery.ignored && delivery.state === null && delivery.qrCode === null) {
+      return { received: true, ignored: delivery.ignored };
+    }
+
+    this.enqueue(async () => {
+      if (delivery.qrCode) {
+        await this.connections.applyQrCode(found.connection, delivery.qrCode);
+      }
+
+      if (delivery.state) {
+        await this.connections.applyState(found.connection, delivery.state);
+      }
+
+      await this.process(found, [
+        {
+          phoneNumberId: '',
+          contacts: delivery.contacts,
+          messages: delivery.messages,
+          statuses: delivery.statuses,
+        },
+      ]);
+    });
 
     return { received: true };
   }
@@ -106,16 +167,14 @@ export class WhatsappWebhookService {
     await this.queue;
   }
 
-  private enqueue(found: WaConnectionWithCredentials, changes: WaWebhookChange[]): void {
-    this.queue = this.queue
-      .then(() => this.process(found, changes))
-      .catch((error: unknown) => {
-        this.logger.error(
-          `Falha ao processar o webhook do WhatsApp: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        );
-      });
+  private enqueue(run: () => Promise<void>): void {
+    this.queue = this.queue.then(run).catch((error: unknown) => {
+      this.logger.error(
+        `Falha ao processar o webhook do WhatsApp: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    });
   }
 
   private async process(

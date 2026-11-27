@@ -8,19 +8,25 @@ import {
   IsMongoId,
   IsOptional,
   IsString,
+  IsUrl,
   Length,
   Matches,
+  ValidateIf,
 } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/pagination/pagination-query.dto';
 import {
+  DEFAULT_WA_PROVIDER,
+  EVOLUTION_INSTANCE,
   WA_ACCESS_LEVELS,
   WA_CONVERSATION_FILTERS,
   WA_CONVERSATION_MODES,
   WA_PRIORITIES,
+  WA_PROVIDERS,
   WaAccessLevel,
   WaConversationFilter,
   WaConversationMode,
   WaPriority,
+  WaProvider,
 } from '../whatsapp-fields';
 
 /** Digits only, with the country code, as Meta formats a wa_id. */
@@ -32,31 +38,72 @@ export class GrantWaAccessDto {
   level: WaAccessLevel;
 }
 
+/** Qual metade do formulário é obrigatória depende do provedor escolhido. */
+function providerOf(dto: SaveWaConnectionDto): WaProvider {
+  return dto.provider ?? DEFAULT_WA_PROVIDER;
+}
+
+const isEvolution = (dto: SaveWaConnectionDto): boolean => providerOf(dto) === 'evolution';
+const isCloud = (dto: SaveWaConnectionDto): boolean => providerOf(dto) === 'cloud';
+
 export class SaveWaConnectionDto {
-  @ApiProperty({ description: 'Id do número dentro da WABA.' })
+  @ApiPropertyOptional({
+    enum: WA_PROVIDERS,
+    default: DEFAULT_WA_PROVIDER,
+    description: 'evolution conecta por QR Code; cloud é a Cloud API oficial.',
+  })
+  @IsOptional()
+  @IsEnum(WA_PROVIDERS)
+  provider?: WaProvider;
+
+  @ApiPropertyOptional({ description: 'Evolution: origem do servidor.' })
+  @ValidateIf(isEvolution)
+  @IsUrl({ require_tld: false, protocols: ['http', 'https'] })
+  @Length(1, 300)
+  baseUrl?: string;
+
+  @ApiPropertyOptional({ description: 'Evolution: API key; guardada criptografada.' })
+  @ValidateIf(isEvolution)
+  @IsString()
+  @Length(1, 300)
+  apiKey?: string;
+
+  @ApiPropertyOptional({ description: 'Evolution: nome da instância.' })
+  @ValidateIf(isEvolution)
+  @Matches(EVOLUTION_INSTANCE, {
+    message: 'instanceName aceita letras, números, ponto, hífen e sublinhado.',
+  })
+  instanceName?: string;
+
+  @ApiPropertyOptional({ description: 'Cloud API: id do número dentro da WABA.' })
+  @ValidateIf(isCloud)
   @IsString()
   @Length(1, 60)
-  phoneNumberId: string;
+  phoneNumberId?: string;
 
-  @ApiProperty({ description: 'Id da conta do WhatsApp Business.' })
+  @ApiPropertyOptional({ description: 'Cloud API: id da conta do WhatsApp Business.' })
+  @ValidateIf(isCloud)
   @IsString()
   @Length(1, 60)
-  wabaId: string;
+  wabaId?: string;
 
-  @ApiProperty({ description: 'Token permanente da Graph API; guardado criptografado.' })
+  @ApiPropertyOptional({ description: 'Cloud API: token permanente; criptografado.' })
+  @ValidateIf(isCloud)
   @IsString()
   @Length(1, 500)
-  accessToken: string;
+  accessToken?: string;
 
-  @ApiProperty({ description: 'App Secret que assina o webhook; guardado criptografado.' })
+  @ApiPropertyOptional({ description: 'Cloud API: App Secret que assina o webhook.' })
+  @ValidateIf(isCloud)
   @IsString()
   @Length(1, 200)
-  appSecret: string;
+  appSecret?: string;
 
-  @ApiProperty({ description: 'Token devolvido na verificação do webhook.' })
+  @ApiPropertyOptional({ description: 'Cloud API: token da verificação do webhook.' })
+  @ValidateIf(isCloud)
   @IsString()
   @Length(8, 200)
-  verifyToken: string;
+  verifyToken?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

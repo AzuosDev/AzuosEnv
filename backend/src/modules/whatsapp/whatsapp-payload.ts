@@ -14,6 +14,8 @@ export interface WaInboundMessage {
   filename: string;
   /** waMessageId of the quoted message. */
   replyTo: string | null;
+  /** File already inside the delivery, as Evolution sends it. */
+  mediaBase64: string | null;
   payload: Record<string, unknown> | null;
 }
 
@@ -132,6 +134,7 @@ function readMessage(raw: Record<string, unknown>): WaInboundMessage | null {
     from,
     sentAt: asDate(raw.timestamp),
     replyTo: asString(asObject(raw.context)?.id) || null,
+    mediaBase64: null,
     mediaId: null,
     mime: null,
     caption: '',

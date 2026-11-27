@@ -1,12 +1,12 @@
 import request from 'supertest';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { CloudApiProvider } from '../src/modules/whatsapp/providers/cloud-api.provider';
 import {
+  WaMediaRequest,
   WaOutbound,
   WaTemplate,
-  WaUploadInput,
-  WhatsappGraphProvider,
-} from '../src/modules/whatsapp/graph/whatsapp-graph.provider';
+} from '../src/modules/whatsapp/providers/whatsapp.provider';
 import { WaMessage } from '../src/modules/whatsapp/schemas/wa-message.schema';
 import { WhatsappWebhookService } from '../src/modules/whatsapp/whatsapp-webhook.service';
 import { signBody } from '../src/modules/integrations/webhooks/webhook-signature';
@@ -53,41 +53,47 @@ const VERIFY_TOKEN = 'token-de-verificacao';
 const CONTACT = '5531999990000';
 
 /** WhatsApp Cloud API scripted by each test; nothing leaves the process. */
-const fakeGraph = {
+const fakeCloud = {
   sent: [] as WaOutbound[],
-  uploaded: [] as WaUploadInput[],
   downloads: [] as string[],
   reads: [] as string[],
   templateList: [] as WaTemplate[],
   send: (_credentials: unknown, message: WaOutbound): Promise<string> => {
-    fakeGraph.sent.push(message);
+    fakeCloud.sent.push(message);
 
-    return Promise.resolve(`wamid.out.${fakeGraph.sent.length}`);
+    return Promise.resolve(`wamid.out.${fakeCloud.sent.length}`);
   },
-  upload: (_credentials: unknown, file: WaUploadInput): Promise<string> => {
-    fakeGraph.uploaded.push(file);
-
-    return Promise.resolve('media-enviada');
-  },
-  mediaInfo: (_credentials: unknown, mediaId: string) =>
-    Promise.resolve({ url: `https://fake.graph/${mediaId}`, mime: 'image/jpeg', size: 9 }),
-  download: (_credentials: unknown, url: string) => {
-    fakeGraph.downloads.push(url);
+  inboundMedia: (_credentials: unknown, request: WaMediaRequest) => {
+    fakeCloud.downloads.push(request.mediaId ?? '');
 
     return Promise.resolve({ buffer: Buffer.from('conteudo'), mime: 'image/jpeg' });
   },
   markRead: (_credentials: unknown, waMessageId: string): Promise<void> => {
-    fakeGraph.reads.push(waMessageId);
+    fakeCloud.reads.push(waMessageId);
 
     return Promise.resolve();
   },
-  templates: (): Promise<WaTemplate[]> => Promise.resolve(fakeGraph.templateList),
+  templates: (): Promise<WaTemplate[]> => Promise.resolve(fakeCloud.templateList),
   phoneInfo: () =>
     Promise.resolve({
       displayPhone: '+55 31 99999-0000',
       verifiedName: 'Azuos Dev',
       qualityRating: 'GREEN',
     }),
+  setWebhook: (): Promise<void> => Promise.resolve(),
+  createInstance: () => Promise.reject(new Error('sem instância na Cloud API')),
+  connect: () => Promise.reject(new Error('sem QR Code na Cloud API')),
+  state: () =>
+    Promise.resolve({
+      state: 'open' as const,
+      qrCode: null,
+      displayPhone: '',
+      verifiedName: '',
+    }),
+  disconnect: (): Promise<void> => Promise.resolve(),
+  restart: () => Promise.reject(new Error('sem reinício na Cloud API')),
+  existingNumbers: (_credentials: unknown, waIds: string[]): Promise<string[]> =>
+    Promise.resolve(waIds),
 };
 
 describe('WhatsApp', () => {
@@ -95,16 +101,15 @@ describe('WhatsApp', () => {
 
   beforeAll(async () => {
     ctx = await createTestApp({
-      overrides: [{ token: WhatsappGraphProvider, value: fakeGraph }],
+      overrides: [{ token: CloudApiProvider, value: fakeCloud }],
     });
   });
 
   beforeEach(() => {
-    fakeGraph.sent = [];
-    fakeGraph.uploaded = [];
-    fakeGraph.downloads = [];
-    fakeGraph.reads = [];
-    fakeGraph.templateList = [
+    fakeCloud.sent = [];
+    fakeCloud.downloads = [];
+    fakeCloud.reads = [];
+    fakeCloud.templateList = [
       {
         name: 'retorno_atendimento',
         language: 'pt_BR',
@@ -187,6 +192,7 @@ describe('WhatsApp', () => {
 
     await withAuth(http().put(`/api/v1/workspaces/${workspace.id}/whatsapp/connection`), owner)
       .send({
+        provider: 'cloud',
         phoneNumberId: PHONE_NUMBER_ID,
         wabaId: '555000',
         accessToken: 'token-da-graph',
@@ -361,7 +367,7 @@ describe('WhatsApp', () => {
       }),
     ).then((response) => expect(response.status).toBe(200));
 
-    expect(fakeGraph.downloads).toEqual(['https://fake.graph/media-7']);
+    expect(fakeCloud.downloads).toEqual(['media-7']);
 
     const [conversation] = await conversations(fixture, fixture.owner);
     const [message] = await messagesOf(fixture, fixture.owner, conversation.id);
@@ -447,7 +453,7 @@ describe('WhatsApp', () => {
       .expect(201);
 
     expect(sent.body).toMatchObject({ direction: 'outbound', status: 'sent' });
-    expect(fakeGraph.sent[0]).toMatchObject({ to: CONTACT, type: 'text' });
+    expect(fakeCloud.sent[0]).toMatchObject({ to: CONTACT, type: 'text' });
 
     const waMessageId = sent.body.waMessageId as string;
 
@@ -548,6 +554,7 @@ describe('WhatsApp', () => {
       fixture.ana,
     )
       .send({
+        provider: 'cloud',
         phoneNumberId: PHONE_NUMBER_ID,
         wabaId: '1',
         accessToken: 'x',
@@ -571,7 +578,7 @@ describe('WhatsApp', () => {
       .expect(409);
 
     expect(refused.body.code).toBe('WINDOW_CLOSED');
-    expect(fakeGraph.sent).toHaveLength(0);
+    expect(fakeCloud.sent).toHaveLength(0);
 
     const templates = await withAuth(
       http().get(`/api/v1/workspaces/${fixture.workspace.id}/whatsapp/templates`),
@@ -585,7 +592,7 @@ describe('WhatsApp', () => {
       .expect(201);
 
     expect(sent.body).toMatchObject({ type: 'template', direction: 'outbound', status: 'sent' });
-    expect(fakeGraph.sent[0]).toMatchObject({
+    expect(fakeCloud.sent[0]).toMatchObject({
       type: 'template',
       template: { name: 'retorno_atendimento', language: 'pt_BR', variables: ['Ana'] },
     });
@@ -607,12 +614,12 @@ describe('WhatsApp', () => {
       .expect(201);
 
     expect(sent.body).toMatchObject({ type: 'document', direction: 'outbound' });
-    expect(fakeGraph.uploaded[0]).toMatchObject({ filename: 'contrato.pdf' });
+    expect(fakeCloud.sent[0]?.file).toMatchObject({ filename: 'contrato.pdf' });
 
     const read = await withAuth(http().post(`${base}/read`), fixture.owner).expect(201);
 
     expect(read.body.unreadCount).toBe(0);
-    expect(fakeGraph.reads).toEqual(['wamid.1']);
+    expect(fakeCloud.reads).toEqual(['wamid.1']);
   });
 
   it('vira tarefa e vira lead em Comercial › Leads', async () => {

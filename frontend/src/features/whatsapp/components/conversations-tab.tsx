@@ -3,7 +3,12 @@ import { useNavigate } from '@tanstack/react-router';
 import { MessageSquareDashed } from 'lucide-react';
 import { useState } from 'react';
 import { errorMessage } from '@/api/errors';
-import type { WaAccessLevel, WaConversationFilter, WaConversationItem } from '@/api/types';
+import type {
+  WaAccessLevel,
+  WaConversationFilter,
+  WaConversationItem,
+  WaProvider,
+} from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
 import { PanelResizer, usePanelSize } from '@/components/ui/resizable-panel';
@@ -18,7 +23,7 @@ import {
   waConversationsQuery,
   waTemplatesQuery,
 } from '../api';
-import { hasWaLevel, mergeWaPages } from '../whatsapp-model';
+import { hasWaLevel, mergeWaPages, waCapabilities } from '../whatsapp-model';
 import { useMarkWaRead, useWaConversationActions } from '../hooks/use-wa-conversation';
 import { ConversationChat } from './conversation-chat';
 import { ConversationList } from './conversation-list';
@@ -28,6 +33,8 @@ import { CustomerPanel } from './customer-panel';
 export interface ConversationsTabProps {
   wsId: string;
   level: WaAccessLevel;
+  /** Provedor da conexão; null enquanto a conexão não respondeu. */
+  provider: WaProvider | null;
   conversationId: string | undefined;
   filter: WaConversationFilter;
   term: string;
@@ -54,6 +61,7 @@ const THREE_PANE_PX = 1440;
 export function ConversationsTab({
   wsId,
   level,
+  provider,
   conversationId,
   filter,
   term,
@@ -96,7 +104,8 @@ export function ConversationsTab({
   // Só abre a conversa que veio inteira da API: um id inválido na URL não pode
   // desenhar um chat vazio no lugar do estado vazio.
   const active = found && typeof found.id === 'string' && found.id !== '' ? found : null;
-  const templates = useQuery(waTemplatesQuery(wsId, active !== null));
+  const capabilities = waCapabilities(provider);
+  const templates = useQuery(waTemplatesQuery(wsId, active !== null && capabilities.templates));
 
   useMarkWaRead(wsId, active && active.unreadCount > 0 ? active.id : null);
 
@@ -145,6 +154,7 @@ export function ConversationsTab({
         <ConversationChat
           wsId={wsId}
           conversation={active}
+          provider={provider}
           templates={templates.data ?? []}
           actions={actions}
           {...(wide

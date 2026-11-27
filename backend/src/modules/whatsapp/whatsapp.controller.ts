@@ -43,6 +43,7 @@ import {
   WaConnectionStatusDto,
   WaConversationItemDto,
   WaMyAccessDto,
+  WaQrCodeDto,
   WaTemplateListDto,
 } from './dto/whatsapp-result.dto';
 import {
@@ -66,13 +67,14 @@ import { WaConnectionDocument } from './schemas/wa-connection.schema';
 import { WaConversation, WaConversationDocument } from './schemas/wa-conversation.schema';
 import { WaMessage, WaMessageDocument } from './schemas/wa-message.schema';
 import { WaAccessEntry, WhatsappAccessService } from './whatsapp-access.service';
+import { waCapabilities } from './whatsapp-fields';
 import { WhatsappBotService } from './whatsapp-bot.service';
-import { WhatsappConnectionsService } from './whatsapp-connections.service';
+import { WaQrCodeResult, WhatsappConnectionsService } from './whatsapp-connections.service';
 import { WhatsappContactsService } from './whatsapp-contacts.service';
 import { WaConversationItem, WhatsappConversationsService } from './whatsapp-conversations.service';
 import { WhatsappMessagesService } from './whatsapp-messages.service';
 import { WhatsappTasksService } from './whatsapp-tasks.service';
-import { WaTemplate } from './graph/whatsapp-graph.provider';
+import { WaTemplate } from './providers/whatsapp.provider';
 
 const UPLOAD_FIELD = 'file';
 
@@ -182,9 +184,58 @@ export class WhatsappConnectionController {
 
     await this.access.require(ctx, 'gestor');
 
-    const connection = await this.connections.save(ctx.workspaceId, ctx.userId, dto);
+    await this.connections.save(ctx.workspaceId, ctx.userId, dto);
 
-    return { connection, webhookUrl: this.connections.webhookUrl() };
+    return this.connections.status(ctx.workspaceId);
+  }
+
+  @Post('connect')
+  @Audit('whatsapp.connection.connected', 'integration')
+  @ApiOkResponse({ description: 'Pareamento iniciado; QR Code para ler.', type: WaQrCodeDto })
+  async connect(@CurrentMembership() membership: RequestMembership): Promise<WaQrCodeResult> {
+    const ctx = ctxOf(membership);
+
+    await this.access.require(ctx, 'gestor');
+
+    return this.connections.connect(ctx.workspaceId);
+  }
+
+  @Get('qr')
+  @ApiOkResponse({ description: 'QR Code mais recente do pareamento.', type: WaQrCodeDto })
+  async qrCode(@CurrentMembership() membership: RequestMembership): Promise<WaQrCodeResult> {
+    const ctx = ctxOf(membership);
+
+    await this.access.require(ctx, 'gestor');
+
+    return this.connections.qrCode(ctx.workspaceId);
+  }
+
+  @Post('disconnect')
+  @Audit('whatsapp.connection.disconnected', 'integration')
+  @ApiOkResponse({ description: 'Pareamento desfeito.', type: WaConnectionStatusDto })
+  async disconnect(
+    @CurrentMembership() membership: RequestMembership,
+  ): Promise<WaConnectionStatusDto> {
+    const ctx = ctxOf(membership);
+
+    await this.access.require(ctx, 'gestor');
+    await this.connections.disconnect(ctx.workspaceId);
+
+    return this.connections.status(ctx.workspaceId);
+  }
+
+  @Post('restart')
+  @Audit('whatsapp.connection.restarted', 'integration')
+  @ApiOkResponse({ description: 'Instância reiniciada.', type: WaConnectionStatusDto })
+  async restart(
+    @CurrentMembership() membership: RequestMembership,
+  ): Promise<WaConnectionStatusDto> {
+    const ctx = ctxOf(membership);
+
+    await this.access.require(ctx, 'gestor');
+    await this.connections.restart(ctx.workspaceId);
+
+    return this.connections.status(ctx.workspaceId);
   }
 
   @Post('test')
@@ -197,7 +248,11 @@ export class WhatsappConnectionController {
 
     const connection: WaConnectionDocument = await this.connections.test(ctx.workspaceId);
 
-    return { connection, webhookUrl: this.connections.webhookUrl() };
+    return {
+      connection,
+      webhookUrl: connection.provider === 'cloud' ? this.connections.webhookUrl() : '',
+      capabilities: waCapabilities(connection.provider),
+    };
   }
 
   @Get()
@@ -288,7 +343,7 @@ export class WhatsappConversationsController {
       conversationId,
     );
 
-    await this.messages.markReadOnMeta(conversation);
+    await this.messages.markReadOnProvider(conversation);
 
     return conversation;
   }

@@ -3,18 +3,18 @@ import { format, isThisYear, isToday, isYesterday, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ArrowLeft, Bot, CheckCircle2, Info, RotateCcw } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { WaConversationItem, WaMessage, WaTemplate } from '@/api/types';
+import type { WaConversationItem, WaMessage, WaProvider, WaTemplate } from '@/api/types';
 import { Spinner } from '@/components/ui/spinner';
 import { waMessagesQuery } from '../api';
 import {
   botPauseUntil,
+  canSendFreely,
   contactLabel,
   formatWaNumber,
   groupWaMessagesByDay,
   mergeWaMessagePages,
   reactionsOf,
   visibleMessages,
-  windowOpen,
 } from '../whatsapp-model';
 import type { WaConversationActions } from '../hooks/use-wa-conversation';
 import { Composer } from './composer';
@@ -23,6 +23,8 @@ import { MessageBubble } from './message-bubble';
 export interface ConversationChatProps {
   wsId: string;
   conversation: WaConversationItem;
+  /** Provedor da conexão; null ainda não respondeu. */
+  provider: WaProvider | null;
   templates: WaTemplate[];
   actions: WaConversationActions;
   /** Botão de voltar da pilha do celular; ausente no desktop. */
@@ -58,6 +60,7 @@ function dayLabel(day: string): string {
 export function ConversationChat({
   wsId,
   conversation,
+  provider,
   templates,
   actions,
   onBack,
@@ -73,7 +76,7 @@ export function ConversationChat({
   const byWaId = new Map(
     messages.filter((item) => item.waMessageId).map((item) => [item.waMessageId ?? '', item]),
   );
-  const open = windowOpen(conversation.lastInboundAt);
+  const open = canSendFreely(provider, conversation.lastInboundAt);
   const paused = botPauseUntil(conversation.botPausedUntil);
   const name = contactLabel(conversation);
   const lastId = messages[messages.length - 1]?.id;

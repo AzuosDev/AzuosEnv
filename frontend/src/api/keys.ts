@@ -150,6 +150,8 @@ export const queryKeys = {
     ['workspaces', workspaceId, 'whatsapp', 'access', 'me'] as const,
   waConnection: (workspaceId: string) =>
     ['workspaces', workspaceId, 'whatsapp', 'connection'] as const,
+  waQrCode: (workspaceId: string) =>
+    ['workspaces', workspaceId, 'whatsapp', 'connection', 'qr'] as const,
   waTemplates: (workspaceId: string) =>
     ['workspaces', workspaceId, 'whatsapp', 'templates'] as const,
   waConversations: (workspaceId: string, params: Record<string, unknown>) =>
