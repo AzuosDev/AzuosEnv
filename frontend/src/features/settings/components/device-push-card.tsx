@@ -67,8 +67,23 @@ export function DevicePushCard() {
         return;
       }
 
+      // O navegador tem inscrição local, mas o servidor não tem linha para
+      // esta conta: acontece quando a chave VAPID do servidor mudou (a antiga
+      // é apagada no primeiro envio recusado) ou quando ela foi criada em
+      // outra conta. Religar aqui refaz a inscrição com a chave atual.
       if (results.length === 0) {
-        toast.error('Nenhum dispositivo inscrito nesta conta.');
+        toast.message('Este dispositivo não estava inscrito nesta conta. Religando…');
+        await push.enable();
+
+        const retry = await sendPushTest();
+
+        if (retry.results.some((result) => result.ok)) {
+          toast.success('Pronto: aviso de teste enviado. Ele deve aparecer em instantes.');
+
+          return;
+        }
+
+        toast.error('Não consegui inscrever este navegador. Desligue e ligue as notificações.');
 
         return;
       }
