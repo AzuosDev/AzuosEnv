@@ -1,3 +1,4 @@
+import { createECDH } from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
@@ -56,7 +57,18 @@ export class PushService {
 
     const privateKey = config.get<string>('VAPID_PRIVATE_KEY') ?? '';
 
-    this.ready = this.publicVapidKey !== '' && privateKey !== '';
+    const pair = vapidPairMatches(this.publicVapidKey, privateKey);
+
+    this.ready = this.publicVapidKey !== '' && privateKey !== '' && pair;
+
+    if (this.publicVapidKey !== '' && privateKey !== '' && !pair) {
+      // Sem isso o canal parece ligado e todo envio morre com 401/403 no
+      // serviço de push, apagando a inscrição de quem acabou de ligar.
+      this.logger.error(
+        'VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY não são o mesmo par: a pública precisa ' +
+          'derivar da privada. Gere as duas juntas com `npm run vapid`. Push desligado.',
+      );
+    }
 
     if (this.ready) {
       setVapidDetails(
@@ -195,6 +207,32 @@ export class PushService {
       return { host, ok: false, statusCode: status, message: detail };
     }
   }
+}
+
+/**
+ * A pública de um par VAPID é o ponto P-256 da privada. Conferir isso no boot
+ * evita o modo de falha mais caro do canal: chaves de gerações diferentes nas
+ * variáveis de ambiente fazem o navegador se inscrever com sucesso e todo
+ * envio ser recusado depois, sem nada na tela além de "não chega".
+ */
+function vapidPairMatches(publicKey: string, privateKey: string): boolean {
+  if (publicKey === '' || privateKey === '') {
+    return false;
+  }
+
+  try {
+    const curve = createECDH('prime256v1');
+
+    curve.setPrivateKey(fromBase64Url(privateKey));
+
+    return curve.getPublicKey().equals(fromBase64Url(publicKey));
+  } catch {
+    return false;
+  }
+}
+
+function fromBase64Url(value: string): Buffer {
+  return Buffer.from(value.trim().replace(/-/g, '+').replace(/_/g, '/'), 'base64');
 }
 
 /** O host identifica o serviço de push sem jogar o endpoint inteiro no log. */

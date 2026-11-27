@@ -1,3 +1,4 @@
+import { createECDH } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
 import { WebPushError } from 'web-push';
@@ -26,10 +27,20 @@ jest.mock('web-push', () => {
   };
 });
 
-/** Chave VAPID de teste (par gerado só para este spec). */
-const PUBLIC_KEY =
-  'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkFbx4gpXDfQnX2k_7OnmKhLSAgBzJ_0C2wDTKwKPXnBnJ7hJ4FhEyM';
-const PRIVATE_KEY = 'aUAIbOKVBJt-2MBVWs8RcRS2wDGR9eWAXRK1-NnCAWw';
+/**
+ * Par VAPID de teste, gerado aqui: a pública tem de derivar da privada, que é
+ * justamente o que o serviço confere no boot.
+ */
+const curve = createECDH('prime256v1');
+
+curve.generateKeys();
+
+const toBase64Url = (value: Buffer): string =>
+  value.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const PUBLIC_KEY = toBase64Url(curve.getPublicKey());
+const PRIVATE_KEY = toBase64Url(curve.getPrivateKey());
+/** Pública de outro par: o caso da variável de ambiente trocada. */
+const OTHER_PUBLIC_KEY = toBase64Url(createECDH('prime256v1').generateKeys());
 
 function pushError(statusCode: number): WebPushError {
   return new WebPushError('recusado', statusCode, {}, '', '');
@@ -63,14 +74,18 @@ function fakeModel(docs: PushSubscriptionDocument[]) {
   };
 }
 
-function service(docs: PushSubscriptionDocument[], configured = true) {
+function service(
+  docs: PushSubscriptionDocument[],
+  configured = true,
+  publicKey: string = PUBLIC_KEY,
+) {
   const { model, deleted } = fakeModel(docs);
   const config = {
     get: (key: string) =>
       !configured
         ? ''
         : key === 'VAPID_PUBLIC_KEY'
-          ? PUBLIC_KEY
+          ? publicKey
           : key === 'VAPID_PRIVATE_KEY'
             ? PRIVATE_KEY
             : 'mailto:no-reply@azuos.dev',
@@ -89,6 +104,14 @@ describe('PushService', () => {
 
   it('sem chaves VAPID o canal fica desligado e não envia', async () => {
     const { push } = service([subscription('sem-chave')], false);
+
+    expect(push.publicKey).toBe('');
+    expect(await push.sendTest(new Types.ObjectId())).toEqual([]);
+    expect(sendNotification).not.toHaveBeenCalled();
+  });
+
+  it('chaves de pares diferentes desligam o push em vez de falhar no envio', async () => {
+    const { push } = service([subscription('par-errado')], true, OTHER_PUBLIC_KEY);
 
     expect(push.publicKey).toBe('');
     expect(await push.sendTest(new Types.ObjectId())).toEqual([]);
