@@ -62,14 +62,27 @@ interface EvolutionNumberCheck {
  * everything that happens on the number arrives through the webhook of the
  * instance. The connection is not official, so the number can be banned by
  * WhatsApp; the Conexão tab says so.
+ *
+ * **Uma instância, e só ela.** O servidor da Evolution atende outros sistemas,
+ * então todo caminho daqui leva `credentials.instanceName` e nada mais: criar,
+ * conectar, consultar, desconectar, reiniciar e apontar o webhook *dessa*
+ * instância. Não existe aqui `instance/fetchInstances`, `instance/delete` nem
+ * qualquer rota de configuração global — e não deve passar a existir: listar
+ * instâncias para agir sobre elas é o caminho de mexer no WhatsApp de terceiros.
+ * `evolution.provider.spec.ts` falha se um caminho novo sair desse escopo.
  */
 @Injectable()
 export class EvolutionProvider extends WhatsappProvider {
   private readonly logger = new Logger(EvolutionProvider.name);
 
   async send(credentials: WaCredentials, message: WaOutbound): Promise<string> {
-    const [path, body] = this.outbound(message);
-    const response = await this.request<EvolutionSendResponse>(credentials, path, body);
+    const [route, body] = this.outbound(message);
+    // A rota de envio também é por instância: o nome entra aqui, num lugar só.
+    const response = await this.request<EvolutionSendResponse>(
+      credentials,
+      `${route}/${credentials.instanceName}`,
+      body,
+    );
     const id = response.key?.id;
 
     if (!id) {
@@ -146,6 +159,23 @@ export class EvolutionProvider extends WhatsappProvider {
     return this.statusOf(response);
   }
 
+  /**
+   * Se a instância já existe no servidor. Consulta o estado *desta* instância e
+   * lê o 404 como "não existe"; qualquer outra falha estoura, porque não saber
+   * não é o mesmo que estar livre.
+   */
+  async instanceExists(credentials: WaCredentials): Promise<boolean> {
+    const found = await this.request<EvolutionInstanceResponse | null>(
+      credentials,
+      `instance/connectionState/${credentials.instanceName}`,
+      null,
+      'GET',
+      true,
+    );
+
+    return found !== null;
+  }
+
   /** Keeps the webhook of an instance that already exists pointing here. */
   async setWebhook(credentials: WaCredentials, webhookUrl: string): Promise<void> {
     await this.tryRequest(credentials, `webhook/set/${credentials.instanceName}`, {
@@ -214,7 +244,7 @@ export class EvolutionProvider extends WhatsappProvider {
       .filter((waId) => waId.length > 0);
   }
 
-  /** Path and body of each type the module sends. */
+  /** Rota (sem a instância) e corpo de cada tipo que o módulo envia. */
   private outbound(message: WaOutbound): [string, Record<string, unknown>] {
     const base: Record<string, unknown> = { number: message.to };
 
@@ -286,12 +316,17 @@ export class EvolutionProvider extends WhatsappProvider {
     };
   }
 
-  /** Throws WHATSAPP_EVOLUTION_ERROR when the call fails; used by the writes. */
+  /**
+   * Throws WHATSAPP_EVOLUTION_ERROR when the call fails; used by the writes.
+   * With `nullOnMissing`, a 404 answers null instead of estourando — é como
+   * `instanceExists` descobre que o nome está livre.
+   */
   private async request<T>(
     credentials: WaCredentials,
     path: string,
     payload: Record<string, unknown> | null,
     method: 'GET' | 'POST' | 'DELETE' = 'POST',
+    nullOnMissing = false,
   ): Promise<T> {
     const base = credentials.baseUrl.replace(/\/$/, '');
     let response: Response;
@@ -311,6 +346,10 @@ export class EvolutionProvider extends WhatsappProvider {
     }
 
     const text = await response.text();
+
+    if (nullOnMissing && response.status === 404) {
+      return null as T;
+    }
 
     if (!response.ok) {
       this.logger.warn(`Evolution respondeu ${String(response.status)}: ${text.slice(0, 300)}`);

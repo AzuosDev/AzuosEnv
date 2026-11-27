@@ -52,8 +52,8 @@ const EVOLUTION_FIELDS: FieldSpec[] = [
   {
     key: 'instanceName',
     label: 'Nome da instância',
-    hint: 'Letras, números, ponto, hífen e sublinhado.',
-    placeholder: 'azuos-atendimento',
+    hint: 'Este servidor é compartilhado: o nome precisa estar livre.',
+    placeholder: 'azuos-env',
   },
 ];
 

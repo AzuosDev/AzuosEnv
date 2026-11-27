@@ -65,6 +65,17 @@ export class WhatsappConnectionsService {
     private readonly events: EventEmitter2,
   ) {}
 
+  /**
+   * O servidor da Evolution é compartilhado: um nome que já existe e não foi
+   * criado por aqui é de outro sistema, e tomá-lo desligaria o WhatsApp dele.
+   */
+  instanceInUse(): ConflictException {
+    return new ConflictException({
+      code: 'WHATSAPP_INSTANCE_IN_USE',
+      message: 'Nome de instância em uso. Escolha outro nome para a instância.',
+    });
+  }
+
   notConnected(): ConflictException {
     return new ConflictException({
       code: 'WHATSAPP_NOT_CONNECTED',
@@ -129,7 +140,15 @@ export class WhatsappConnectionsService {
             verifyToken: '',
           };
 
+    const current = await this.model.findOne({ workspaceId }).exec();
+
     await this.requireFree(workspaceId, provider, dto);
+
+    if (provider === 'evolution') {
+      set.instanceOwned = await this.keepsOwnership(current, dto);
+    } else {
+      set.instanceOwned = false;
+    }
 
     const connection = await this.model
       .findOneAndUpdate(
@@ -196,6 +215,54 @@ export class WhatsappConnectionsService {
     }
   }
 
+  /**
+   * Se a conexão continua dona da instância depois deste save. Só o mesmo
+   * servidor e o mesmo nome que já eram nossos seguem com a posse — trocar o
+   * nome é começar de novo. E, para um nome novo, o servidor é consultado na
+   * hora: se a instância já existe, ela é de outro sistema e o nome é recusado
+   * aqui, enquanto o gestor ainda está com o campo na mão.
+   */
+  private async keepsOwnership(
+    current: WaConnectionDocument | null,
+    dto: SaveWaConnectionDto,
+  ): Promise<boolean> {
+    const baseUrl = (dto.baseUrl ?? '').replace(/\/$/, '');
+    const same =
+      current?.provider === 'evolution' &&
+      current.baseUrl === baseUrl &&
+      current.instanceName === (dto.instanceName ?? null);
+
+    if (same && current.instanceOwned) {
+      return true;
+    }
+
+    try {
+      const taken = await this.providers.of('evolution').instanceExists({
+        provider: 'evolution',
+        phoneNumberId: '',
+        wabaId: '',
+        accessToken: '',
+        baseUrl,
+        apiKey: dto.apiKey ?? '',
+        instanceName: dto.instanceName ?? '',
+      });
+
+      if (taken) {
+        throw this.instanceInUse();
+      }
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+
+      // Servidor fora do ar ou chave errada não travam o cadastro: a conferência
+      // que decide é a do Conectar, que roda antes de criar qualquer coisa.
+      this.logger.warn(`Não foi possível conferir a instância: ${messageOf(error)}`);
+    }
+
+    return false;
+  }
+
   /** Asks the provider about the number and records what came back. */
   async test(workspaceId: Types.ObjectId): Promise<WaConnectionDocument> {
     const found = await this.requireCredentials(workspaceId);
@@ -228,8 +295,7 @@ export class WhatsappConnectionsService {
    * its webhook back here and answers the QR Code to be read.
    */
   async connect(workspaceId: Types.ObjectId): Promise<WaQrCodeResult> {
-    const found = await this.requireCredentials(workspaceId);
-    const { connection, credentials } = found;
+    const { connection } = await this.requireCredentials(workspaceId);
 
     if (!waCapabilities(connection.provider).qrCode) {
       throw new ConflictException({
@@ -238,28 +304,25 @@ export class WhatsappConnectionsService {
       });
     }
 
-    const provider = this.providers.forCredentials(credentials);
     const webhookUrl = this.evolutionWebhookUrl(
       connection._id,
       this.requireWebhookSecret(connection),
     );
 
     try {
-      // Creating an instance that already exists answers an error, so the
-      // webhook of the one that is there is pointed back here instead.
-      const created = await provider
-        .createInstance(credentials, webhookUrl)
-        .catch(async (error: unknown) => {
-          this.logger.debug(`Instância já existia: ${messageOf(error)}`);
-          await provider.setWebhook(credentials, webhookUrl);
-
-          return null;
-        });
-      const status = created ?? (await provider.connect(credentials));
+      const status = connection.instanceOwned
+        ? // A instância é nossa: o webhook é reapontado (a URL pública pode ter
+          // mudado) e o pareamento recomeça.
+          await this.resume(connection, webhookUrl)
+        : await this.claim(connection, webhookUrl);
 
       connection.lastError = '';
       await this.applyStatus(connection, status);
     } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+
       connection.status = 'error';
       connection.lastError = messageOf(error);
       await connection.save();
@@ -268,6 +331,60 @@ export class WhatsappConnectionsService {
     }
 
     return this.qrResultOf(connection);
+  }
+
+  /**
+   * Primeira conexão deste nome: a instância é criada e só então o módulo passa
+   * a ser dono dela. Um nome que já existe no servidor pertence a outro sistema
+   * e é recusado — nada de reapontar webhook nem desconectar o que não é nosso.
+   */
+  private async claim(
+    connection: WaConnectionDocument,
+    webhookUrl: string,
+  ): Promise<WaInstanceStatus> {
+    const { credentials } = this.withCredentials(connection);
+    const provider = this.providers.forCredentials(credentials);
+
+    if (await provider.instanceExists(credentials)) {
+      throw this.instanceInUse();
+    }
+
+    const status = await provider
+      .createInstance(credentials, webhookUrl)
+      .catch(async (error: unknown) => {
+        // Criar com nome repetido é o que a Evolution responde quando alguém
+        // ganhou a corrida: a conferência de novo diz qual dos dois erros é.
+        if (await provider.instanceExists(credentials).catch(() => false)) {
+          throw this.instanceInUse();
+        }
+
+        throw error;
+      });
+
+    connection.instanceOwned = true;
+    await connection.save();
+
+    return status;
+  }
+
+  /** Instância já nossa: reaponta o webhook e pede o QR Code de novo. */
+  private async resume(
+    connection: WaConnectionDocument,
+    webhookUrl: string,
+  ): Promise<WaInstanceStatus> {
+    const { credentials } = this.withCredentials(connection);
+    const provider = this.providers.forCredentials(credentials);
+
+    await provider.setWebhook(credentials, webhookUrl);
+
+    return provider.connect(credentials);
+  }
+
+  /** Só a instância que este módulo criou pode ser mexida. */
+  private requireOwnInstance(connection: WaConnectionDocument): void {
+    if (connection.provider === 'evolution' && !connection.instanceOwned) {
+      throw this.instanceInUse();
+    }
   }
 
   /** QR Code the webhook last delivered, for the tab to keep showing. */
@@ -285,6 +402,7 @@ export class WhatsappConnectionsService {
   async disconnect(workspaceId: Types.ObjectId): Promise<WaConnectionDocument> {
     const { connection, credentials } = await this.requireCredentials(workspaceId);
 
+    this.requireOwnInstance(connection);
     await this.providers.forCredentials(credentials).disconnect(credentials);
 
     connection.status = 'disconnected';
@@ -299,6 +417,9 @@ export class WhatsappConnectionsService {
 
   async restart(workspaceId: Types.ObjectId): Promise<WaConnectionDocument> {
     const { connection, credentials } = await this.requireCredentials(workspaceId);
+
+    this.requireOwnInstance(connection);
+
     const status = await this.providers.forCredentials(credentials).restart(credentials);
 
     await this.applyStatus(connection, status);
@@ -380,9 +501,15 @@ export class WhatsappConnectionsService {
     return (await this.model.countDocuments({ verifyToken, provider: 'cloud' }).exec()) > 0;
   }
 
-  /** Every Evolution connection, for the monitor to check one by one. */
+  /**
+   * Instâncias da Evolution que o módulo criou, para o vigia conferir uma a
+   * uma. O que não é nosso não é vigiado: o estado seria de outro sistema.
+   */
   async evolutionConnections(): Promise<WaConnectionDocument[]> {
-    return this.model.find({ provider: 'evolution' }).select(WITH_SECRETS).exec();
+    return this.model
+      .find({ provider: 'evolution', instanceOwned: true })
+      .select(WITH_SECRETS)
+      .exec();
   }
 
   async touch(connectionId: Types.ObjectId): Promise<void> {

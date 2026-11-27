@@ -35,6 +35,14 @@ export class WaConnection {
   @Prop({ type: String, default: null, trim: true })
   instanceName: string | null;
 
+  /**
+   * Evolution: true quando foi o Azuos Env que criou esta instância. O servidor
+   * da Evolution é compartilhado com outros sistemas, então só com esta marca o
+   * módulo pode reconfigurar, desconectar ou reiniciar a instância.
+   */
+  @Prop({ type: Boolean, default: false })
+  instanceOwned: boolean;
+
   @Prop({ type: String, default: '' })
   displayPhone: string;
 

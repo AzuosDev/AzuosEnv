@@ -54,6 +54,8 @@ const fakeEvolution = {
   reads: [] as string[],
   webhooks: [] as string[],
   created: [] as string[],
+  /** Instância já existe no servidor compartilhado (de outro sistema). */
+  taken: false,
   restarts: 0,
   disconnects: 0,
   /** What `state` answers, so the monitor can be driven. */
@@ -79,6 +81,7 @@ const fakeEvolution = {
   templates: () => Promise.resolve([]),
   phoneInfo: () =>
     Promise.resolve({ displayPhone: CONTACT, verifiedName: 'Azuos Dev', qualityRating: '' }),
+  instanceExists: (): Promise<boolean> => Promise.resolve(fakeEvolution.taken),
   setWebhook: (_credentials: unknown, webhookUrl: string): Promise<void> => {
     fakeEvolution.webhooks.push(webhookUrl);
 
@@ -146,6 +149,7 @@ describe('WhatsApp — conexão pela Evolution', () => {
     fakeEvolution.disconnects = 0;
     fakeEvolution.current = 'open';
     fakeEvolution.existing = null;
+    fakeEvolution.taken = false;
   });
 
   afterEach(async () => {
@@ -269,6 +273,14 @@ describe('WhatsApp — conexão pela Evolution', () => {
     }
 
     return [];
+  }
+
+  /** Pareia: criar a instância é o que dá ao módulo a posse dela. */
+  async function pair(fixture: Fixture): Promise<void> {
+    await withAuth(
+      http().post(`/api/v1/workspaces/${fixture.workspace.id}/whatsapp/connection/connect`),
+      fixture.owner,
+    ).expect(201);
   }
 
   it('cria a instância com o webhook desta API e devolve o QR Code', async () => {
@@ -514,6 +526,7 @@ describe('WhatsApp — conexão pela Evolution', () => {
   it('o vigia marca a queda e avisa o gestor no Inbox', async () => {
     const fixture = await setup();
 
+    await pair(fixture);
     await deliver(fixture, {
       event: 'connection.update',
       instance: INSTANCE,
@@ -542,10 +555,63 @@ describe('WhatsApp — conexão pela Evolution', () => {
     expect(await inboxOf(fixture)).toHaveLength(1);
   });
 
+  it('recusa a instância que já existe no servidor compartilhado', async () => {
+    const owner = await createSession(ctx);
+    const workspace = (
+      await withAuth(http().post('/api/v1/workspaces'), owner)
+        .send({ name: 'Azuos Dev', taskPrefix: 'AZD', timezone: 'UTC' })
+        .expect(201)
+    ).body as IdBody;
+    const base = `/api/v1/workspaces/${workspace.id}/whatsapp/connection`;
+    const body = {
+      provider: 'evolution',
+      baseUrl: BASE_URL,
+      apiKey: API_KEY,
+      instanceName: INSTANCE,
+    };
+
+    // O nome é de outro sistema: o save recusa na hora, com o campo na mão.
+    fakeEvolution.taken = true;
+
+    const refused = await withAuth(http().put(base), owner).send(body).expect(409);
+
+    expect(refused.body.code).toBe('WHATSAPP_INSTANCE_IN_USE');
+
+    // Servidor fora do ar não trava o cadastro: a conferência que decide é a
+    // do Conectar, antes de criar qualquer coisa.
+    fakeEvolution.taken = false;
+    await withAuth(http().put(base), owner).send(body).expect(200);
+    fakeEvolution.taken = true;
+
+    const blocked = await withAuth(http().post(`${base}/connect`), owner).expect(409);
+
+    expect(blocked.body.code).toBe('WHATSAPP_INSTANCE_IN_USE');
+    expect(fakeEvolution.created).toEqual([]);
+
+    // Sem posse, nada de desconectar nem reiniciar o que é de outro sistema.
+    for (const path of ['disconnect', 'restart']) {
+      const denied = await withAuth(http().post(`${base}/${path}`), owner).expect(409);
+
+      expect(denied.body.code).toBe('WHATSAPP_INSTANCE_IN_USE');
+    }
+
+    expect(fakeEvolution.disconnects).toBe(0);
+    expect(fakeEvolution.restarts).toBe(0);
+
+    // O vigia também ignora o que não é nosso.
+    fakeEvolution.current = 'close';
+    await ctx.app.get(WhatsappConnectionMonitor).run();
+
+    const status = await withAuth(http().get(base), owner).expect(200);
+
+    expect(status.body.connection.status).toBe('pending');
+  });
+
   it('desconecta, reinicia e normaliza o nono dígito do número novo', async () => {
     const fixture = await setup();
     const base = `/api/v1/workspaces/${fixture.workspace.id}/whatsapp`;
 
+    await pair(fixture);
     await withAuth(http().post(`${base}/connection/restart`), fixture.owner).expect(201);
     expect(fakeEvolution.restarts).toBe(1);
 

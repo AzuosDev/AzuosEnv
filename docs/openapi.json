@@ -30190,6 +30190,10 @@
             "nullable": true,
             "description": "Evolution: name of the instance the number is paired on."
           },
+          "instanceOwned": {
+            "type": "boolean",
+            "description": "Evolution: true quando foi o Azuos Env que criou esta instância. O servidor\nda Evolution é compartilhado com outros sistemas, então só com esta marca o\nmódulo pode reconfigurar, desconectar ou reiniciar a instância."
+          },
           "displayPhone": {
             "type": "string"
           },
@@ -30242,6 +30246,7 @@
           "wabaId",
           "baseUrl",
           "instanceName",
+          "instanceOwned",
           "displayPhone",
           "verifiedName",
           "verifyToken",

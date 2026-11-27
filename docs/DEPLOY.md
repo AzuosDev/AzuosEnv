@@ -143,6 +143,15 @@ curl -s https://evolution.seu-dominio.com.br/ -H 'apikey: <chave-global-forte>'
 Ponha TLS na frente (Traefik, Caddy ou Nginx) e **não** exponha a porta 8080 na
 internet sem ele: a `AUTHENTICATION_API_KEY` é a única barreira.
 
+**Servidor compartilhado.** A mesma Evolution pode atender outros sistemas da
+Azuos. O Azuos Env age só na instância gravada na conexão: cria, conecta,
+consulta, desconecta, reinicia e aponta o webhook *dela*. Não lista instâncias,
+não exclui nenhuma e não mexe em configuração global do servidor. E só mexe na
+instância que ele mesmo criou: se o nome já existir no servidor, a aba responde
+**"Nome de instância em uso"** e pede outro, em vez de assumir o WhatsApp de
+quem já estava lá. Por isso cada sistema deve ter o seu nome de instância — o do
+Azuos Env é `azuos-env`.
+
 ### 2. Deixar o backend alcançável
 
 ```

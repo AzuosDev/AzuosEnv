@@ -108,6 +108,11 @@ export interface WaInstanceStatus {
  * CloudApiProvider is the official Cloud API, kept working but no longer
  * offered; WhatsappProviders picks one by the provider of the connection, and
  * the e2e suite overrides them so nothing leaves the process.
+ *
+ * **Escopo de uma instância.** O servidor da Evolution é compartilhado com
+ * outros sistemas: toda chamada aqui vale só para `credentials.instanceName`.
+ * Nenhuma implementação pode listar instâncias para agir sobre elas, excluir
+ * instância, nem tocar em configuração global do servidor.
  */
 export abstract class WhatsappProvider {
   /** Sends the message and answers the id the provider assigned to it. */
@@ -131,6 +136,12 @@ export abstract class WhatsappProvider {
     credentials: WaCredentials,
     webhookUrl: string,
   ): Promise<WaInstanceStatus>;
+
+  /**
+   * Se a instância do `instanceName` já existe no servidor. É só leitura, e é
+   * o que impede o módulo de assumir uma instância de outro sistema.
+   */
+  abstract instanceExists(credentials: WaCredentials): Promise<boolean>;
 
   /** Keeps the webhook of the instance pointing at this API. */
   abstract setWebhook(credentials: WaCredentials, webhookUrl: string): Promise<void>;

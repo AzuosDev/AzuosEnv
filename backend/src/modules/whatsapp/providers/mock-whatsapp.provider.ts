@@ -33,6 +33,9 @@ export class MockWhatsappProvider extends WhatsappProvider {
   /** Instances already read, so the state only opens after a connect. */
   private readonly paired = new Set<string>();
 
+  /** Instances that exist on the fake server. */
+  private readonly created = new Set<string>();
+
   send(_credentials: WaCredentials, message: WaOutbound): Promise<string> {
     this.sent += 1;
     this.logger.debug(`mock send ${message.type} para ${message.to}`);
@@ -82,8 +85,13 @@ export class MockWhatsappProvider extends WhatsappProvider {
     });
   }
 
+  instanceExists(credentials: WaCredentials): Promise<boolean> {
+    return Promise.resolve(this.created.has(credentials.instanceName));
+  }
+
   createInstance(credentials: WaCredentials, webhookUrl: string): Promise<WaInstanceStatus> {
     this.logger.debug(`mock instance ${credentials.instanceName} em ${webhookUrl}`);
+    this.created.add(credentials.instanceName);
 
     return Promise.resolve(this.waiting());
   }

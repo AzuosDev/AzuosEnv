@@ -7525,6 +7525,12 @@ export interface components {
             baseUrl: string;
             /** @description Evolution: name of the instance the number is paired on. */
             instanceName: string | null;
+            /**
+             * @description Evolution: true quando foi o Azuos Env que criou esta instância. O servidor
+             *     da Evolution é compartilhado com outros sistemas, então só com esta marca o
+             *     módulo pode reconfigurar, desconectar ou reiniciar a instância.
+             */
+            instanceOwned: boolean;
             displayPhone: string;
             verifiedName: string;
             /** @description Cloud API: echoed back on the GET handshake of the webhook. */

@@ -132,6 +132,11 @@ export class CloudApiProvider extends WhatsappProvider {
     return Promise.reject(this.unsupported());
   }
 
+  /** A Cloud API não tem instância; nada no caminho dela chama isto. */
+  instanceExists(_credentials: WaCredentials): Promise<boolean> {
+    return Promise.resolve(false);
+  }
+
   /** The Cloud API is subscribed in the app of Meta, not from here. */
   setWebhook(_credentials: WaCredentials, _webhookUrl: string): Promise<void> {
     return Promise.resolve();
