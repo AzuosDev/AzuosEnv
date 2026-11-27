@@ -353,14 +353,18 @@ function createSocketEngine({
  * Ably: a conexão vive no serviço, então funciona com a API em serverless. O
  * token sai do nosso servidor já recortado nos canais do usuário, e o SDK entra
  * por import dinâmico para não pesar o bundle de quem usa Socket.IO.
+ *
+ * O pacote é o `@ably/pubsub-device`, não o `ably`: conta cobrada por usuário
+ * ativo (MAU) recusa o SDK antigo, e é este que marca a conexão como de
+ * dispositivo, que é o que a cobrança conta.
  */
 async function createAblyEngine({
   userId,
   bus,
   onConnected,
 }: EngineOptions & { userId: string }): Promise<Engine> {
-  const { Realtime } = await import('ably');
-  const client = new Realtime({
+  const { createClient } = await import('@ably/pubsub-device');
+  const client = createClient({
     clientId: userId,
     // Cada renovação pede outro token: a permissão é recalculada no servidor.
     authCallback: (_params, callback) => {

@@ -153,6 +153,11 @@ WebSocket. Por isso o tempo real é uma camada com dois transportes (`RealtimeSe
 | Vercel (serverless) | Ably | `ABLY_API_KEY` no projeto da **API** |
 | Docker / Railway (processo longo) | Socket.IO | deixar `ABLY_API_KEY` vazia |
 
+Os pacotes são `@ably/pubsub-server` (API) e `@ably/pubsub-device` (navegador), **não** o
+`ably`: conta cobrada por usuário ativo (MAU) recusa o SDK antigo com o erro 40168, e a
+separação marca o tráfego do servidor como isento da contagem — só a conexão do navegador
+conta como usuário ativo.
+
 Na Vercel, sem `ABLY_API_KEY` **o app não recebe nada em tempo real**: a aba cai na
 reserva de sincronização (busca a cada 30 s com a aba visível) e o aviso fora do app
 depende do Web Push. Com a chave, o servidor publica por REST dentro do próprio request

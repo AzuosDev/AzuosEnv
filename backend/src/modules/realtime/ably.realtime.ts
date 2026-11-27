@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { Rest, TokenParams, TokenRequest } from 'ably';
+import type { PubSubHttpClient, TokenParams, TokenRequest } from '@ably/pubsub-server';
 import { RealtimeService, RealtimeTransport, publicChannels } from './realtime.service';
 
 /** Token curto: o front renova, e token vazado expira junto. */
@@ -12,15 +12,19 @@ export type RealtimeCapability = Record<string, ['subscribe']>;
 /**
  * Tempo real pelo Ably. Escolhido quando `ABLY_API_KEY` existe, que é o caso do
  * deploy serverless: a conexão do navegador fica no Ably e o servidor só
- * publica por REST, dentro do request que salvou o dado — sem socket, sem
+ * publica por HTTP, dentro do request que salvou o dado — sem socket, sem
  * processo longo. O cliente conecta com token que só assina os canais dele.
+ *
+ * O pacote é o `@ably/pubsub-server`, não o `ably`: conta cobrada por usuário
+ * ativo (MAU) recusa o SDK antigo, e este marca o tráfego como de servidor,
+ * que fica fora da contagem — só o navegador conta como usuário.
  */
 @Injectable()
 export class AblyRealtime extends RealtimeService {
   readonly transport: RealtimeTransport = 'ably';
   private readonly logger = new Logger(AblyRealtime.name);
   private readonly key: string;
-  private rest: Rest | null = null;
+  private rest: PubSubHttpClient | null = null;
 
   constructor(config: ConfigService) {
     super();
@@ -80,15 +84,15 @@ export class AblyRealtime extends RealtimeService {
    * O SDK entra por import dinâmico: sem `ABLY_API_KEY` ele nunca é carregado,
    * o que mantém o cold start do serverless fora do caminho.
    */
-  private async client(): Promise<Rest | null> {
+  private async client(): Promise<PubSubHttpClient | null> {
     if (this.key === '') {
       return null;
     }
 
     if (!this.rest) {
-      const { Rest: AblyRest } = await import('ably');
+      const { createHttpClient } = await import('@ably/pubsub-server');
 
-      this.rest = new AblyRest({ key: this.key });
+      this.rest = createHttpClient({ key: this.key });
     }
 
     return this.rest;
