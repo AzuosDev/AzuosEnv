@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { WaBotRule, WaContact, WaConversationItem, WaMessage, WaOverview } from '@/api/types';
 import {
   botPauseUntil,
+  canSendFreely,
   checkOf,
   contactLabel,
   dayBars,
@@ -18,6 +19,8 @@ import {
   renderWaPreview,
   resolveWaPeriod,
   resolveWaTab,
+  waCapabilities,
+  waConnectionLabel,
   usedHoursDays,
   visibleMessages,
   visibleWaTabs,
@@ -165,6 +168,36 @@ describe('checks de status', () => {
     expect(checkOf(message({ direction: 'outbound', status: 'delivered' }))).toBe('delivered');
     expect(checkOf(message({ direction: 'outbound', status: 'read' }))).toBe('read');
     expect(checkOf(message({ direction: 'outbound', status: 'failed' }))).toBe('failed');
+  });
+});
+
+describe('provedor da conexão', () => {
+  it('a Evolution envia livre e não tem template; a Cloud API tem os dois', () => {
+    expect(waCapabilities('evolution')).toEqual({
+      templates: false,
+      window: false,
+      qrCode: true,
+    });
+    expect(waCapabilities('cloud')).toEqual({ templates: true, window: true, qrCode: false });
+    // Sem resposta ainda, a tela se molda pelo padrão.
+    expect(waCapabilities(null)).toEqual(waCapabilities('evolution'));
+  });
+
+  it('só a Cloud API prende o texto livre na janela de 24 h', () => {
+    const now = new Date('2026-03-10T12:00:00.000Z');
+
+    expect(canSendFreely('evolution', null, now)).toBe(true);
+    expect(canSendFreely('evolution', '2026-03-01T11:00:00.000Z', now)).toBe(true);
+    expect(canSendFreely('cloud', '2026-03-10T11:00:00.000Z', now)).toBe(true);
+    expect(canSendFreely('cloud', '2026-03-09T11:00:00.000Z', now)).toBe(false);
+    expect(canSendFreely('cloud', null, now)).toBe(false);
+  });
+
+  it('o selo do cabeçalho diz o estado real', () => {
+    expect(waConnectionLabel('connected')).toBe('WhatsApp conectado');
+    expect(waConnectionLabel('disconnected')).toBe('WhatsApp desconectado');
+    expect(waConnectionLabel('pending')).toBe('WhatsApp pendente');
+    expect(waConnectionLabel(null)).toBe('WhatsApp sem conexão');
   });
 });
 

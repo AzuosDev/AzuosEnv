@@ -54,6 +54,9 @@
                 "integration.google.calendar.changed",
                 "whatsapp.connection.saved",
                 "whatsapp.connection.tested",
+                "whatsapp.connection.connected",
+                "whatsapp.connection.disconnected",
+                "whatsapp.connection.restarted",
                 "whatsapp.access.changed",
                 "whatsapp.bot.saved",
                 "whatsapp.bot.rule.saved",
@@ -16598,6 +16601,154 @@
         ]
       }
     },
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/connect": {
+      "post": {
+        "operationId": "WhatsappConnectionController_connect",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pareamento iniciado; QR Code para ler.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaQrCodeDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/qr": {
+      "get": {
+        "operationId": "WhatsappConnectionController_qrCode",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "QR Code mais recente do pareamento.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaQrCodeDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/disconnect": {
+      "post": {
+        "operationId": "WhatsappConnectionController_disconnect",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pareamento desfeito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConnectionStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/restart": {
+      "post": {
+        "operationId": "WhatsappConnectionController_restart",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Instância reiniciada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaConnectionStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
     "/api/v1/workspaces/{wsId}/whatsapp/connection/test": {
       "post": {
         "operationId": "WhatsappConnectionController_test",
@@ -18371,6 +18522,46 @@
       "post": {
         "operationId": "WhatsappWebhookController_receive",
         "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Evento aceito.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaWebhookResultDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
+    "/api/v1/integrations/whatsapp/evolution/{connectionId}/{secret}": {
+      "post": {
+        "operationId": "WhatsappEvolutionWebhookController_receive",
+        "parameters": [
+          {
+            "name": "connectionId",
+            "required": true,
+            "in": "path",
+            "description": "Conexão que o webhook pertence.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "secret",
+            "required": true,
+            "in": "path",
+            "description": "Segredo do webhook, conferido pelo hash.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Evento aceito.",
@@ -23036,7 +23227,8 @@
               "formSubmitted",
               "aiSummary",
               "whatsappMessage",
-              "whatsappAssigned"
+              "whatsappAssigned",
+              "whatsappConnection"
             ],
             "type": "string"
           },
@@ -23238,6 +23430,9 @@
           },
           "whatsappAssigned": {
             "$ref": "#/components/schemas/NotificationChannelsStateDto"
+          },
+          "whatsappConnection": {
+            "$ref": "#/components/schemas/NotificationChannelsStateDto"
           }
         },
         "required": [
@@ -23256,7 +23451,8 @@
           "formSubmitted",
           "aiSummary",
           "whatsappMessage",
-          "whatsappAssigned"
+          "whatsappAssigned",
+          "whatsappConnection"
         ]
       },
       "NotificationChannelsDto": {
@@ -23324,6 +23520,9 @@
           },
           "whatsappAssigned": {
             "$ref": "#/components/schemas/NotificationChannelsDto"
+          },
+          "whatsappConnection": {
+            "$ref": "#/components/schemas/NotificationChannelsDto"
           }
         }
       },
@@ -23331,7 +23530,7 @@
         "type": "object",
         "properties": {
           "types": {
-            "description": "Tipos: assigned, mentioned, commented, statusChanged, dueSoon, overdue, reminder, invited, commentAssigned, automation, chatMention, chatMessage, formSubmitted, aiSummary, whatsappMessage, whatsappAssigned.",
+            "description": "Tipos: assigned, mentioned, commented, statusChanged, dueSoon, overdue, reminder, invited, commentAssigned, automation, chatMention, chatMessage, formSubmitted, aiSummary, whatsappMessage, whatsappAssigned, whatsappConnection.",
             "allOf": [
               {
                 "$ref": "#/components/schemas/NotificationTypeSettingsDto"
@@ -29892,35 +30091,61 @@
       "SaveWaConnectionDto": {
         "type": "object",
         "properties": {
+          "provider": {
+            "enum": [
+              "evolution",
+              "cloud"
+            ],
+            "type": "string",
+            "default": "evolution",
+            "description": "evolution conecta por QR Code; cloud é a Cloud API oficial."
+          },
+          "baseUrl": {
+            "type": "string",
+            "format": "uri",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "Evolution: origem do servidor."
+          },
+          "apiKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "Evolution: API key; guardada criptografada."
+          },
+          "instanceName": {
+            "type": "string",
+            "description": "Evolution: nome da instância."
+          },
           "phoneNumberId": {
             "type": "string",
             "minLength": 1,
             "maxLength": 60,
-            "description": "Id do número dentro da WABA."
+            "description": "Cloud API: id do número dentro da WABA."
           },
           "wabaId": {
             "type": "string",
             "minLength": 1,
             "maxLength": 60,
-            "description": "Id da conta do WhatsApp Business."
+            "description": "Cloud API: id da conta do WhatsApp Business."
           },
           "accessToken": {
             "type": "string",
             "minLength": 1,
             "maxLength": 500,
-            "description": "Token permanente da Graph API; guardado criptografado."
+            "description": "Cloud API: token permanente; criptografado."
           },
           "appSecret": {
             "type": "string",
             "minLength": 1,
             "maxLength": 200,
-            "description": "App Secret que assina o webhook; guardado criptografado."
+            "description": "Cloud API: App Secret que assina o webhook."
           },
           "verifyToken": {
             "type": "string",
             "minLength": 8,
             "maxLength": 200,
-            "description": "Token devolvido na verificação do webhook."
+            "description": "Cloud API: token da verificação do webhook."
           },
           "displayPhone": {
             "type": "string",
@@ -29932,14 +30157,7 @@
             "minLength": 0,
             "maxLength": 200
           }
-        },
-        "required": [
-          "phoneNumberId",
-          "wabaId",
-          "accessToken",
-          "appSecret",
-          "verifyToken"
-        ]
+        }
       },
       "WaConnection": {
         "type": "object",
@@ -29947,12 +30165,30 @@
           "workspaceId": {
             "$ref": "#/components/schemas/ObjectId"
           },
+          "provider": {
+            "type": "string",
+            "description": "Where the number is plugged in; `evolution` is the default.",
+            "enum": [
+              "evolution",
+              "cloud"
+            ]
+          },
           "phoneNumberId": {
             "type": "string",
-            "description": "Id of the phone number inside the WABA; routes the webhook to this workspace."
+            "nullable": true,
+            "description": "Cloud API: id of the number inside the WABA; routes the webhook here."
           },
           "wabaId": {
             "type": "string"
+          },
+          "baseUrl": {
+            "type": "string",
+            "description": "Evolution: origin of the server, e.g. https://evolution.azuos.dev."
+          },
+          "instanceName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Evolution: name of the instance the number is paired on."
           },
           "displayPhone": {
             "type": "string"
@@ -29962,14 +30198,20 @@
           },
           "verifyToken": {
             "type": "string",
-            "description": "Echoed back on the GET handshake of the webhook."
+            "description": "Cloud API: echoed back on the GET handshake of the webhook."
+          },
+          "qrCodeAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
           },
           "status": {
             "type": "string",
             "enum": [
               "error",
               "pending",
-              "connected"
+              "connected",
+              "disconnected"
             ]
           },
           "qualityRating": {
@@ -29983,22 +30225,55 @@
             "type": "string",
             "nullable": true
           },
+          "disconnectedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "When the monitor last saw the number fall; clears on the next connect."
+          },
           "createdBy": {
             "$ref": "#/components/schemas/ObjectId"
           }
         },
         "required": [
           "workspaceId",
+          "provider",
           "phoneNumberId",
           "wabaId",
+          "baseUrl",
+          "instanceName",
           "displayPhone",
           "verifiedName",
           "verifyToken",
+          "qrCodeAt",
           "status",
           "qualityRating",
           "lastError",
           "lastEventAt",
+          "disconnectedAt",
           "createdBy"
+        ]
+      },
+      "WaCapabilitiesDto": {
+        "type": "object",
+        "properties": {
+          "templates": {
+            "type": "boolean",
+            "description": "Templates aprovados existem (só na Cloud API)."
+          },
+          "window": {
+            "type": "boolean",
+            "description": "Texto livre só dentro da janela de 24 h."
+          },
+          "qrCode": {
+            "type": "boolean",
+            "description": "O número é pareado lendo um QR Code."
+          }
+        },
+        "required": [
+          "templates",
+          "window",
+          "qrCode"
         ]
       },
       "WaConnectionStatusDto": {
@@ -30015,11 +30290,58 @@
           },
           "webhookUrl": {
             "type": "string",
-            "description": "URL que o app da Meta deve chamar."
+            "description": "URL que o app da Meta deve chamar; vazia na Evolution."
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/WaCapabilitiesDto"
           }
         },
         "required": [
           "connection",
+          "webhookUrl",
+          "capabilities"
+        ]
+      },
+      "WaQrCodeDto": {
+        "type": "object",
+        "properties": {
+          "qrCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "Imagem em base64 (data URI)."
+          },
+          "qrCodeAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "UTC ISO 8601 da última leitura."
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "connected",
+              "disconnected",
+              "error"
+            ],
+            "type": "string"
+          },
+          "displayPhone": {
+            "type": "string"
+          },
+          "verifiedName": {
+            "type": "string"
+          },
+          "webhookUrl": {
+            "type": "string",
+            "description": "URL que a instância chama; o segredo vai nela."
+          }
+        },
+        "required": [
+          "qrCode",
+          "qrCodeAt",
+          "status",
+          "displayPhone",
+          "verifiedName",
           "webhookUrl"
         ]
       },

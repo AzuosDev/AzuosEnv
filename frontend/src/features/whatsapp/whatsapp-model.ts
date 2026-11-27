@@ -1,5 +1,8 @@
 import type {
   WaAccessLevel,
+  WaCapabilities,
+  WaConnectionState,
+  WaProvider,
   WaBotActionKind,
   WaBotReplyKind,
   WaBotRule,
@@ -28,6 +31,51 @@ export function hasWaLevel(level: WaAccessLevel | null, needed: WaAccessLevel): 
   }
 
   return WA_LEVELS.indexOf(level) >= WA_LEVELS.indexOf(needed);
+}
+
+/* Provedor e conexão ------------------------------------------------------ */
+
+export const WA_PROVIDERS = ['evolution', 'cloud'] as const;
+
+export const WA_PROVIDER_LABEL: Record<WaProvider, string> = {
+  evolution: 'Evolution (QR Code)',
+  cloud: 'Cloud API oficial (Meta)',
+};
+
+export const DEFAULT_WA_PROVIDER: WaProvider = 'evolution';
+
+/**
+ * O que o provedor sabe fazer. Espelha o `waCapabilities` do backend, para a
+ * tela já se moldar antes de a resposta da conexão chegar.
+ */
+export function waCapabilities(provider: WaProvider | null | undefined): WaCapabilities {
+  return provider === 'cloud'
+    ? { templates: true, window: true, qrCode: false }
+    : { templates: false, window: false, qrCode: true };
+}
+
+export const WA_CONNECTION_LABEL: Record<WaConnectionState, string> = {
+  pending: 'pendente',
+  connected: 'conectado',
+  disconnected: 'desconectado',
+  error: 'com erro',
+};
+
+/** Selo do cabeçalho da Central, pelo estado real da conexão. */
+export function waConnectionLabel(status: WaConnectionState | null | undefined): string {
+  return `WhatsApp ${status ? WA_CONNECTION_LABEL[status] : 'sem conexão'}`;
+}
+
+/**
+ * Se o campo de texto livre alcança o cliente. Na Evolution alcança sempre; na
+ * Cloud API só dentro da janela de 24 h desde a última mensagem recebida.
+ */
+export function canSendFreely(
+  provider: WaProvider | null | undefined,
+  lastInboundAt: string | null,
+  now: Date = new Date(),
+): boolean {
+  return !waCapabilities(provider).window || windowOpen(lastInboundAt, now);
 }
 
 /** Abas da Central. `ready` guarda o que ainda não tem tela (nada, na F20). */

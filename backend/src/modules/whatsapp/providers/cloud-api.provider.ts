@@ -1,17 +1,18 @@
-import { BadGatewayException, Injectable, Logger } from '@nestjs/common';
+import { BadGatewayException, ConflictException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GRAPH_TIMEOUT_MS } from '../whatsapp-fields';
 import {
   WaCredentials,
+  WaInstanceStatus,
   WaInteractive,
   WaMediaFile,
-  WaMediaInfo,
+  WaMediaRequest,
   WaOutbound,
   WaPhoneInfo,
   WaTemplate,
   WaUploadInput,
-  WhatsappGraphProvider,
-} from './whatsapp-graph.provider';
+  WhatsappProvider,
+} from './whatsapp.provider';
 
 const GRAPH_HOST = 'https://graph.facebook.com';
 
@@ -35,10 +36,15 @@ interface GraphPhoneResponse {
   quality_rating?: string;
 }
 
-/** WhatsApp Cloud API over the Graph API of Meta. */
+/**
+ * WhatsApp Cloud API over the Graph API of Meta. It stays working for the
+ * workspaces already on it, but the Conexão tab no longer offers it: the number
+ * is not paired here, it is granted by Meta, so everything about an instance
+ * answers WHATSAPP_PROVIDER_UNSUPPORTED.
+ */
 @Injectable()
-export class MetaGraphProvider extends WhatsappGraphProvider {
-  private readonly logger = new Logger(MetaGraphProvider.name);
+export class CloudApiProvider extends WhatsappProvider {
+  private readonly logger = new Logger(CloudApiProvider.name);
 
   private readonly version: string;
 
@@ -48,10 +54,13 @@ export class MetaGraphProvider extends WhatsappGraphProvider {
   }
 
   async send(credentials: WaCredentials, message: WaOutbound): Promise<string> {
+    const mediaId = message.file
+      ? await this.upload(credentials, message.file)
+      : (message.mediaId ?? '');
     const body = await this.post<GraphMessageResponse>(
       credentials,
       `${credentials.phoneNumberId}/messages`,
-      messageBody(message),
+      messageBody({ ...message, mediaId: mediaId || undefined }),
     );
     const id = body.messages?.[0]?.id;
 
@@ -62,64 +71,17 @@ export class MetaGraphProvider extends WhatsappGraphProvider {
     return id;
   }
 
-  async upload(credentials: WaCredentials, file: WaUploadInput): Promise<string> {
-    const form = new FormData();
-
-    form.append('messaging_product', 'whatsapp');
-    form.append('type', file.mime);
-    form.append(
-      'file',
-      new Blob([new Uint8Array(file.buffer)], { type: file.mime }),
-      file.filename,
-    );
-
-    const body = await this.request<{ id?: string }>(
-      credentials,
-      `${credentials.phoneNumberId}/media`,
-      { method: 'POST', body: form },
-    );
-
-    if (!body?.id) {
-      throw this.failed('A Graph API não aceitou o arquivo.');
-    }
-
-    return body.id;
-  }
-
-  async mediaInfo(credentials: WaCredentials, mediaId: string): Promise<WaMediaInfo | null> {
-    const body = await this.tryRequest<{ url?: string; mime_type?: string; file_size?: number }>(
-      credentials,
-      mediaId,
-      { method: 'GET' },
-    );
-
-    return body?.url
-      ? { url: body.url, mime: body.mime_type ?? '', size: Number(body.file_size ?? 0) }
-      : null;
-  }
-
-  async download(credentials: WaCredentials, url: string): Promise<WaMediaFile | null> {
-    try {
-      const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${credentials.accessToken}` },
-        signal: AbortSignal.timeout(GRAPH_TIMEOUT_MS),
-      });
-
-      if (!response.ok) {
-        this.logger.warn(`Download da mídia do WhatsApp falhou: ${response.status}`);
-
-        return null;
-      }
-
-      return {
-        buffer: Buffer.from(await response.arrayBuffer()),
-        mime: response.headers.get('content-type') ?? '',
-      };
-    } catch (error) {
-      this.logger.warn(`Download da mídia do WhatsApp falhou: ${messageOf(error)}`);
-
+  async inboundMedia(
+    credentials: WaCredentials,
+    request: WaMediaRequest,
+  ): Promise<WaMediaFile | null> {
+    if (!request.mediaId) {
       return null;
     }
+
+    const info = await this.mediaInfo(credentials, request.mediaId);
+
+    return info ? this.download(credentials, info.url) : null;
   }
 
   async markRead(credentials: WaCredentials, waMessageId: string): Promise<void> {
@@ -164,6 +126,104 @@ export class MetaGraphProvider extends WhatsappGraphProvider {
       verifiedName: body.verified_name ?? '',
       qualityRating: body.quality_rating ?? '',
     };
+  }
+
+  createInstance(_credentials: WaCredentials, _webhookUrl: string): Promise<WaInstanceStatus> {
+    return Promise.reject(this.unsupported());
+  }
+
+  /** The Cloud API is subscribed in the app of Meta, not from here. */
+  setWebhook(_credentials: WaCredentials, _webhookUrl: string): Promise<void> {
+    return Promise.resolve();
+  }
+
+  connect(_credentials: WaCredentials): Promise<WaInstanceStatus> {
+    return Promise.reject(this.unsupported());
+  }
+
+  /** The number of a WABA has no pairing: asking Meta about it is the state. */
+  async state(credentials: WaCredentials): Promise<WaInstanceStatus> {
+    const info = await this.phoneInfo(credentials);
+
+    return {
+      state: info ? 'open' : 'close',
+      qrCode: null,
+      displayPhone: info?.displayPhone ?? '',
+      verifiedName: info?.verifiedName ?? '',
+    };
+  }
+
+  disconnect(_credentials: WaCredentials): Promise<void> {
+    return Promise.reject(this.unsupported());
+  }
+
+  restart(_credentials: WaCredentials): Promise<WaInstanceStatus> {
+    return Promise.reject(this.unsupported());
+  }
+
+  /** The Cloud API cannot be asked; the number is taken as it was given. */
+  existingNumbers(_credentials: WaCredentials, waIds: string[]): Promise<string[]> {
+    return Promise.resolve(waIds);
+  }
+
+  /** Uploads the file to Meta and answers the media id used when sending. */
+  private async upload(credentials: WaCredentials, file: WaUploadInput): Promise<string> {
+    const form = new FormData();
+
+    form.append('messaging_product', 'whatsapp');
+    form.append('type', file.mime);
+    form.append(
+      'file',
+      new Blob([new Uint8Array(file.buffer)], { type: file.mime }),
+      file.filename,
+    );
+
+    const body = await this.request<{ id?: string }>(
+      credentials,
+      `${credentials.phoneNumberId}/media`,
+      { method: 'POST', body: form },
+    );
+
+    if (!body?.id) {
+      throw this.failed('A Graph API não aceitou o arquivo.');
+    }
+
+    return body.id;
+  }
+
+  private async mediaInfo(
+    credentials: WaCredentials,
+    mediaId: string,
+  ): Promise<{ url: string; mime: string } | null> {
+    const body = await this.tryRequest<{ url?: string; mime_type?: string }>(credentials, mediaId, {
+      method: 'GET',
+    });
+
+    return body?.url ? { url: body.url, mime: body.mime_type ?? '' } : null;
+  }
+
+  private async download(credentials: WaCredentials, url: string): Promise<WaMediaFile | null> {
+    try {
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${credentials.accessToken}` },
+        signal: AbortSignal.timeout(GRAPH_TIMEOUT_MS),
+      });
+
+      if (!response.ok) {
+        this.logger.warn(`Download da mídia do WhatsApp falhou: ${response.status}`);
+
+        return null;
+      }
+
+      return {
+        buffer: Buffer.from(await response.arrayBuffer()),
+        mime: response.headers.get('content-type') ?? '',
+      };
+    } catch (error) {
+      this.logger.warn(`Download da mídia do WhatsApp falhou: ${messageOf(error)}`);
+
+      return null;
+    }
   }
 
   private post<T>(
@@ -227,6 +287,13 @@ export class MetaGraphProvider extends WhatsappGraphProvider {
     return new BadGatewayException({
       code: 'WHATSAPP_GRAPH_ERROR',
       message: `Não foi possível falar com o WhatsApp: ${detail}`,
+    });
+  }
+
+  private unsupported(): ConflictException {
+    return new ConflictException({
+      code: 'WHATSAPP_PROVIDER_UNSUPPORTED',
+      message: 'A Cloud API oficial não é conectada por QR Code.',
     });
   }
 }

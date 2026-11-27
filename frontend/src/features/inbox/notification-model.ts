@@ -28,6 +28,7 @@ export const NOTIFICATION_VERB: Record<NotificationType, string> = {
   aiSummary: 'resumo da IA sobre',
   whatsappMessage: 'mandou mensagem no WhatsApp',
   whatsappAssigned: 'atribuiu uma conversa do WhatsApp a você',
+  whatsappConnection: 'avisou que o WhatsApp desconectou',
 };
 
 /** Entrada sem ator: a frase começa pela tarefa, não por nome de pessoa. */

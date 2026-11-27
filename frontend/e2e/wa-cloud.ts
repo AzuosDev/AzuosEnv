@@ -17,6 +17,7 @@ export async function connectWa(session: AdminApi): Promise<void> {
   const saved = await session.api.put(`${API_URL}/workspaces/${session.wsId}/whatsapp/connection`, {
     headers: session.headers,
     data: {
+      provider: 'cloud',
       phoneNumberId: PHONE_NUMBER_ID,
       wabaId: WABA_ID,
       accessToken: 'token-da-graph-do-e2e',

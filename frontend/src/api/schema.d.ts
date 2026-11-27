@@ -3642,6 +3642,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/connect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConnectionController_connect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/qr": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["WhatsappConnectionController_qrCode"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/disconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConnectionController_disconnect"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/restart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConnectionController_restart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{wsId}/whatsapp/connection/test": {
         parameters: {
             query?: never;
@@ -4036,6 +4100,22 @@ export interface paths {
         get: operations["WhatsappWebhookController_verify"];
         put?: never;
         post: operations["WhatsappWebhookController_receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/integrations/whatsapp/evolution/{connectionId}/{secret}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappEvolutionWebhookController_receive"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5430,7 +5510,7 @@ export interface components {
             /** @description Who receives the entry; never the actor. */
             userId: components["schemas"]["ObjectId"];
             /** @enum {string} */
-            type: "invited" | "overdue" | "assigned" | "mentioned" | "commented" | "statusChanged" | "dueSoon" | "reminder" | "commentAssigned" | "automation" | "chatMention" | "chatMessage" | "formSubmitted" | "aiSummary" | "whatsappMessage" | "whatsappAssigned";
+            type: "invited" | "overdue" | "assigned" | "mentioned" | "commented" | "statusChanged" | "dueSoon" | "reminder" | "commentAssigned" | "automation" | "chatMention" | "chatMessage" | "formSubmitted" | "aiSummary" | "whatsappMessage" | "whatsappAssigned" | "whatsappConnection";
             /** @enum {string} */
             entityType: "message" | "comment" | "workspace" | "task" | "reminder" | "whatsappConversation";
             entityId: components["schemas"]["ObjectId"];
@@ -5512,6 +5592,7 @@ export interface components {
             aiSummary: components["schemas"]["NotificationChannelsStateDto"];
             whatsappMessage: components["schemas"]["NotificationChannelsStateDto"];
             whatsappAssigned: components["schemas"]["NotificationChannelsStateDto"];
+            whatsappConnection: components["schemas"]["NotificationChannelsStateDto"];
         };
         NotificationChannelsDto: {
             inbox?: boolean;
@@ -5536,9 +5617,10 @@ export interface components {
             aiSummary?: components["schemas"]["NotificationChannelsDto"];
             whatsappMessage?: components["schemas"]["NotificationChannelsDto"];
             whatsappAssigned?: components["schemas"]["NotificationChannelsDto"];
+            whatsappConnection?: components["schemas"]["NotificationChannelsDto"];
         };
         UpdateNotificationSettingsDto: {
-            /** @description Tipos: assigned, mentioned, commented, statusChanged, dueSoon, overdue, reminder, invited, commentAssigned, automation, chatMention, chatMessage, formSubmitted, aiSummary, whatsappMessage, whatsappAssigned. */
+            /** @description Tipos: assigned, mentioned, commented, statusChanged, dueSoon, overdue, reminder, invited, commentAssigned, automation, chatMention, chatMessage, formSubmitted, aiSummary, whatsappMessage, whatsappAssigned, whatsappConnection. */
             types: components["schemas"]["NotificationTypeSettingsDto"];
         };
         CreateReminderDto: {
@@ -7401,39 +7483,94 @@ export interface components {
             level: "atendente" | "supervisor" | "gestor";
         };
         SaveWaConnectionDto: {
-            /** @description Id do número dentro da WABA. */
-            phoneNumberId: string;
-            /** @description Id da conta do WhatsApp Business. */
-            wabaId: string;
-            /** @description Token permanente da Graph API; guardado criptografado. */
-            accessToken: string;
-            /** @description App Secret que assina o webhook; guardado criptografado. */
-            appSecret: string;
-            /** @description Token devolvido na verificação do webhook. */
-            verifyToken: string;
+            /**
+             * @description evolution conecta por QR Code; cloud é a Cloud API oficial.
+             * @default evolution
+             * @enum {string}
+             */
+            provider: "evolution" | "cloud";
+            /**
+             * Format: uri
+             * @description Evolution: origem do servidor.
+             */
+            baseUrl?: string;
+            /** @description Evolution: API key; guardada criptografada. */
+            apiKey?: string;
+            /** @description Evolution: nome da instância. */
+            instanceName?: string;
+            /** @description Cloud API: id do número dentro da WABA. */
+            phoneNumberId?: string;
+            /** @description Cloud API: id da conta do WhatsApp Business. */
+            wabaId?: string;
+            /** @description Cloud API: token permanente; criptografado. */
+            accessToken?: string;
+            /** @description Cloud API: App Secret que assina o webhook. */
+            appSecret?: string;
+            /** @description Cloud API: token da verificação do webhook. */
+            verifyToken?: string;
             displayPhone?: string;
             verifiedName?: string;
         };
         WaConnection: {
             workspaceId: components["schemas"]["ObjectId"];
-            /** @description Id of the phone number inside the WABA; routes the webhook to this workspace. */
-            phoneNumberId: string;
+            /**
+             * @description Where the number is plugged in; `evolution` is the default.
+             * @enum {string}
+             */
+            provider: "evolution" | "cloud";
+            /** @description Cloud API: id of the number inside the WABA; routes the webhook here. */
+            phoneNumberId: string | null;
             wabaId: string;
+            /** @description Evolution: origin of the server, e.g. https://evolution.azuos.dev. */
+            baseUrl: string;
+            /** @description Evolution: name of the instance the number is paired on. */
+            instanceName: string | null;
             displayPhone: string;
             verifiedName: string;
-            /** @description Echoed back on the GET handshake of the webhook. */
+            /** @description Cloud API: echoed back on the GET handshake of the webhook. */
             verifyToken: string;
+            /** Format: date-time */
+            qrCodeAt: string | null;
             /** @enum {string} */
-            status: "error" | "pending" | "connected";
+            status: "error" | "pending" | "connected" | "disconnected";
             qualityRating: string;
             lastError: string;
             /** Format: date-time */
             lastEventAt: string | null;
+            /**
+             * Format: date-time
+             * @description When the monitor last saw the number fall; clears on the next connect.
+             */
+            disconnectedAt: string | null;
             createdBy: components["schemas"]["ObjectId"];
+        };
+        WaCapabilitiesDto: {
+            /** @description Templates aprovados existem (só na Cloud API). */
+            templates: boolean;
+            /** @description Texto livre só dentro da janela de 24 h. */
+            window: boolean;
+            /** @description O número é pareado lendo um QR Code. */
+            qrCode: boolean;
         };
         WaConnectionStatusDto: {
             connection: components["schemas"]["WaConnection"] | null;
-            /** @description URL que o app da Meta deve chamar. */
+            /** @description URL que o app da Meta deve chamar; vazia na Evolution. */
+            webhookUrl: string;
+            capabilities: components["schemas"]["WaCapabilitiesDto"];
+        };
+        WaQrCodeDto: {
+            /** @description Imagem em base64 (data URI). */
+            qrCode: string | null;
+            /**
+             * Format: date-time
+             * @description UTC ISO 8601 da última leitura.
+             */
+            qrCodeAt: string | null;
+            /** @enum {string} */
+            status: "pending" | "connected" | "disconnected" | "error";
+            displayPhone: string;
+            verifiedName: string;
+            /** @description URL que a instância chama; o segredo vai nela. */
             webhookUrl: string;
         };
         WaTemplateDto: {
@@ -8012,7 +8149,7 @@ export interface operations {
                 limit?: number;
                 /** @description Cursor retornado em nextCursor. */
                 cursor?: string;
-                action?: "workspace.updated" | "workspace.deleted" | "workspace.ownership.transferred" | "workspace.exported" | "workspace.imported" | "member.role.changed" | "member.deactivated" | "invite.created" | "invite.revoked" | "team.deleted" | "resource.purged" | "integration.github.created" | "integration.github.updated" | "integration.github.deleted" | "integration.google.disconnected" | "webhook.created" | "webhook.updated" | "webhook.deleted" | "webhook.redelivered" | "integration.google.calendar.changed" | "whatsapp.connection.saved" | "whatsapp.connection.tested" | "whatsapp.access.changed" | "whatsapp.bot.saved" | "whatsapp.bot.rule.saved" | "whatsapp.bot.rule.deleted";
+                action?: "workspace.updated" | "workspace.deleted" | "workspace.ownership.transferred" | "workspace.exported" | "workspace.imported" | "member.role.changed" | "member.deactivated" | "invite.created" | "invite.revoked" | "team.deleted" | "resource.purged" | "integration.github.created" | "integration.github.updated" | "integration.github.deleted" | "integration.google.disconnected" | "webhook.created" | "webhook.updated" | "webhook.deleted" | "webhook.redelivered" | "integration.google.calendar.changed" | "whatsapp.connection.saved" | "whatsapp.connection.tested" | "whatsapp.connection.connected" | "whatsapp.connection.disconnected" | "whatsapp.connection.restarted" | "whatsapp.access.changed" | "whatsapp.bot.saved" | "whatsapp.bot.rule.saved" | "whatsapp.bot.rule.deleted";
                 actorId?: string;
             };
             header?: never;
@@ -16487,6 +16624,98 @@ export interface operations {
             };
         };
     };
+    WhatsappConnectionController_connect: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pareamento iniciado; QR Code para ler. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaQrCodeDto"];
+                };
+            };
+        };
+    };
+    WhatsappConnectionController_qrCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description QR Code mais recente do pareamento. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaQrCodeDto"];
+                };
+            };
+        };
+    };
+    WhatsappConnectionController_disconnect: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pareamento desfeito. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConnectionStatusDto"];
+                };
+            };
+        };
+    };
+    WhatsappConnectionController_restart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Instância reiniciada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaConnectionStatusDto"];
+                };
+            };
+        };
+    };
     WhatsappConnectionController_test: {
         parameters: {
             query?: never;
@@ -17399,6 +17628,31 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Evento aceito. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaWebhookResultDto"];
+                };
+            };
+        };
+    };
+    WhatsappEvolutionWebhookController_receive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Conexão que o webhook pertence. */
+                connectionId: string;
+                /** @description Segredo do webhook, conferido pelo hash. */
+                secret: string;
+            };
             cookie?: never;
         };
         requestBody?: never;

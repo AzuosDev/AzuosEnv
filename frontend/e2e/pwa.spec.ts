@@ -49,7 +49,7 @@ test('falha de rede na rota cai no error boundary com "Tentar de novo"', async (
   await page.unroute('**/api/v1/workspaces/*/members**');
   await page.getByRole('button', { name: 'Tentar de novo' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Auditoria' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Ações' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Tentar de novo' })).toBeHidden();
 
   await context.close();

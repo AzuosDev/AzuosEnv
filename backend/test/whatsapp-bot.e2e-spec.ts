@@ -1,12 +1,8 @@
 import request from 'supertest';
 import { AI_PROVIDER } from '../src/modules/ai/ai-provider';
 import { StubAiProvider } from '../src/modules/ai/stub-ai.provider';
-import {
-  WaOutbound,
-  WaTemplate,
-  WaUploadInput,
-  WhatsappGraphProvider,
-} from '../src/modules/whatsapp/graph/whatsapp-graph.provider';
+import { CloudApiProvider } from '../src/modules/whatsapp/providers/cloud-api.provider';
+import { WaOutbound, WaTemplate } from '../src/modules/whatsapp/providers/whatsapp.provider';
 import { WhatsappWebhookService } from '../src/modules/whatsapp/whatsapp-webhook.service';
 import { signBody } from '../src/modules/integrations/webhooks/webhook-signature';
 import { Session, createSession } from './utils/auth-client';
@@ -53,10 +49,7 @@ const fakeGraph = {
 
     return Promise.resolve(`wamid.bot.${fakeGraph.sent.length}.${Date.now()}`);
   },
-  upload: (_credentials: unknown, _file: WaUploadInput): Promise<string> =>
-    Promise.resolve('media-enviada'),
-  mediaInfo: () => Promise.resolve(null),
-  download: () => Promise.resolve(null),
+  inboundMedia: () => Promise.resolve(null),
   markRead: (): Promise<void> => Promise.resolve(),
   templates: (): Promise<WaTemplate[]> => Promise.resolve([]),
   phoneInfo: () =>
@@ -65,6 +58,20 @@ const fakeGraph = {
       verifiedName: 'Azuos',
       qualityRating: '',
     }),
+  setWebhook: (): Promise<void> => Promise.resolve(),
+  createInstance: () => Promise.reject(new Error('sem instância na Cloud API')),
+  connect: () => Promise.reject(new Error('sem QR Code na Cloud API')),
+  state: () =>
+    Promise.resolve({
+      state: 'open' as const,
+      qrCode: null,
+      displayPhone: '',
+      verifiedName: '',
+    }),
+  disconnect: (): Promise<void> => Promise.resolve(),
+  restart: () => Promise.reject(new Error('sem reinício na Cloud API')),
+  existingNumbers: (_credentials: unknown, waIds: string[]): Promise<string[]> =>
+    Promise.resolve(waIds),
 };
 
 describe('WhatsApp — bot e configurações do atendimento', () => {
@@ -72,7 +79,7 @@ describe('WhatsApp — bot e configurações do atendimento', () => {
 
   beforeAll(async () => {
     ctx = await createTestApp({
-      overrides: [{ token: WhatsappGraphProvider, value: fakeGraph }],
+      overrides: [{ token: CloudApiProvider, value: fakeGraph }],
     });
   });
 
@@ -138,6 +145,7 @@ describe('WhatsApp — bot e configurações do atendimento', () => {
 
     await withAuth(http().put(`/api/v1/workspaces/${workspace.id}/whatsapp/connection`), owner)
       .send({
+        provider: 'cloud',
         phoneNumberId: PHONE_NUMBER_ID,
         wabaId: '666000',
         accessToken: 'token-da-graph',

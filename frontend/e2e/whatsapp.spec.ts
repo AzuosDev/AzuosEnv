@@ -49,6 +49,7 @@ async function connect(): Promise<void> {
   const response = await session.api.put(`${API_URL}/workspaces/${wsId}/whatsapp/connection`, {
     headers: session.headers,
     data: {
+      provider: 'cloud',
       phoneNumberId: PHONE_NUMBER_ID,
       wabaId: WABA_ID,
       accessToken: 'token-da-graph-do-e2e',
@@ -425,7 +426,7 @@ test.describe('Central do WhatsApp', () => {
     );
 
     await page.getByRole('button', { name: 'Testar conexão' }).click();
-    await expect(page.getByText(/Número conectado na Graph API|A Meta respondeu/)).toBeVisible({
+    await expect(page.getByText('Número conferido na Graph API.')).toBeVisible({
       timeout: 20_000,
     });
 

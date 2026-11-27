@@ -4,7 +4,12 @@ import { WaConnection } from '../schemas/wa-connection.schema';
 import { WaContact } from '../schemas/wa-contact.schema';
 import { WaConversation } from '../schemas/wa-conversation.schema';
 import { WaMessage } from '../schemas/wa-message.schema';
-import { WA_ACCESS_LEVELS, WaAccessLevel } from '../whatsapp-fields';
+import {
+  WA_ACCESS_LEVELS,
+  WA_CONNECTION_STATUSES,
+  WaAccessLevel,
+  WaConnectionStatus,
+} from '../whatsapp-fields';
 
 export class WaAccessEntryDto {
   @ApiProperty()
@@ -30,11 +35,47 @@ export class WaMyAccessDto {
   level: WaAccessLevel | null;
 }
 
+/** O que o provedor da conexão sabe fazer; a tela se molda por isso. */
+export class WaCapabilitiesDto {
+  @ApiProperty({ description: 'Templates aprovados existem (só na Cloud API).' })
+  templates: boolean;
+
+  @ApiProperty({ description: 'Texto livre só dentro da janela de 24 h.' })
+  window: boolean;
+
+  @ApiProperty({ description: 'O número é pareado lendo um QR Code.' })
+  qrCode: boolean;
+}
+
 export class WaConnectionStatusDto {
   @ApiProperty({ type: WaConnection, nullable: true })
   connection: WaConnection | null;
 
-  @ApiProperty({ description: 'URL que o app da Meta deve chamar.' })
+  @ApiProperty({ description: 'URL que o app da Meta deve chamar; vazia na Evolution.' })
+  webhookUrl: string;
+
+  @ApiProperty({ type: WaCapabilitiesDto })
+  capabilities: WaCapabilitiesDto;
+}
+
+/** QR Code do pareamento, como a aba Conexão mostra. */
+export class WaQrCodeDto {
+  @ApiProperty({ nullable: true, description: 'Imagem em base64 (data URI).' })
+  qrCode: string | null;
+
+  @ApiProperty({ nullable: true, description: 'UTC ISO 8601 da última leitura.' })
+  qrCodeAt: Date | null;
+
+  @ApiProperty({ enum: WA_CONNECTION_STATUSES })
+  status: WaConnectionStatus;
+
+  @ApiProperty()
+  displayPhone: string;
+
+  @ApiProperty()
+  verifiedName: string;
+
+  @ApiProperty({ description: 'URL que a instância chama; o segredo vai nela.' })
   webhookUrl: string;
 }
 

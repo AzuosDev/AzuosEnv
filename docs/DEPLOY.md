@@ -62,7 +62,122 @@ Fonte completa: `backend/.env.example`. Obrigatórias e mais relevantes:
 | `AI_MONTHLY_TOKEN_BUDGET` | não | `1000000` | `0` remove o teto mensal. |
 | `ENCRYPTION_KEY` | recomendada | vazio | Segredos em repouso (AES-256-GCM); vazio usa `JWT_ACCESS_SECRET`. |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI` | não | vazio | Sem o client id o calendário fica no stub. |
+| `API_PUBLIC_URL` | em produção | `http://localhost:3000` | Origem pública **do backend**. É dela que sai a URL do webhook do WhatsApp (a da Meta e a que fica gravada na instância da Evolution). Errada, nenhuma mensagem chega. |
+| `META_GRAPH_VERSION` | não | `v21.0` | Versão da Graph API; só a Cloud API usa. |
+| `WHATSAPP_MOCK` | não | `false` | WhatsApp falso (os dois provedores) para o e2e do front. Proibido em produção pelo Joi. |
 | `SEED_NAME` / `SEED_EMAIL` / `SEED_PASSWORD` | não | `admin@azuos.dev` | Apenas para `npm run seed`. |
+
+## WhatsApp pela Evolution API v2
+
+O provedor do WhatsApp é um campo da conexão, não do ambiente: a **Evolution API
+v2** (Baileys, pareada por QR Code) é o padrão e a Cloud API oficial continua
+funcionando para quem já estava nela. URL, API key e nome da instância ficam no
+banco, criptografados, e são preenchidos na aba **Conexão** da Central do
+WhatsApp — nada disso vira variável de ambiente aqui.
+
+A conexão **não é oficial**: o número pode ser banido pelo WhatsApp. Evite
+disparos em massa e não use o número principal da empresa como cobaia.
+
+### 1. Subir a Evolution (Docker, Postgres e Redis)
+
+A Evolution v2 guarda as instâncias no Postgres e o cache no Redis; sem os dois
+ela perde a sessão a cada reinício e o número precisa ler o QR Code de novo.
+
+```yaml
+# docker-compose.yml do servidor da Evolution (fora deste repositório)
+services:
+  evolution:
+    image: atendai/evolution-api:v2.3.7
+    restart: always
+    ports:
+      - '8080:8080'
+    environment:
+      SERVER_URL: https://evolution.seu-dominio.com.br
+      AUTHENTICATION_API_KEY: <chave-global-forte>
+      DATABASE_ENABLED: 'true'
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evolution:<senha>@postgres:5432/evolution
+      DATABASE_SAVE_DATA_INSTANCE: 'true'
+      DATABASE_SAVE_DATA_NEW_MESSAGE: 'true'
+      DATABASE_SAVE_MESSAGE_UPDATE: 'true'
+      CACHE_REDIS_ENABLED: 'true'
+      CACHE_REDIS_URI: redis://redis:6379/6
+      CACHE_REDIS_PREFIX_KEY: evolution
+      CACHE_LOCAL_ENABLED: 'false'
+      CONFIG_SESSION_PHONE_VERSION: '2.3000.1023204200'
+      DEL_INSTANCE: 'false'
+    volumes:
+      - evolution_instances:/evolution/instances
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: <senha>
+      POSTGRES_DB: evolution
+    volumes:
+      - evolution_pg:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - evolution_redis:/data
+
+volumes:
+  evolution_instances:
+  evolution_pg:
+  evolution_redis:
+```
+
+```bash
+docker compose up -d
+curl -s https://evolution.seu-dominio.com.br/ -H 'apikey: <chave-global-forte>'
+```
+
+Ponha TLS na frente (Traefik, Caddy ou Nginx) e **não** exponha a porta 8080 na
+internet sem ele: a `AUTHENTICATION_API_KEY` é a única barreira.
+
+### 2. Deixar o backend alcançável
+
+```
+API_PUBLIC_URL=https://api.azuosdev.com.br
+```
+
+O webhook da instância é montado a partir dessa origem:
+
+```
+POST {API_PUBLIC_URL}/api/v1/integrations/whatsapp/evolution/{connectionId}/{webhookSecret}
+```
+
+O segredo nasce ao salvar a conexão, fica criptografado no banco e é conferido
+por hash em cada entrega; segredo errado responde 404, igual a conexão
+desconhecida. A rota é pública, então o servidor da Evolution precisa alcançar
+essa URL — em rede privada, exponha o backend ou coloque os dois na mesma rede
+do Docker.
+
+### 3. Conectar o número
+
+Na Central do WhatsApp › **Conexão** (gestor):
+
+1. provedor **Evolution (QR Code)**, URL do servidor, API key e nome da instância;
+2. **Salvar conexão** e depois **Conectar** — o backend cria a instância na
+   integração Baileys já com o webhook apontado para cá e mostra o QR Code;
+3. leia o QR Code no WhatsApp do celular (Aparelhos conectados › Conectar
+   aparelho). A tela troca para **Conectado** sozinha, com número e nome do
+   perfil, assim que a Evolution avisa pelo webhook;
+4. **Desconectar** encerra a sessão e **Reiniciar** recria a conexão da
+   instância sem apagar o pareamento.
+
+Com a Evolution não existe janela de 24 h nem template aprovado: o envio é livre.
+Um cron confere o estado da instância a cada 5 minutos e, na queda, marca
+**Desconectado** na Central, avisa os gestores no Inbox e publica o evento em
+tempo real.
 
 ## Primeiro boot
 
@@ -197,5 +312,8 @@ a entrada inicial passar de 250 KB gzip (hoje ~195 KB).
 - Uma instância só: Socket.IO, os crons e os caches de automação vivem em memória
   (escalar horizontalmente exige adapter Redis e eleição de cron).
 - Contrato do front: `npm run openapi` regenera `docs/openapi.json`.
+- WhatsApp: `API_PUBLIC_URL` com a URL pública do backend, Evolution com TLS e
+  `AUTHENTICATION_API_KEY` forte, e Postgres e Redis dela em volume (sem eles a
+  sessão do número cai a cada reinício).
 - Frontend: `VITE_API_URL` apontando para a API, `COOKIE_DOMAIN` no domínio comum e
   HTTPS nos dois hosts (sem isso não há Service Worker nem sessão persistente).

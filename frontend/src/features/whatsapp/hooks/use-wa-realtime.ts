@@ -30,6 +30,16 @@ interface WaConversationEvent {
   unreadCount: number;
 }
 
+/** Onde a conexão do workspace está; a aba Conexão vive disso. */
+interface WaConnectionEvent {
+  workspaceId: string;
+  provider: string;
+  status: string;
+  displayPhone: string;
+  verifiedName: string;
+  hasQrCode: boolean;
+}
+
 export interface WaRealtimeOptions {
   /** Conversa aberta agora: a mensagem dela não vira aviso. */
   openConversationId: string | null;
@@ -90,6 +100,18 @@ export function useWaRealtime(wsId: string, options: WaRealtimeOptions): void {
       queryKey: queryKeys.waConversation(wsId, event.conversationId),
     });
     refreshList();
+  });
+
+  useSocketEvent<WaConnectionEvent>('connection.state', (event) => {
+    if (event.workspaceId !== wsId) {
+      return;
+    }
+
+    // O QR Code troca a cada poucos segundos: é o socket que faz a imagem da
+    // aba Conexão acompanhar, sem ninguém recarregar a tela.
+    // A chave do QR Code mora embaixo da da conexão, então uma invalidação só
+    // refaz as duas.
+    void queryClient.invalidateQueries({ queryKey: queryKeys.waConnection(wsId) });
   });
 
   // A conexão voltou: a lista pode ter perdido mensagem no meio.

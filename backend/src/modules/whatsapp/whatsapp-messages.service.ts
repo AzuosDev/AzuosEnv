@@ -18,12 +18,8 @@ import { PermissionContext } from '../hierarchy/permission.service';
 import { StorageService } from '../storage/storage.service';
 import { UploadedFile } from '../collaboration/attachments.service';
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from '../collaboration/collaboration-fields';
-import {
-  WaCredentials,
-  WaOutbound,
-  WaTemplate,
-  WhatsappGraphProvider,
-} from './graph/whatsapp-graph.provider';
+import { WhatsappProviders } from './providers/whatsapp-providers.service';
+import { WaCredentials, WaOutbound, WaTemplate } from './providers/whatsapp.provider';
 import { SendWaMediaDto, SendWaTemplateDto, SendWaTextDto } from './dto/whatsapp.dto';
 import { WaContactDocument } from './schemas/wa-contact.schema';
 import { WaConversationDocument } from './schemas/wa-conversation.schema';
@@ -45,6 +41,7 @@ import {
   isStatusAhead,
   isWaMediaType,
   isWindowOpen,
+  waCapabilities,
 } from './whatsapp-fields';
 
 /** Media types the Cloud API accepts, by the kind of the file. */
@@ -75,7 +72,7 @@ export class WhatsappMessagesService {
     private readonly contacts: WhatsappContactsService,
     private readonly connections: WhatsappConnectionsService,
     private readonly botSettings: WhatsappBotSettingsService,
-    private readonly graph: WhatsappGraphProvider,
+    private readonly providers: WhatsappProviders,
     private readonly storage: StorageService,
     private readonly events: EventEmitter2,
   ) {}
@@ -160,7 +157,7 @@ export class WhatsappMessagesService {
   async templates(workspaceId: Types.ObjectId): Promise<WaTemplate[]> {
     const { credentials } = await this.connections.requireCredentials(workspaceId);
 
-    return this.graph.templates(credentials);
+    return this.providers.forCredentials(credentials).templates(credentials);
   }
 
   async sendText(
@@ -171,11 +168,9 @@ export class WhatsappMessagesService {
   ): Promise<WaMessageDocument> {
     const { conversation, contact, credentials } = await this.prepare(ctx, level, conversationId);
 
-    if (!isWindowOpen(conversation.lastInboundAt)) {
-      throw this.windowClosed();
-    }
+    this.requireWindow(conversation, credentials);
 
-    const waMessageId = await this.graph.send(credentials, {
+    const waMessageId = await this.providers.forCredentials(credentials).send(credentials, {
       to: contact.waId,
       type: 'text',
       text: dto.text,
@@ -210,20 +205,15 @@ export class WhatsappMessagesService {
 
     const { conversation, contact, credentials } = await this.prepare(ctx, level, conversationId);
 
-    if (!isWindowOpen(conversation.lastInboundAt)) {
-      throw this.windowClosed();
-    }
+    this.requireWindow(conversation, credentials);
 
     const type = mediaTypeOf(file.mimetype);
-    const mediaId = await this.graph.upload(credentials, {
-      filename: file.originalname,
-      mime: file.mimetype,
-      buffer: file.buffer,
-    });
-    const waMessageId = await this.graph.send(credentials, {
+    // The file goes with the message: the Cloud API uploads it first and the
+    // Evolution carries it inline, and each provider knows which of the two.
+    const waMessageId = await this.providers.forCredentials(credentials).send(credentials, {
       to: contact.waId,
       type,
-      mediaId,
+      file: { filename: file.originalname, mime: file.mimetype, buffer: file.buffer },
       caption: dto.caption,
       filename: file.originalname,
       replyTo: dto.replyTo ?? null,
@@ -246,7 +236,6 @@ export class WhatsappMessagesService {
         caption: dto.caption ?? '',
         filename: file.originalname,
         size: stored.size,
-        mediaId,
       },
     });
   }
@@ -259,8 +248,16 @@ export class WhatsappMessagesService {
     dto: SendWaTemplateDto,
   ): Promise<WaMessageDocument> {
     const { conversation, contact, credentials } = await this.prepare(ctx, level, conversationId);
+
+    if (!waCapabilities(credentials.provider).templates) {
+      throw new ConflictException({
+        code: 'WHATSAPP_TEMPLATES_UNSUPPORTED',
+        message: 'Este provedor envia mensagem livre e não usa template.',
+      });
+    }
+
     const variables = dto.variables ?? [];
-    const waMessageId = await this.graph.send(credentials, {
+    const waMessageId = await this.providers.forCredentials(credentials).send(credentials, {
       to: contact.waId,
       type: 'template',
       template: { name: dto.name, language: dto.language, variables },
@@ -296,11 +293,13 @@ export class WhatsappMessagesService {
     credentials: WaCredentials,
     outbound: Omit<WaOutbound, 'to'>,
   ): Promise<WaMessageDocument | null> {
-    if (contact.optOut || !isWindowOpen(conversation.lastInboundAt)) {
+    if (contact.optOut || !this.windowOpenFor(conversation, credentials)) {
       return null;
     }
 
-    const waMessageId = await this.graph.send(credentials, { ...outbound, to: contact.waId });
+    const waMessageId = await this.providers
+      .forCredentials(credentials)
+      .send(credentials, { ...outbound, to: contact.waId });
     const sentAt = new Date();
     const created = await this.model.create({
       workspaceId: conversation.workspaceId,
@@ -399,8 +398,8 @@ export class WhatsappMessagesService {
     return message;
   }
 
-  /** Tells Meta the conversation was opened, so the contact sees the blue ticks. */
-  async markReadOnMeta(conversation: WaConversationDocument): Promise<void> {
+  /** Tells the provider the conversation was opened, so the contact sees the blue ticks. */
+  async markReadOnProvider(conversation: WaConversationDocument): Promise<void> {
     const last = await this.model
       .findOne({
         workspaceId: conversation.workspaceId,
@@ -418,10 +417,10 @@ export class WhatsappMessagesService {
     try {
       const { credentials } = await this.connections.requireCredentials(conversation.workspaceId);
 
-      await this.graph.markRead(credentials, last.waMessageId);
+      await this.providers.forCredentials(credentials).markRead(credentials, last.waMessageId);
     } catch (error) {
       this.logger.warn(
-        `Não foi possível marcar como lida na Meta: ${
+        `Não foi possível marcar como lida no WhatsApp: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
@@ -438,19 +437,18 @@ export class WhatsappMessagesService {
       return null;
     }
 
-    const info = await this.graph.mediaInfo(credentials, message.mediaId);
+    const file = await this.providers.forCredentials(credentials).inboundMedia(credentials, {
+      waMessageId: message.waMessageId,
+      mediaId: message.mediaId,
+      base64: message.mediaBase64,
+      mime: message.mime,
+    });
 
-    if (!info) {
+    if (!file) {
       return { mediaId: message.mediaId, mime: message.mime ?? '', caption: message.caption };
     }
 
-    const file = await this.graph.download(credentials, info.url);
-
-    if (!file) {
-      return { mediaId: message.mediaId, mime: info.mime, caption: message.caption };
-    }
-
-    const mime = message.mime ?? info.mime ?? file.mime;
+    const mime = message.mime ?? file.mime;
     const filename = message.filename || `${message.waMessageId}${extensionOf(mime)}`;
     const stored = await this.storage.save({
       workspaceId: String(workspaceId),
@@ -467,6 +465,17 @@ export class WhatsappMessagesService {
       size: stored.size,
       mediaId: message.mediaId,
     };
+  }
+
+  /** 24 h window of the Cloud API; the Evolution sends whenever it wants to. */
+  private windowOpenFor(conversation: WaConversationDocument, credentials: WaCredentials): boolean {
+    return !waCapabilities(credentials.provider).window || isWindowOpen(conversation.lastInboundAt);
+  }
+
+  private requireWindow(conversation: WaConversationDocument, credentials: WaCredentials): void {
+    if (!this.windowOpenFor(conversation, credentials)) {
+      throw this.windowClosed();
+    }
   }
 
   private async recordOutbound(
