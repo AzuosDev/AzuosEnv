@@ -58,6 +58,14 @@ export class WhatsappWebhookService {
   /** Serial queue of the deliveries; `settle` is what the e2e waits on. */
   private queue: Promise<void> = Promise.resolve();
 
+  /**
+   * Em host serverless (Vercel) a função pode ser congelada assim que a resposta
+   * sai, e o que ficou na fila nunca roda — mensagem perdida em silêncio. Lá o
+   * processamento termina antes do 200; o preço é uma resposta mais lenta, que é
+   * muito melhor do que uma conversa que não entra.
+   */
+  private readonly inline = process.env.VERCEL === '1';
+
   constructor(
     private readonly connections: WhatsappConnectionsService,
     private readonly contacts: WhatsappContactsService,
@@ -112,7 +120,7 @@ export class WhatsappWebhookService {
 
     const changes = readChanges(request.body);
 
-    this.enqueue(() => this.process(found, changes));
+    await this.enqueue(() => this.process(found, changes));
 
     return { received: true };
   }
@@ -140,7 +148,7 @@ export class WhatsappWebhookService {
       return { received: true, ignored: delivery.ignored };
     }
 
-    this.enqueue(async () => {
+    await this.enqueue(async () => {
       if (delivery.qrCode) {
         await this.connections.applyQrCode(found.connection, delivery.qrCode);
       }
@@ -167,14 +175,20 @@ export class WhatsappWebhookService {
     await this.queue;
   }
 
-  private enqueue(run: () => Promise<void>): void {
-    this.queue = this.queue.then(run).catch((error: unknown) => {
+  private async enqueue(run: () => Promise<void>): Promise<void> {
+    const task = this.queue.then(run).catch((error: unknown) => {
       this.logger.error(
         `Falha ao processar o webhook do WhatsApp: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );
     });
+
+    this.queue = task;
+
+    if (this.inline) {
+      await task;
+    }
   }
 
   private async process(

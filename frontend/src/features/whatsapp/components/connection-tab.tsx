@@ -1,12 +1,22 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Check, Copy, PlugZap, Power, QrCode, RotateCcw } from 'lucide-react';
+import {
+  AlertTriangle,
+  Check,
+  Copy,
+  PlugZap,
+  Power,
+  QrCode,
+  RotateCcw,
+  ShieldCheck,
+} from 'lucide-react';
 import { useState } from 'react';
-import { errorMessage } from '@/api/errors';
+import { ApiRequestError, errorMessage } from '@/api/errors';
 import type { WaProvider } from '@/api/types';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { toast } from '@/components/ui/toast';
 import {
+  adoptWaInstance,
   connectWaConnection,
   disconnectWaConnection,
   restartWaConnection,
@@ -103,6 +113,8 @@ export function ConnectionTab({ wsId }: ConnectionTabProps) {
   const [provider, setProvider] = useState<WaProvider | null>(null);
   const [values, setValues] = useState<Record<FieldKey, string>>(EMPTY);
   const [saving, setSaving] = useState(false);
+  /** Nome recusado por já existir no servidor; a adoção é oferecida a partir dele. */
+  const [takenName, setTakenName] = useState('');
   const [busy, setBusy] = useState<'' | 'connect' | 'disconnect' | 'restart' | 'test'>('');
   const [copied, setCopied] = useState(false);
 
@@ -166,11 +178,43 @@ export function ConnectionTab({ wsId }: ConnectionTabProps) {
           };
 
     setSaving(true);
+    setTakenName('');
     void saveWaConnection(wsId, body)
       .then(() => {
         refresh();
         setValues(EMPTY);
         toast.success('Conexão salva.');
+      })
+      .catch((error: unknown) => {
+        // Nome em uso não é fim de linha: ou o gestor troca o nome, ou diz que a
+        // instância é dele e a adota.
+        if (error instanceof ApiRequestError && error.code === 'WHATSAPP_INSTANCE_IN_USE') {
+          setTakenName(values.instanceName.trim());
+        }
+
+        toast.error(errorMessage(error));
+      })
+      .finally(() => {
+        setSaving(false);
+      });
+  };
+
+  /** Salva aceitando o nome existente e assume a instância, nesta ordem. */
+  const adopt = (): void => {
+    setSaving(true);
+    void saveWaConnection(wsId, {
+      provider: 'evolution',
+      baseUrl: values.baseUrl.trim().replace(/\/$/, ''),
+      apiKey: values.apiKey.trim(),
+      instanceName: takenName,
+      adoptExisting: true,
+    })
+      .then(() => adoptWaInstance(wsId))
+      .then(() => {
+        refresh();
+        setValues(EMPTY);
+        setTakenName('');
+        toast.success('Instância assumida pelo Azuos Env.');
       })
       .catch((error: unknown) => {
         toast.error(errorMessage(error));
@@ -330,6 +374,8 @@ export function ConnectionTab({ wsId }: ConnectionTabProps) {
 
           {capabilities.qrCode ? <UnofficialWarning /> : null}
 
+          {takenName ? <AdoptNotice name={takenName} busy={saving} onAdopt={adopt} /> : null}
+
           {fields.map((field) => (
             <WaField key={field.key} label={field.label} hint={field.hint}>
               <Input
@@ -345,14 +391,33 @@ export function ConnectionTab({ wsId }: ConnectionTabProps) {
             </WaField>
           ))}
 
-          <button
-            type="button"
-            disabled={saving}
-            onClick={save}
-            className={`${saved ? waGhostClass : waPrimaryClass} self-start`}
-          >
-            {saving ? 'Salvando…' : saved ? 'Trocar a conexão' : 'Salvar conexão'}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={save}
+              className={saved ? waGhostClass : waPrimaryClass}
+            >
+              {saving ? 'Salvando…' : 'Salvar conexão'}
+            </button>
+
+            {saved ? (
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => {
+                  // Trocar é começar outro cadastro: os campos voltam em branco
+                  // para o gestor digitar outro servidor ou outra instância.
+                  setValues(EMPTY);
+                  setTakenName('');
+                  setProvider(null);
+                }}
+                className={waGhostClass}
+              >
+                Trocar a conexão
+              </button>
+            ) : null}
+          </div>
         </div>
       </WaCard>
     </div>
@@ -409,6 +474,41 @@ function QrPanel({ qrCode, loading, onConnect }: QrPanelProps) {
       <button type="button" disabled={loading} onClick={onConnect} className={waPrimaryClass}>
         <QrCode className="h-4 w-4" aria-hidden="true" />
         {loading ? 'Gerando…' : qrCode ? 'Gerar outro QR Code' : 'Conectar'}
+      </button>
+    </div>
+  );
+}
+
+interface AdoptNoticeProps {
+  name: string;
+  busy: boolean;
+  onAdopt: () => void;
+}
+
+/**
+ * O nome já existe no servidor, que é compartilhado. O caminho normal é trocar
+ * de nome; adotar é para quem preparou a instância à mão antes do app, e custa
+ * os eventos de quem estiver usando essa instância hoje — por isso está escrito.
+ */
+function AdoptNotice({ name, busy, onAdopt }: AdoptNoticeProps) {
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-warning/40 bg-warning/15 p-3">
+      <p className="flex items-start gap-2 text-[13px] text-wa-text">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
+        <span>
+          A instância <strong className="font-semibold">{name}</strong> já existe neste servidor.
+          Escolha outro nome, ou assuma esta se ela for sua: o webhook dela passa a apontar para o
+          Azuos Env e qualquer outro sistema ligado nela para de receber as mensagens.
+        </span>
+      </p>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={onAdopt}
+        className={`${waGhostClass} self-start`}
+      >
+        <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+        {busy ? 'Assumindo…' : 'Assumir esta instância'}
       </button>
     </div>
   );

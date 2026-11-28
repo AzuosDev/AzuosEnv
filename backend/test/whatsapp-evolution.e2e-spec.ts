@@ -607,6 +607,61 @@ describe('WhatsApp — conexão pela Evolution', () => {
     expect(status.body.connection.status).toBe('pending');
   });
 
+  it('assume a instância que já existe quando o gestor pede', async () => {
+    const owner = await createSession(ctx);
+    const workspace = (
+      await withAuth(http().post('/api/v1/workspaces'), owner)
+        .send({ name: 'Azuos Dev', taskPrefix: 'AZD', timezone: 'UTC' })
+        .expect(201)
+    ).body as IdBody;
+    const base = `/api/v1/workspaces/${workspace.id}/whatsapp/connection`;
+    const body = {
+      provider: 'evolution',
+      baseUrl: BASE_URL,
+      apiKey: API_KEY,
+      instanceName: INSTANCE,
+    };
+
+    // A instância foi preparada à mão na VPS, fora do app.
+    fakeEvolution.taken = true;
+
+    const refused = await withAuth(http().put(base), owner).send(body).expect(409);
+
+    expect(refused.body.code).toBe('WHATSAPP_INSTANCE_IN_USE');
+
+    // O gestor diz que a instância é dele: o save aceita e o adopt assume.
+    await withAuth(http().put(base), owner)
+      .send({ ...body, adoptExisting: true })
+      .expect(200);
+
+    const adopted = await withAuth(http().post(`${base}/adopt`), owner).expect(201);
+
+    expect(adopted.body.status).toBe('connected');
+    expect(adopted.body.displayPhone).toBe(CONTACT);
+    // Assumir é o único caminho que reaponta o webhook de uma instância de fora.
+    expect(fakeEvolution.webhooks.at(-1)).toContain('/api/v1/integrations/whatsapp/evolution/');
+    // E nada foi criado: a instância já estava lá.
+    expect(fakeEvolution.created).toEqual([]);
+
+    // Com a posse, desconectar e reiniciar voltam a ser permitidos.
+    await withAuth(http().post(`${base}/restart`), owner).expect(201);
+    expect(fakeEvolution.restarts).toBe(1);
+  });
+
+  it('não assume instância que não existe no servidor', async () => {
+    const fixture = await setup();
+
+    fakeEvolution.taken = false;
+
+    const refused = await withAuth(
+      http().post(`/api/v1/workspaces/${fixture.workspace.id}/whatsapp/connection/adopt`),
+      fixture.owner,
+    ).expect(409);
+
+    expect(refused.body.code).toBe('WHATSAPP_INSTANCE_NOT_FOUND');
+    expect(fakeEvolution.webhooks).toEqual([]);
+  });
+
   it('desconecta, reinicia e normaliza o nono dígito do número novo', async () => {
     const fixture = await setup();
     const base = `/api/v1/workspaces/${fixture.workspace.id}/whatsapp`;

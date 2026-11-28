@@ -75,6 +75,15 @@ export class SaveWaConnectionDto {
   })
   instanceName?: string;
 
+  @ApiPropertyOptional({
+    description:
+      'Evolution: aceita salvar um nome de instância que já existe no servidor. ' +
+      'Sem isto, nome em uso é recusado; a posse só vem depois, pelo /connection/adopt.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  adoptExisting?: boolean;
+
   @ApiPropertyOptional({ description: 'Cloud API: id do número dentro da WABA.' })
   @ValidateIf(isCloud)
   @IsString()

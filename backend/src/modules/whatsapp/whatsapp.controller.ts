@@ -200,6 +200,20 @@ export class WhatsappConnectionController {
     return this.connections.connect(ctx.workspaceId);
   }
 
+  @Post('adopt')
+  @Audit('whatsapp.connection.adopted', 'integration')
+  @ApiOkResponse({
+    description: 'Instância existente assumida; o webhook dela aponta para esta API.',
+    type: WaQrCodeDto,
+  })
+  async adopt(@CurrentMembership() membership: RequestMembership): Promise<WaQrCodeResult> {
+    const ctx = ctxOf(membership);
+
+    await this.access.require(ctx, 'gestor');
+
+    return this.connections.adopt(ctx.workspaceId);
+  }
+
   @Get('qr')
   @ApiOkResponse({ description: 'QR Code mais recente do pareamento.', type: WaQrCodeDto })
   async qrCode(@CurrentMembership() membership: RequestMembership): Promise<WaQrCodeResult> {

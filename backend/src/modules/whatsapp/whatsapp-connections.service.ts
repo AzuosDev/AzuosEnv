@@ -236,6 +236,13 @@ export class WhatsappConnectionsService {
       return true;
     }
 
+    // O gestor já disse, nesta chamada, que a instância existente é dele: a
+    // conferência sai da frente e a posse fica para o adopt, que é o ato
+    // deliberado de assumir.
+    if (dto.adoptExisting === true) {
+      return false;
+    }
+
     try {
       const taken = await this.providers.of('evolution').instanceExists({
         provider: 'evolution',
@@ -365,6 +372,49 @@ export class WhatsappConnectionsService {
     await connection.save();
 
     return status;
+  }
+
+  /**
+   * Assume uma instância que já existe no servidor, a pedido do gestor. É o
+   * único caminho que aponta o webhook de uma instância que não nasceu aqui, e
+   * existe porque a Evolution pode ter sido preparada à mão antes do app — o
+   * preço é que o que estiver consumindo essa instância hoje para de receber os
+   * eventos, e a tela avisa isso antes.
+   */
+  async adopt(workspaceId: Types.ObjectId): Promise<WaQrCodeResult> {
+    const { connection, credentials } = await this.requireCredentials(workspaceId);
+
+    if (connection.provider !== 'evolution') {
+      throw new ConflictException({
+        code: 'WHATSAPP_PROVIDER_UNSUPPORTED',
+        message: 'Só a Evolution tem instância para adotar.',
+      });
+    }
+
+    const provider = this.providers.forCredentials(credentials);
+
+    if (!connection.instanceOwned && !(await provider.instanceExists(credentials))) {
+      throw new ConflictException({
+        code: 'WHATSAPP_INSTANCE_NOT_FOUND',
+        message: 'Não existe instância com este nome no servidor; use Conectar para criar.',
+      });
+    }
+
+    const webhookUrl = this.evolutionWebhookUrl(
+      connection._id,
+      this.requireWebhookSecret(connection),
+    );
+
+    await provider.setWebhook(credentials, webhookUrl);
+
+    const status = await provider.state(credentials);
+
+    connection.instanceOwned = true;
+    connection.lastError = '';
+    await connection.save();
+    await this.applyStatus(connection, status);
+
+    return this.qrResultOf(connection);
   }
 
   /** Instância já nossa: reaponta o webhook e pede o QR Code de novo. */

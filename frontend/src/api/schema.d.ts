@@ -3658,6 +3658,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/adopt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["WhatsappConnectionController_adopt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workspaces/{wsId}/whatsapp/connection/qr": {
         parameters: {
             query?: never;
@@ -7498,6 +7514,8 @@ export interface components {
             apiKey?: string;
             /** @description Evolution: nome da instância. */
             instanceName?: string;
+            /** @description Evolution: aceita salvar um nome de instância que já existe no servidor. Sem isto, nome em uso é recusado; a posse só vem depois, pelo /connection/adopt. */
+            adoptExisting?: boolean;
             /** @description Cloud API: id do número dentro da WABA. */
             phoneNumberId?: string;
             /** @description Cloud API: id da conta do WhatsApp Business. */
@@ -8155,7 +8173,7 @@ export interface operations {
                 limit?: number;
                 /** @description Cursor retornado em nextCursor. */
                 cursor?: string;
-                action?: "workspace.updated" | "workspace.deleted" | "workspace.ownership.transferred" | "workspace.exported" | "workspace.imported" | "member.role.changed" | "member.deactivated" | "invite.created" | "invite.revoked" | "team.deleted" | "resource.purged" | "integration.github.created" | "integration.github.updated" | "integration.github.deleted" | "integration.google.disconnected" | "webhook.created" | "webhook.updated" | "webhook.deleted" | "webhook.redelivered" | "integration.google.calendar.changed" | "whatsapp.connection.saved" | "whatsapp.connection.tested" | "whatsapp.connection.connected" | "whatsapp.connection.disconnected" | "whatsapp.connection.restarted" | "whatsapp.access.changed" | "whatsapp.bot.saved" | "whatsapp.bot.rule.saved" | "whatsapp.bot.rule.deleted";
+                action?: "workspace.updated" | "workspace.deleted" | "workspace.ownership.transferred" | "workspace.exported" | "workspace.imported" | "member.role.changed" | "member.deactivated" | "invite.created" | "invite.revoked" | "team.deleted" | "resource.purged" | "integration.github.created" | "integration.github.updated" | "integration.github.deleted" | "integration.google.disconnected" | "webhook.created" | "webhook.updated" | "webhook.deleted" | "webhook.redelivered" | "integration.google.calendar.changed" | "whatsapp.connection.saved" | "whatsapp.connection.tested" | "whatsapp.connection.connected" | "whatsapp.connection.adopted" | "whatsapp.connection.disconnected" | "whatsapp.connection.restarted" | "whatsapp.access.changed" | "whatsapp.bot.saved" | "whatsapp.bot.rule.saved" | "whatsapp.bot.rule.deleted";
                 actorId?: string;
             };
             header?: never;
@@ -16643,6 +16661,29 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Pareamento iniciado; QR Code para ler. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaQrCodeDto"];
+                };
+            };
+        };
+    };
+    WhatsappConnectionController_adopt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace do recurso. */
+                wsId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Instância existente assumida; o webhook dela aponta para esta API. */
             200: {
                 headers: {
                     [name: string]: unknown;

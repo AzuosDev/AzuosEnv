@@ -38,6 +38,7 @@ export const AUDIT_ACTIONS = [
   'whatsapp.connection.saved',
   'whatsapp.connection.tested',
   'whatsapp.connection.connected',
+  'whatsapp.connection.adopted',
   'whatsapp.connection.disconnected',
   'whatsapp.connection.restarted',
   'whatsapp.access.changed',

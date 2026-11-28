@@ -177,6 +177,18 @@ export function waQrCodeQuery(wsId: string, enabled: boolean) {
   });
 }
 
+/**
+ * Assume uma instância que já existe no servidor. Só o gestor, e só depois de a
+ * tela avisar que o webhook dela passa a apontar para cá.
+ */
+export async function adoptWaInstance(wsId: string): Promise<WaQrCode> {
+  return unwrap(
+    await api.POST('/api/v1/workspaces/{wsId}/whatsapp/connection/adopt', {
+      params: { path: { wsId } },
+    }),
+  ) as WaQrCode;
+}
+
 export async function disconnectWaConnection(wsId: string): Promise<WaConnectionStatus> {
   return unwrap(
     await api.POST('/api/v1/workspaces/{wsId}/whatsapp/connection/disconnect', {

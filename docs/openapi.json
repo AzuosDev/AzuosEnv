@@ -55,6 +55,7 @@
                 "whatsapp.connection.saved",
                 "whatsapp.connection.tested",
                 "whatsapp.connection.connected",
+                "whatsapp.connection.adopted",
                 "whatsapp.connection.disconnected",
                 "whatsapp.connection.restarted",
                 "whatsapp.access.changed",
@@ -16638,6 +16639,43 @@
         ]
       }
     },
+    "/api/v1/workspaces/{wsId}/whatsapp/connection/adopt": {
+      "post": {
+        "operationId": "WhatsappConnectionController_adopt",
+        "parameters": [
+          {
+            "name": "wsId",
+            "required": true,
+            "in": "path",
+            "description": "Workspace do recurso.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Instância existente assumida; o webhook dela aponta para esta API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaQrCodeDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "whatsapp"
+        ]
+      }
+    },
     "/api/v1/workspaces/{wsId}/whatsapp/connection/qr": {
       "get": {
         "operationId": "WhatsappConnectionController_qrCode",
@@ -30116,6 +30154,10 @@
           "instanceName": {
             "type": "string",
             "description": "Evolution: nome da instância."
+          },
+          "adoptExisting": {
+            "type": "boolean",
+            "description": "Evolution: aceita salvar um nome de instância que já existe no servidor. Sem isto, nome em uso é recusado; a posse só vem depois, pelo /connection/adopt."
           },
           "phoneNumberId": {
             "type": "string",
